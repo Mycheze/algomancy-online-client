@@ -115,7 +115,7 @@ test('CR 601.5: report #83 — Life Plant attacking in the enemy region creates 
 
 // ═══════════════════ (ii) "then can return during regroup" ═══════════════
 
-test('the stranded 1/1s walk home at regroup — the second half of the ruling', () => {
+test('the stranded 1/1s walk home at regroup — the second half of the ruling #83', () => {
   const h = new Harness(9802);
   toDeployment(h);
   const A = h.state.initiative;
@@ -139,7 +139,7 @@ test('the stranded 1/1s walk home at regroup — the second half of the ruling',
 
 // ══════════ (iii) the withdrawn home-region rule's rationale, inverted and pinned ══════════
 
-test("CR 304.8a inverts the withdrawn home-region reading: Tidelurker's mid-attack 2/2 stays in the enemy region and CANNOT block the counterattack", () => {
+test("CR 304.8a inverts the withdrawn home-region reading: Tidelurker's mid-attack 2/2 stays in the enemy region and CANNOT block the counterattack #83", () => {
   const h = new Harness(9803);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -236,7 +236,7 @@ test('CR 601.5: Arcane Echo cast in the enemy region copies a token INTO the ene
 
 // ═══════════ (vi) the negative control ═══════════
 
-test('CR 601.5 negative control: a deploy-timing creator still lands at home, because home IS ctx.region then', () => {
+test('CR 601.5 negative control: a deploy-timing creator still lands at home, because home IS ctx.region then #83', () => {
   const h = new Harness(9806);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -329,7 +329,7 @@ const HOME_REGION_ALLOWED: { where: string; why: string }[] = [
   // (empty on purpose — see above. Format: { where: 'sets/batch-x.ts', why: '…' })
 ];
 
-test('CR 601.5 conformance: no card effect reaches for homeRegion() — the source scan', () => {
+test('CR 601.5 conformance: no card effect reaches for homeRegion() — the source scan #83', () => {
   const offenders: string[] = [];
   const allowedHit = new Set<string>();
   for (const { rel, src } of cardSources()) {

@@ -135,7 +135,7 @@ test('RAQ valid targets: Enigmatic Warder cannot become the target of a negate t
   finishBattle(h);
 });
 
-test('RAQ valid targets: an Ambush whose ally changed sides before it resolves recalls nothing', () => {
+test('RAQ valid targets: an Ambush whose ally changed sides before it resolves recalls nothing CT-208', () => {
   // CR 704.5 (CT-208): every slot is re-checked against its restriction at resolution
   // _passer: "Opponent Ambush one of his units. You have responded with Rebalance or
   // Organic Exchange and successfully stole that unit. Ambush won't resolve as it's
@@ -180,7 +180,7 @@ test('RAQ target requirements: Resurrect cannot be played with no unit costing 2
   assert.equal(playable(h, p, 'Resurrect'), true, 'the control: with a target it is');
 });
 
-test('RAQ target requirements: Fight cannot be played without an ally and another unit in the region', () => {
+test('RAQ target requirements: Fight cannot be played without an ally and another unit in the region CT-207', () => {
   // CR 110.7 (CT-207): every required slot is checked, not only the first
   // _passer: "You cannot play Fight if there isn't 2 units in the region (one of
   // which must be an allied unit)."
@@ -221,7 +221,7 @@ test('RAQ target requirements: a graft trigger with a required target and none a
   finishBattle(h);
 });
 
-test('RAQ target requirements: Tidal Reversion is not playable while one player has no unit to recall', () => {
+test('RAQ target requirements: Tidal Reversion is not playable while one player has no unit to recall CT-207', () => {
   // CR 702.8 (CT-207): both slots are required at cast
   // calebgannon (screenshot): "You can't play it if one player doesn't have a
   // valid target, but it will still resolve if one of the selected targets is removed"
@@ -336,7 +336,7 @@ test('RAQ dead unit: Rousing Spirit gone with its trigger on the stack brings no
   finishBattle(h);
 });
 
-test('RAQ dead unit: Flamebreath Initiate removed before its trigger resolves still makes a Fireball 1', () => {
+test('RAQ dead unit: Flamebreath Initiate removed before its trigger resolves still makes a Fireball 1 CT-209', () => {
   // CR 714.5 (CT-209): the effect reads X off what is there — no adjacent allies
   // _passer: "If Flamebreath Initiate is removed with his trigger on the stack, the
   // X=0 so he will still make Fireball 1."
@@ -363,7 +363,7 @@ test('RAQ dead unit: Bellowing Boulder in a column with a Deadly unit pings with
   finishBattle(h);
 });
 
-test('RAQ dead unit: Bellowing Boulder dead with its ping on the stack still pings with Deadly, its last state', () => {
+test('RAQ dead unit: Bellowing Boulder dead with its ping on the stack still pings with Deadly, its last state CT-209', () => {
   // CR 704.7a (CT-209): effect damage reads a dead source's last-known attributes
   // _passer: "Bellowing Boulder will remember his last state when it comes to
   // resolving his effect, so the '1 damage to each unit' WILL be Deadly."
@@ -483,7 +483,7 @@ test('RAQ printed cost: Arcane Concentrator and Channeled Amalgam read a taxed S
 
 // ── "[Solved] Timestamps vs Static Abilities" ────────────────────────────
 
-test('RAQ timestamps: a virus applied AFTER Monke still gives its attribute', () => {
+test('RAQ timestamps: a virus applied AFTER Monke still gives its attribute CT-210', () => {
   // _passer: "Since both Chitin Shredder and Graxxlid apply to the same layer as
   // Monke, but were played after Monke, their bonuses aren't affected by it, so Bubb
   // has Powerful and can Activate Graxxlid Ability."
@@ -699,7 +699,7 @@ test('RAQ trigger-like attributes: Crevice Lurker taxes the Alluring trigger', (
   finishBattle(h);
 });
 
-test('RAQ trigger-like attributes: Crevice Lurker taxes Resonant, the designer intent', () => {
+test('RAQ trigger-like attributes: Crevice Lurker taxes Resonant, the designer intent CT-212', () => {
   // calebgannon: "I think crevice lurker should say 'Effects cost 1 more to activate or
   // trigger'. So as written it wouldn't work but my intent is for it to stop those from triggering"
   const h = new Harness(3933);

@@ -228,7 +228,7 @@ function blockStep(seed: number, cols: number, n: number):
 
 // ── §1 — #137, the ATTACK live view ───────────────────────────────────
 
-test('the live attack and the declared attack put the same units in the same halves', () => {
+test('the live attack and the declared attack put the same units in the same halves #137 CT-150', () => {
   const { h, A, D, atk } = declareStep(25301, 3);
   const cols: EntityId[][] = [[atk[0]!, atk[1]!], [atk[2]!]];
 
@@ -254,7 +254,7 @@ test('the live attack and the declared attack put the same units in the same hal
     + 'puts them, so everything moves the instant they confirm — report #137');
 });
 
-test('the live attack view draws the vs line and both halves of every column', () => {
+test('the live attack view draws the vs line and both halves of every column #137 CT-150', () => {
   // the shape underneath the placement equality: at HEAD the live view had no
   // halves at all, so `placement` was empty and would have compared equal to
   // any other empty map had the non-vacuity check above not existed. This
@@ -291,7 +291,7 @@ test('the live attack view reserves the same row height the declaration will', (
 
 // ── §2 — #137, the BLOCKS live view ───────────────────────────────────
 
-test('a pending blocker sits in the same container a committed blocker sits in', () => {
+test('a pending blocker sits in the same container a committed blocker sits in #137 CT-150', () => {
   /* THE HALF THE BRIEF DID NOT NAME. `.bhalf.top` is column-reverse; a
    * wrapper div inside it is its own flex context and stops the reversal
    * dead. Two pending blockers therefore stood front-on-top and swapped
@@ -331,7 +331,7 @@ test('a pending blocker sits in the same container a committed blocker sits in',
     + 'the instant the block is declared — report #137, its "blocks" half');
 });
 
-test('a live block column is marked pending without changing where it stands', () => {
+test('a live block column is marked pending without changing where it stands #137 CT-150', () => {
   // the dashed "not committed yet" treatment had to move off the deleted
   // wrapper and onto the half — but only ever as an EXTRA class, or moving it
   // would be a second way to lose the orientation
@@ -359,7 +359,7 @@ function ridingToken(seed: number): { h: Harness; A: Seat; D: Seat; atk: EntityI
   return { h, A, D, atk: atk[0]!, tok };
 }
 
-test('a token that rode in with the attack is drawn in the battle panel, not off to the side', () => {
+test('a token that rode in with the attack is drawn in the battle panel, not off to the side #138 CT-151', () => {
   const { h, D, tok } = ridingToken(25321);
   const b = h.state.battle!;
 
@@ -381,7 +381,7 @@ test('a token that rode in with the attack is drawn in the battle panel, not off
     'it stands in the invader pile at the right of the fight');
 });
 
-test('the invaders are drawn once, by the battle panel or the region panel and never both', () => {
+test('the invaders are drawn once, by the battle panel or the region panel and never both #138 CT-151', () => {
   // the failure mode a two-panel move creates, in both directions: drawn
   // twice, or dropped by each panel in the belief that the other has it
   const { h, D, tok } = ridingToken(25322);
@@ -399,7 +399,7 @@ test('the invaders are drawn once, by the battle panel or the region panel and n
 // the fight for both seats, which is the owner's 2026-09-27 placement, and
 // ui/test/318 §5 pins it. Report #351 brought the side back, below.)
 
-test('report #351: the riding token stands at the end of the strip nearest the attacker, on both screens', () => {
+test('report #351: the riding token stands at the end of the strip nearest the attacker, on both screens CT-540', () => {
   /* mycheze, BHVW, 2026-11-08: "Spell tokens that are riding along don't need
    * to be up in the 'invaders' zone. It should be down *below* your row of
    * units, close to your own bin." On the attacker's screen their half is
@@ -424,7 +424,7 @@ test('report #351: the riding token stands at the end of the strip nearest the a
     'the defender sees it at the head of the strip, on the attacker\'s side of the line');
 });
 
-test('while an attack is only being declared the region panel still draws the invaders', () => {
+test('while an attack is only being declared the region panel still draws the invaders #138 CT-151', () => {
   /* THE OTHER DIRECTION OF THE HAND-OFF, and the one the fix creates rather
    * than cures. `battleHtml`'s `declare` branch draws a BUILDER, not the
    * two-half table — it returns long before there is any column for an

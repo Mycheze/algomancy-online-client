@@ -39,7 +39,7 @@ import {
 
 /* ── CR 702.4: a bracketed cost is paid at CAST ─────────────────────────────── */
 
-test('Discharge pays its counters before the spell is respondable, and X is fixed there', () => {
+test('Discharge pays its counters before the spell is respondable, and X is fixed there #33', () => {
   const h = new Harness(5800);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -116,7 +116,7 @@ test('CR 702.6b: an unpayable variable cost is simply X = 0 — the cast is stil
 
 /* ── CR 110.1a, 110.3: targets are declared at cast, and only legal ones ────────────── */
 
-test('CR 110.1a: Download names its token as it is cast, and only the enemy\'s', () => {
+test('CR 110.1a: Download names its token as it is cast, and only the enemy\'s #32', () => {
   const h = new Harness(5803);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -139,7 +139,7 @@ test('CR 110.1a: Download names its token as it is cast, and only the enemy\'s',
   finishBattle(h);
 });
 
-test("CR 110.3a: Reconfigure's first slot only offers cards that have [Augment]", () => {
+test("CR 110.3a: Reconfigure's first slot only offers cards that have [Augment] #34", () => {
   const h = new Harness(5804);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -163,7 +163,7 @@ test("CR 110.3a: Reconfigure's first slot only offers cards that have [Augment]"
   finishBattle(h);
 });
 
-test('a target menu says whose each unit is', () => {
+test('a target menu says whose each unit is CT-404', () => {
   const h = new Harness(5805);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -226,7 +226,7 @@ test('a bin is a targetable zone, and two copies of one card are two targets', (
 
 /* ── CR 111.12a: discard-me at instant speed ──────────────────────────────────── */
 
-test('CR 207.8: a "Discard me" line works during battle, whatever the card\'s own timing says', () => {
+test('CR 207.8: a "Discard me" line works during battle, whatever the card\'s own timing says #29', () => {
   const h = new Harness(5807);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -256,7 +256,7 @@ test('CR 104.4: conceding ends the game the way a lethal blow does', () => {
   assert.ok(h.log.some(l => l.includes('conceded')), 'and the log says why');
 });
 
-test('CR 104.4a: you may concede even while a decision is pending against you', () => {
+test('CR 104.4a: you may concede even while a decision is pending against you #30', () => {
   const h = new Harness(5809);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -275,7 +275,7 @@ test('CR 104.4a: you may concede even while a decision is pending against you', 
 
 /* ── CR 407.1: the erased pile ──────────────────────────────────────────────── */
 
-test('CR 407.1a: erased cards are kept in a public pile', () => {
+test('CR 407.1a: erased cards are kept in a public pile #31 #347', () => {
   const h = new Harness(5810);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;

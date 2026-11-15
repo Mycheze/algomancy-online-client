@@ -143,7 +143,7 @@ const UNREACHABLE: Record<string, string> = {
 
 const results = new Map<string, ReturnType<typeof drillCard>[]>();
 
-test('the drill plays every card in the pool, in three board states', () => {
+test('the drill plays every card in the pool, in three board states CT-7', () => {
   for (const { name, opts } of SCENARIOS) {
     scenario = name;
     for (const card of POOL) {
@@ -284,7 +284,7 @@ test('the known-silent list is still accurate — tick an entry off when it is f
 
 // ── 4. THE TALLY ────────────────────────────────────────────────────────
 
-test('the drill reports honestly on its own reach', () => {
+test('the drill reports honestly on its own reach CT-7', () => {
   const played = [...results.values()].filter(rs => rs.some(r => r.played)).length;
   const withEffect = [...results.values()].filter(rs => rs.some(r => r.effectEvents.length > 0)).length;
   const changed = [...results.values()].filter(rs => rs.some(r => r.changed.length > 0 || r.newEntities.length > 0)).length;

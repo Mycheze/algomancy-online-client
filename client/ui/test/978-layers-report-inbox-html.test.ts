@@ -40,7 +40,7 @@ test('978 §1 the report layer: pill, nothing on a board, the dialog, the toast'
   assert.doesNotMatch(open, /data-btn=/, 'the layer never uses main.ts\'s data-btn');
 });
 
-test('978 §2 the report form: kinds, severity for a bug or UX only, Send disabled until complete', () => {
+test('978 §2 the report form: kinds, severity for a bug or UX only, Send disabled until complete BL-63', () => {
   const blank = reportLayerHtml({ dialog: dialog(), onBoard: false, toast: null });
   assert.deepEqual([...blank.matchAll(/data-report="kind" data-kind="(\w+)"/g)].map(m => m[1]), ['bug', 'ux', 'feature', 'other']);
   assert.doesNotMatch(blank, /data-report="severity"/);

@@ -162,7 +162,7 @@ test('1221 §2 accessible: legal, targeting, in progress and danger are at least
   assert.ok(winLoss >= 30, `success / danger to a deutan: ${winLoss.toFixed(1)}`);
 });
 
-test('1221 §3 accessible: every text colour the mode re-points clears AA on every surface', () => {
+test('1221 §3 accessible: every text colour the mode re-points clears AA on every surface BL-51', () => {
   const texts = [...THEMED.keys()].filter(k => ['--glow', '--target', '--pending'].includes(k) || /^--color-(success|warning|info|danger|text|accent|link)$/.test(k));
   assert.ok(texts.includes('--pending') && texts.includes('--color-success'), `texts read: ${texts.join(', ')}`);
   const fails: string[] = [];
@@ -190,7 +190,7 @@ for (const m of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
 const body = (sel: string): string => (RULES.get(sel) ?? []).join(';');
 const A = ':root[data-colors="accessible"]';
 
-test('1221 §4 accessible: a target wears a ◎ mark, on a card, a life and a stack item; off, there is no mark', () => {
+test('1221 §4 accessible: a target wears a ◎ mark, on a card, a life and a stack item; off, there is no mark BL-51', () => {
   for (const sel of ['.card.candidate', '.life.candidate', '.stackcard.candidate']) {
     // the gold ring is still there in both modes; the mark is added, only in the mode
     assert.match(body(sel), /outline:\s*\d+px solid var\(--target\)/, `${sel}: the gold ring`);

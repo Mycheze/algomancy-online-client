@@ -80,7 +80,7 @@ async function sendBug(note: string): Promise<Record<string, unknown>> {
   return posted[0]!;
 }
 
-test('CR D8.1 / report 271 §1 a report from a challenge run carries the run, and the server keeps all of it', async () => {
+test('CR D8.1 / report 271 §1 a report from a challenge run carries the run, and the server keeps all of it #271', async () => {
   await flush();
   const run = chrun.currentRun();
   assert.ok(run, 'fixture: the saved run was picked up');
@@ -108,7 +108,7 @@ test('CR D8.1 / report 271 §1 a report from a challenge run carries the run, an
   assert.deepEqual(kept.run.actions, log, 'and keeps every action of it');
 });
 
-test('CR D8.1 / report 271 §2 the run is the moment the form opened', async () => {
+test('CR D8.1 / report 271 §2 the run is the moment the form opened #271', async () => {
   const run = chrun.currentRun()!;
   const before = run.server.save.actions.length;
   const mem: { t?: number } = {};
@@ -128,7 +128,7 @@ test('CR D8.1 / report 271 §3 a bug filed from a run says it can be replayed', 
     'the toast promised a replay for room bugs only; it is true for a run now too');
 });
 
-test('CR D8.1 / report 271 §4 Learn to Play carries its deal and log', async () => {
+test('CR D8.1 / report 271 §4 Learn to Play carries its deal and log #271', async () => {
   const { server } = learn.startSolo('fire', { fresh: true });
   for (let i = 0; i < 4; i++) {
     const legal = server.legal();

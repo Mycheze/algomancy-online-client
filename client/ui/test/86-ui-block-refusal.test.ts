@@ -86,7 +86,7 @@ function battlefield(seed: number, attackers: string[], defenders: string[]):
 
 // ── the seam: the engine's own validator, as a value ───────────────────
 
-test('#77: the block legality the client could only reach by being refused is now askable', () => {
+test('#77: the block legality the client could only reach by being refused is now askable CT-14', () => {
   const { h, D, def } = battlefield(7700, ['The Foretold', 'The Foretold'], ['The Foretold']);
   const e = new E(structuredClone(h.state));
   assert.equal(blockDeclarationIssue(e, D, {}, []), null, 'declining is legal, and says so');
@@ -108,7 +108,7 @@ test('#77: asking does not move the game', () => {
 
 // ── (a) keep the parts of the plan that are fine ──────────────────────
 
-test('#77: one bad column does not cost you the other five', () => {
+test('#77: one bad column does not cost you the other five CT-14', () => {
   // the reported shape: a big block with one mistake in it. Five columns are
   // answered correctly and the sixth names a column that is not there.
   const { h, D, atk, def } = battlefield(7702,
@@ -128,7 +128,7 @@ test('#77: one bad column does not cost you the other five', () => {
   assert.deepEqual(Object.keys(v!.keep.blocks).map(Number).sort((a, b) => a - b), [0, 1, 2, 3, 4]);
 });
 
-test('#77: what the verdict keeps is something the engine actually accepts', () => {
+test('#77: what the verdict keeps is something the engine actually accepts CT-14', () => {
   // the invariant that makes the repair safe to put back on the board: it is
   // built by asking, so it can never be a plan that is refused in its turn.
   const { h, D, def } = battlefield(7703,
@@ -242,7 +242,7 @@ function luredDefender(seed: number): { h: Harness; D: Seat; d1: EntityId } {
   return { h, D, d1 };
 }
 
-test('#77 + CR 606.2e: a compulsory block is REQUIRED, not an offender', () => {
+test('#77 + CR 606.2e: a compulsory block is REQUIRED, not an offender CT-14', () => {
   const { h, D, d1 } = luredDefender(7710);
   // the shape of the original report: the lured unit sent to the other column
   const v = blockVerdict(h.state, D, { 1: [d1] }, [], []);
@@ -262,7 +262,7 @@ test('#77 + CR 606.2f: the compulsory core is a plan the engine takes', () => {
     'and what the client is handed back is legal');
 });
 
-test('#77: widening the error did not widen the RULE — every legal block is still legal', () => {
+test('#77: widening the error did not widen the RULE — every legal block is still legal CT-14', () => {
   // the invariant, re-run against the new machinery: a client that refuses
   // a declaration `legalActions` offers is the same bug wearing the other hat.
   for (const seed of [7712, 7713]) {
@@ -324,7 +324,7 @@ function placeBlocker(blocker: EntityId, ci: number): string {
   return ui.click({ act: 'slot', ci: String(ci), row: '0' });
 }
 
-test('#77: a sent block declaration leaves the plan standing on the board', () => {
+test('#77: a sent block declaration leaves the plan standing on the board CT-14', () => {
   // THE REPORT. Over a socket, `act()` returns the moment the intent is on the
   // wire — the old code cleared ui.columns right there, so the whole plan was
   // gone before the server had said anything about it at all.

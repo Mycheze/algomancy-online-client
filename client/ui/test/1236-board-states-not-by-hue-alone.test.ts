@@ -89,7 +89,7 @@ const AUDITED: Record<string, string> = {
   '@keyframes animhurt': 'event, not a state — the unit\'s numbers change; ≥ 15 from the buff flash in every vision in the mode',
 };
 
-test('1236 §1 every red or in-progress line on the board is one the audit wrote a cue for', () => {
+test('1236 §1 every red or in-progress line on the board is one the audit wrote a cue for BL-51', () => {
   const found = lines();
   assert.ok(found.size >= 12, `only ${found.size} red or in-progress lines found on the board — the census is reading nothing`);
   const unaudited = [...found].filter(([sel]) => !(sel in AUDITED)).map(([sel, piece]) => `${piece}: ${sel}`);

@@ -304,7 +304,7 @@ test('CR 603.2a adjacency: the same row of a neighbour IS adjacent when it is em
   finishBattle(h);
 });
 
-test('CR 603.3 adjacency: past the edge of the ATTACKING line is a slot — the front of a new column', () => {
+test('CR 603.3 adjacency: past the edge of the ATTACKING line is a slot — the front of a new column #169', () => {
   // The edge ruling (Bena 2026-09-25, now CR 603.3): "The columns to the left and right, even when
   // empty, DO technically exist." The earlier reading closed the edge the other way and this
   // test asserted it; a front-row unit at either end now has the new column

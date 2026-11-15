@@ -105,7 +105,7 @@ function selfLook(seed: number): { h: Harness; A: Seat; D: Seat; secret: string 
   return { h, A, D, secret: 'Shard Sprite' };
 }
 
-test('§1: logFor(h, seat) CAN SEE — the flat log and the seat log disagree about a private line', () => {
+test('§1: logFor(h, seat) CAN SEE — the flat log and the seat log disagree about a private line CT-84', () => {
   const { h, A, D, secret } = selfLook(17401);
 
   // (a) the old channel is blind, demonstrated rather than asserted about.
@@ -156,7 +156,7 @@ test('§1: logFor(h, seat) CAN SEE — the flat log and the seat log disagree ab
   finishBattle(h);
 });
 
-test('§1: the seat log is built from EVENTS, so it cannot drift from the log the way logTypes did', () => {
+test('§1: the seat log is built from EVENTS, so it cannot drift from the log the way logTypes did CT-84', () => {
   // harness.ts's own docstring records why `log` and `events` are different
   // lists: an event with an empty `msg` ('stackFlash' — a signal for the
   // client, not a line for a reader) is absorbed and never logged. A seat log
@@ -353,7 +353,7 @@ function offencesIn(raw: string, where: string): Offence[] {
   return out;
 }
 
-test('§2: the lint is not blind — it names a planted leak and ignores every near miss', () => {
+test('§2: the lint is not blind — it names a planted leak and ignores every near miss CT-84', () => {
   // ⚠ 149-strip-code's rule, applied to this checker: ask "what would this look
   // like if it were blind?" and measure it. A blind version of this file
   // returns [] for everything and the suite reads clean — which is precisely
@@ -417,7 +417,7 @@ test('§2: the lint is not blind — it names a planted leak and ignores every n
 
 /* ── §3 · the lint ───────────────────────────────────────────────────────── */
 
-test('§3: no assertion names a card and a secret in the same breath while reading the seatless log', () => {
+test('§3: no assertion names a card and a secret in the same breath while reading the seatless log CT-84', () => {
   const offences: Offence[] = [];
   for (const f of testFiles()) offences.push(...offencesIn(fs.readFileSync(path.join(HERE, f), 'utf8'), f));
   assert.deepEqual(offences.map(o => `${o.where}  ${o.why}`), [],
@@ -429,7 +429,7 @@ test('§3: no assertion names a card and a secret in the same breath while readi
 
 /* ── §4 · the reach measurement ──────────────────────────────────────────── */
 
-test('§4: the lint has reach — the corpus, the receivers and both derived sets', () => {
+test('§4: the lint has reach — the corpus, the receivers and both derived sets CT-84', () => {
   // Every number below is asserted because a checker that quietly loses its
   // reach reports clean forever. docs/13 §5: six checkers in one round reported
   // more sight than they had, and every one had made a number go UP.
@@ -486,7 +486,7 @@ test('§4: the lint has reach — the corpus, the receivers and both derived set
 
 /* ── §5 · the controls: a PUBLIC reveal keeps the shared log ─────────────── */
 
-test('§5 control: Bioremediation and Void Memory print REVEALS, and stay legal readers of h.log', () => {
+test('§5 control: Bioremediation and Void Memory print REVEALS, and stay legal readers of h.log CT-84', () => {
   // CT-84 names these two, and they are the reason the rule is derived from
   // printed text instead of from vocabulary. Both say "hand" and "reveal" in
   // as many words; both are public; a lint keyed on those words needs an

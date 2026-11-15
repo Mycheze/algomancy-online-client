@@ -134,7 +134,7 @@ test('1024 §5 the track, the players, the leaders, your next match', () => {
   assert.ok(done.track.every(t => t.state === 'past'));
 });
 
-test('1024 §6 (report #354) the card names every opponent still to play this week, not one "next"', () => {
+test('1024 §6 (report #354) the card names every opponent still to play this week, not one "next" CT-545', () => {
   const glance = (ms: MyMatch[]) => leagueGlanceHtml(leagueGlanceView(state(season({}, ME(ms))), TZ));
   const line = (html: string) => html.match(/<div class="lgglmatch">(.*?)<\/div>/)?.[1] ?? '';
   assert.equal(line(glance([match('m1', { opponent: P('y', 'Yagamino') })])), 'This week vs: <b>Yagamino</b>');

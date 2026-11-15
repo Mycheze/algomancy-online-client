@@ -184,7 +184,7 @@ const POOL = allCardNames();
 const census = { virusInBattle: new Set<string>(), ambush: new Set<string>(), hasteGrant: new Set<string>(),
   erase: new Set<string>(), compared: 0 };
 
-test('CR 403.3b: every card in the pool offers the same modes from the cache as from the hand, in every window', () => {
+test('CR 403.3b: every card in the pool offers the same modes from the cache as from the hand, in every window #195', () => {
   const mismatches: string[] = [];
   const refusals: string[] = [];
   for (const w of WINDOWS) {
@@ -217,7 +217,7 @@ test('CR 403.3b: every card in the pool offers the same modes from the cache as 
   assert.deepEqual(refusals, [], `legalActions offered cache plays the reducer refused:\n  ${refusals.join('\n  ')}`);
 });
 
-test('CR 702.2d: the sweep is not vacuous: it saw cached Virus, Ambush, haste-grant and erase-grant plays', () => {
+test('CR 702.2d: the sweep is not vacuous: it saw cached Virus, Ambush, haste-grant and erase-grant plays #195', () => {
   assert.ok(census.compared >= POOL.length * WINDOWS.length, 'the sweep ran first and compared every card in every window');
   assert.ok(census.virusInBattle.has("Möbius's Corruption"),
     `the KEMX card: a cached Möbius's Corruption is offered onto the spell on the stack (saw ${[...census.virusInBattle].slice(0, 5).join(', ')})`);

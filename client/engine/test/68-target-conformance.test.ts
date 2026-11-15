@@ -125,7 +125,7 @@ const EXEMPT: Record<string, string> = {
   // ACTIVATED abilities) are a card-ledger matter, not a targeting one.
 };
 
-test('CR 110.1b: a card printing N targets declares N cast-time target slots', () => {
+test('CR 110.1b: a card printing N targets declares N cast-time target slots #4 #14 #48', () => {
   const wrong: string[] = [];
   for (const name of allCardNames()) {
     const c = getCard(name);
@@ -140,7 +140,7 @@ test('CR 110.1b: a card printing N targets declares N cast-time target slots', (
   assert.deepEqual(wrong, [], `cards that choose a printed target late (or not at all):\n  ${wrong.join('\n  ')}`);
 });
 
-test('CR 110.1b: a card printing "target" at all declares a target somewhere', () => {
+test('CR 110.1b: a card printing "target" at all declares a target somewhere #32', () => {
   const silent: string[] = [];
   for (const name of allCardNames()) {
     const c = getCard(name);
@@ -192,7 +192,7 @@ test('every exemption is still needed, and still names a real card', () => {
  *
  * The Ambush mode is filtered out rather than exempted: its slot is
  * synthesised by `ambushEffect()`, not printed. */
-test('CR 110.3: only a card printing "any target" declares the \'any\' target kind', () => {
+test('CR 110.3: only a card printing "any target" declares the \'any\' target kind #56', () => {
   const wrong: string[] = [];
   for (const name of allCardNames()) {
     const c = getCard(name);
@@ -296,7 +296,7 @@ const UNNAMED: Record<string, string> = {
   // is a real kind now. The test below is what keeps this table honest.)
 };
 
-test('CR 110.3: every target kind a card declares is named by its printed text', () => {
+test('CR 110.3: every target kind a card declares is named by its printed text #56', () => {
   const wrong: string[] = [];
   for (const name of allCardNames()) {
     const c = getCard(name);
@@ -473,7 +473,7 @@ function occurrences(text: string): Occurrence[] {
   return out;
 }
 
-test('CR 110.3: every printed occurrence of target is read, not skipped', () => {
+test('CR 110.3: every printed occurrence of target is read, not skipped #134 CT-127', () => {
   // A scrape that quietly reads less than it should is this repo's recurring
   // blindness — eight sweeps saw 494 of 495 cards and none of them said so
   // (the pool-sight fix, below). So before the sweep asserts anything about the clauses it
@@ -496,7 +496,7 @@ test('CR 110.3: every printed occurrence of target is read, not skipped', () => 
     + `reading less of the pool than the sweep below claims:\n  ${unread.join('\n  ')}`);
 });
 
-test('CR 110.3: a restrictive clause on a target noun is enforced at CAST', () => {
+test('CR 110.3: a restrictive clause on a target noun is enforced at CAST #134 CT-127', () => {
   const late: string[] = [];
   for (const name of allCardNames()) {
     if (name in RESOLUTION_CONDITION) continue;
@@ -522,7 +522,7 @@ test('CR 110.3: a restrictive clause on a target noun is enforced at CAST', () =
     + late.join('\n  '));
 });
 
-test('CR 110.3: the if-clause exemptions are exactly the cards that print one', () => {
+test('CR 110.3: the if-clause exemptions are exactly the cards that print one #134 CT-127', () => {
   const found = new Set<string>();
   for (const name of allCardNames()) {
     for (const o of occurrences(getCard(name).text ?? '')) {

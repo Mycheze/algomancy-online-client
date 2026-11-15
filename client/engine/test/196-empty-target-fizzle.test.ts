@@ -225,7 +225,7 @@ test('CR D7.3a Leaping Lillik: BOTH routes of the shared `deleteUnit` def fizzle
   assertFizzlesAndSays('graft:Leaping Lillik');
 });
 
-test('CR D7.3a Burning Vengeance: the site the drive CANNOT reach', () => {
+test('CR D7.3a Burning Vengeance: the site the drive CANNOT reach CT-89', () => {
   // ⚠ THE REASON THE SOURCE SCAN EXISTS. Its dereference sits behind
   // `if (deaths <= 0) return`, and no board 65's rig builds has a battle death
   // on it, so the empty-targets drive convicted every other member of this

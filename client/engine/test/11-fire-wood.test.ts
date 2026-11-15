@@ -203,7 +203,7 @@ test('Forager of the Fallen: an enemy dying in-region creates a 2/2', () => {
   assert.ok(ent(h, forager), 'Forager survived the 1/1 blocker');
 });
 
-test('CR 701.1e: Bloomcaster played from hand makes no 1/1 for its own play', () => {
+test('CR 701.1e: Bloomcaster played from hand makes no 1/1 for its own play CT-254', () => {
   // CR 701.1e (the owner's ruling, answering D-U14-11 with reading B; it reverses the earlier reading's
   // own-play half): a "whenever you play a unit" ability works only while its
   // card is in play, and a card being played is on the stack, so Bloomcaster

@@ -38,7 +38,7 @@ function setup(seed: number) {
   return { h, p, grid };
 }
 
-test('CR 707.10: Gridxlan has no activated ability, and with an empty hand it offers ANY unit in the bin as a play', () => {
+test('CR 707.10: Gridxlan has no activated ability, and with an empty hand it offers ANY unit in the bin as a play CT-255', () => {
   assert.equal((getCard('Gridxlan').augmentText ?? []).filter(a => a.type === 'activated').length, 0,
     'the permission is not an ability: nothing to activate');
   const { h, p, grid } = setup(55900);
@@ -85,7 +85,7 @@ test('CR 707.10: as an augment mod, Gridxlan grants the permission to its host c
   assert.deepEqual(binOffered(h, p), ['Curio Drifter'], 'the donated [Augment] box grants it from the host');
 });
 
-test('CR 707.10: with a Bonesculptor and a Gridxlan up, a vanilla spends the narrower grant first', () => {
+test('CR 707.10: with a Bonesculptor and a Gridxlan up, a vanilla spends the narrower grant first CT-255', () => {
   const { h, p } = setup(55904);
   spawn(h, p, 'The Bonesculptor');
   // the vanilla is reachable by both grants; Ignis Sprite only by Gridxlan's

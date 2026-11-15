@@ -440,7 +440,7 @@ test('CR 703.5 the snapshot hazard, DRIVEN: the other seat acts inside the windo
  * there forever.
  */
 
-test('CR 701.4 the deferral gate: only a live battle priority window defers a mid-resolution play', () => {
+test('CR 701.4 the deferral gate: only a live battle priority window defers a mid-resolution play CT-50', () => {
   const h = new Harness(16907, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.deployPlayer!;

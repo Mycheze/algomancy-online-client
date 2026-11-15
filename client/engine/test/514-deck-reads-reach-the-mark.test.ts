@@ -105,7 +105,7 @@ test('CR 401.4 revealTop off an empty deck and an empty pile shows nothing', () 
 
 /* ══ the cards ════════════════════════════════════════════════════════ */
 
-test('Tides of the Cosmos off a one-card deck with ten recycled reveals eight (report 268)', () => {
+test('Tides of the Cosmos off a one-card deck with ten recycled reveals eight (report 268) #268 CT-312', () => {
   const b = board(51410);
   // pick nothing: the reveal and the recycle of all eight are what is measured
   const evs = run(spellOf('Tides of the Cosmos'), b, () => -1, { sourceName: 'Tides of the Cosmos' });
@@ -120,7 +120,7 @@ test('Tides of the Cosmos off a one-card deck with ten recycled reveals eight (r
     'the eight it did not play are recycled past the NEW mark');
 });
 
-test('Big Glimpse Card off a one-card deck with ten recycled reveals seven (report 268)', () => {
+test('Big Glimpse Card off a one-card deck with ten recycled reveals seven (report 268) #268 CT-312', () => {
   const b = board(51411);
   const ps = b.g.s.regions[b.region]!.presentSeats;
   if (!ps.includes(b.D)) ps.push(b.D);                      // CR 601.4d: an opponent to split

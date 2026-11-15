@@ -98,7 +98,7 @@ test('§2 a Pure recipient: the source\'s Powerful and Deadly do nothing to it',
   assert.ok(ent(h, tgt), 'alive: Deadly is off against a Pure recipient');
 });
 
-test('§2 a Pure recipient\'s own Vulnerable is off too: a Pure source hitting a Vulnerable unit deals what it says', () => {
+test('§2 a Pure recipient\'s own Vulnerable is off too: a Pure source hitting a Vulnerable unit deals what it says CT-241', () => {
   // first a Pure SOURCE ("either side" of the pairing) pins the Vulnerable read;
   // the second half below makes the RECIPIENT itself Pure, as the title says
   const { h, A, D } = board(2893);

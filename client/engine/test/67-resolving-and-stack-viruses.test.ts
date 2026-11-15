@@ -200,7 +200,7 @@ test('CR D6.3: fuzzed play never strands a resolving item outside a pending deci
   assert.equal(state.resolving ?? null, null, 'and the game did not end holding one');
 });
 
-test('a NESTED resolution that suspends does not strand the outer marker (fuzz seed 693)', () => {
+test('a NESTED resolution that suspends does not strand the outer marker (fuzz seed 693) #101 CT-35', () => {
   // The fuzzer's find. A battle resolution ended the battle; settle() then
   // resolved a Wraith's startOfDeployment trigger INLINE, and that trigger
   // suspended on its own choice. The throw abandons the outer resolution
@@ -352,7 +352,7 @@ test('CR 723.4e: only SPELLS are legal hosts — not abilities, not units mid-ca
 // The owner, 2026-11-04 (CT-426): Caleb's "the spell gets erased on resolution"
 // (RQ 1347270455198879858) covers spells that go to the discard; a spell unit
 // enters play instead, with the Virus as an augment, and is Unstable from then on.
-test('CR 723.4c: a spell UNIT carries its virus into play as an augment mod', () => {
+test('CR 723.4c: a spell UNIT carries its virus into play as an augment mod CT-426', () => {
   const { h, A, D } = attackWindow(6718);
   giveResources(h, D, 'wood', 2);                    // Hush Mush gg/2 — a {Battle} SPELL UNIT
   giveResources(h, D, 'earth', 2);

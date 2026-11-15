@@ -163,7 +163,7 @@ function settle(ui: { tick(): void; html(): string; has(w: Record<string, string
 
 /* ══ §1 — [126] the game talking to itself ═══════════════════════════════ */
 
-test('§1a nothing is deleted — the story view is a strict subset of everything', async () => {
+test('§1a nothing is deleted — the story view is a strict subset of everything #125 CT-118', async () => {
   const { h, seat } = board(22601);
   const events = realGameEvents(22601);
   const ui = await client();
@@ -182,7 +182,7 @@ test('§1a nothing is deleted — the story view is a strict subset of everythin
   closeLog(ui);
 });
 
-test('§1b the substantive lines of a real game all survive the curtain', async () => {
+test('§1b the substantive lines of a real game all survive the curtain #125 CT-118', async () => {
   /* The list is taken from the EVENT STREAM, not typed: every line the engine
    * emitted for something entering play, leaving it, taking damage, or moving
    * a life total is a thing that happened, and a "readable" log that dropped
@@ -212,7 +212,7 @@ test('§1b the substantive lines of a real game all survive the curtain', async 
   closeLog(ui);
 });
 
-test('§1c the curtain fails open — a line the client cannot classify is always shown', async () => {
+test('§1c the curtain fails open — a line the client cannot classify is always shown #125 CT-118', async () => {
   /* Every line of the backlog a net client receives on join (or after an undo)
    * arrives with no type at all: `applyUpdate` fills `logTypes` with undefined
    * on a full resync. A curtain that hid what it could not identify would hide
@@ -234,7 +234,7 @@ test('§1c the curtain fails open — a line the client cannot classify is alway
   closeLog(ui);
 });
 
-test('§1d the curtain says how much it is holding, and lifts on one click', async () => {
+test('§1d the curtain says how much it is holding, and lifts on one click #125 CT-118', async () => {
   const { h, seat } = board(22604);
   const events = realGameEvents(22604);
   const ui = await client();
@@ -310,7 +310,7 @@ function namingState(seed: number): { s: GameState; seat: Seat; options: ReturnT
   return { s, seat, options };
 }
 
-test('§2a a 400-option naming menu is not 400 card scans', async () => {
+test('§2a a 400-option naming menu is not 400 card scans #124 CT-117', async () => {
   const { s, seat, options } = namingState(22610);
   assert.ok(options.length > 300, `the real menu is enormous (${options.length} options)`);
   const ui = await client();
@@ -320,7 +320,7 @@ test('§2a a 400-option naming menu is not 400 card scans', async () => {
   assert.ok(scans <= 24, `a readable number of scans, not the whole pool (got ${scans})`);
 });
 
-test('§2b the default is what is standing on the board', async () => {
+test('§2b the default is what is standing on the board #124 CT-117', async () => {
   const { s, seat } = namingState(22611);
   const onBoard = Object.values(s.entities)
     .filter(e => e.kind === 'unit' && !e.absent).map(e => e.card);
@@ -336,7 +336,7 @@ test('§2b the default is what is standing on the board', async () => {
   assert.ok(absent, 'the up-front list really is narrower than the pool');
 });
 
-test('§2c every option the engine offered is still takeable', async () => {
+test('§2c every option the engine offered is still takeable #124 CT-117', async () => {
   // BL-18: the filter is an affordance over the menu, never a narrowing of it.
   const { s, seat, options } = namingState(22612);
   const ui = await client();
@@ -352,7 +352,7 @@ test('§2c every option the engine offered is still takeable', async () => {
   assert.deepEqual(out[0], { type: 'decide', seat, choice: options.length - 1 });
 });
 
-test('§2d the whole-pool toggle widens the shopfront without touching the menu', async () => {
+test('§2d the whole-pool toggle widens the shopfront without touching the menu #124 CT-117', async () => {
   const { s, seat, options } = namingState(22613);
   const ui = await client();
   const narrow = ui.join(viewFor(s, seat), seat, legalActions(s, seat));
@@ -364,7 +364,7 @@ test('§2d the whole-pool toggle widens the shopfront without touching the menu'
   assert.equal(takeable.size, options.length, 'and the menu itself has not changed size');
 });
 
-test('§2e a unit that has named a card says which one', async () => {
+test('§2e a unit that has named a card says which one #124 CT-117', async () => {
   /* The second half of the report, and not polish: the card names a thing and
    * then goes on silencing every copy of it, and nothing on the board recorded
    * what it named. Derived from `Entity.named`, which IS the memory the static

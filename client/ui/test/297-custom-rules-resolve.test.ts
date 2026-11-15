@@ -45,7 +45,7 @@ test('BL-43 resolve §2 sanitizeCustomRules: the standard game is null, knobs cl
   assert.equal(sanitizeCustomRules(rules({ query: 'x'.repeat(1000) }))!.query.length, MAX_QUERY_LENGTH);
 });
 
-test('BL-43 resolve §3 Simple cards only leaves out exactly the cards that are not simple', () => {
+test('BL-43 resolve §3 Simple cards only leaves out exactly the cards that are not simple #163', () => {
   const out = excludedBy(rules({ simpleOnly: true }));
   assert.ok(out.length > 0 && out.length < DECK_LIST.length, `non-vacuous: ${out.length} of ${DECK_LIST.length} left out`);
   assert.deepEqual(out, nonSimple());
@@ -76,7 +76,7 @@ test('BL-43 resolve §6 a card filter the parser had to guess at is refused, not
   }
 });
 
-test('BL-43 resolve §7 the beginner preset clears the floor for every pair, and fire + wood has 86 cards', () => {
+test('BL-43 resolve §7 the beginner preset clears the floor for every pair, and fire + wood has 86 cards #163', () => {
   const { deal } = resolveCustomRules(BEGINNER_RULES);
   assert.ok(deal);
   const sizes = elementSets(2).map(els => draftPool(els, deal).length);

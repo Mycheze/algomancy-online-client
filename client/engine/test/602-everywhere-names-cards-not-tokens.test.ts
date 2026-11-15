@@ -26,7 +26,7 @@ function toNaming(h: Harness, seat: Seat): void {
   h.do({ type: 'playCard', seat, handIndex: give(h, seat, 'The Everywhere') });
 }
 
-test('CR 108.2a / report 274: The Everywhere cannot name a token standing in play', () => {
+test('CR 108.2a / report 274: The Everywhere cannot name a token standing in play #274', () => {
   const h = new Harness(60201);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -42,7 +42,7 @@ test('CR 108.2a / report 274: The Everywhere cannot name a token standing in pla
   }
 });
 
-test('CR 712.6 / report 274: the menu still holds every card in play and out of it, and name no card', () => {
+test('CR 712.6 / report 274: the menu still holds every card in play and out of it, and name no card #274', () => {
   const h = new Harness(60202);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;

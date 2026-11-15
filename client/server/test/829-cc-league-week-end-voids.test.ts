@@ -110,7 +110,7 @@ test('§0 before the week closes nothing is voided', () => {
   assert.equal(LM.leagueWeekClosed(paused.m), false);
 });
 
-test('§5 Your matches and the paused screen give the league week end when it comes first', () => {
+test('§5 Your matches and the paused screen give the league week end when it comes first CT-514', () => {
   const p = paused.m.pause!;
   const was = p.pausedAt;
   try {

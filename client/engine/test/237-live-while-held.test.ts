@@ -91,7 +91,7 @@ const held = (s: GameState, extra: Record<string, unknown> = {}): string =>
 
 /* ══ §1 — no catching-up chip, and S still skips ═══════════════════════ */
 
-test('CR D5.5 no catching-up chip is drawn while the throttle is holding', () => {
+test('CR D5.5 no catching-up chip is drawn while the throttle is holding CT-123', () => {
   const s = board(23700);
   live(s);
   const html = held(at(s, 7));
@@ -100,7 +100,7 @@ test('CR D5.5 no catching-up chip is drawn while the throttle is holding', () =>
   assert.doesNotMatch(html, /catching up/i, 'and no count of what is held, anywhere on screen');
 });
 
-test('CR D5.5 several held arrivals still draw nothing, and S releases them all', () => {
+test('CR D5.5 several held arrivals still draw nothing, and S releases them all CT-123', () => {
   const s = board(23701);
   live(s);
   for (const turn of [7, 8, 9]) {
@@ -110,7 +110,7 @@ test('CR D5.5 several held arrivals still draw nothing, and S releases them all'
   assert.ok(showsTurn(ui.key('s'), 9), 'S jumps straight to the live state');
 });
 
-test('CR D5.5 S drains the throttle, and the board lands on the held state', () => {
+test('CR D5.5 S drains the throttle, and the board lands on the held state CT-123', () => {
   const s = board(23702);
   live(s);
   held(at(s, 7));
@@ -121,7 +121,7 @@ test('CR D5.5 S drains the throttle, and the board lands on the held state', () 
 
 /* ══ §2 — the CR D5.5a invariant: a paint, not a render ════════════════════ */
 
-test('CR D5.5a a held update moves the live slots and NOTHING else on the board', () => {
+test('CR D5.5a a held update moves the live slots and NOTHING else on the board CT-123', () => {
   const s = board(23703);
   const before = live(s);
   assert.ok(showsTurn(before, 1), 'positive control: the board says which turn it is');
@@ -143,7 +143,7 @@ test('CR D5.5a a held update moves the live slots and NOTHING else on the board'
 
 /* ══ §3 — presence: the same class, one level deeper ═══════════════════ */
 
-test('CR D5.5b a disconnect that arrives while the throttle is holding is on screen at once', () => {
+test('CR D5.5b a disconnect that arrives while the throttle is holding is on screen at once CT-133', () => {
   // ⚠ ROOT CAUSE, and why this is not a second copy of §1: holdable() never
   // consulted `peers` at all, so a disconnect notice was eligible to wait like
   // any other quiet update. It is not game news — nobody acts on it and it is
@@ -162,7 +162,7 @@ test('CR D5.5b a disconnect that arrives while the throttle is holding is on scr
   assert.equal(showsTurn(ui.html(), 7), false, 'which is to say: the held state is still held');
 });
 
-test('CR D5.5b a disconnect is not queued behind the backlog it arrived into', () => {
+test('CR D5.5b a disconnect is not queued behind the backlog it arrived into CT-133', () => {
   // THE MAGNITUDE, which is why this half is not cosmetic. A held update is
   // spaced PACE_MS behind the one before it, so a disconnect that lands on a
   // backlog waits for the WHOLE backlog — bounded only by PACE_MAX_HELD, i.e.

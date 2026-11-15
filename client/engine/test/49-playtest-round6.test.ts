@@ -84,7 +84,7 @@ test('CR 705.3d: mana for an activated ability is also charged after targeting',
 
 /* ── CR 110.3, 110.9: per-slot target legality ─────────────────────────────────────── */
 
-test('CR 110.1a: Fight takes both units as CAST-time targets', () => {
+test('CR 110.1a: Fight takes both units as CAST-time targets #4', () => {
   const h = new Harness(4903, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -220,7 +220,7 @@ test('Fight refuses at resolution if its ally slot stopped being an ally', () =>
 
 /* ── CR 111.10: the cost-modifier layer ──────────────────────────────────────── */
 
-test('CR 111.10: Tranquility taxes spells [1] more during battle', () => {
+test('CR 111.10: Tranquility taxes spells [1] more during battle #3', () => {
   const h = new Harness(4908, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -316,7 +316,7 @@ test('CR 111.10: the modifier is region-scoped like any static (CR 601.1d)', () 
   finishBattle(h);
 });
 
-test('CR 111.10: Tranquility is recognised as an augment and taxes from a host', () => {
+test('CR 111.10: Tranquility is recognised as an augment and taxes from a host #3', () => {
   const h = new Harness(4914, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;

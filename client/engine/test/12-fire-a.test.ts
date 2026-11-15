@@ -1027,7 +1027,7 @@ test('Ghord: sacrificing a unit makes each present opponent sacrifice a nontoken
 
 // ── Gravitational Correction ─────────────────────────────────────────────
 
-test('Gravitational Correction: retargets the effect unless its controller pays [x]', () => {
+test('Gravitational Correction: retargets the effect unless its controller pays [x] CT-241', () => {
   const h = new Harness(1212);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -1110,7 +1110,7 @@ test('Harbinger of Immolation: end of turn → Fireball X, X = 1 + your spell to
 // in BOTH forms — the card played normally and the card donated to a host —
 // and startRegroup asks per token instead of erasing unconditionally.
 
-test('Harbinger of Immolation: in play as a UNIT, your spell tokens stay through regroup', () => {
+test('Harbinger of Immolation: in play as a UNIT, your spell tokens stay through regroup #28 #62', () => {
   const h = new Harness(1225);
   toDeployment(h);
   const A = h.state.initiative;
@@ -1126,7 +1126,7 @@ test('Harbinger of Immolation: in play as a UNIT, your spell tokens stay through
   assert.ok(ent(h, tok.id), 'the seeded Fireball in particular');
 });
 
-test('Harbinger of Immolation: a surviving token keeps its X, and still loses its temporary changes', () => {
+test('Harbinger of Immolation: a surviving token keeps its X, and still loses its temporary changes #62', () => {
   const h = new Harness(1226);
   toDeployment(h);
   const A = h.state.initiative;
@@ -1304,7 +1304,7 @@ test('Infernal Wispweaver: your Wisps in its region gain +2/+1 (live static)', (
   assert.deepEqual(effStats(h, wisp), [0, 1], 'the static ends with the weaver');
 });
 
-test('Infernal Wispweaver: wisps do not sacrifice themselves after combat', () => {
+test('Infernal Wispweaver: wisps do not sacrifice themselves after combat #27', () => {
   // The suppression layer (CR 712.1a) UNPARKED: the playtest report was "I have infernal wispweaver, but my
   // wisps sacrificed themselves anyway!!!".
   //

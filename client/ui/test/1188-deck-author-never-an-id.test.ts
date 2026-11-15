@@ -30,7 +30,7 @@ test('§1 authorName keeps names and "you", drops ids', () => {
 const pv = (over: Partial<DeckPickerView> = {}): DeckPickerView =>
   ({ current: null, signedIn: false, mine: [], defaults: null, msg: '', ...over });
 
-test('§2 the deck picker never says "by" an id', () => {
+test('§2 the deck picker never says "by" an id CT-541', () => {
   const mine = [{ id: 'd1', name: 'Their burn deck copy', author: UUID, cards: [] },
     { id: 'd2', name: 'B', author: 'Bo', cards: [] }];
   const coll = deckPickerHtml(pv({ signedIn: true, mine, current: mine[0] }));

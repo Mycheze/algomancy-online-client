@@ -98,7 +98,7 @@ const armFor = (s: GameState, legal: readonly Action[], mode: PassMode): AutoPas
 
 /* ══ §1 — the two promises, as a release list ═══════════════════════════ */
 
-test('[123] an item that was on the stack when the chip was armed is never a change', () => {
+test('[123] an item that was on the stack when the chip was armed is never a change #123 CT-116', () => {
   const { h, D } = battleWindow(23000);
   const s = h.state;
   push(s, 900); push(s, 901);
@@ -115,7 +115,7 @@ test('[123] an item that was on the stack when the chip was armed is never a cha
     'the stack shrank towards the scope, which is the promise being KEPT');
 });
 
-test('[123] pass through stack finishes when the stack it was armed on has resolved', () => {
+test('[123] pass through stack finishes when the stack it was armed on has resolved #123 CT-116', () => {
   const { h, D } = battleWindow(23001);
   const s = h.state;
   push(s, 900);
@@ -146,7 +146,7 @@ test('[123] a stack item outside the armed scope hands priority back', () => {
     'an id outside the scope is the "something changes" the button promises');
 });
 
-test('[123] pass all does not hand priority back for a new item or a new option', () => {
+test('[123] pass all does not hand priority back for a new item or a new option #123 CT-116', () => {
   const { h, D } = battleWindow(23003);
   const s = h.state;
   push(s, 900);
@@ -179,7 +179,7 @@ test('[123] pass all does not hand priority back for a new item or a new option'
     'pass all is scoped to the PHASE, so an empty stack is just another window');
 });
 
-test('[123] pass all ends at the phase it was armed in, and the phase is read off the arm', () => {
+test('[123] pass all ends at the phase it was armed in, and the phase is read off the arm #123 CT-116', () => {
   const { h, D } = battleWindow(23004);
   const s = h.state;
   const all = armFor(s, legalActions(s, D), 'all');
@@ -198,7 +198,7 @@ test('[123] pass all ends at the phase it was armed in, and the phase is read of
     '"until the next phase" is the arm s own answer, not a phase name in the client');
 });
 
-test('[123] pass all still stops on the one pass that would erase castable spell tokens', () => {
+test('[123] pass all still stops on the one pass that would erase castable spell tokens #123 CT-116', () => {
   const { h, D } = battleWindow(23005);
   // the GETD shape: ammunition held through the whole battle, standing in the
   // region the battle is being fought in, so it is castable in every window
@@ -255,7 +255,7 @@ test('[123] a promise with no scope cannot finish, so an arm naming no stack nev
     'an arm that carries no scope is not a finished one');
 });
 
-test('[321] a bin play your own resolving Spell Excavation grants hands pass through stack back, and not pass all', () => {
+test('[321] a bin play your own resolving Spell Excavation grants hands pass through stack back, and not pass all CT-527', () => {
   /*
    * Report #321 (room KFCS, turn 6): Gember, defending, cast Spell Excavation
    * on Recall with a stack under it and then passed seven windows with Recall

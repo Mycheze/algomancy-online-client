@@ -342,7 +342,7 @@ test('Hand Peeper: CR 111.6b — at exactly 3 life the cost is unpayable and the
 
 // ── Just a Unit ──────────────────────────────────────────────────────────
 
-test('Just a Unit: {Pure} blocks a Flying column, and only it can', () => {
+test('Just a Unit: {Pure} blocks a Flying column, and only it can #20', () => {
   const h = new Harness(4090);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -363,7 +363,7 @@ test('Just a Unit: {Pure} blocks a Flying column, and only it can', () => {
   assert.ok(!ent(h, flier), 'the 3/1 flier died to the 2/3 it could not evade');
 });
 
-test('Just a Unit: {Pure} blocks an Evasive column alone', () => {
+test('Just a Unit: {Pure} blocks an Evasive column alone #20', () => {
   const h = new Harness(4091);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -991,7 +991,7 @@ test('Suspend: the lock is this battle only, and lapses with the battle that mad
   assert.equal(h.q.lifeLocked(D), false, 'and not afterwards');
 });
 
-test("Suspend: a player whose life can't change cannot pay life — Aurozoa's recall is neither offered nor accepted", () => {
+test("Suspend: a player whose life can't change cannot pay life — Aurozoa's recall is neither offered nor accepted #366 CT-553", () => {
   // Report 366 (AZWN), CT-553. CR 708.10: the lock swallows any loss, so a
   // life PAYMENT would be swallowed too and the effect would come for free.
   // CR 111.6: a cost that cannot be paid in full is not offered; CR 111.6c says
@@ -1022,7 +1022,7 @@ test("Suspend: a player whose life can't change cannot pay life — Aurozoa's re
   whiteBox(h, e => assert.equal(e.canPayLife(A, 1), true, 'the battle is over and the lock with it: 1 life is payable again'));
 });
 
-test("Suspend: every kind of life cost asks the lock — a fixed cast cost, a variable X, Arbiter's play tax", () => {
+test("Suspend: every kind of life cost asks the lock — a fixed cast cost, a variable X, Arbiter's play tax CT-553", () => {
   // CT-553's class: activated `cost.life` (above), `castCost: payLife` with a
   // fixed N and with X (Flesh Tithe's floor of 1), and the cost layer's
   // lifeToPlay (Arbiter of Armistice's "[Pay 2 life]") all ask canPayLife.
@@ -1076,7 +1076,7 @@ test("Suspend: every kind of life cost asks the lock — a fixed cast cost, a va
 // banner appearing or disappearing. The scan is the only witness, via
 // read_card_faces.py's BANNER_CONTROL — which is exactly what caught this, with
 // `CONTROL MISS  Tithe Enforcer: hand-read 'll', scan None`.
-test('Tithe Enforcer: ERRATA — no printed banner any more, just a [7] {Haste} 4/6', () => {
+test('Tithe Enforcer: ERRATA — no printed banner any more, just a [7] {Haste} 4/6 CT-188', () => {
   const card = getCard('Tithe Enforcer');
   assert.equal(card.prophecy, undefined, 'no prophecy banner — Caleb removed it 2026-09-21');
   assert.equal(card.text, '', 'and no rules text: the whole card was the banner');

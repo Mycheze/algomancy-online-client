@@ -75,7 +75,7 @@ const item = (id: number, seat: Seat, region: number, copy = false): StackItem =
 
 // ── ORIGON ───────────────────────────────────────────────────────────────
 
-test('Origon negates the item the play event NAMES, with a second identical spell above it on the stack', () => {
+test('Origon negates the item the play event NAMES, with a second identical spell above it on the stack CT-69', () => {
   // THE CASE THE REVERSE SCAN GETS WRONG. Two spells, one card name, one
   // controller, and the one this trigger is about is NOT the top one — a
   // response, a cast chain or any future change to the push order puts it
@@ -122,7 +122,7 @@ test('Origon: a CR 710.8 copy on top of the played spell is still not what "nega
 
 // ── HEXBANE SHIITAKE ─────────────────────────────────────────────────────
 
-test('Hexbane Shiitake exchanges for the item the play event NAMES, with a second identical spell above it', () => {
+test('Hexbane Shiitake exchanges for the item the play event NAMES, with a second identical spell above it CT-69', () => {
   // The same stack the Origon case builds, against the other card that used to
   // scan for (card, controller). "Exchange control of me for THAT spell" —
   // that spell is the one the play event named.
@@ -165,7 +165,7 @@ test('Hexbane Shiitake: a CR 710.8 copy on top is never what the exchange is for
     'a copy was not played, so it is not what is exchanged for (RAQ, CR 706.13)');
 });
 
-test('no play event ever names a COPY, so an identity lookup cannot reach one', () => {
+test('no play event ever names a COPY, so an identity lookup cannot reach one CT-69', () => {
   // The other end of the same guard, and the reason switching to an id did not
   // quietly answer the copy question differently: `pushSpellCopy` deliberately
   // does not go through `commitItem`, so a copy raises no 'spellPlayed' at all
@@ -195,7 +195,7 @@ function rollTurn(h: Harness): void {
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
 }
 
-test('Worldbender: the skipped draw phase is announced, not FAKED — every draw event in the stream moved cards', () => {
+test('Worldbender: the skipped draw phase is announced, not FAKED — every draw event in the stream moved cards CT-67', () => {
   // The line saying the draw phase is skipped used to be typed 'draw'. It is
   // an announcement of a draw three lines below it, not a draw, and typed that
   // way it put a draw event with no `n` into the stream — a draw that moved
@@ -225,7 +225,7 @@ test('Worldbender: the skipped draw phase is announced, not FAKED — every draw
 
 // ── afterDespawn ─────────────────────────────────────────────────────────
 
-test('afterDespawn dispatches the DESPAWN event even when another event is appended after it', () => {
+test('afterDespawn dispatches the DESPAWN event even when another event is appended after it CT-67', () => {
   // CARD-TODO #67(b). The despawn dispatch used to pick its event up as
   // `this.events[this.events.length - 1]`, which is correct by ORDERING ALONE:
   // it holds only while nothing appends an event between the 'despawned' line

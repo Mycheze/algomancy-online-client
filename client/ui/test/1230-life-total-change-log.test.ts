@@ -89,7 +89,7 @@ test('§3 the window lists newest first: the turn, the amount, the total after a
   assert.match(long, /and 3 earlier changes/);
 });
 
-test('§4 a tap on a life total opens the list of that player, built from the log the join carried', async () => {
+test('§4 a tap on a life total opens the list of that player, built from the log the join carried #380 CT-558', async () => {
   const ui = await client();
   const { h, log } = played();
   const s = h.state as GameState, me = 0 as Seat;

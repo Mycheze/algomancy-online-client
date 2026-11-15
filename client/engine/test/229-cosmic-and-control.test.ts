@@ -159,7 +159,7 @@ function castReversal(h: Harness, A: Seat, D: Seat, attackers: number[]): void {
 
 // ══ §1 — THE BOARD HALF ══════════════════════════════════════════════
 
-test('CR 801.7a: Cosmic Reversal recalls a spell unit in play to its controller hand', () => {
+test('CR 801.7a: Cosmic Reversal recalls a spell unit in play to its controller hand #121 CT-114', () => {
   // The plainest shape: the CASTER has a Jelly (a printed Spell Unit) standing
   // in the battle region, and gets it back. Before the owner's 2026-08-29 ruling the card iterated
   // `g.s.stack` and nothing else, so this Jelly was never even looked at.
@@ -178,7 +178,7 @@ test('CR 801.7a: Cosmic Reversal recalls a spell unit in play to its controller 
   assert.ok(!binOf(h, D).includes('Jelly'), 'a recall is not a trash — it never touched a bin');
 });
 
-test('it recalls the CASTER own attacking spell unit — the room YFUE case', () => {
+test('it recalls the CASTER own attacking spell unit — the room YFUE case #119', () => {
   // What Rashi was actually trying to do: bounce her own Leaping Lillik (a
   // printed Spell Unit) out of a fight it was about to lose. An attacking unit
   // stands in the DEFENDER's home region, which is the battle region, so it is
@@ -197,7 +197,7 @@ test('it recalls the CASTER own attacking spell unit — the room YFUE case', ()
   assert.ok(!handOf(h, D).includes('Leaping Lillik'), 'the caster did not steal it');
 });
 
-test('whole pool: every printed Spell Unit is recalled off the board', () => {
+test('whole pool: every printed Spell Unit is recalled off the board #121 CT-114', () => {
   // DERIVE, NEVER ENUMERATE. The card asks the live registry
   // (`E.card(name).kind === 'spellUnit'`); this asks printed.json. Two
   // channels, one population — that is the different-mechanism check, and it
@@ -229,7 +229,7 @@ test('whole pool: every printed Spell Unit is recalled off the board', () => {
   assert.deepEqual(missed, [], 'every one of them was recalled to its controller hand');
 });
 
-test('an ordinary unit in the same region is left alone', () => {
+test('an ordinary unit in the same region is left alone #121 CT-114', () => {
   // The complement, and the reason the sweep must ask the CARD rather than the
   // entity: in play a Spell Unit and a plain unit are the same `kind: 'unit'`,
   // so a board sweep that read the entity would take the whole table.
@@ -247,7 +247,7 @@ test('an ordinary unit in the same region is left alone', () => {
   assert.equal(ent(h, su), undefined, 'while the spell unit beside it went home');
 });
 
-test('CR 601.1c: the board half is scoped to the region, like every other all', () => {
+test('CR 601.1c: the board half is scoped to the region, like every other all #121', () => {
   // ⚠ THIS IS THE RULING, NOT A LIMITATION. The owner, 2026-08-29 (CR 601.1c): *"every
   // card that says 'all' is actually 'all in this region'"*. The attacker's
   // spell unit that stayed HOME is not in the battle region, so a {Battle}
@@ -287,7 +287,7 @@ test('CR 801.7a: a STOLEN spell unit is recalled to the seat that CONTROLS it', 
   assert.ok(!handOf(h, A).includes('Jelly'), 'not to the owner one');
 });
 
-test('the log names both halves of the sweep, whether or not it found anything', () => {
+test('the log names both halves of the sweep, whether or not it found anything #121 CT-114', () => {
   // card-todo #114's second, separable finding: even a player who knew the
   // rule could not audit the sweep. With an empty stack the card used to say
   // only "there is no other spell effect on the stack", which named neither
@@ -309,7 +309,7 @@ test('the log names both halves of the sweep, whether or not it found anything',
 
 // ══ §2 — THERE IS NO CASTABILITY RESTRICTION ═════════════════════════
 
-test('Cosmic Reversal is offered with an EMPTY stack — there is no spell-effect requirement', () => {
+test('Cosmic Reversal is offered with an EMPTY stack — there is no spell-effect requirement #119', () => {
   // Report #119's diagnosis: *"it assumed the spell needed to be cast while
   // there was a spell effect on the stack"*. Measured on the legality channel
   // the client reads, that is simply not so, and it never was — the card
@@ -347,7 +347,7 @@ test('Cosmic Reversal is offered with an EMPTY stack — there is no spell-effec
  * colon. A test that knew only one of them would silently assert nothing. */
 const EMINENCE = /Eminence of the Barrens\s*[:\u2014]\s*you may pay/;
 
-test('CR 706.3a: a trigger fired OUTSIDE the damage step reaches the stack and IS respondable', () => {
+test('CR 706.3a: a trigger fired OUTSIDE the damage step reaches the stack and IS respondable #119', () => {
   // Half one of the owner's "all triggers are respondable", and it is true.
   // A takes non-combat damage on its attacking Eminence from D's Flame of
   // History; the resulting trigger is pushed with `pushItem`, which resets

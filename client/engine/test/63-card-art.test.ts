@@ -126,7 +126,7 @@ test('every ART_EXEMPT entry still names an unrenderable card', () => {
 });
 
 // The specific gap this guard was written for.
-test('the Wraith token uses its own printed art, not the generic-unit card', () => {
+test('the Wraith token uses its own printed art, not the generic-unit card #38', () => {
   const img = getCard('Wraith').image;
   assert.equal(img, 'Wraith.jpg', 'extracted from the oracle entry, not hand-written');
   assert.ok(existsSync(join(ART_DIR, img)), 'and the scan is on disk');

@@ -542,7 +542,7 @@ function stealAttackerBeforeBlocks(seed: number): { h: Harness; A: Seat; D: Seat
   return { h, A, D, robot, other };
 }
 
-test('CR 711.3 (x): Download before blocks — the defender may BLOCK with the attacker it stole', () => {
+test('CR 711.3 (x): Download before blocks — the defender may BLOCK with the attacker it stole CT-424', () => {
   const { h, A, D, robot, other } = stealAttackerBeforeBlocks(14542);
   const col = h.state.battle!.columns.findIndex(c => c.includes(other));
   const life0 = h.state.players[D]!.life;
@@ -566,7 +566,7 @@ test('CR 711.3 (x): Download before blocks — the defender may BLOCK with the a
   void A;
 });
 
-test('CR 711.3 (xi): Download before blocks — the defender may send the attacker it stole to counterattack', () => {
+test('CR 711.3 (xi): Download before blocks — the defender may send the attacker it stole to counterattack CT-424', () => {
   const { h, D, robot } = stealAttackerBeforeBlocks(14543);
   h.do({ type: 'declareBlocks', seat: D, blocks: {}, send: [robot] });
   assert.deepEqual(h.state.battle!.sentAttackers, [robot],

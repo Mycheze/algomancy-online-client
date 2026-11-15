@@ -107,7 +107,7 @@ test('the X-reading restriction sweep finds the card report 211 was about', () =
     `the tripwire must catch Abduct, or it catches nothing: ${JSON.stringify(READERS.map(r => r.card))}`);
 });
 
-test('every X-reading restriction is on a route this sweep drives', () => {
+test('every X-reading restriction is on a route this sweep drives CT-295', () => {
   const undriven = READERS.filter(r => {
     const c = getCard(r.card);
     return !(r.route === 'spell' && c.mana === 'X' && c.timing === 'battle'
@@ -117,7 +117,7 @@ test('every X-reading restriction is on a route this sweep drives', () => {
     'a restriction reads X on a route the sweep below does not drive: extend it');
 });
 
-test('an X-reading spell is offered exactly when some payable X reaches a target, and its menu is exactly those X', () => {
+test('an X-reading spell is offered exactly when some payable X reaches a target, and its menu is exactly those X #211', () => {
   const byCost = unitsByCost();
   const ran: string[] = [];
   let seed = 45310;

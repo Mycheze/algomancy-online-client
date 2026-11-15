@@ -76,7 +76,7 @@ test('the sweep convicts the shapes report 268 was made of (positive controls)',
   ]) assert.equal(convict(fine).length, 0, `wrongly convicted: ${fine}`);
 });
 
-test('CR 408.2b no card code reads a deck or a recycle pile directly — it asks revealTop or takeTop', () => {
+test('CR 408.2b no card code reads a deck or a recycle pile directly — it asks revealTop or takeTop #268 CT-312', () => {
   const files = tsFiles(CARDS_DIR);
   assert.ok(files.filter(f => f.includes(`${path.sep}sets${path.sep}`)).length >= 20,
     `the sweep found only ${files.length} file(s) under ${CARDS_DIR}: a sweep over nothing passes forever`);

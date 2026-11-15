@@ -313,7 +313,7 @@ test('CR 201.3: a batch of a Robot 3, a Robot 2 and a Robot 1 yields THREE extra
     'one extra per (name, X) pair — a copy of each, X and all');
 });
 
-test('Automaton of Abundance: a mixed batch gets one extra per KIND, and spell tokens are not units', () => {
+test('Automaton of Abundance: a mixed batch gets one extra per KIND, and spell tokens are not units CT-294', () => {
   // "each unique token" over two kinds, and the printed restriction to UNIT
   // tokens. Robot Corps creates a Robot; Biotoxicity creates three Poison 1 —
   // spell tokens, which this card does not name.
@@ -369,7 +369,7 @@ test('Biomass Devourer: pay [two] to erase a dead nontoken unit and grow', () =>
 // holds bare card NAMES — so the card is told WHICH copy died: the engine stamps
 // (binSeat, binNth) onto the 'died' event (CR 405.6), the same bin identity it already
 // put on 'trashed'.
-test('CR 405.6: Biomass Devourer does NOT erase an innocent older copy when the dead one was swept', () => {
+test('CR 405.6: Biomass Devourer does NOT erase an innocent older copy when the dead one was swept CT-27', () => {
   const h = new Harness(2694);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -614,7 +614,7 @@ function defendingCaster(h: Harness, A: Seat, D: Seat, metal = 7): number {
   return h.state.battle!.region;
 }
 
-test('CR 303.11: the Oracle\'s "defense > power" watcher sees the COPIED body, not Borrower of Forms', () => {
+test('CR 303.11: the Oracle\'s "defense > power" watcher sees the COPIED body, not Borrower of Forms CT-37', () => {
   const h = new Harness(2640);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -637,7 +637,7 @@ test('CR 303.11: the Oracle\'s "defense > power" watcher sees the COPIED body, n
   finishBattle(h);
 });
 
-test('CR 303.11: becoming the copy is NOT a trigger — no spurious trigger-ordering question', () => {
+test('CR 303.11: becoming the copy is NOT a trigger — no spurious trigger-ordering question CT-37', () => {
   const h = new Harness(2641);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -680,7 +680,7 @@ function watchBorrowerSpawn(h: Harness, fn: () => void): { name: string; stats: 
   return seen;
 }
 
-test('CR 303.11: the body wears the borrowed IDENTITY from the instant it enters play', () => {
+test('CR 303.11: the body wears the borrowed IDENTITY from the instant it enters play CT-37', () => {
   const h = new Harness(2642);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -699,7 +699,7 @@ test('CR 303.11: the body wears the borrowed IDENTITY from the instant it enters
   finishBattle(h);
 });
 
-test('CR 303.11 (negative control): a Borrower whose target is gone spawns no body at all', () => {
+test('CR 303.11 (negative control): a Borrower whose target is gone spawns no body at all CT-37', () => {
   const h = new Harness(2643);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -719,7 +719,7 @@ test('CR 303.11 (negative control): a Borrower whose target is gone spawns no bo
   finishBattle(h);
 });
 
-test('CR 303.11: two Borrowers of Forms in ONE region each keep their own borrowed face', () => {
+test('CR 303.11: two Borrowers of Forms in ONE region each keep their own borrowed face CT-37', () => {
   const h = new Harness(2644);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -813,7 +813,7 @@ test('Containment Protocol: negates all triggered and activated effects on the s
 
 // ── Cosmic Conspirator ───────────────────────────────────────────────────
 
-test('Cosmic Conspirator: a created Robot may become a Fireball of the same X, and no Robot ever exists', () => {
+test('Cosmic Conspirator: a created Robot may become a Fireball of the same X, and no Robot ever exists #64 CT-12', () => {
   // CR 708.3. The old implementation really created the Robot, fired a `spawned`
   // for it, asked, and then erased it — so a token the card says was never
   // created was on the board and in the event stream. The replacement is
@@ -861,7 +861,7 @@ test('Cosmic Conspirator: every conspire option is a card scan, keep included (#
   assert.equal(unitsOf(h, A).filter(u => u.card === 'Robot').length, 1, 'keep still keeps the Robot');
 });
 
-test('Cosmic Conspirator: Biotoxicity asks once per token in the batch (report #64)', () => {
+test('Cosmic Conspirator: Biotoxicity asks once per token in the batch (report #64) CT-12', () => {
   // The owner, 2026-08-22 (GETD): "Biotoxicity didn't give me the choice of
   // what kinds of tokens I wanted even though I had Cosmic Conspirator."
   //
@@ -1086,7 +1086,7 @@ test('Dispatch Courier: plays as a 2/1 and attaches as an augment', () => {
   assert.deepEqual(effStats(h, host), [1, 1], 'it donates a permission, not stats');
 });
 
-test('Dispatch Courier: "play a unit during the mana step as if it had [Haste]"', () => {
+test('Dispatch Courier: "play a unit during the mana step as if it had [Haste]" #74', () => {
   // CR 803.2b, report #74 (WEHH): "Dispatch Courier didn't give me the option to
   // play a card with haste". All three gates in one run — the step OPENS
   // (canHaste), the play is OFFERED (legalActions) and it is ACCEPTED
@@ -1125,7 +1125,7 @@ test('Dispatch Courier: the "Each turn" allowance is one, and one Courier grants
     /only haste cards during the haste step/, 'and the enforcement agrees with the offer');
 });
 
-test('Dispatch Courier: a {Battle} unit stays a battle card even with the grant', () => {
+test('Dispatch Courier: a {Battle} unit stays a battle card even with the grant #74', () => {
   // RAQ "[Solved] Dispatch Courier vs Battle Timing": "No, despite gaining
   // :haste: they can still only be played during :battle:."
   const h = new Harness(2626);
@@ -1326,7 +1326,7 @@ test('Evolutionary Experiment: +2 counters when applied as a mod and on every la
 // `tok.controller` by hand and unslot it locally, which stole the body and
 // left its augments answering to the seat it was taken from. The spell-token
 // case above never saw it, because a spell token has no mods.
-test('Download steals a MODDED unit token: the augment changes controller with it, and it leaves the blocker grid (CR 720.6e/CT-38)', () => {
+test('Download steals a MODDED unit token: the augment changes controller with it, and it leaves the blocker grid (CR 720.6e/CT-38) CT-39', () => {
   const h = new Harness(2696);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;

@@ -61,7 +61,7 @@ test('CR 721.1f, 714.9 / CT-350: a recalled Ancient One does not borrow from a u
   finishBattle(h);
 });
 
-test('CR 721.1f, 714.9 / CT-350: an erased Ancient One has the when-I-despawn text of the ally it stood beside', () => {
+test('CR 721.1f, 714.9 / CT-350: an erased Ancient One has the when-I-despawn text of the ally it stood beside CT-387', () => {
   const { h, ancient } = board(62603);
   withE(h, e => { e.eraseFromPlay(e.entity(ancient)!); });
   assert.equal(ent(h, ancient), undefined, 'the Ancient One is erased');
@@ -69,7 +69,7 @@ test('CR 721.1f, 714.9 / CT-350: an erased Ancient One has the when-I-despawn te
   finishBattle(h);
 });
 
-test('CR 721.1f, 410.2a / CT-350: an Ancient One exchanged out of play (Hooba-Mon, Necromorph) has the when-I-despawn text of the ally it stood beside', () => {
+test('CR 721.1f, 410.2a / CT-350: an Ancient One exchanged out of play (Hooba-Mon, Necromorph) has the when-I-despawn text of the ally it stood beside CT-387', () => {
   const { h, A, ancient } = board(62604);
   withE(h, e => { e.exchangeInPlace(e.entity(ancient)!, 'Good Whale', A); });
   assert.equal(ent(h, ancient), undefined, 'the Ancient One was exchanged away');

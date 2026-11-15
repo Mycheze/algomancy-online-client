@@ -110,7 +110,7 @@ test('1174 §6: hovering the badge icons says each badge in full and what it is 
   assert.doesNotMatch(ui.tap({ tip: 'badge', p: '1' }), /Judge L2/, 'a second tap drops it');
 });
 
-test('1174 §7: the badges, their tip and the initiative star are SVG icons from the icon set, never emoji', () => {
+test('1174 §7: the badges, their tip and the initiative star are SVG icons from the icon set, never emoji #379 CT-556', () => {
   const EMOJI = /[\u{2696}\u{1F3C6}\u{2B50}\u{1F31F}\u{2605}]/u; // ⚖ 🏆 ⭐ 🌟 ★
   const both = { judge: 3 as const, champion: ['November 2026', 'October 2026 pilot'] };
   const html = ui.update(s, legal, { badges: [both, both] });

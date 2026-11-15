@@ -91,7 +91,7 @@ test('CR 102.4 / CT-233: a stolen card cached into the thief cache keeps its own
   assert.equal(cc!.owner, owner, 'with its owner on the entry');
 });
 
-test('CR 102.4 / CT-233: a shared zone resets ownership — a stolen card recycled from the hand leaves its owner behind', () => {
+test('CR 102.4 / CT-233: a shared zone resets ownership — a stolen card recycled from the hand leaves its owner behind CT-345', () => {
   const { h, thief } = stolenIntoHand(55105);
   withE(h, e => { const took = e.takeFromHand(thief, handIdx(h, thief, CARD))!; e.recycleToBottom(thief, took.card); });
   assert.equal(h.state.players[thief]!.foreign, undefined, 'no ownership record survives into a shared pile');

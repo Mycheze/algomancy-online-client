@@ -48,7 +48,7 @@ const hitsOn = (evs: EngineEvent[], id: EntityId): EngineEvent[] =>
 
 // ── the batch itself ─────────────────────────────────────────────────────
 
-test('CR 112.8: two hits on one unit in a batch are ONE damage event for the total', () => {
+test('CR 112.8: two hits on one unit in a batch are ONE damage event for the total #49', () => {
   const h = new Harness(6900);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -66,7 +66,7 @@ test('CR 112.8: two hits on one unit in a batch are ONE damage event for the tot
   assert.equal(h.state.entities[u]!.damage, 3);
 });
 
-test('CR 112.8: every event in a batch carries the WHOLE batch as `total`', () => {
+test('CR 112.8: every event in a batch carries the WHOLE batch as `total` #50', () => {
   const h = new Harness(6901);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -268,7 +268,7 @@ test('CR 110.2b: the distribution is NOT a target — nothing new reaches the st
 
 // ── CR 803.5a: Burst ───────────────────────────────────────────────────────────
 
-test('CR 803.5a: Burst casts all your tokens OF THAT NAME, and leaves the others alone', () => {
+test('CR 803.5a: Burst casts all your tokens OF THAT NAME, and leaves the others alone #51', () => {
   const h = new Harness(6907);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;

@@ -45,7 +45,7 @@ const abductPlays = (h: Harness, D: Seat) =>
   legalActions(h.state, D).filter(a => a.type === 'playCard'
     && h.state.players[D]!.hand[(a as { handIndex: number }).handIndex] === 'Abduct');
 
-test('Abduct is castable against a cost-1 attacker, its X menu starts at 1, and control flips', () => {
+test('Abduct is castable against a cost-1 attacker, its X menu starts at 1, and control flips #211', () => {
   // wood + metal for the gm affinity, and 2 more: 4 open mana in all
   const { h, A, D, ids } = battleWith(45200, ['Cinder Scuttler'], [open('wood'), open('metal'), open('fire'), open('fire')]);
   const [scuttler] = ids as [number];

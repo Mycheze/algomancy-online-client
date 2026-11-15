@@ -33,7 +33,7 @@ function unitTokenStats(h: Harness, seat: Seat): string[] {
     .map(u => e.printedStats(u).join('/')).sort();
 }
 
-test('CR 304.14: with Automaton of Abundance, creating a 3/3 Unit Token gives two 3/3s', () => {
+test('CR 304.14: with Automaton of Abundance, creating a 3/3 Unit Token gives two 3/3s #212', () => {
   const h = new Harness(45801);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -45,7 +45,7 @@ test('CR 304.14: with Automaton of Abundance, creating a 3/3 Unit Token gives tw
     'report #212: the copy is a 3/3 like the original, not the bare 1/1 Unit Token');
 });
 
-test('CR 304.14: with Automaton of Abundance, an X/X Unit Token is copied as the same X/X', () => {
+test('CR 304.14: with Automaton of Abundance, an X/X Unit Token is copied as the same X/X #213', () => {
   const h = new Harness(45802);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -98,7 +98,7 @@ test('CR 304.14: a 3/3 and a 5/5 Unit Token made together are TWO unique tokens'
   assert.deepEqual(extras.map(r => r.stats), [[3, 3], [5, 5]], 'a copy of each, stats and all');
 });
 
-test('CR 304.14: a Unit Token created with no stats and one created as a 1/1 are ONE unique token', () => {
+test('CR 304.14: a Unit Token created with no stats and one created as a 1/1 are ONE unique token CT-294', () => {
   // a creation that set no stats has the definition's own (1/1), so the key
   // must not tell the two apart
   const h = new Harness(45805);
@@ -124,7 +124,7 @@ test('CR 304.14: a Unit Token created with no stats and one created as a 1/1 are
 
 interface Batch { orig: string[]; copies: string[] }
 
-test('CR 304.14 sweep: every Automaton copy of a card-created Unit Token has the printed stats of its original', () => {
+test('CR 304.14 sweep: every Automaton copy of a card-created Unit Token has the printed stats of its original #212 CT-292', () => {
   const cls = DECK_LIST.filter(n => createsOf(n).includes('Unit Token'));
   assert.ok(cls.length >= 20, `the class is derived from createsOf (${cls.length})`);
   // CT-292: the cards whose PRINTED text creates a Unit Token of any size other

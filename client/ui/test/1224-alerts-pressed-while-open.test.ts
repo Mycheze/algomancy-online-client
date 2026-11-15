@@ -23,7 +23,7 @@ const alertsBtn = (h: string): string => {
   return m[0];
 };
 
-test('1224 §1 the toolbar draws Alerts pressed exactly while the list is open', () => {
+test('1224 §1 the toolbar draws Alerts pressed exactly while the list is open BL-63', () => {
   const open = alertsBtn(toolsHtml({ signedIn: true, alerts: 2, alertsOpen: true }, TOOL_NAMES));
   assert.match(open, /class="ui-icon-button ui-icon-button--stack on homealerts"/);
   assert.match(open, /aria-pressed="true"/);

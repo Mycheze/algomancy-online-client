@@ -19,7 +19,7 @@ function dreadspawnWithHand(hand: number): { h: Harness; id: number } {
   return { h, id };
 }
 
-test('CR 503.5: the turn draw that takes Dreadspawn Horror to 0 defense kills it at the turn flip', () => {
+test('CR 503.5: the turn draw that takes Dreadspawn Horror to 0 defense kills it at the turn flip #197', () => {
   const { h, id } = dreadspawnWithHand(3);
   assert.deepEqual(effStats(h, id), [4, 2], '7/5 with three cards in hand');
   toDeployment(h);
@@ -33,7 +33,7 @@ test('CR 503.5: the turn draw that takes Dreadspawn Horror to 0 defense kills it
   assert.ok(h.log.some(l => /Dreadspawn Horror dies/.test(l)));
 });
 
-test('CR 713.3: a planning action that does not settle still ends with the dead unit gone', () => {
+test('CR 713.3: a planning action that does not settle still ends with the dead unit gone #197', () => {
   // The backstop is general, not a turn-flip patch: make the unit lethal behind
   // the reducer's back, then take an action (activating a resource) whose own
   // handler never reaches settle().
@@ -79,7 +79,7 @@ function flipTurn(h: Harness): void {
   h.do({ type: 'doneDeploying', seat: h.state.deployPlayer! });
 }
 
-test('CR 503.5b constructed: drawing 4 does not kill before the 2 go back — 1 card in hand ends a 4/2', () => {
+test('CR 503.5b constructed: drawing 4 does not kill before the 2 go back — 1 card in hand ends a 4/2 #197', () => {
   const { h, id } = constructedDreadspawn(1);
   assert.deepEqual(effStats(h, id), [6, 4]);
   flipTurn(h);
@@ -90,7 +90,7 @@ test('CR 503.5b constructed: drawing 4 does not kill before the 2 go back — 1 
   assert.deepEqual(effStats(h, id), [4, 2]);
 });
 
-test('CR 503.5b constructed: 3 cards in hand nets to 5 — it dies once its controller has bottomed', () => {
+test('CR 503.5b constructed: 3 cards in hand nets to 5 — it dies once its controller has bottomed #197', () => {
   const { h, id } = constructedDreadspawn(3);
   flipTurn(h);
   assert.ok(ent(h, id), 'still mid draw phase');
@@ -110,7 +110,7 @@ function draftAll(h: Harness): void {
   }
 }
 
-test('CR 503.5a draft: 1 card in hand, then the turn draw and the draft — a 4/2 that lives', () => {
+test('CR 503.5a draft: 1 card in hand, then the turn draw and the draft — a 4/2 that lives #197', () => {
   const h = new Harness(4244, undefined, 'draft');
   draftAll(h);
   h.state.players[0]!.hand = h.state.players[0]!.hand.slice(0, 1);

@@ -163,7 +163,7 @@ test('CR 201.2 Rotbeast: played NORMALLY, no mod carries the text, so every augm
 
 // ── Blightwalker: two copies in one bin ───────────────────────────────
 
-test('CR 405.6a Blightwalker: a Blightwalker ALREADY in the bin is "another" and is offered', () => {
+test('CR 405.6a Blightwalker: a Blightwalker ALREADY in the bin is "another" and is offered CT-392', () => {
   const h = new Harness(12110);
   toDeployment(h);
   const P = h.state.deployPlayer!;

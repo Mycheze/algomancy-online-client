@@ -99,7 +99,7 @@ function resolveAll(h: Harness, choose: (o: DecisionOption) => boolean = () => t
 
 // ═══════════════ 1. "targeting me" is asked AT THE PLAY ═══════════════════
 
-test('CR 706.9 Earthbound Replicator: a spell played at something ELSE and retargeted onto me makes NO copy', () => {
+test('CR 706.9 Earthbound Replicator: a spell played at something ELSE and retargeted onto me makes NO copy CT-57', () => {
   const h = new Harness(15100);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -137,7 +137,7 @@ test('CR 706.9 Earthbound Replicator: a spell played at something ELSE and retar
   finishBattle(h);
 });
 
-test('CR 706.9 Earthbound Replicator: a spell played AT ME and retargeted away still makes its copy', () => {
+test('CR 706.9 Earthbound Replicator: a spell played AT ME and retargeted away still makes its copy CT-57', () => {
   const h = new Harness(15101);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -173,7 +173,7 @@ test('CR 706.9 Earthbound Replicator: a spell played AT ME and retargeted away s
 
 // ═══════════════ 2. WHICH of two identical spells ════════════════════════
 
-test('CR 706.13 Earthbound Replicator: with two identical spells on the stack it copies the TOP one', () => {
+test('CR 706.13 Earthbound Replicator: with two identical spells on the stack it copies the TOP one CT-58', () => {
   const h = new Harness(15102);
   toDeployment(h);
   const A = h.state.initiative as Seat;
@@ -208,7 +208,7 @@ test('CR 706.13 Earthbound Replicator: with two identical spells on the stack it
 
 // ═══════════════ 3. Maelstrom Charger is not an ability ══════════════════
 
-test('CR 702.3g Maelstrom Charger: the option is asked in the cast window and never reaches the stack', () => {
+test('CR 702.3g Maelstrom Charger: the option is asked in the cast window and never reaches the stack CT-57', () => {
   const h = new Harness(15110);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -246,7 +246,7 @@ test('CR 702.3g Maelstrom Charger: the option is asked in the cast window and ne
   finishBattle(h);
 });
 
-test('CR 705.6 Maelstrom Charger: Crevice Lurker cannot tax it, on a board where it prevents a real trigger', () => {
+test('CR 705.6 Maelstrom Charger: Crevice Lurker cannot tax it, on a board where it prevents a real trigger CT-57', () => {
   const h = new Harness(15111);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -279,7 +279,7 @@ test('CR 705.6 Maelstrom Charger: Crevice Lurker cannot tax it, on a board where
   resolveAll(h); finishBattle(h);
 });
 
-test('CR 702.3g Maelstrom Charger: two Chargers are two questions and two copies (none/one/two)', () => {
+test('CR 702.3g Maelstrom Charger: two Chargers are two questions and two copies (none/one/two) CT-57', () => {
   const h = new Harness(15112);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;

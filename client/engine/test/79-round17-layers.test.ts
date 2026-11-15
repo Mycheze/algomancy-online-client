@@ -86,7 +86,7 @@ test('CR 802.10c: a unit\'s own damage ability reads the {Powerful} it was GRANT
  * the layer-2 base — a base rewrite is a stat change too, CT-379).
  */
 
-test('CR 802.8a layer 5: the owner\'s Malformed Monstrosity — a 10/9 at -7/-7 inverts to 17/16', () => {
+test('CR 802.8a layer 5: the owner\'s Malformed Monstrosity — a 10/9 at -7/-7 inverts to 17/16 #73', () => {
   // Playtest report #73, room GETD, 2026-08-22: "Inverted isn't working on my
   // Malformed Monstrosity. -7/-7 should become +7/+7, making it a 17/16".
   // Monstrosity is printed 10/9 with a self-affecting -7/-7 static, so it
@@ -107,7 +107,7 @@ test('CR 802.8a layer 5: the owner\'s Malformed Monstrosity — a 10/9 at -7/-7 
   assert.deepEqual(effStats(h, mm), [17, 16], "playtest #73: '-7/-7 should become +7/+7, making it a 17/16'");
 });
 
-test('CR 802.8b layer 5: Caleb\'s worked example — a 1/4 Tough Balanced Inverted is a -6/0', () => {
+test('CR 802.8b layer 5: Caleb\'s worked example — a 1/4 Tough Balanced Inverted is a -6/0 #73', () => {
   // The example he did the arithmetic for himself, twice, both ways. It is
   // the reason layer 5 is a single net-delta negation rather than a walk back
   // down layer 4 undoing each attribute: he checked that they agree.
@@ -139,7 +139,7 @@ test('CR 802.8b layer 5: Caleb\'s worked example — a 1/4 Tough Balanced Invert
   assert.deepEqual(effStats(h, u), [-6, 0], "calebgannon: 'To become a -6/0'");
 });
 
-test('CR 802.8c layer 5: a base REWRITE is the thing inverted FROM -- NO, since CT-379: the printed stats are, and the rewrite is inverted with the rest', () => {
+test('CR 802.8c layer 5: a base REWRITE is the thing inverted FROM -- NO, since CT-379: the printed stats are, and the rewrite is inverted with the rest #73', () => {
   // Layer 2 rewrites the base ("Your units are base 3/3" — Aberrant Statweaver,
   // CR 206.5). Until 2026-10-25 this test pinned the owner's 2026-08-22 reading
   // that a rewrite is not a stat change and is what {Inverted} inverts FROM.
@@ -195,7 +195,7 @@ test('CR 709.4c layer 5: {Inverted} applies ONCE however many sources grant it',
   assert.deepEqual(effStats(h, u), [7, 7], 'a second {Inverted} does not invert back — duplicates do not stack');
 });
 
-test('CR 802.1c layer 5: {Inverted} is shared down the COLUMN, like every other attribute', () => {
+test('CR 802.1c layer 5: {Inverted} is shared down the COLUMN, like every other attribute #73', () => {
   // Asked and answered verbatim —
   //   spikeydog_40883: "So, all attributes are shared between the units in
   //                     the same column? Including stuff like Inverted or Tough?"
@@ -310,7 +310,7 @@ test('CR 802.8a layer 5: Oodvick — the whole card is the attribute, and it wor
  * CR 802.8d.
  */
 
-test('CR 713.4: report #114 — the owner\'s Nectar Ridge Oracle, and the damage was never load-bearing', () => {
+test('CR 713.4: report #114 — the owner\'s Nectar Ridge Oracle, and the damage was never load-bearing CT-100', () => {
   // The real FHDY shape, both seats: the OPPONENT's Rampart Guardian ({Tough},
   // {Virus}) lands on the attacking Oracle, and then the owner's OWN Reality
   // Bender ({Inverted}, {Virus}) finishes it. He did not lose the unit to the
@@ -361,7 +361,7 @@ test('CR 713.4: report #114 — the owner\'s Nectar Ridge Oracle, and the damage
   finishBattle(h);
 });
 
-test('CR 802.8d: the special case his wording misses — a SHRUNK unit survives, at 2·|Δ|', () => {
+test('CR 802.8d: the special case his wording misses — a SHRUNK unit survives, at 2·|Δ| CT-100', () => {
   // "+0/+X is just -0/-X where X is its exact defense" is exact only while the
   // net layer-3 change is zero or positive. Shrink the unit first and the same
   // two attributes are a BUFF: final defense is −2Δ, so Δ = −1 gives 2.
@@ -401,7 +401,7 @@ test('CR 802.8d: the special case his wording misses — a SHRUNK unit survives,
   }
 });
 
-test('CR 802.8d: the column wipe — {Inverted} on the front unit, {Tough} on the BACK, and both die', () => {
+test('CR 802.8d: the column wipe — {Inverted} on the front unit, {Tough} on the BACK, and both die CT-100', () => {
   // The consequence report #114 could not see, and the one that actually
   // matters at the table. Attributes are shared down a column (CR 802.1c, and
   // calebgannon verbatim: "So, all attributes are shared between the units in
@@ -439,7 +439,7 @@ test('CR 802.8d: the column wipe — {Inverted} on the front unit, {Tough} on th
   finishBattle(h);
 });
 
-test('CR 802.9a: {Unaware} beats both — layer 6 returns the printed numbers', () => {
+test('CR 802.9a: {Unaware} beats both — layer 6 returns the printed numbers CT-100', () => {
   // The documented escape. {Unaware} is stat layer 6 (CR 802.1j) and it RETURNS
   // printedStats, discarding layers 2-5 wholesale, so it does not "undo" the
   // Tough/Inverted pair so much as never reach it. Bubb is the [Augment]
@@ -531,7 +531,7 @@ test('CR 802.8d: the rest of the class — the Omniphage kills itself, and Beyon
   assert.ok(ent(h2, beyond), 'Beyond itself is untouched — it never gained {Tough}');
 });
 
-test('CR 802.8d: the class is FIVE cards, computed from the pool and not typed from the report', () => {
+test('CR 802.8d: the class is FIVE cards, computed from the pool and not typed from the report CT-100', () => {
   // docs/13 §7.2, "derive, never enumerate". The interaction needs {Tough} and
   // {Inverted} on one unit (or one column), so the class is every card that
   // can put either attribute onto a body. Recomputed here from printed data

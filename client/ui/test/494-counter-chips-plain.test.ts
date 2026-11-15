@@ -31,7 +31,7 @@ function plainOn(): void {
 }
 
 // literal names: the playtest ledger cites them, and its resolver reads titles off the source
-test('regions board: rot and debt read as words, with no pictograph', () => plainOn());
+test('regions board: rot and debt read as words, with no pictograph #221', () => plainOn());
 
 test('a player with no rot and no debt has no chip at all', () => {
   const h = new Harness(49402);

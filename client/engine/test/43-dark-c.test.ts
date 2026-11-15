@@ -83,7 +83,7 @@ test('Blightwalker: trashed from hand → pay [2] to recall another unit from yo
 // Dropslime, Maw of Despair, Nothyr, Thoughtripper — do not fire when they die
 // {Unstable}. Dropslime is pinned in 42-dark-b; this is the second witness, with
 // an unmodded Blightwalker dying beside it as the control.
-test('CR 801.2h (owner 2026-10-31): Blightwalker dying while {Unstable} is erased and does NOT fire its own "when I am trashed" trigger', () => {
+test('CR 801.2h (owner 2026-10-31): Blightwalker dying while {Unstable} is erased and does NOT fire its own "when I am trashed" trigger #93', () => {
   const h = new Harness(4392);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -197,7 +197,7 @@ test('Cthyrian Rector: Virus-donated, "me" is the HOST and "you" is the host\'s 
 // the card already erased. Since the owner's 2026-10-31 ruling (CR 801.2h) that
 // death is not a trash: the Rector never triggers, and nothing reaches for the
 // erased pile — which must never become reachable (CR 407.1b).
-test('CR 801.2h (owner 2026-10-31): an Unstable death is not a trash, so the Rector does not trigger and the card is erased', () => {
+test('CR 801.2h (owner 2026-10-31): an Unstable death is not a trash, so the Rector does not trigger and the card is erased #93', () => {
   const h = new Harness(4390);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -241,7 +241,7 @@ test('CR 801.2h (owner 2026-10-31): an Unstable death is not a trash, so the Rec
 // death is not a trash, so that route no longer exists. The route that remains
 // is the two watchers themselves: a Rector and a Distiller both hear the same
 // discard, and whichever resolves first takes the card out from under the other.
-test('CR 405.6: the Rector does NOT recall an innocent older copy when the trashed one was taken first (by the Distiller)', () => {
+test('CR 405.6: the Rector does NOT recall an innocent older copy when the trashed one was taken first (by the Distiller) CT-27', () => {
   const h = new Harness(4392);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -266,7 +266,7 @@ test('CR 405.6: the Rector does NOT recall an innocent older copy when the trash
     'and it says the copy is gone rather than quietly taking the other one');
 });
 
-test('CR 405.6: the Distiller does NOT cache an innocent older copy when the trashed one was taken first (by the Rector), and refunds its [once]', () => {
+test('CR 405.6: the Distiller does NOT cache an innocent older copy when the trashed one was taken first (by the Rector), and refunds its [once] CT-27', () => {
   const h = new Harness(4393);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -302,7 +302,7 @@ test('CR 405.6: the Distiller does NOT cache an innocent older copy when the tra
 // of ordering. It knows exactly where it pushed, so it says so, and a named
 // slot that no longer holds that card means GONE — never a fall back to the
 // search, because falling back is the whole bug.
-test('CR 405.6: eraseFromZone can be told WHICH bin slot to take, and a mismatch means gone', () => {
+test('CR 405.6: eraseFromZone can be told WHICH bin slot to take, and a mismatch means gone CT-27', () => {
   const h = new Harness(4394);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -734,7 +734,7 @@ test('Murkdrop Distiller: a trashed card may be cached and played this turn (CR 
 // 2026-10-31 an {Unstable} death was one, and the Distiller found the card already
 // erased and refunded its [once] (CR 109.9b). Since CR 801.2h (owner 2026-10-31) that
 // death is not a trash: the Distiller never triggers, and its [once] is untouched.
-test('CR 801.2h (owner 2026-10-31): an Unstable death is not a trash, so the Distiller offers nothing and its [once] is untouched', () => {
+test('CR 801.2h (owner 2026-10-31): an Unstable death is not a trash, so the Distiller offers nothing and its [once] is untouched #93', () => {
   const h = new Harness(4391);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -760,7 +760,7 @@ test('CR 801.2h (owner 2026-10-31): an Unstable death is not a trash, so the Dis
 
 // ── Necromorph ───────────────────────────────────────────────────────────
 
-test('Necromorph: exchanges a unit in play for a cheaper one in ITS controller\'s bin', () => {
+test('Necromorph: exchanges a unit in play for a cheaper one in ITS controller\'s bin #14', () => {
   const h = new Harness(4313);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -932,7 +932,7 @@ test("Rotling: another card leaving the bin is not me; leaving the OPPONENT's bi
   assert.equal(h.q.rot(P), 0, 'the other seat gains nothing');
 });
 
-test('Rotling: the [Switch1] bounds it once per turn when it does something, and startTurn refreshes it', () => {
+test('Rotling: the [Switch1] bounds it once per turn when it does something, and startTurn refreshes it CT-21', () => {
   const h = new Harness(4344);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -977,7 +977,7 @@ test("Rotling: CR 405.7 — two different engine removal sites (erase-from-bin, 
   assert.ok(h.q.cache(P).some(cc => cc.card === 'Good Whale'), 'the card is in the cache');
 });
 
-test('Rotling: the pending pay-[1] decision and the zoneBudgets reservation survive a JSON round-trip (older saved states still load)', () => {
+test('Rotling: the pending pay-[1] decision and the zoneBudgets reservation survive a JSON round-trip (older saved states still load) CT-21', () => {
   const h = new Harness(4346);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -1044,7 +1044,7 @@ function toNextDeployment(h: Harness): void {
   finishBattle(h);
 }
 
-test('Scholar of the Void: CR 108.3 — discard your hand and transform into Beyond, Codex Incarnate', () => {
+test('Scholar of the Void: CR 108.3 — discard your hand and transform into Beyond, Codex Incarnate #24', () => {
   // Playtest ledger #24 (ZQPC, 2026-08-20). The owner supplied the back face on
   // 2026-08-22; before that the trigger fired and declined, because there was
   // no card to become. Now: "[Augment] At the start of deployment, you may
@@ -1109,7 +1109,7 @@ test('Scholar of the Void: CR 108.3 — an EMPTY hand still pays the cost, and t
   assert.equal(ent(h, sv)!.card, 'Beyond, Codex Incarnate');
 });
 
-test('Scholar of the Void: CR 108.3 — the transform is the SAME unit: same id, and its counters and damage survive', () => {
+test('Scholar of the Void: CR 108.3 — the transform is the SAME unit: same id, and its counters and damage survive #24', () => {
   // A transform is not a new unit. Nothing is deleted and nothing is spawned,
   // so every fact that hangs off the entity is still true afterwards — which
   // is also why no spawned/died event fires and why anything holding its id
@@ -1152,7 +1152,7 @@ test('Scholar of the Void: CR 108.3 — the transform is the SAME unit: same id,
     'CR 802.8a: 2·base − current — the counters ride along and are then inverted');
 });
 
-test('Scholar of the Void: CR 201.4 — a transformed Scholar TURNS BACK OVER on death and bins as itself', () => {
+test('Scholar of the Void: CR 201.4 — a transformed Scholar TURNS BACK OVER on death and bins as itself #24', () => {
   // ⚠ THIS TEST IS THE REVERSE OF THE ONE IT REPLACES, and deliberately so.
   // The original transform reading shipped `token = true` on the transform and this test asserted the
   // consequence: Beyond is erased on death, never binned, and "does NOT flip

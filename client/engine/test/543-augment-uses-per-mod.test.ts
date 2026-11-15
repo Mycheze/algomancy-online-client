@@ -39,7 +39,7 @@ function takeTwo(h: Harness, A: Seat, D: Seat, blocker: EntityId): void {
   finishBattle(h);
 }
 
-test('CR 109.9k: a Jollyglop augmented with a Jollyglop triggers twice when it is dealt damage (report 269)', () => {
+test('CR 109.9k: a Jollyglop augmented with a Jollyglop triggers twice when it is dealt damage (report 269) #269', () => {
   const h = new Harness(54300);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -51,7 +51,7 @@ test('CR 109.9k: a Jollyglop augmented with a Jollyglop triggers twice when it i
     'both [once] abilities fired: two 1/1s each');
 });
 
-test('CR 109.9k: two Jollyglop augments on one host each fire once', () => {
+test('CR 109.9k: two Jollyglop augments on one host each fire once #269', () => {
   const h = new Harness(54301);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -65,7 +65,7 @@ test('CR 109.9k: two Jollyglop augments on one host each fire once', () => {
   assert.equal(ent(h, host)!.budgets['augment:Jollyglop#0'], 1, 'and the unit spent its own');
 });
 
-test('CR 109.9k: two Debt Blep augments offer two activations, and spending one leaves the other', () => {
+test('CR 109.9k: two Debt Blep augments offer two activations, and spending one leaves the other #269', () => {
   const h = new Harness(54302);
   toDeployment(h);
   const A = h.state.deployPlayer!;

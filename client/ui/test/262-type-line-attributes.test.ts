@@ -126,7 +126,7 @@ test('the cards with no ability text and a type-line attribute are found by scan
  * 1. THE BOX — off the table
  * ════════════════════════════════════════════════════════════════════════ */
 
-test('CR D6.10: a card whose only rules content is a type-line attribute stops saying no rules text', () => {
+test('CR D6.10: a card whose only rules content is a type-line attribute stops saying no rules text CT-171', () => {
   const found = subjects();
   assert.ok(found.length >= 15, 'non-vacuity: there are subjects to check');
 

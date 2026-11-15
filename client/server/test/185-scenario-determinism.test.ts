@@ -120,7 +120,7 @@ test('§1 the board really produces the SITUATION the clause needs — a legal d
  * `16-earth-a` and `105-semantics-playwatch` spawn Lithoghul as its own body,
  * and `112-literal-wood` NEGATES the virus before it can attach.
  */
-test('§1 the scenario plays to its printed outcome: the HOST\'S CONTROLLER takes the 6', () => {
+test('§1 the scenario plays to its printed outcome: the HOST\'S CONTROLLER takes the 6 CT-337', () => {
   let s = deal('lithoghul-donated').state;
   const host = Object.values(s.entities).find(e => e.card === 'Towering Colossus')!;
   const step = (a: Action): void => { s = apply(s, a).state; };

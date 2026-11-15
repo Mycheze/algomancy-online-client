@@ -43,7 +43,7 @@ import { ORACLE_JSON } from '../../engine/scripts/paths.mjs';
 const textOf = (n: string): string => getCard(n).text ?? '';
 const q = (h: Harness): E => new E(h.state);
 
-test('{g} renders the keyword it marks, never a literal "g"', () => {
+test('{g} renders the keyword it marks, never a literal "g" #91', () => {
   const out = iconizeText(textOf('Beyond, Codex Incarnate'));
   assert.ok(out.includes('<span class="kw kw-g">inverted</span>'),
     'the marked keyword is styled, which is what the printed card does');
@@ -52,7 +52,7 @@ test('{g} renders the keyword it marks, never a literal "g"', () => {
   assert.ok(!out.includes('{g}'), 'and the marker itself is consumed');
 });
 
-test('no card in the pool renders a stray marker word', () => {
+test('no card in the pool renders a stray marker word #91', () => {
   // the general form of the bug, over the whole pool rather than the one card
   // that got reported. A new {token} nobody taught the formatter about shows up
   // here as its own bare body glued to the following word.
@@ -72,7 +72,7 @@ test('no card in the pool renders a stray marker word', () => {
   assert.deepEqual(bad, [], 'every {token} must be consumed by the formatter');
 });
 
-test('an unclosed {i} reminder does not italicise the rules text after it', () => {
+test('an unclosed {i} reminder does not italicise the rules text after it #91', () => {
   // Godray prints its reminder FIRST and its rules text second — the case that
   // makes the missing {/i} visible. Before the fix the whole card was italic.
   const out = iconizeText(textOf('Godray'));
@@ -131,7 +131,7 @@ test('the formatter still does its original job — icons, pips and breaks', () 
  * 12200-12299.
  */
 
-test('an augment line does not repeat the [Augment] icon its own tag shows', () => {
+test('an augment line does not repeat the [Augment] icon its own tag shows BL-22', () => {
   const h = new Harness(12200);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -153,7 +153,7 @@ test('an augment line does not repeat the [Augment] icon its own tag shows', () 
     'so the rendered line paints the augment icon zero times, not once more');
 });
 
-test('no augment-donating card in the pool leads its clause with the marker', () => {
+test('no augment-donating card in the pool leads its clause with the marker BL-22', () => {
   // the general form: every text-box [Augment] in the pool is sliced by
   // augmentClause and then rendered under the augment tag
   const bad: string[] = [];
@@ -180,7 +180,7 @@ test('no augment-donating card in the pool leads its clause with the marker', ()
  * reminder (CR D6.11), and 251 §5c is what holds that end. The text-box fix's actual rule —
  * SAY SO, AND SAY WHICH WAY IN — is unchanged and still asserted here.
  */
-test('CR D6.10c: an Unstable card says so — the printed marker and the acquired kind', () => {
+test('CR D6.10c: an Unstable card says so — the printed marker and the acquired kind BL-22', () => {
   // (a) printed on the type line: report #89's two cards, off the table
   const printedBox = printedTextBox('Aberrant Statweaver');
   assert.ok(printedBox.attrs.some(a => a.attr === 'Unstable' && a.origin === 'printed'),
@@ -328,7 +328,7 @@ test('no card in the pool prints a bare-digit cost token as text', () => {
 /** what a PLAYER actually reads: the rendered HTML with its tags taken off */
 const asPlayerReads = (html: string): string => html.replace(/<[^>]*>/g, '');
 
-test('the /[…] box drops the slash and the brackets and keeps the words', () => {
+test('the /[…] box drops the slash and the brackets and keeps the words #102 CT-36', () => {
   // a COST box — the printed card draws the cost panel, then the colon
   const cost = iconizeText('[Switch1] /[Sacrifice a unit]: Draw a card.');
   assert.ok(!cost.includes('/['), `the report: the player read a literal "/[": ${cost}`);
@@ -343,7 +343,7 @@ test('the /[…] box drops the slash and the brackets and keeps the words', () =
   assert.equal(asPlayerReads(mode), 'Double the power or defense of target unit.');
 });
 
-test('a stat slash is NOT markup — X/X and +1/+1 survive untouched', () => {
+test('a stat slash is NOT markup — X/X and +1/+1 survive untouched #102', () => {
   // THE TRAP. `/` is stat notation on far more cards than print `/[`, so the
   // markup rule is anchored to the slash being glued to a `[`.
   for (const raw of [
@@ -360,7 +360,7 @@ test('a stat slash is NOT markup — X/X and +1/+1 survive untouched', () => {
   assert.ok(!both.includes('/['), both);
 });
 
-test('{i1} does not eat the space beside the word it italicises', () => {
+test('{i1} does not eat the space beside the word it italicises #102 CT-36', () => {
   // Wither and Bloom prints "…on each enemy or{i1} put a{/n} +1/+1…" — the
   // marker's only separator from the NEXT word sits after it, and a bare `\s*`
   // swallowed it, so the box read "each enemy orput a".
@@ -407,7 +407,7 @@ test('{/n} inside an unrecognised bracket is still a line break', () => {
     'clean() has already consumed it before the box renders');
 });
 
-test('no card in the pool renders engine markup to a player', () => {
+test('no card in the pool renders engine markup to a player #102 CT-36', () => {
   // THE SWEEP, and the deliverable that makes this stay fixed. Over the WHOLE
   // pool, for `text` AND the `type` line (the `{g}` sweep covered only `text`),
   // as the player reads it — tags off, because a marker hiding in an alt=""
@@ -453,7 +453,7 @@ test('the sweep covers the composed box, not just the raw card text', () => {
   assert.deepEqual(bad, [], `markup in a rendered text box:\n${bad.join('\n')}`);
 });
 
-test('the keyword family is NOT suppressed — it keeps showing', () => {
+test('the keyword family is NOT suppressed — it keeps showing #102', () => {
   // The other half of the rule, and the easy way to "pass" the sweep wrongly:
   // {Battle} (136 uses), {Virus} (63), {Haste} (21) and ~30 more are card
   // CONTENT, not markup. Six have icon assets; the rest correctly bare their
@@ -473,7 +473,7 @@ test('the keyword family is NOT suppressed — it keeps showing', () => {
  * next regeneration, which is the quiet lie the card ledger exists to stop.
  */
 
-test('no printed card carries a hyphenation artifact from its own art', () => {
+test('no printed card carries a hyphenation artifact from its own art #102 CT-36', () => {
   // Four cards lost the {/n} that went with their soft hyphen in transcription
   // and were left reading "adja- cent" / "oppo- nent".
   const bad: string[] = [];

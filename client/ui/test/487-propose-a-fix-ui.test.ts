@@ -58,7 +58,7 @@ function joinWithFixes(h: Harness, me: Seat, fix: Record<string, unknown> | null
 
 /* ── §1 ─────────────────────────────────────────────────────────────── */
 
-test('§1 the table menu offers a fix exactly where the room takes fixes', () => {
+test('§1 the table menu offers a fix exactly where the room takes fixes BL-46', () => {
   const { h, me } = battle(48700);
   joinWithFixes(h, me, null);
   assert.ok(!menuLabels(ui.rightClick({ act: 'player', p: me })).includes(FIX), 'no entry in a room that takes no fixes');

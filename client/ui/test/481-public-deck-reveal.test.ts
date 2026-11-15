@@ -77,7 +77,7 @@ function battleFor(seed: number, res: [string, number][]): { h: Harness; A: Seat
 // §1 — Tides of the Cosmos
 // ════════════════════════════════════════════════════════════════════════
 
-test('Tides of the Cosmos for one seat shows the other seat all 8 cards in the notice', () => {
+test('Tides of the Cosmos for one seat shows the other seat all 8 cards in the notice #219 CT-302', () => {
   const { h, A, D } = battleFor(48101, [['water', 11]]);
   const eight = [
     'Tidal Menace', 'Curio Drifter', 'Good Whale', 'Jelly', 'Ignis Sprite',
@@ -135,7 +135,7 @@ test('Tides of the Cosmos with nothing it may play shows the caster the cards to
 // §2 — Big Glimpse Card
 // ════════════════════════════════════════════════════════════════════════
 
-test('Big Glimpse Card shows the caster all 7 in the notice while the opponent splits', () => {
+test('Big Glimpse Card shows the caster all 7 in the notice while the opponent splits CT-302', () => {
   const { h, A, D } = battleFor(48103, [['light', 3], ['water', 3]]);
   const seven = ['Gublin', 'Shib', 'Chombot', 'Uglk', 'Bloppert', 'Zephyrzoa', 'Mindburn'] as CardName[];
   h.q.deckOf(D).unshift(...seven);
@@ -178,7 +178,7 @@ const WORDS: Record<string, number> = {
   one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
 };
 
-test('every card that reveals deck cards without the Glimpse keyword emits the typed reveal', () => {
+test('every card that reveals deck cards without the Glimpse keyword emits the typed reveal #219 CT-302', () => {
   const textOf = (n: string): string => getCard(n).text ?? '';
   const revealers = allCardNames().filter(n => DECK_REVEAL.test(textOf(n)));
   const glimpsers = revealers.filter(n => GLIMPSE_KEYWORD.test(textOf(n)));

@@ -108,7 +108,7 @@ test('Flux Resonator scales a spawn ONCE: a Robot 2 is a 3/3, and the placement 
   assert.equal(put[0]!.data?.['n'], 3);
 });
 
-test('Caleb 2026-03-05: Aethercap Siphoner spawned in battle triggers Pestilent Mycelion', () => {
+test('Caleb 2026-03-05: Aethercap Siphoner spawned in battle triggers Pestilent Mycelion #220', () => {
   const { h, A, D, a: [myc] } = deploy(49330, ['Pestilent Mycelion']);
   battle(h, A, [[myc!]]);
   const life0 = h.state.players[D]!.life;
@@ -140,7 +140,7 @@ test('Counter Thief, DURING BATTLE: a Robot\'s spawn counters land on the Thief,
   assert.equal(hand(h, D) - hD, 0, 'D put nothing anywhere — D\'s Blightshell is silent');
 });
 
-test('Counter Thief, OUTSIDE battle: the Robot keeps its own counters', () => {
+test('Counter Thief, OUTSIDE battle: the Robot keeps its own counters #220', () => {
   const { h, A, a: [, thief] } = deploy(49350, ['Scrapyard Custodian', 'Counter Thief']);
   const h0 = hand(h, A);
   withE(h, e => { e.spawnUnit(A, 'Robot', e.homeRegion(A), { token: true, counters: 2 }); });

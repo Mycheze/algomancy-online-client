@@ -98,7 +98,7 @@ test('§0 POSITIVE CONTROL: the blanket suppression flags are in use, and the te
  * 1. THE GUARD
  * ════════════════════════════════════════════════════════════════════════ */
 
-test('§1 GUARD: a card that switches off a whole layer must print a whole-layer clause', () => {
+test('§1 GUARD: a card that switches off a whole layer must print a whole-layer clause #136 CT-149', () => {
   for (const layer of ['abilities', 'attrs'] as const) {
     const flag = layer === 'abilities' ? 'suppressAbilities' : 'suppressAttrs';
     const wrong = flagUsers(flag).filter(n => !printsBlanket(n, layer));
@@ -129,7 +129,7 @@ function wispUnderWeaver(): { h: Harness; wisp: number } {
   return { h, wisp };
 }
 
-test('§2 a Wisp keeps an ability it was given — the weaver takes away one clause, not the layer', () => {
+test('§2 a Wisp keeps an ability it was given — the weaver takes away one clause, not the layer #136 CT-149', () => {
   const { h, wisp } = wispUnderWeaver();
   const p = h.state.deployPlayer!;
   const fodder = spawn(h, p, 'Unit Token');
@@ -141,7 +141,7 @@ test('§2 a Wisp keeps an ability it was given — the weaver takes away one cla
     + 'it says nothing about the Wisp\'s other abilities (owner report, 2026-08-30).');
 });
 
-test('§3 and the weaver still stops the sacrifice it does print', () => {
+test('§3 and the weaver still stops the sacrifice it does print #136 CT-149', () => {
   // NEGATIVE CONTROL FIRST. Without it this test asserts "a unit I never
   // killed is still alive", which is true of every board ever built.
   const bare = new Harness(4270);

@@ -63,7 +63,7 @@ async function seat(tokens: [string, string]): Promise<{ code: string; a: Client
 
 test.after(async () => { for (const c of clients) c.close(); await server.stop(); });
 
-test('1173 §1: both seats and a spectator see the judge badge of the seat that has one, the mark only', async () => {
+test('1173 §1: both seats and a spectator see the judge badge of the seat that has one, the mark only BL-17', async () => {
   const { code, ja, jb } = await seat([people[0]!.token, people[1]!.token]);
   const want = [null, { judge: 2 }];
   assert.deepEqual(jb['badges'], want, 'the judge\'s own seat');

@@ -88,7 +88,7 @@ test('§1 a game of a match is never rated, and only a decided match has a row',
   }
 });
 
-test('§2 ⭐ a rated Bo3 won 2-0 moves each rating once and counts one rated game, while both games count', () => {
+test('§2 ⭐ a rated Bo3 won 2-0 moves each rating once and counts one rated game, while both games count CT-512', () => {
   const ann = account('EloAnn'), bo = account('EloBo');
   const { room: g1, m } = F.start(3, [ann, bo]);
   // rated as a league match is from week 1: the match and every room it makes

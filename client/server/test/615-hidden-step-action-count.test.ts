@@ -40,7 +40,7 @@ const recycle = (room: Room, seat: Seat): Action => {
   return { type: 'recycleForResource', seat, handIndex: 0, element: room.state.elements[0]! } as Action;
 };
 
-test('CR D6.1a / CT-334: in a hidden step each seat is served a count that moves for its own actions and not for the other seat', async () => {
+test('CR D6.1a / CT-334: in a hidden step each seat is served a count that moves for its own actions and not for the other seat CT-262', async () => {
   process.env['ALGO_GAMES_DIR'] = mkdtempSync(join(tmpdir(), 'algo-615-'));
   const R = await import(`../rooms.ts?r615=${Math.random()}`) as Rooms;
   const room = R.createRoom('R615A', 61501, ['Ann', 'Bo'], 'shared');

@@ -42,7 +42,7 @@ function throwAtWhale(seed: number, partner: string) {
   return { h, A, D, whale, item };
 }
 
-test('CR 714.2 / CT-538: Throwing Boulder sacrificed from a column with a Deadly unit throws a Deadly 3', () => {
+test('CR 714.2 / CT-538: Throwing Boulder sacrificed from a column with a Deadly unit throws a Deadly 3 #344', () => {
   const { h, whale, item } = throwAtWhale(11840, 'Carapace Devourer');
   assert.ok(item.lastKnown?.attrs.includes('Deadly'),
     'the ability remembers the Deadly its column shared with the Boulder as it was sacrificed');

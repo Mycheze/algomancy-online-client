@@ -71,7 +71,7 @@ function get(query: string, token: string | null = null): Answer {
   return { status, body: JSON.parse(raw) as Record<string, unknown>, raw, handled };
 }
 
-test('the public answer folds every counted game, recorded as played, and names nobody', () => {
+test('the public answer folds every counted game, recorded as played, and names nobody BL-13', () => {
   const r = get('');
   assert.equal(r.handled, true);
   assert.equal(r.body['ok'], true);
@@ -81,7 +81,7 @@ test('the public answer folds every counted game, recorded as played, and names 
   for (const id of [ALICE.id, BOB.id]) assert.ok(!r.raw.includes(id), 'an account id went out in a public answer');
 });
 
-test('a public filter narrow enough to show one game\'s hands is refused', () => {
+test('a public filter narrow enough to show one game\'s hands is refused BL-13', () => {
   const r = get('?from=2026-09-26');
   assert.equal(r.body['ok'], false);
   assert.equal(r.body['games'], 1);

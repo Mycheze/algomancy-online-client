@@ -223,7 +223,7 @@ const TARGETED: Record<string, string> = {
 
 // ── the assertions ──────────────────────────────────────────────────────
 
-test('the classifier finds the replacement clauses, and only those', () => {
+test('the classifier finds the replacement clauses, and only those #75 CT-11', () => {
   // A floor on the CLASSIFIER itself. If a narrowing round ever goes one step
   // too far, the assertions below all pass vacuously and nobody notices — so
   // the eleven cards the owner's two reports are about are named here, and the
@@ -247,7 +247,7 @@ test('the classifier finds the replacement clauses, and only those', () => {
     + 'and make sure it is built as a replacement, not as a trigger.');
 });
 
-test('a replacement that names NO target is built out of the replacement layer', () => {
+test('a replacement that names NO target is built out of the replacement layer #60 CT-11', () => {
   const problems: string[] = [];
   for (const name of REPLACEMENT_CARDS) {
     const untargeted = replacementClauses(name).filter(s => !namesTarget(s));
@@ -265,7 +265,7 @@ test('a replacement that names NO target is built out of the replacement layer',
     + 'CR 708.5, 708.4a. Do NOT reach for a trigger; that is the bug being reported.');
 });
 
-test('a card whose whole text is an untargeted replacement declares NO ability at all', () => {
+test('a card whose whole text is an untargeted replacement declares NO ability at all #60 #75 CT-11', () => {
   // The negative half, and the one that actually catches the reported bug: a
   // triggered or activated ability is the only way a unit in play puts an item
   // on the stack, and a card that prints nothing but a targetless replacement
@@ -288,7 +288,7 @@ test('a card whose whole text is an untargeted replacement declares NO ability a
     + 'uses the stack and cannot be responded to.');
 });
 
-test('a replacement that DOES name a target still uses the stack (the targeted shape stays)', () => {
+test('a replacement that DOES name a target still uses the stack (the targeted shape stays) #75 CT-11', () => {
   // The other direction, and the reason it is a test: "target" is the owner's
   // switch, so a well-meaning sweep of "no replacement may be a trigger" would
   // break Beyond, Codex Incarnate. This is what stops that.
@@ -312,7 +312,7 @@ test('a replacement that DOES name a target still uses the stack (the targeted s
   assert.deepEqual(problems, []);
 });
 
-test('every exemption is still needed — one that outlives its cause fails here', () => {
+test('every exemption is still needed — one that outlives its cause fails here #75 CT-11', () => {
   // 68-target-conformance's rule, for 68's reason: an exemption list nobody
   // re-reads becomes a list of things that used to be true.
   const problems: string[] = [];
@@ -340,7 +340,7 @@ test('every exemption is still needed — one that outlives its cause fails here
   assert.deepEqual(problems, []);
 });
 
-test('the layer is NARROW on purpose: every replaceX hook has a consulting site in the engine', () => {
+test('the layer is NARROW on purpose: every replaceX hook has a consulting site in the engine CT-10', () => {
   // `replaceRotDamage`'s own comment argues for this and the replacement layer keeps it:
   // "Deliberately a one-off hook, not a replacement framework". A hook nothing
   // consults is worse than no hook — it reads as implemented. This is the

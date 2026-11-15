@@ -86,7 +86,7 @@ function codeLines(src: string): { n: number; text: string }[] {
 
 /* ══ §1 "all" is "all in this region" ════════════════════════════════════ */
 
-test('§1a no card reads the whole table — it asks the region', () => {
+test('§1a no card reads the whole table — it asks the region CT-108', () => {
   const offenders: string[] = [];
   for (const file of walk(CARDS)) {
     for (const { n, text } of codeLines(readFileSync(file, 'utf8'))) {
@@ -101,7 +101,7 @@ test('§1a no card reads the whole table — it asks the region', () => {
     + offenders.join('\n  '));
 });
 
-test('§1b the derivation really had teeth — the scan finds the sites, not a list', () => {
+test('§1b the derivation really had teeth — the scan finds the sites, not a list CT-108', () => {
   // positive control: the guard above can fail. Without this, "no offenders"
   // could just as well mean the scan reads nothing at all — which is the
   // failure mode docs/13 names (a scrape that reads less than it should).
@@ -125,7 +125,7 @@ test('§1c seatsHere is the region\'s seats, in a stable order', () => {
   if (empty >= 0) assert.deepEqual(e.seatsHere(empty), []);
 });
 
-test('§1d a seat that is not in the region is not counted', () => {
+test('§1d a seat that is not in the region is not counted CT-108', () => {
   const h = new Harness(21901);
   const e = new E(h.state);
   const region = h.state.regions.findIndex(r => r.presentSeats.length > 0);
@@ -139,7 +139,7 @@ test('§1d a seat that is not in the region is not counted', () => {
     'this is the whole of CT-108: a player who is not here cannot define the outcome here');
 });
 
-test('§1e ONE helper for the pool — the local copies are gone', () => {
+test('§1e ONE helper for the pool — the local copies are gone CT-108', () => {
   // two batch files had grown their own `presentSeats`, with DIFFERENT orders.
   // That is the same "one concept, several spellings" shape already removed from
   // the tempo, and it is how two cards come to disagree about who is present.
@@ -158,7 +158,7 @@ test('§1e ONE helper for the pool — the local copies are gone', () => {
 
 /* ══ §2 information is NOT scoped ════════════════════════════════════════ */
 
-test('§2a the log redactor gates on privateTo, and on nothing else', () => {
+test('§2a the log redactor gates on privateTo, and on nothing else CT-107', () => {
   const src = readFileSync(join(HERE, '..', 'view.ts'), 'utf8');
   const from = src.indexOf('export function visibleToSeat');
   const body = src.slice(from, src.indexOf('\n}', from));
@@ -169,7 +169,7 @@ test('§2a the log redactor gates on privateTo, and on nothing else', () => {
     + 'somebody fixing what was ruled not to be broken.');
 });
 
-test('§2b an event from a region you are not in is still yours to read', () => {
+test('§2b an event from a region you are not in is still yours to read CT-107', () => {
   const ev: EngineEvent = { type: 'info', msg: 'something happened over there', data: { region: 3 } };
   for (const seat of [0, 1] as Seat[]) {
     assert.equal(visibleToSeat(ev, seat), true,
@@ -177,7 +177,7 @@ test('§2b an event from a region you are not in is still yours to read', () => 
   }
 });
 
-test('§2c privateTo still hides what it always hid', () => {
+test('§2c privateTo still hides what it always hid CT-107', () => {
   // the ruling narrowed nothing about genuine privacy, and a green §2a/§2b
   // would be worthless if this had quietly stopped working
   const secret: EngineEvent = { type: 'info', msg: 'only for seat 1', data: { privateTo: 1 } };

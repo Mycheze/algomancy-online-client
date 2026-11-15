@@ -33,7 +33,7 @@ const beatsOf = (n: number, card = 'Fireball'): EngineEvent[] =>
 /** the gaps the client books for these steps (the last is the real update) */
 const gaps = (steps: readonly EngineEvent[][]): number[] => playbackGapsOf(steps.map(e => flashBatches(e)));
 
-test('the hand-over to the next turn waits PLAYBACK_END_MS, longer than a frame', () => {
+test('the hand-over to the next turn waits PLAYBACK_END_MS, longer than a frame #193', () => {
   assert.ok(PLAYBACK_END_MS > PACE_MS, 'a longer pause than the plain tempo — the report');
   assert.equal(PLAYBACK_END_MS, 2 * PACE_MS, 'derived from the one tempo, not typed');
   // frames with no stack beats (a unit played, a resource) and the update
@@ -49,7 +49,7 @@ test('a last frame with several stack beats tells them all, then pauses', () => 
   assert.equal(gaps([[], beatsOf(3), []]).at(-1), 2 * PACE_MS + PLAYBACK_END_MS);
 });
 
-test('the frames before the hand-over keep their pace', () => {
+test('the frames before the hand-over keep their pace #193', () => {
   // one tempo per beat of the step before, a tempo for a quiet step
   assert.deepEqual(gaps([[], beatsOf(2), [], beatsOf(1), []]).slice(0, -1), [0, PACE_MS, 2 * PACE_MS, PACE_MS]);
   // a run of copies of one card at the same-source tempo
@@ -70,7 +70,7 @@ test('every playback goes through the one gap rule: live, watch-again and Learn 
   assert.match(ui, /const gaps = playbackGaps\(steps\);/, '"watch again" books its gaps with the same rule');
 });
 
-test('the server\'s clock-hold budget outlasts the client\'s schedule, end pause included', () => {
+test('the server\'s clock-hold budget outlasts the client\'s schedule, end pause included #193', () => {
   const server = readFileSync(new URL('../../server/main.ts', import.meta.url), 'utf8');
   assert.match(server, /import \{ playbackBudget, PLAYBACK_MAX_MS \} from '\.\/playback-budget\.ts';/,
     'server/main.ts holds the clock with the shared budget');

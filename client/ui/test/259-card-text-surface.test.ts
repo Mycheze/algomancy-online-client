@@ -86,7 +86,7 @@ test('every card with a prophecy banner is found the same way', () => {
  * 1. CT-163 / #148 — the named card, on the namer
  * ════════════════════════════════════════════════════════════════════════ */
 
-test('CT-163: the box of the card that named says WHICH card it named', () => {
+test('CT-163: the box of the card that named says WHICH card it named #148', () => {
   const h = new Harness(5901);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -115,7 +115,7 @@ test('CT-163: the box of the card that named says WHICH card it named', () => {
     'the named card is substituted into the printed clause, not authored as a new sentence');
 });
 
-test('CT-163: with nothing named, the printed clause stands exactly as printed', () => {
+test('CT-163: with nothing named, the printed clause stands exactly as printed #148', () => {
   const h = new Harness(5902);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -134,7 +134,7 @@ test('CT-163: with nothing named, the printed clause stands exactly as printed',
  * 2. CT-168 / #153 — the same fact on the HOST it is modding
  * ════════════════════════════════════════════════════════════════════════ */
 
-test('CT-168: the host wearing it as an augment says the named card too', () => {
+test('CT-168: the host wearing it as an augment says the named card too #153', () => {
   const h = new Harness(5903);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -175,7 +175,7 @@ test('CT-168: the host wearing it as an augment says the named card too', () => 
  * 3. CT-164 / #149 — one fact, said once
  * ════════════════════════════════════════════════════════════════════════ */
 
-test('CT-164: a switched-off unit states the suppression once, not three times', () => {
+test('CT-164: a switched-off unit states the suppression once, not three times #149', () => {
   const h = new Harness(5904);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -199,7 +199,7 @@ test('CT-164: a switched-off unit states the suppression once, not three times',
     + 'banner and the strikethrough that already said it');
 });
 
-test('CT-164: a projected ATTRIBUTE is on the attribute row, not restated as a line', () => {
+test('CT-164: a projected ATTRIBUTE is on the attribute row, not restated as a line #149', () => {
   const h = new Harness(5905);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -223,7 +223,7 @@ test('CT-164: a projected ATTRIBUTE is on the attribute row, not restated as a l
     + 'in every render mode — the hover box draws the attribute row too');
 });
 
-test('CT-164: the STAT arithmetic is not deduplicated — compact mode hides it', () => {
+test('CT-164: the STAT arithmetic is not deduplicated — compact mode hides it #149', () => {
   // The boundary of the rule above, asserted so it cannot creep. A +N/+N from
   // a projection is stated by `statBreakdown.parts` — which ui/main.ts's
   // `textBoxHtml` DROPS in `compact`, the long-hover tooltip's mode. So the
@@ -246,7 +246,7 @@ test('CT-164: the STAT arithmetic is not deduplicated — compact mode hides it'
  * 4. CT-165 / #150 — prophecy, where a player reads a card
  * ════════════════════════════════════════════════════════════════════════ */
 
-test('CT-165: the printed prophecy banner is IN the box, on every card that prints one', () => {
+test('CT-165: the printed prophecy banner is IN the box, on every card that prints one #150', () => {
   const cards = bannerCards();
 
   // ── non-vacuity: today the banner is STRIPPED out of `text` by the
@@ -280,7 +280,7 @@ test('CT-165: the printed prophecy banner is IN the box, on every card that prin
   }
 });
 
-test('CT-165: a prophecy card reaches the {Prophecy} reminder in the in-game inspector', () => {
+test('CT-165: a prophecy card reaches the {Prophecy} reminder in the in-game inspector #150', () => {
   // ui/main.ts's inspector builds its reminder rows two ways: `box.attrs` gets
   // a glossary row each, and `glossaryHits([type, text])` covers the rest with
   // the attributes SKIPPED. The banner is not in `text` and never was, so the
@@ -306,7 +306,7 @@ test('CT-165: a card WITHOUT a banner never claims the marker', () => {
   assert.deepEqual(wrong, [], 'the marker is derived from the printed banner and nothing else');
 });
 
-test('CT-164 + CT-165: the browser panel does not state prophecy twice', () => {
+test('CT-164 + CT-165: the browser panel does not state prophecy twice #150', () => {
   // The card browser already draws the {Prophecy} glossary row for these seven
   // cards, off `CardRow.keywords` (CR D6.11c). The panel ALSO printed an authored
   // one-liner directly above it — the same redundancy class as #149, in the

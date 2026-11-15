@@ -207,7 +207,7 @@ test('§1 a finger that moves before the hold is a swipe: no lift, the page scro
   assert.equal(where.get('Bumblecrab'), 'deck');
 });
 
-test('§2 held, then carried onto the Sideboard rail: the card goes to the sideboard', () => {
+test('§2 held, then carried onto the Sideboard rail: the card goes to the sideboard CT-516', () => {
   const card = cardAt('deck');
   down(60, 150);
   assert.equal(touchmove(), false, 'before the hold the finger may still scroll');
@@ -255,7 +255,7 @@ test('§2b the ghost rides above the finger that carries it, where it would othe
   }
 });
 
-test('§3 and back: a sideboard card carried onto the table lands in the deck', () => {
+test('§3 and back: a sideboard card carried onto the table lands in the deck CT-516', () => {
   drops.length = 0;
   where.set('Bumblecrab', 'side');
   where.set('Ashfang', 'side');
@@ -271,7 +271,7 @@ test('§3 and back: a sideboard card carried onto the table lands in the deck', 
   assert.equal(where.get(name), 'deck');
 });
 
-test('§4 a pointercancel mid-carry (the browser took the gesture) drops nothing', () => {
+test('§4 a pointercancel mid-carry (the browser took the gesture) drops nothing CT-516', () => {
   drops.length = 0;
   const before = ended;
   const card = cardAt('deck');

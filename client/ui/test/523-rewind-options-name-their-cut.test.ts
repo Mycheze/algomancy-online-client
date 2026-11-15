@@ -75,7 +75,7 @@ const COUNTED = /take back the last|\blogged\b|\b\d+ actions?\b/i;
 
 /* ── §1 ─────────────────────────────────────────────────────────────── */
 
-test('§1 every rewind option names whose action it goes back before, and your last action is offered', () => {
+test('§1 every rewind option names whose action it goes back before, and your last action is offered CT-323 CT-340', () => {
   const room = R.createRoom('N523', 52300, [...NAMES], 'shared');
   const recycled = new Set<string>();
   for (let i = 0; i < 400; i++) {
@@ -119,7 +119,7 @@ test('§1 every rewind option names whose action it goes back before, and your l
 
 /* ── §2 ─────────────────────────────────────────────────────────────── */
 
-test('§2 inside a hidden step no option cuts what the asking seat has not seen, and nothing counts the log', () => {
+test('§2 inside a hidden step no option cuts what the asking seat has not seen, and nothing counts the log #247 #248 #255 CT-325', () => {
   const room = R.createRoom('H523', 52301, [...NAMES], 'shared');
   live(room);
   // both seats act in the hidden planning step, interleaved: Ann, Bo, Ann
@@ -195,7 +195,7 @@ const OPTS = [
   { to: 40, label: 'Back to before your Fireball (your last action)', takes: 'your Fireball and their pass' },
 ];
 
-test('§3 the dialog picks no rewind for you, shows what each takes back, and points a play still being aimed at Escape', () => {
+test('§3 the dialog picks no rewind for you, shows what each takes back, and points a play still being aimed at Escape CT-323', () => {
   const h = new Harness(52302, ['Ann', 'Bo']);
   toDeployment(h);
   const A = h.state.initiative;

@@ -66,7 +66,7 @@ test('§1 the head row is its own off zone, inside the table’s end zone', () =
   assert.match(html, /<div class="tttable"[^>]*data-tt-zone="end"[^>]*>\s*<div class="tthead" data-tt-zone="off" data-btn="tt-to">/);
 });
 
-test('§2 a drag over the head row has no drop zone, so the card flies home', () => {
+test('§2 a drag over the head row has no drop zone, so the card flies home CT-521', () => {
   const before = piles(ui.html());
   assert.ok(before.length > 0);
   assert.equal(zoneOver({ btn: 'tt-addpile' }), null, 'over + Pile: nowhere to drop');
@@ -79,7 +79,7 @@ test('§3 the bare felt still means a new pile at the end', () => {
   assert.equal(felt?.dataset['ttZone'], 'end');
 });
 
-test('§4 Move…, then a tap on the head row: nothing moves and the card stays picked', () => {
+test('§4 Move…, then a tap on the head row: nothing moves and the card stays picked CT-521', () => {
   const before = piles(ui.html());
   const src = firstCard(ui.html());
   ui.click({ btn: 'tt-card', 'tt-src': src });

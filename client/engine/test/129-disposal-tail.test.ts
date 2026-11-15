@@ -205,7 +205,7 @@ test('CR 410.7 (ii): nontoken mods — the despawn fires, and each mod goes to t
 // deliberately does not fall back to a name search, because falling back is how
 // an innocent older copy gets eaten) and the second mod SURVIVES in the bin,
 // recurrable. Descending order never disturbs an index still to be used.
-test('CR 410.7 (iii): an Unstable body is swept with its mods — including TWO MODS OF ONE CARD in one bin', () => {
+test('CR 410.7 (iii): an Unstable body is swept with its mods — including TWO MODS OF ONE CARD in one bin CT-43', () => {
   const h = new Harness(12902);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -332,7 +332,7 @@ test('CR 410.7 (v): a TOKEN mod is announced by the bulk event and reaches neith
 // This is behavioural, not a source scan: the method is replaced with a
 // counting wrapper and both routes are driven. Re-inline the sequence at either
 // call site — even perfectly — and the counter for that route stays at zero.
-test('CR 410.7 conformance: BOTH destroy() and Hooba-Mon’s exchange go through E.disposeToBin', () => {
+test('CR 410.7 conformance: BOTH destroy() and Hooba-Mon’s exchange go through E.disposeToBin CT-43', () => {
   const real = E.prototype.disposeToBin;
   let calls = 0;
   const wrapped = function (this: E, ...args: Parameters<E['disposeToBin']>): void {
@@ -376,7 +376,7 @@ test('CR 410.7 conformance: BOTH destroy() and Hooba-Mon’s exchange go through
 // that runs. A re-inlined copy that ALSO called disposeToBin — the most likely
 // shape of a bad merge — would satisfy the spy and double every trash. So each
 // call site is also read for the parts of the tail that must not be there.
-test('CR 410.7 conformance: neither call site keeps a second copy of the tail', () => {
+test('CR 410.7 conformance: neither call site keeps a second copy of the tail CT-43', () => {
   const src = (p: string): string => fs.readFileSync(path.resolve(HERE, '..', p), 'utf8');
 
   // destroy(): its own source, taken off the prototype so a moved method or a
@@ -440,7 +440,7 @@ test('CR 410.7 conformance: neither call site keeps a second copy of the tail', 
 // erased carrier takes its mod with it and no trash happens. What is still
 // true — and is what CT-43 was actually about — is that the two routes
 // through `disposeToBin` must not drift apart from each other.
-test('CR 410.7: a nontoken mod is binned and trashed the same whether its host dies or is exchanged', () => {
+test('CR 410.7: a nontoken mod is binned and trashed the same whether its host dies or is exchanged CT-43', () => {
   const shape = (seed: number, leave: (h: Harness, host: EntityId, A: Seat) => void) => {
     const h = new Harness(seed);
     toDeployment(h);

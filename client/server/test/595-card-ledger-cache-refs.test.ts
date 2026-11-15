@@ -34,7 +34,7 @@ const LOG: [Action, string][] = [
     'playCard|0:"Slag Spewer"|-|-1h:Slag Spewer'],
 ];
 
-test('card stats: a refs-only game counts cached plays and augments, grafts and prophecies from the cache (fix 8b88225)', () => {
+test('card stats: a refs-only game counts cached plays and augments, grafts and prophecies from the cache (fix 8b88225) CT-360', () => {
   const file: LedgerFile = {
     seed: 1, mode: 'shared', names: ['A', 'B'],
     actions: LOG.map(([a]) => a), refs: LOG.map(([, r]) => r),

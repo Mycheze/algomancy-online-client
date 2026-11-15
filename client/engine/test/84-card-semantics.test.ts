@@ -284,7 +284,7 @@ const unobserved = new Map<ClaimGate, { card: string; claim: Claim }[]>();
 /** gate → [observed, total] */
 const partition = new Map<ClaimGate | 'OWED', [number, number]>();
 
-test('drive every card and check it against its printed promises', () => {
+test('drive every card and check it against its printed promises CT-87', () => {
   for (const card of POOL) {
     const claims = claimsOf(card);
     if (!claims.length) continue;
@@ -355,7 +355,7 @@ const KNOWN_UNMET: Record<string, string> = {
     + 'X = 0. Already declared NOT_A_GAP in 71-card-ledger for the same reason.',
 };
 
-test('no card silently fails to deliver an unconditional printed promise', () => {
+test('no card silently fails to deliver an unconditional printed promise CT-49', () => {
   const surprises: string[] = [];
   for (const [card, claims] of unmet) {
     if (card in KNOWN_UNMET) continue;
@@ -387,7 +387,7 @@ test('every KNOWN_UNMET entry is still needed, and still says which kind it is',
 
 // ── the self-erase class, asserted directly ─────────────────────────────
 
-test('the "Erase me" class is exactly the four cards CARD-TODO #15 names', () => {
+test('the "Erase me" class is exactly the four cards CARD-TODO #15 names CT-15', () => {
   // Read off the printed text rather than the todo list, so a NEW card that
   // prints a self-erase and forgets to implement it fails here on arrival
   // instead of joining a class nobody is counting.
@@ -543,7 +543,7 @@ test('the gate partition keeps its floor in every category', () => {
  */
 const KNOWN_UNACTIVATED: Record<string, string> = {};
 
-test('every activation-gated promise is delivered when the drill pays and activates', () => {
+test('every activation-gated promise is delivered when the drill pays and activates CT-49', () => {
   const surprises: string[] = [];
   for (const { card, claim } of unobserved.get('activated') ?? []) {
     if (card in KNOWN_UNACTIVATED) continue;
@@ -588,7 +588,7 @@ test('every activation-gated promise is delivered when the drill pays and activa
 import { UNREACHED } from '../../ledgers/unreached.ts';
 
 
-test('every gated promise the fixtures cannot reach is NAMED, with the precondition that is missing', () => {
+test('every gated promise the fixtures cannot reach is NAMED, with the precondition that is missing CT-49', () => {
   // The shape CARD-TODO #49 asks to close in. Asserted in BOTH directions, the
   // way KNOWN_UNMET is: a card cannot quietly join the list, and an entry
   // cannot outlive its reason.
@@ -770,7 +770,7 @@ test('the fixture library actually fires, and the augment actually lands on a ho
 
 // ── the tally ───────────────────────────────────────────────────────────
 
-test('the semantic pass reports honestly on what it could and could not check', () => {
+test('the semantic pass reports honestly on what it could and could not check CT-147', () => {
   let total = 0, cond = 0;
   for (const card of POOL) {
     for (const c of claimsOf(card)) { total++; if (c.conditional) cond++; }

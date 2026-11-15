@@ -71,7 +71,7 @@ test('RAQ Reconfigure vs Despawn: moving Bubb and its Growing Plague onto a Robo
 
 // CR 720.10b / CT-213: was broken (the [once] mark stayed on the old host); a moved
 // mod's spent augment budget now travels with it (E.moveMod).
-test('RAQ Reconfigure vs Once per Turn: a spent Graxxlid moved by Reconfigure onto a new host is still spent', () => {
+test('RAQ Reconfigure vs Once per Turn: a spent Graxxlid moved by Reconfigure onto a new host is still spent CT-213', () => {
   const h = new Harness(39302);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -120,7 +120,7 @@ test('RAQ Reconfigure vs Once per Turn: a spent Graxxlid moved by Reconfigure on
 
 // CR 721.5a / CT-214: was broken (the Construct fired once, for Bubb); each mod that
 // rides along is now applied to the new host and announced.
-test('RAQ Reconfigure onto Perpetual Construct: each moved mod is its own trigger — a 4/4, a 3/3 and a 1/1',
+test('RAQ Reconfigure onto Perpetual Construct: each moved mod is its own trigger — a 4/4, a 3/3 and a 1/1 CT-214',
   () => {
   const h = new Harness(39303);
   toDeployment(h);
@@ -404,7 +404,7 @@ test('RAQ Graft 101 point 10: a new graft slides between two already applied, an
 // … then the whole Graft Effect won't go on the stack."
 // CR 111.15 / CT-216: was broken (a grafted [cost] was an opt-in rider, skipped
 // alone); now it is mandatory and an unpayable one withholds the composite.
-test('RAQ Graft 101 point 11: an unpayable [cost] graft keeps the whole composite off the stack — the host and the other grafts too', () => {
+test('RAQ Graft 101 point 11: an unpayable [cost] graft keeps the whole composite off the stack — the host and the other grafts too CT-216 CT-434', () => {
   const h = new Harness(39316);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -424,7 +424,7 @@ test('RAQ Graft 101 point 11: an unpayable [cost] graft keeps the whole composit
 });
 
 // CR 722.6 / CT-216: was broken (the cost question offered "Don't pay — skip this effect").
-test('RAQ Graft 101 point 11: a payable [cost] graft must be paid — no opting out of it', () => {
+test('RAQ Graft 101 point 11: a payable [cost] graft must be paid — no opting out of it CT-216 CT-434', () => {
   const h = new Harness(39317);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -647,7 +647,7 @@ test('RAQ Download: a spell copy made by Earthbound Replicator is not a token, s
 // played spell. So both you and enemy can benefit off from it. … 3. Enemy can
 // remove him easily with Fireballs / Poisons and get copy of them."
 
-test('RAQ Earthbound Replicator: an enemy spell aimed at it is copied for the ENEMY', () => {
+test('RAQ Earthbound Replicator: an enemy spell aimed at it is copied for the ENEMY CT-393', () => {
   const h = new Harness(39326);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -697,7 +697,7 @@ test('RAQ Earthbound Replicator: a Fireball token cast at it is a played spell a
 // and the 1/3s that followed could not draw. Measured (RAQ fix F5): at the
 // 'spawned' event a 1/1 under Sandstone already reads 1/3 and the Oracle
 // queues. Sandstone goes first here, and the claim holds.
-test('RAQ Nectar Ridge: under Sandstone Defender a 1/1 spawns already a 1/3, so the Oracle draws', () => {
+test('RAQ Nectar Ridge: under Sandstone Defender a 1/1 spawns already a 1/3, so the Oracle draws CT-217', () => {
   const h = new Harness(39328);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -711,7 +711,7 @@ test('RAQ Nectar Ridge: under Sandstone Defender a 1/1 spawns already a 1/3, so 
   assert.equal(handSize(h, A), hand0 + 1, 'the Oracle saw a 1/3 spawn and drew (once — [once])');
 });
 
-test('RAQ Nectar Ridge: under Infernal Wispweaver a 0/1 Wisp spawns already a 2/2, so the Oracle does not draw', () => {
+test('RAQ Nectar Ridge: under Infernal Wispweaver a 0/1 Wisp spawns already a 2/2, so the Oracle does not draw CT-236', () => {
   const h = new Harness(39329);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -777,7 +777,7 @@ const colAttrs = (h: Harness, ids: number[]): Set<string> => { let s = new Set<s
 // column.)"; Suppression Field prints no such reminder, but calebgannon's
 // answer names both cards ("these would apply loss of attributes to the
 // entire column").
-test('RAQ Suppression Field: it takes the attributes of the target\'s whole column — Bubb beside a Piercing unit, and the column loses Piercing',
+test('RAQ Suppression Field: it takes the attributes of the target\'s whole column — Bubb beside a Piercing unit, and the column loses Piercing CT-211',
   () => {
   const { h, units } = suppressed(39331, (h, A) => [spawn(h, A, 'Bubb'), spawn(h, A, 'Bumblecrab')], 0);
   const col = colAttrs(h, units);
@@ -786,7 +786,7 @@ test('RAQ Suppression Field: it takes the attributes of the target\'s whole colu
   finishBattle(h);
 });
 
-test('RAQ Suppression Field: aimed at either unit of a column, the whole column loses both — Bubb with Nebula Drifter, aimed at the Drifter',
+test('RAQ Suppression Field: aimed at either unit of a column, the whole column loses both — Bubb with Nebula Drifter, aimed at the Drifter CT-211',
   () => {
   const { h, units } = suppressed(39332, (h, A) => [spawn(h, A, 'Bubb'), spawn(h, A, 'Nebula Drifter')], 1);
   const col = colAttrs(h, units);
@@ -800,7 +800,7 @@ test('RAQ Suppression Field: aimed at either unit of a column, the whole column 
 // remove the attributes from a guy for the turn, it wouldn't make sense for it
 // to get them back") is about the SAME attributes coming back, and is not
 // obviously this case — the owner should rule.
-test('RAQ Suppression Field: an attribute granted after it resolved still applies — Protective Adaptations gives the suppressed Bubb Piercing',
+test('RAQ Suppression Field: an attribute granted after it resolved still applies — Protective Adaptations gives the suppressed Bubb Piercing CT-210',
   () => {
   const { h, A, units } = suppressed(39333, (h, A) => [spawn(h, A, 'Bubb')], 0);
   giveResources(h, A, 'water', 1);                            // Protective Adaptations b/1
@@ -813,7 +813,7 @@ test('RAQ Suppression Field: an attribute granted after it resolved still applie
   finishBattle(h);
 });
 
-test('RAQ Suppression Field: a Powerful virus attached after it resolved makes the suppressed Bubb Powerful',
+test('RAQ Suppression Field: a Powerful virus attached after it resolved makes the suppressed Bubb Powerful CT-210',
   () => {
   const { h, A, units } = suppressed(39334, (h, A) => [spawn(h, A, 'Bubb')], 0);
   giveResources(h, A, 'earth', 2);                            // Chitin Shredder ee/2, a Virus
@@ -846,7 +846,7 @@ test('RAQ Transmogrifant: a unit that enters play under it has no attributes, an
 });
 
 // BROKEN today: the static vetoes the later grant as well.
-test('RAQ Transmogrifant: an attribute a unit gains AFTER it is in play is not affected — a Powerful virus attached later works',
+test('RAQ Transmogrifant: an attribute a unit gains AFTER it is in play is not affected — a Powerful virus attached later works CT-210',
   () => {
   const h = new Harness(39336);
   toDeployment(h);
@@ -867,7 +867,7 @@ test('RAQ Transmogrifant: an attribute a unit gains AFTER it is in play is not a
 
 // CR 801.7d / CT-218: was broken (Cosmic Reversal erased the token straight off the
 // stack). It now goes through the hand like a recalled unit token (CR 410.5b).
-test('RAQ Recall Spell Token: a Fireball token recalled off the stack enters its controller hand — Rider of the Tides hears it — and is erased', () => {
+test('RAQ Recall Spell Token: a Fireball token recalled off the stack enters its controller hand — Rider of the Tides hears it — and is erased CT-218', () => {
   const h = new Harness(39337);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1000,7 +1000,7 @@ test('RAQ Borrower of Forms: copying a Robot token makes a nontoken unit, which 
   finishBattle(h);
 });
 
-test('RAQ Borrower of Forms: a Borrower that copied an [Augment] unit cannot be the first target of Reconfigure', () => {
+test('RAQ Borrower of Forms: a Borrower that copied an [Augment] unit cannot be the first target of Reconfigure CT-240', () => {
   const h = new Harness(39343);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1027,7 +1027,7 @@ test('RAQ Borrower of Forms: a Borrower that copied an [Augment] unit cannot be 
 });
 
 // CR 710.1a / CT-219: was broken (Cosmic Reversal read the PRINTED card's kind).
-test('RAQ Borrower of Forms: while it mimics a unit it is not a spell unit, so Cosmic Reversal leaves it in play', () => {
+test('RAQ Borrower of Forms: while it mimics a unit it is not a spell unit, so Cosmic Reversal leaves it in play CT-219', () => {
   const h = new Harness(39344);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1048,7 +1048,7 @@ test('RAQ Borrower of Forms: while it mimics a unit it is not a spell unit, so C
 // included (and the owner, now CR 710.2: "Inherit the mods text").
 // CR 722.8 / CT-219: was broken (the composite was built from mod ENTITIES only);
 // the copy now carries its copied mods and composes the copied grafts.
-test('RAQ Borrower of Forms: a Borrower that copied a Bellowing Boulder with Flame Juggle grafted runs the whole copied composite', () => {
+test('RAQ Borrower of Forms: a Borrower that copied a Bellowing Boulder with Flame Juggle grafted runs the whole copied composite CT-219', () => {
   const h = new Harness(39346);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1111,7 +1111,7 @@ test('RAQ Borrower of Forms: a graft added to a Borrower that copied a graft sta
 // Lurker, Death Greeter or Abduct)"
 // CR 710.1a / CT-219: was broken (every in-play cost reader asked the PRINTED card);
 // E.costOf reads the face.
-test('RAQ Borrower of Forms: a Borrower that copied a Robot costs 0, so Lumengrove Lurker can recall it', () => {
+test('RAQ Borrower of Forms: a Borrower that copied a Robot costs 0, so Lumengrove Lurker can recall it CT-219', () => {
   const h = new Harness(39347);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;

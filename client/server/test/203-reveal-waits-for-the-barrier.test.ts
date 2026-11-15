@@ -190,7 +190,7 @@ const reveals = (evs: readonly EngineEvent[]) => evs.filter(e => e.type === 'gli
 
 // ══ §1  HELD — nothing of the glimpse reaches the opponent mid-step ═══════
 
-test('CR D6.2: inside deployment the opponent is sent nothing of a Glimpse — live or on a resync', () => {
+test('CR D6.2: inside deployment the opponent is sent nothing of a Glimpse — live or on a resync #192 CT-77', () => {
   const { room, A, D, revealed, play, choose } = oracleInDeployment('R310A', 20301);
 
   assert.deepEqual(play.toOpp, [], 'the Oracle tick sends the opponent nothing at all — the reveal included');
@@ -210,7 +210,7 @@ test('CR D6.2: inside deployment the opponent is sent nothing of a Glimpse — l
   assert.deepEqual(mine[0]!.data?.['cards'], revealed, '…carrying the revealed cards in order');
 });
 
-test('CR D6.2: the haste step holds a Glimpse the same way (Seer of Empty Spaces)', () => {
+test('CR D6.2: the haste step holds a Glimpse the same way (Seer of Empty Spaces) #192', () => {
   const room = createRoom('R310B', 20302, [...NAMES]);
   tick(room, { type: 'donePlanning', seat: 0 });
   tick(room, { type: 'donePlanning', seat: 1 });
@@ -261,7 +261,7 @@ test('CR D6.1b: the shared deck and recycle counts do not move under a hidden Gl
 
 // ══ §2  FLUSHED EXACTLY ONCE, AT THE BARRIER ═════════════════════════════
 
-test('CR D6.2b: the barrier delivers the reveal exactly once, and the finished log holds it once', () => {
+test('CR D6.2b: the barrier delivers the reveal exactly once, and the finished log holds it once CT-77', () => {
   const { room, A, D, revealed } = oracleInDeployment('R310D', 20304);
   const close = closeDeployment(room, A, D);
   const toD = close.reveal![D]!;
@@ -282,7 +282,7 @@ test('CR D6.2b: the barrier delivers the reveal exactly once, and the finished l
 
 // ══ §3  IN THE PLAYBACK FRAME OF THE ACTION THAT MADE IT ═════════════════
 
-test('CR D5.2: the reveal plays in the recap, in the frame of the Oracle play, and nowhere else', () => {
+test('CR D5.2: the reveal plays in the recap, in the frame of the Oracle play, and nowhere else #192', () => {
   const { room, A, D, revealed } = oracleInDeployment('R310E', 20305);
   const close = closeDeployment(room, A, D);
   const pb = close.playback![D]!;
@@ -344,7 +344,7 @@ test('CR D6.1: of everything a hidden step emits, nothing reaches the other seat
   assert.deepEqual(leaked, [], 'not one event of a hidden step reached the other seat live');
 });
 
-test('CR D6.1a: a hidden step with no reveal in it leaks nothing either (the negative control)', () => {
+test('CR D6.1a: a hidden step with no reveal in it leaks nothing either (the negative control) CT-77', () => {
   const room = createRoom('R310G', 20307, [...NAMES]);
   toDeployment(room);
   const A = room.state.deployPlayer! as Seat, D = other(A);
@@ -356,7 +356,7 @@ test('CR D6.1a: a hidden step with no reveal in it leaks nothing either (the neg
   assert.equal(visibleLog(room, D).length, before, "the opponent's log did not move at all");
 });
 
-test('§4: the seat channel can tell the two seats apart (the positive control)', () => {
+test('§4: the seat channel can tell the two seats apart (the positive control) CT-77', () => {
   // docs/13 §7.4: an observation channel needs a control proving it can SEE.
   // If `visibleLog`/`unheldFor` ever degraded to "nothing", §1 would pass for
   // the wrong reason; this is the assertion that would not.

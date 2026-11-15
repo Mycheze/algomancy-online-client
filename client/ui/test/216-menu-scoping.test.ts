@@ -79,7 +79,7 @@ function board(seed: number): { h: Harness; A: Seat; unit: number } {
 
 /* ── §1 the new rule ────────────────────────────────────────────────────── */
 
-test('§1 right-clicking a CARD shows card things, and nothing about the field', () => {
+test('§1 right-clicking a CARD shows card things, and nothing about the field BL-20', () => {
   const { h, A, unit } = board(21600);
   ui.join(h.state as GameState, A, legalActions(h.state, A) as Action[]);
   const labels = menuLabels(ui.rightClick({ previd: unit }));
@@ -95,7 +95,7 @@ test('§1 right-clicking a CARD shows card things, and nothing about the field',
 
 /* ── §2 the ORIGINAL complaint, which must not come back ────────────────── */
 
-test('§2 both field entries are still reachable — from bare table', () => {
+test('§2 both field entries are still reachable — from bare table BL-20', () => {
   const { h, A } = board(21601);
   ui.join(h.state as GameState, A, legalActions(h.state, A) as Action[]);
   // a right-click that lands on nothing inspectable IS the bare-table click:
@@ -112,7 +112,7 @@ test('§2 both field entries are still reachable — from bare table', () => {
 
 /* ── §3 the card back — the deliberate call ─────────────────────────────── */
 
-test('§3 a card BACK is not a dead click: an unreadable card gets the table menu', () => {
+test('§3 a card BACK is not a dead click: an unreadable card gets the table menu BL-20', () => {
   const { h, A } = board(21602);
   // what the OPPONENT's hand really is on a redacted view — the shape
   // `server/view.ts` serves, so this is the back the owner would actually
@@ -133,7 +133,7 @@ test('§3 a card BACK is not a dead click: an unreadable card gets the table men
 /** the client's own markup for a state, joined fresh */
 const paint = (s: GameState, seat: Seat): string => ui.join(s, seat, []);
 
-test('§4a the duplication the report describes is real, and measured', () => {
+test('§4a the duplication the report describes is real, and measured #113 BL-32 CT-105', () => {
   const h = new Harness(21603, ['Ben', 'Rashi'], 'draft');
   const drafting = h.state as GameState;
   assert.equal(drafting.mode, 'draft', 'the fixture really is a draft');
@@ -145,7 +145,7 @@ test('§4a the duplication the report describes is real, and measured', () => {
     'and the dock showing the same cards a second time is tucked out of the way');
 });
 
-test('§4b TUCKED, NOT UNMOUNTED — the flight anchor survives', () => {
+test('§4b TUCKED, NOT UNMOUNTED — the flight anchor survives #113 BL-32 CT-105', () => {
   const h = new Harness(21604, ['Ben', 'Rashi'], 'draft');
   const seat = h.state.initiative;
   const html = paint(h.state as GameState, seat);
@@ -157,7 +157,7 @@ test('§4b TUCKED, NOT UNMOUNTED — the flight anchor survives', () => {
     'and the anchor is INSIDE the tucked dock, not somewhere else that happens to still exist');
 });
 
-test('§4c the dock comes back the moment the choice ends', () => {
+test('§4c the dock comes back the moment the choice ends #113 BL-32 CT-105', () => {
   const { h, A } = board(21605);
   // toDeployment has run: no draft pack open, no bottoming pending
   const html = paint(h.state as GameState, A);

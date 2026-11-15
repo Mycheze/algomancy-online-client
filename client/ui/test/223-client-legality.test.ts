@@ -117,7 +117,7 @@ function roundTwoCounterattack(seed: number): { h: Harness; D: Seat; sent: Entit
   return { h, D, sent, home };
 }
 
-test('[127] the attack affordance names exactly the units the engine would take', () => {
+test('[127] the attack affordance names exactly the units the engine would take #127 CT-120', () => {
   const { h, D, sent, home } = roundTwoCounterattack(22300);
   const s = h.state;
 
@@ -146,7 +146,7 @@ test('[127] the attack affordance names exactly the units the engine would take'
   }
 });
 
-test('[127] a unit the engine would refuse is not ringed and does not pick up on a click', () => {
+test('[127] a unit the engine would refuse is not ringed and does not pick up on a click #127 CT-120', () => {
   const { h, D, sent, home } = roundTwoCounterattack(22301);
   const legal = legalActions(h.state, D);
   ui.join(h.state, D, legal);
@@ -166,7 +166,7 @@ test('[127] a unit the engine would refuse is not ringed and does not pick up on
   ui.sent();
 });
 
-test('[127] the block step is the same question, asked of the defender', () => {
+test('[127] the block step is the same question, asked of the defender #127 CT-120', () => {
   const h = new Harness(22302);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -196,7 +196,7 @@ test('[127] the block step is the same question, asked of the defender', () => {
   assert.ok(engineWould.length >= 2, 'positive control: there is a real block to build');
 });
 
-test('[127] the region a formation leaves from has one derivation, not three', () => {
+test('[127] the region a formation leaves from has one derivation, not three #127 CT-120', () => {
   const { h, D, sent } = roundTwoCounterattack(22303);
   const s = h.state;
   // attackFrom IS doDeclareAttack's fromRegion — measured against the engine
@@ -220,7 +220,7 @@ function hasteStep(seed: number, seat: Seat): GameState {
   return h.state;
 }
 
-test('[122] one automatic doneHaste per unanswered send, however many states arrive', () => {
+test('[122] one automatic doneHaste per unanswered send, however many states arrive #122 CT-115', () => {
   const seat: Seat = 0;
   const s = hasteStep(22310, seat);
   const legal: Action[] = [{ type: 'doneHaste', seat }];
@@ -243,7 +243,7 @@ test('[122] one automatic doneHaste per unanswered send, however many states arr
     '[122] a new actionCount is not an answer to my send — nothing more goes out');
 });
 
-test('[122] the latch comes down when the SERVER says the answer landed', () => {
+test('[122] the latch comes down when the SERVER says the answer landed #122 CT-115', () => {
   const seat: Seat = 0;
   const s = hasteStep(22311, seat);
   const legal: Action[] = [{ type: 'doneHaste', seat }];
@@ -265,7 +265,7 @@ test('[122] the latch comes down when the SERVER says the answer landed', () => 
     'the next haste step still gets its automatic answer');
 });
 
-test('[122] a refusal of an action the CLIENT chose to send is not the player refusal', () => {
+test('[122] a refusal of an action the CLIENT chose to send is not the player refusal #122 CT-115', () => {
   const seat: Seat = 0;
   const s = hasteStep(22313, seat);
   ui.join(s, seat, [{ type: 'doneHaste', seat }]);
@@ -279,7 +279,7 @@ test('[122] a refusal of an action the CLIENT chose to send is not the player re
   ui.sent();
 });
 
-test('[122] a refusal that follows a real click is still the player refusal', () => {
+test('[122] a refusal that follows a real click is still the player refusal #122 CT-115', () => {
   // the negative control for the clause above: `autoOutstanding` is reset by
   // any human intent, so a refusal after a click is attributed to the click.
   const seat: Seat = 0;
@@ -335,7 +335,7 @@ function push(s: GameState, id: number): void {
   });
 }
 
-test('[123] a stack item that replaces another at the same height is still new', () => {
+test('[123] a stack item that replaces another at the same height is still new #123', () => {
   const { h, D } = battleWindow(22320);
   const s = h.state;
   push(s, 900);
@@ -374,7 +374,7 @@ test('[123] the stack clause by identity contains the old one by height', () => 
   assert.equal(passAllRelease(grown, D, legalAfter, arm), 'stack');
 });
 
-test('[123] an option that is not an activated ability releases the chip too', () => {
+test('[123] an option that is not an activated ability releases the chip too #123', () => {
   const { h, D } = battleWindow(22322);
   const s = h.state;
   const legal = legalActions(s, D);
@@ -394,7 +394,7 @@ test('[123] an option that is not an activated ability releases the chip too', (
     'the positive control: activationKeys alone could not see it');
 });
 
-test('[123] the option set is derived by exclusion, and the exclusions are the three named', () => {
+test('[123] the option set is derived by exclusion, and the exclusions are the three named #123', () => {
   const { h, D } = battleWindow(22323);
   const s = h.state;
   // a window with something of every shape in it: mana to cast with, a mod to
@@ -424,7 +424,7 @@ test('[123] the option set is derived by exclusion, and the exclusions are the t
     'positive control: there were index-carrying options to shift in the first place');
 });
 
-test('[123] a state this seat is not being asked to pass never releases the chip', () => {
+test('[123] a state this seat is not being asked to pass never releases the chip #123', () => {
   const { h, A, D } = battleWindow(22324);
   const s = h.state;
   const legal = legalActions(s, D);

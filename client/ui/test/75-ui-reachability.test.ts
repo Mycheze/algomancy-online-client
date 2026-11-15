@@ -1080,7 +1080,7 @@ test('every ledger row states an anchor and a reason a person can check', () => 
   }
 });
 
-test('the affordance for every offered shape is really in ui/main.ts', () => {
+test('the affordance for every offered shape is really in ui/main.ts #16 #67', () => {
   // the 'wiring' half of the ledger, and the wiring that hangs off the
   // 'helper' half. A missing pattern is a line that was refactored away; if the
   // line moved, move the pattern with it — do not delete the row.
@@ -1164,7 +1164,7 @@ function luredDefender(seed: number): { h: Harness; D: Seat; d1: EntityId } {
   return { h, D, d1 };
 }
 
-test('CR 606.2e: the client names the compulsory block instead of letting you find out', () => {
+test('CR 606.2e: the client names the compulsory block instead of letting you find out #10', () => {
   const { h, D, d1 } = luredDefender(7550);
   // an empty board, and the block bar has something to say about it
   const empty = blockPlanIssue(h.state, D, {});
@@ -1220,7 +1220,7 @@ test('the block bar and the Confirm button read the same plan, and both gate on 
 
 /* ── round 18: the wiring for #24, #63 and the haste bar, read as text ──── */
 
-test('the details page really renders the Transforms into row for the back face', () => {
+test('the details page really renders the Transforms into row for the back face #24', () => {
   // Ledger #24 (ZQPC, 2026-08-20): "Scholar of the Void doesn't say what the
   // Beyond card it can transform into does". transformFaces (ui/inspect.ts) has
   // been right about the DATA all along and is tested for real in
@@ -1290,7 +1290,7 @@ test('both resource menus default to the deck elements through the one shared he
     'and so does the prismite one');
 });
 
-test('the prismite click never counts the shortened list when it decides to auto fire', () => {
+test('the prismite click never counts the shortened list when it decides to auto fire #63', () => {
   // THE HAZARD, and it is silent: an active prismite offers seven exchanges and
   // no activate, so a mono-element deck's display list is exactly one — and
   // this handler has always acted immediately on a single option. The count

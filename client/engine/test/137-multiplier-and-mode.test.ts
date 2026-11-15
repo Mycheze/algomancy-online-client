@@ -172,7 +172,7 @@ test('Arbiter of Vitality: TWO QUADRUPLE — "quadruple it!! So always n*2*v"', 
     'and the log says ×4, so a reader can see which number was used');
 });
 
-test('CR 708.6: THREE Arbiters multiply — the fold is EXPONENTIAL in n', () => {
+test('CR 708.6: THREE Arbiters multiply — the fold is EXPONENTIAL in n CT-430', () => {
   // ⚠ THIS TEST USED TO ASSERT THE OPPOSITE, and it was right to, so the old
   // expectation is kept here rather than deleted:
   //

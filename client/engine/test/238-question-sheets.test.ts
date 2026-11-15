@@ -169,7 +169,7 @@ test('§0: the scans can go red — synthetic inputs, both directions', () => {
 
 /* ══ §1 · DERIVED — a ruling that says it answers a question is believed ══ */
 
-test('§1: every question a ruling claims to answer has a non-blank ANSWER on its sheet', () => {
+test('§1: every question a ruling claims to answer has a non-blank ANSWER on its sheet CT-128', () => {
   const byKey = new Map(QUESTIONS.map(q => [`${q.round}/${q.n}`, q]));
   const unbackfilled: string[] = [];
   for (const b of backPointers(REGISTER)) {
@@ -212,7 +212,7 @@ const OPEN_QUESTIONS: { round: number; n: number; why: string }[] = [
   // raw text so a regex that stops matching cannot also stop it noticing.
 ];
 
-test('§2: the blank answers on every sheet are exactly the inventory, no more and no fewer', () => {
+test('§2: the blank answers on every sheet are exactly the inventory, no more and no fewer CT-128', () => {
   const blanks = QUESTIONS.filter(q => q.answer === '').map(q => `${q.round}/${q.n}`).sort();
   const listed = OPEN_QUESTIONS.map(o => `${o.round}/${o.n}`).sort();
   assert.deepEqual(blanks, listed,
@@ -284,7 +284,7 @@ test('§2: every inventory row points at a question that exists and says what it
 const CR_IN = (s: string): string[] =>
   [...s.matchAll(/\bCR ((?:\d{3}|D\d+)(?:\.\d+[a-z]*)?(?:,\s(?:\d{3}|D\d+)(?:\.\d+[a-z]*)?)*)/g)].flatMap(m => m[1]!.split(/,\s/));
 
-test('§3: every CR number an ANSWER line cites is a live rule', () => {
+test('§3: every CR number an ANSWER line cites is a live rule CT-128', () => {
   assert.deepEqual(CR_IN('see CR 608.2b and CR 702.3, 704.6b'), ['608.2b', '702.3', '704.6b'], 'the citation scan reads lists');
   assert.ok(!LIVE.has('999.9z') && LIVE.has('608'), 'the ledger lookup can say no, and yes');
   const dangling: string[] = [];
@@ -298,7 +298,7 @@ test('§3: every CR number an ANSWER line cites is a live rule', () => {
 
 /* ══ §4 · POSITIVE CONTROLS ON THE GUARDS THEMSELVES ══════════════════ */
 
-test('§4: the guard convicts the HISTORICAL state — round-27 Q2 blank while an owner call claims it', () => {
+test('§4: the guard convicts the HISTORICAL state — round-27 Q2 blank while an owner call claims it CT-128', () => {
   // ⚠ Reconstructed from what actually shipped, not a fixture built to be
   // caught. The owner ruling's first line was `*(2026-08-28, round 29b. Answers
   // questions-round27 Q2. …` and the sheet's line 61 was the bare word

@@ -75,7 +75,7 @@ test('CR D2.6b: the call-site scan is not reading an empty population', () => {
     'engine.ts must show at least the declaration and one call; the matcher is broken otherwise');
 });
 
-test('CR D2.6b: stripCode really is blanking the prose mentions', () => {
+test('CR D2.6b: stripCode really is blanking the prose mentions CT-82', () => {
   // batch-hybrids-wm-b.ts names endBattleRound five times in its header
   // comment and calls it ONCE. If stripCode ever goes blind again (it has,
   // three times), this file would report six callers in one card (see 164-sweep-sight).
@@ -102,7 +102,7 @@ const KNOWN_CALLERS: Record<string, string> = {
     + 'that is not the engine deciding, and the one passEndsBattlePhase cannot see',
 };
 
-test('CR D2.6b: exactly four call sites reach endBattleRound, in exactly three files', () => {
+test('CR D2.6b: exactly four call sites reach endBattleRound, in exactly three files CT-82', () => {
   const found = new Map<string, number>();
   for (const rel of ['src/apply.ts', 'src/engine.ts', ...setFiles()]) {
     const n = callSites(rel);
@@ -122,7 +122,7 @@ test('CR D2.6b: exactly four call sites reach endBattleRound, in exactly three f
     + `(${[...found].map(([f, n]) => `${f}×${n}`).join(', ')})`);
 });
 
-test('CR D2.6b: every path funnels through startRegroup — which is WHY the token-loss announcement (D2.6a) is class-complete', () => {
+test('CR D2.6b: every path funnels through startRegroup — which is WHY the token-loss announcement (D2.6a) is class-complete CT-82', () => {
   // This is the invariant nobody had written down. The token-loss
   // announcement (CR D2.6a) lives in startRegroup; it reaches all four callers only
   // because endBattleRound's every exit leads there. Assert the structure,
@@ -144,7 +144,7 @@ test('CR D2.6b: every path funnels through startRegroup — which is WHY the tok
 
 /* ══ §3 · THE DEFECT: passEndsBattlePhase COVERS THREE OF FOUR ═════════ */
 
-test('CR D2.6b: passEndsBattlePhase names Temporal Rift as the path it cannot predict', () => {
+test('CR D2.6b: passEndsBattlePhase names Temporal Rift as the path it cannot predict CT-82', () => {
   // CT-82(a): "passEndsBattlePhase covers 10234 but NOT Temporal Rift, and its
   // documented invariant is false for it." The function is CORRECT — a card
   // ending the battle mid-resolution genuinely cannot be predicted from the

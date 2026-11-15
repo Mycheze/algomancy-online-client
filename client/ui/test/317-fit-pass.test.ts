@@ -30,7 +30,7 @@ test('§1 no cards, or no box, is a no-op at the base width', () => {
   assert.deepEqual(fitBattle(3, 1, 1, { w: 0, h: 0 }, { cw: 78, gap: 14 }), { mode: 'grid', cw: 78, cols: 0, rows: 0 });
 });
 
-test('§2 room keeps the base width; a crowd shrinks it; the floor holds', () => {
+test('§2 room keeps the base width; a crowd shrinks it; the floor holds BL-45', () => {
   const roomy = fitCards(3, { w: 600, h: 300 }, O);
   assert.equal(roomy.mode, 'grid');
   assert.equal(roomy.cw, 78, 'three cards in a 600×300 box need no shrinking');

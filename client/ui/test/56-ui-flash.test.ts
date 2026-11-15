@@ -211,7 +211,7 @@ test('an empty stack with nothing flashing draws nothing', () => {
 
 /* ── X survives the beat (playtest round 13, UZRG) ──────────────────────── */
 
-test('a flashed item still knows its X — the beat is the only chance to read it', () => {
+test('a flashed item still knows its X — the beat is the only chance to read it #43', () => {
   // "It's not possible to see the X value for an effect while it's on the
   // stack." A haste-step or deployment X spell resolves with no response
   // window: it never touches state.stack at all, so the flash beat is the ONE
@@ -582,13 +582,13 @@ const simpleCombat = (): EngineEvent[] => [
   ev('afterCombat', 'After-combat step.', { region: 0 }),
 ];
 
-test('a combat batch is cut at the seams the pump already leaves', () => {
+test('a combat batch is cut at the seams the pump already leaves #53', () => {
   const stages = combatStages(simpleCombat());
   assert.deepEqual(stages.map(s => [s.kind, s.lines]), [['strike', 2], ['after', 1]]);
   assert.deepEqual(stages[0]!.keys, ['@life:0'], 'the strike points at who was hit');
 });
 
-test('damage, then what it killed, then the after-step — three beats', () => {
+test('damage, then what it killed, then the after-step — three beats #53', () => {
   const stages = combatStages([
     ev('combatDamage', 'Combat damage (simultaneous):'),
     ev('damage', 'Ember of Life takes 1 (1 total).', { unit: 45, n: 1 }),

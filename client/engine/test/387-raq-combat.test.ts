@@ -283,25 +283,25 @@ test('RAQ Resonant: the extra damage is not combat damage — Oorblak does not t
     '"extra damage from Resonant effect wouldn\'t be considered as combat damage" — Oorblak takes only COMBAT damage');
 });
 
-test('RAQ Resonant: Conduit of Pain adds 1 to the Resonant damage — 2 combat, then 3 to the face', () => {
+test('RAQ Resonant: Conduit of Pain adds 1 to the Resonant damage — 2 combat, then 3 to the face CT-200', () => {
   const { wallDamage, lost } = resonantBoard(38711, { conduit: true });
   assert.equal(wallDamage, 2, 'Conduit does not touch combat damage');
   assert.equal(lost, 3, '"2/4 dealing 2 damage to enemy unit would then put effect to deal 2+1=3 damage to opponent face"');
 });
 
-test('RAQ Resonant: a Powerful Resonant 2/4 deals 4 combat damage and then 8 to the face', () => {
+test('RAQ Resonant: a Powerful Resonant 2/4 deals 4 combat damage and then 8 to the face CT-200', () => {
   const { wallDamage, lost } = resonantBoard(38712, { powerful: true });
   assert.equal(wallDamage, 4, 'Powerful doubles the combat damage');
   assert.equal(lost, 8, '"2/4 Resonant Powerful would deal 4 combat damage … and then put effect on stack to deal 8 damage to enemy face"');
 });
 
-test('RAQ Resonant: Resonant + Powerful + Conduit — 4 combat, then (4+1)x2 = 10 to the face', () => {
+test('RAQ Resonant: Resonant + Powerful + Conduit — 4 combat, then (4+1)x2 = 10 to the face CT-200', () => {
   const { wallDamage, lost } = resonantBoard(38713, { powerful: true, conduit: true });
   assert.equal(wallDamage, 4);
   assert.equal(lost, 10, '"(4+1)x2 = 10 damage to enemy face"');
 });
 
-test('RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles — a Powerful Bellowing Boulder deals (1+1)x2 = 4 to each unit', () => {
+test('RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles — a Powerful Bellowing Boulder deals (1+1)x2 = 4 to each unit CT-201', () => {
   const h = new Harness(38722);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -320,7 +320,7 @@ test('RAQ Resonant: Conduit adds its 1 BEFORE Powerful doubles — a Powerful Be
     '"(1+1)x2 damage to each unit = 4 damage to each unit" — the engine doubles first and adds after (1x2+1 = 3)');
 });
 
-test('RAQ Resonant: Bellowing Boulder with Resonant + Powerful + Conduit — 4 to each unit, then 10 per damaged unit', () => {
+test('RAQ Resonant: Bellowing Boulder with Resonant + Powerful + Conduit — 4 to each unit, then 10 per damaged unit CT-201', () => {
   const h = new Harness(38714);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -383,7 +383,7 @@ test('RAQ Vulnerable: Arc Lightning on a Vulnerable 3/8 — 4 of the 6 kill it, 
   finishBattle(h);
 });
 
-test('RAQ Vulnerable: Electric "can be" — all 6 may stay on the Vulnerable unit, as 12, with no jump', () => {
+test('RAQ Vulnerable: Electric "can be" — all 6 may stay on the Vulnerable unit, as 12, with no jump CT-204', () => {
   const { h, A, ancient, behind } = ancientBoard(38716);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Arc Lightning') });
   pick(h, { unit: ancient });
@@ -403,7 +403,7 @@ test('RAQ Vulnerable: Electric "can be" — all 6 may stay on the Vulnerable uni
   finishBattle(h);
 });
 
-test('RAQ Vulnerable: Electric damage with nowhere to jump is still dealt — all 6 land on the Vulnerable unit as 12', () => {
+test('RAQ Vulnerable: Electric damage with nowhere to jump is still dealt — all 6 land on the Vulnerable unit as 12 CT-204', () => {
   const { h, A, ancient } = ancientBoard(38717, { lone: true });
   const mark = h.events.length;
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Arc Lightning') });

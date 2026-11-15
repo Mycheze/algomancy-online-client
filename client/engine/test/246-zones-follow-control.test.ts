@@ -55,7 +55,7 @@ function stolen(seed: number): { h: Harness; owner: Seat; thief: Seat; id: numbe
   return { h, owner, thief, id };
 }
 
-test('CR 801.7a: a stolen unit recalled goes to the THIEF hand, not the owner', () => {
+test('CR 801.7a: a stolen unit recalled goes to the THIEF hand, not the owner CT-137', () => {
   const { h, owner, thief, id } = stolen(24601);
   withE(h, e => e.recall(ent(h, id)!));
   assert.deepEqual(h.state.players[thief]!.hand.filter(c => c === VANILLA), [VANILLA],
@@ -106,7 +106,7 @@ test('CR 400.4a: ownership does NOT move — only the destination does', () => {
     'the facts riding the event still report the OWNER. The zones ruling moved zones, not ownership (CR 400.4a).');
 });
 
-test('CR 400.4 CONTROL: an unstolen unit is unchanged, so the sweep is not a no-op rewrite', () => {
+test('CR 400.4 CONTROL: an unstolen unit is unchanged, so the sweep is not a no-op rewrite CT-137', () => {
   // The other side. If this ever disagreed with §1 the change would have moved
   // every card in the game, not just the stolen ones.
   const h = new Harness(24605);
@@ -119,7 +119,7 @@ test('CR 400.4 CONTROL: an unstolen unit is unchanged, so the sweep is not a no-
   assert.deepEqual(h.state.players[seat]!.hand.filter(c => c === VANILLA), [VANILLA]);
 });
 
-test('CR 720.9: the erased pile files a stolen mod under the THIEF', () => {
+test('CR 720.9: the erased pile files a stolen mod under the THIEF CT-137', () => {
   // The public erased pile (CR 407.1) is a per-seat zone like the other three, and it
   // was the one left behind when the mod BIN was moved this way.
   const h = new Harness(24606);

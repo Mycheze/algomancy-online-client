@@ -51,7 +51,7 @@ function buildAttack(h: Harness, A: Seat, units: EntityId[]): void {
   ui.sent();
 }
 
-test('CT-554: after Attack! and before the server answers, the attackers stay in the fight', () => {
+test('CT-554: after Attack! and before the server answers, the attackers stay in the fight #375', () => {
   const { h, A, units } = declareStep(12201, 2);
   buildAttack(h, A, units);
   assert.ok(!units.some(id => idsIn(zone(ui.html(), `field:${A}`)).includes(id)),

@@ -61,7 +61,7 @@ const ENGINE_TS = path.join(ENGINE, 'src', 'engine.ts');
  * designed: the test failed, said which of the two possible causes it was, and
  * named the follow-up. Keep writing them that way.
  */
-test('§A stripCode reads `${ … }` inside a template literal as CODE', () => {
+test('§A stripCode reads `${ … }` inside a template literal as CODE CT-68', () => {
   const src = 'const a = `x ${ f(`y`) } z`;';
   const out = stripCode(src);
   assert.equal(out.length, src.length, 'stripCode must stay length-preserving');
@@ -120,7 +120,7 @@ function plantSites(lines: string[], want: number): number[] {
   return out;
 }
 
-test('§B a violation planted anywhere in engine.ts is seen by all three whole-file sweeps', () => {
+test('§B a violation planted anywhere in engine.ts is seen by all three whole-file sweeps CT-68', () => {
   const lines = fs.readFileSync(ENGINE_TS, 'utf8').split('\n');
   const sites = plantSites(lines, 8);
   assert.equal(sites.length, 8, 'the file has stopped looking like engine.ts — no plant sites found');
@@ -241,7 +241,7 @@ function srcFiles(): string[] {
   return out;
 }
 
-test('§C the nested-template hole hides no swept idiom in src/ — measured, not assumed', () => {
+test('§C the nested-template hole hides no swept idiom in src/ — measured, not assumed CT-68', () => {
   const files = srcFiles();
   assert.ok(files.length >= 8, `only ${files.length} .ts files under src/ — the walk has gone blind`);
 
@@ -276,7 +276,7 @@ test('§C the nested-template hole hides no swept idiom in src/ — measured, no
 
 // ───────────── §D · none of these populations is empty ────────────────────
 
-test('§D no sweep in 90-coverage-census is reading an empty population', () => {
+test('§D no sweep in 90-coverage-census is reading an empty population CT-68', () => {
   // `stays solved: no card in src/cards/ assigns a unit's .controller`
   // walks src/cards/ and asserts the offender list is empty. It carries NO
   // floor of its own: if the walk returned nothing the test would pass, and

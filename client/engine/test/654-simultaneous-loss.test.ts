@@ -103,7 +103,7 @@ test('CR 104.1a / CT-409: an unblocked attacker and a Piercing blocker bring bot
   assert.equal(h.state.winner, D, '0 beats -1: the initiative player used to lose here by list order alone');
 });
 
-test('CR 104.1a / CT-409: with one player at 0 the other still wins, and an effect finishes before the game ends', () => {
+test('CR 104.1a / CT-409: with one player at 0 the other still wins, and an effect finishes before the game ends CT-417', () => {
   // Inside one effect a player at 0 is not yet out: the rest of the effect
   // runs (here Penance still draws), and then the game ends.
   const { h, A, D } = battle(65407);

@@ -567,7 +567,7 @@ function edges(board: Board, vw: number): Edge {
 const table = (es: Edge[]): string => es.map(e => `${e.vw}px: scrim ${e.scrim} vs rail ${e.railLeft} (${e.how})`).join('\n  ');
 const misses = (es: Edge[]): Edge[] => es.filter(e => e.scrim === null || Math.abs(e.scrim - e.railLeft) > 0.5);
 
-test('the dialog scrim stops exactly at the rail on the regions board, at every window width', () => {
+test('the dialog scrim stops exactly at the rail on the regions board, at every window width #181', () => {
   const es = WIDTHS.map(w => edges('regions', w));
   // board round 8: the rail is the 50px toolbar at EVERY width — no 210px
   // step under 1100px, no drawer under 900px (a drawer would read here as
@@ -592,7 +592,7 @@ test('the dialog scrim stops exactly at the rail on the regions board, at every 
  * The second half of the test below fails the day a declared gap is fixed. */
 const CLASSIC_KNOWN_GAP: number[] = [];
 
-test('the dialog scrim stops exactly at the rail on the classic board (narrow widths a declared gap)', () => {
+test('the dialog scrim stops exactly at the rail on the classic board (narrow widths a declared gap) #181', () => {
   const es = WIDTHS.map(w => edges('classic', w));
   const regions = WIDTHS.map(w => edges('regions', w));
   // not blind: the two boards are resolved differently (else #app.board.v2
@@ -610,7 +610,7 @@ test('the dialog scrim stops exactly at the rail on the classic board (narrow wi
 /** container heights swept: from a squeezed battle block to a roomy one */
 const HEIGHTS = Array.from({ length: 37 }, (_, k) => 40 + 10 * k);   // 40..400
 
-test('every bin and cache thumb in the info block has a definite width sized from the block and bounded', () => {
+test('every bin and cache thumb in the info block has a definite width sized from the block and bounded #182', () => {
   const { all } = tree(paint('regions', false), APP_CLASSES.regions);
   const inside = (e: El, cls: string): boolean => { for (let a = e.parent; a; a = a.parent) if (a.classes.has(cls)) return true; return false; };
   const thumbs = all.filter(e => e.classes.has('card') && inside(e, 'linfo')

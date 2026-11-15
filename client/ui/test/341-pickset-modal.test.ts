@@ -332,7 +332,7 @@ test('Big Glimpse Card: the split opens as two piles, all seven in pile 2', () =
   assert.ok(cardsIn(html).every(c => c.i !== null && !c.off), 'every card can be moved');
 });
 
-test('Big Glimpse Card: a tap moves a card to the other pile, and back, sending nothing', () => {
+test('Big Glimpse Card: a tap moves a card to the other pile, and back, sending nothing CT-539', () => {
   const { h, D } = glimpse(34121);
   let html = show(h, D);
   html = ui.click({ btn: 'pspick', i: card(html, 'Uglk').i! });
@@ -346,7 +346,7 @@ test('Big Glimpse Card: a tap moves a card to the other pile, and back, sending 
   assert.deepEqual(decides(), [], 'moving cards decides nothing');
 });
 
-test('Big Glimpse Card: Confirm answers every pile-1 card by value, then Done splitting', () => {
+test('Big Glimpse Card: Confirm answers every pile-1 card by value, then Done splitting #349 CT-539', () => {
   const { h, D } = glimpse(34122);
   const first = h.state.decision!;
   let html = show(h, D);
@@ -381,7 +381,7 @@ test('Big Glimpse Card: Confirm with pile 1 empty sends Done splitting at once',
   assert.equal(pilesAsked(h).a, 'Pile 1: (empty)');
 });
 
-test('Big Glimpse Card: all seven in pile 1 sends seven answers and no Done', () => {
+test('Big Glimpse Card: all seven in pile 1 sends seven answers and no Done CT-539', () => {
   const { h, D } = glimpse(34124);
   let html = show(h, D);
   for (const n of SEVEN) html = ui.click({ btn: 'pspick', i: card(html, n).i! });
@@ -437,7 +437,7 @@ function pilePanes(html: string): { label: string; cards: string[]; i: number | 
   }));
 }
 
-test('Big Glimpse Card: the caster is shown both piles as cards, a button under each', () => {
+test('Big Glimpse Card: the caster is shown both piles as cards, a button under each #360 CT-549', () => {
   const { h, A } = toPiles(34130, ['Shib', 'Mindburn']);
   const dec = h.state.decision!;
   assert.deepEqual(dec.piles, [['Shib', 'Mindburn'], SEVEN.filter(n => n !== 'Shib' && n !== 'Mindburn')],
@@ -453,7 +453,7 @@ test('Big Glimpse Card: the caster is shown both piles as cards, a button under 
   assert.deepEqual(decides(), [], 'opening the dialog decides nothing');
 });
 
-test('Big Glimpse Card: the button under each pile sends that pile as its option, and the engine caches it', () => {
+test('Big Glimpse Card: the button under each pile sends that pile as its option, and the engine caches it CT-549', () => {
   for (const [k, seed] of [[0, 34131], [1, 34132]] as const) {
     const { h, A } = toPiles(seed, ['Uglk', 'Gublin', 'Zephyrzoa']);
     const want = h.state.decision!.piles![k]!;

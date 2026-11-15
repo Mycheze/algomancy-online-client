@@ -34,7 +34,7 @@ function bandOf(h: Harness, id: EntityId) {
   return { top: top!, sup: new E(h.state).suppressionOf(u), band: suppressionBand(new E(h.state).suppressionOf(u), top!) };
 }
 
-test('report 208 - a Formless-stamped unit greys its type bar and not its text box', () => {
+test('report 208 - a Formless-stamped unit greys its type bar and not its text box #208', () => {
   const h = new Harness(2722);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -53,7 +53,7 @@ test('report 208 - a Formless-stamped unit greys its type bar and not its text b
     `and it STOPS at the bar bottom edge (bottom ${band!.bottom}, bar ends ${top + TYPE_BAR_HEIGHT})`);
 });
 
-test('report 208 - The Everywhere silencing a unit greys below the type bar and leaves the bar', () => {
+test('report 208 - The Everywhere silencing a unit greys below the type bar and leaves the bar #208', () => {
   const h = new Harness(3846);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -67,7 +67,7 @@ test('report 208 - The Everywhere silencing a unit greys below the type bar and 
   assert.equal(band!.bottom, null, 'and runs to the bottom, over the mod strips');
 });
 
-test('report 208 - Monke switching off both greys the bar and the box', () => {
+test('report 208 - Monke switching off both greys the bar and the box #208', () => {
   const h = new Harness(3250);
   toDeployment(h);
   const A = h.state.initiative as Seat;

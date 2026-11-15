@@ -79,7 +79,7 @@ test('§1 negative control: the toggle off, a pass-only window is billed', () =>
   assert.equal(room.clockRun[seat], true, 'nothing answers this window for the seat, so it is the seat\'s time');
 });
 
-test('§2 the toggle on: a pass-only window is not billed, and the backstop passes it', () => {
+test('§2 the toggle on: a pass-only window is not billed, and the backstop passes it #323', () => {
   const { s, seat } = windowState(124201);
   const room = roomAt(124201, s);
   assert.equal(setAutoPass(room, seat, { pref: true, yields: [] }), true, 'the toggle reached the room');

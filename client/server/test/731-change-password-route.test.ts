@@ -75,7 +75,7 @@ test('§3 report 296 change password: a new password the sign-up rules refuse is
   assert.ok(await logsIn('first password'));
 });
 
-test('§4 report 296 change password: a valid change logs in with the NEW password and not the old', async () => {
+test('§4 report 296 change password: a valid change logs in with the NEW password and not the old #296', async () => {
   const r = await post('/api/auth/password', { oldPassword: 'first password', newPassword: 'second password' }, TOKEN);
   assert.deepEqual(r.body, { ok: true });
   assert.ok(await logsIn('second password'), 'the new password logs in');

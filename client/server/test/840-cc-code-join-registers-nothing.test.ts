@@ -17,7 +17,7 @@ import { ccWire } from './cc-wire.ts';
 
 const sleep = (ms: number): Promise<void> => new Promise(r => setTimeout(r, ms));
 
-test('§1-§2 a typed-code join with a legal Constructed deck registers nothing, only the pick does', async () => {
+test('§1-§2 a typed-code join with a legal Constructed deck registers nothing, only the pick does CT-518', async () => {
   const w = await ccWire('t840');
   const [ann, bo] = w.people as [typeof w.people[0], typeof w.people[0]];
   try {

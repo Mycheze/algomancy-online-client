@@ -52,7 +52,7 @@ function counting(room: import('../rooms.ts').Room): { replays: number; summariz
   return c;
 }
 
-test('§1 a finished room is replayed once however many times its post-game screen is sent', () => {
+test('§1 a finished room is replayed once however many times its post-game screen is sent CT-530', () => {
   const room = finished('PGR1', 54000);
   const c = counting(room);
   const first = postgameRow(room, c.summarize);
@@ -67,7 +67,7 @@ test('§1 a finished room is replayed once however many times its post-game scre
   assert.equal(postgameRow(room, c.summarize), first, 'the first room still has its row');
 });
 
-test('§2 the row the live record made is the one every later send reads', () => {
+test('§2 the row the live record made is the one every later send reads CT-530', () => {
   const room = finished('PGR3', 54002);
   const c = counting(room);
   const recorded = { ...counting(room).summarize(), recordedAt: 'the live record' };
@@ -77,7 +77,7 @@ test('§2 the row the live record made is the one every later send reads', () =>
   assert.equal(c.replays, 0, 'no replay after the game was recorded');
 });
 
-test('§3 a change to anything the summary reads replays it again', () => {
+test('§3 a change to anything the summary reads replays it again CT-530', () => {
   const room = finished('PGR4', 54003);
   const c = counting(room);
   postgameRow(room, c.summarize);
@@ -105,7 +105,7 @@ test('§3 a change to anything the summary reads replays it again', () => {
   assert.equal(c.replays, before, 'a dispute or a rematch offer does not replay the game');
 });
 
-test('§4 main.ts builds the post-game screen only from the kept row', () => {
+test('§4 main.ts builds the post-game screen only from the kept row CT-530', () => {
   const MAIN = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
   const calls = [...MAIN.matchAll(/summarizeRoom\(room\)/g)].map(m => MAIN.slice(Math.max(0, m.index! - 40), m.index! + 20));
   assert.deepEqual(calls.length, 1, 'summarizeRoom is called from exactly one place');

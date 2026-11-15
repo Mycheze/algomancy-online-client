@@ -100,7 +100,7 @@ function armedNow(s: GameState, legal: readonly Action[]): AutoPassArm {
 
 /* ── [66] which pass actually costs you your spell tokens ─────────────── */
 
-test('[66] passEndsBattlePhase agrees with the engine at every priority window of a battle', () => {
+test('[66] passEndsBattlePhase agrees with the engine at every priority window of a battle #66', () => {
   const { h, A, D, atk, def } = battleWithToken(7700);
   let windows = 0, ends = 0;
   let guard = 200;
@@ -204,7 +204,7 @@ test('[66] a pass that only resolves the top of the stack never counts as the en
 
 /* ── [68] why Pass-all stopped passing all ────────────────────────────── */
 
-test('[68] Pass-all stays armed through a window where a spell token is merely castable', () => {
+test('[68] Pass-all stays armed through a window where a spell token is merely castable #68', () => {
   const { h, A, D, atk } = battleWithToken(7710);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);                                            // the defender's window
@@ -239,7 +239,7 @@ test('[68] Pass-all releases on the pass that would move to Regroup with tokens 
     'and it does not pass on its way out');
 });
 
-test('[68] the other three releases still release: the battle ending, a new stack item, a new ability', () => {
+test('[68] the other three releases still release: the battle ending, a new stack item, a new ability #68', () => {
   const { h, A, D, atk } = battleWithToken(7712);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
@@ -268,7 +268,7 @@ test('[68] the other three releases still release: the battle ending, a new stac
 
 /* ── [69] bringing spell tokens along with an attack ──────────────────── */
 
-test('[69] ridableTokens lists exactly the tokens declareAttack will accept', () => {
+test('[69] ridableTokens lists exactly the tokens declareAttack will accept #69', () => {
   const { h, A, D, atk, def, tok } = battleWithToken(7720);
   // a token of the ATTACKER's, at home, is a rider; the defender's is not mine,
   // and the attacker cannot bring a token that is not in the region they leave
@@ -296,7 +296,7 @@ test('[69] ridableTokens is empty outside my own declare step', () => {
   assert.equal(ridableTokens(h.state, A).length, 0, 'the attack is already declared');
 });
 
-test('[69] the ride-along dialogue is interposed only when a choice is being silently defaulted', () => {
+test('[69] the ride-along dialogue is interposed only when a choice is being silently defaulted #69', () => {
   const { h, A, atk } = battleWithToken(7722);
   // no tokens of my own: the report is explicit that this must not be noise
   assert.equal(shouldAskRide(h.state, A, [], false), false,
@@ -334,7 +334,7 @@ function blockWithToken(seed: number): {
   return { h, A, D, ctr, tok };
 }
 
-test('[67] sendableTokens lists exactly the tokens a counterattack will accept', () => {
+test('[67] sendableTokens lists exactly the tokens a counterattack will accept #67', () => {
   const { h, A, D, tok } = blockWithToken(7730);
   const e = new E(h.state);
   // a token of mine, standing where the counterattack leaves from, is a rider.
@@ -355,7 +355,7 @@ test('[67] sendableTokens is empty outside the round-1 block step', () => {
   void A;
 });
 
-test('[67] the counterattack ride dialogue respects "they always need a unit to take them"', () => {
+test('[67] the counterattack ride dialogue respects "they always need a unit to take them" #67', () => {
   const { h, D, ctr, tok } = blockWithToken(7732);
   // a unit is being sent and a token could come — the one case worth asking
   assert.equal(shouldAskSend(h.state, D, [ctr], false), true,
@@ -500,7 +500,7 @@ test('CR 721.4a: the augment the client offers on a token is one the engine real
  *   "and it goes stale on the same question"  the window moves on and the bar
  *                                             leaves with it
  */
-test('[66] the Pass button asks before the pass that reaches Regroup, and only that one', () => {
+test('[66] the Pass button asks before the pass that reaches Regroup, and only that one #66 CT-55', () => {
   const { h, A, D, atk } = battleWithToken(7704);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   pass(h);
@@ -593,7 +593,7 @@ function rideStep(seed: number, n = 1): { h: Harness; A: Seat; atk: EntityId; to
   return { h, A, atk, toks };
 }
 
-test('[69] the Attack! button holds the declaration until the ride question is answered', () => {
+test('[69] the Attack! button holds the declaration until the ride question is answered #69', () => {
   const { h, A, atk, toks } = rideStep(7769);
   ui.join(h.state, A, legalActions(h.state, A));
   ui.click({ act: 'unit', id: String(atk) });
@@ -680,7 +680,7 @@ function sendStep(seed: number): { h: Harness; D: Seat; ctr: EntityId; tok: Enti
   return { h, D, ctr, tok };
 }
 
-test('[67] the Confirm button holds the block declaration until the ride question is answered', () => {
+test('[67] the Confirm button holds the block declaration until the ride question is answered #67', () => {
   // "What happened to Rashi's Poison tokens here? She just wanted to bring them
   // with her attackers but they somehow went onto the stack." Driven rather
   // than read as source: the old version of this test matched the exact text

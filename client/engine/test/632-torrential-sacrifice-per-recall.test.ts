@@ -49,7 +49,7 @@ function resolveAll(h: Harness): void {
   }
 }
 
-test('CT-375: Torrential Reclamation for X = 0 recalls nothing, so nobody sacrifices and no life is lost', () => {
+test('CT-375: Torrential Reclamation for X = 0 recalls nothing, so nobody sacrifices and no life is lost CT-374', () => {
   const { h, A, D } = board(63200, 2, 2);
   const life = h.state.players[A]!.life;
   cast(h, A, 0, []);
@@ -60,7 +60,7 @@ test('CT-375: Torrential Reclamation for X = 0 recalls nothing, so nobody sacrif
   finishBattle(h);
 });
 
-test('CT-375: Torrential Reclamation for X = 2 with one target removed recalls one, so each player sacrifices one', () => {
+test('CT-375: Torrential Reclamation for X = 2 with one target removed recalls one, so each player sacrifices one CT-395', () => {
   const { h, A, D, ids } = board(63201, 4, 3);
   const life = h.state.players[A]!.life;
   cast(h, A, 2, [ids[0]!, ids[1]!]);

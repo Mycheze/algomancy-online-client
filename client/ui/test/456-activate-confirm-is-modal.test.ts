@@ -90,7 +90,7 @@ function barUp(seed: number): Table {
 
 /* ── §1 a cost that is a pick is its own question ──────────────────────── */
 
-test('D2 §1 the reported card raises no bar: its discard is the question, and the click activates', () => {
+test('D2 §1 the reported card raises no bar: its discard is the question, and the click activates CT-283', () => {
   const t = table(45601);
   ui.click({ act: 'unit', id: t.picks });
   assert.ok(!ui.has({ btn: 'actconfirm' }), 'no "Yes, activate" in front of the discard pick');
@@ -101,7 +101,7 @@ test('D2 §1 the reported card raises no bar: its discard is the question, and t
   assert.equal(t.h.state.suspension?.type, 'cast', 'a pre-commit cast: Escape takes it back');
 });
 
-test('D2 §1 over the pool: every pick-cost ability with nothing charged first skips the bar, every unasked cost still asks', () => {
+test('D2 §1 over the pool: every pick-cost ability with nothing charged first skips the bar, every unasked cost still asks CT-283', () => {
   const picked: string[] = [], asked: string[] = [];
   for (const name of allCardNames()) {
     const def = getCard(name) as unknown as Record<string, unknown>;
@@ -131,7 +131,7 @@ test('D2 §1 over the pool: every pick-cost ability with nothing charged first s
 
 /* ── §2 the bar is modal ────────────────────────────────────────────────── */
 
-test('D2 §2 with the bar up a hand click sends nothing, and the bar flashes', () => {
+test('D2 §2 with the bar up a hand click sends nothing, and the bar flashes CT-283', () => {
   const t = barUp(45611);
   const html = ui.click({ act: 'hand', p: t.seat, i: t.hand });
   assert.deepEqual(ui.actions(), [], 'the card is NOT played — the reported bug');
@@ -139,7 +139,7 @@ test('D2 §2 with the bar up a hand click sends nothing, and the bar flashes', (
   assert.notEqual(nudge(html), '', 'and it flashed so the player sees it');
 });
 
-test('D2 §2 with the bar up a click on another unit sends nothing', () => {
+test('D2 §2 with the bar up a click on another unit sends nothing CT-283', () => {
   const t = barUp(45612);
   const html = ui.click({ act: 'unit', id: t.picks });
   assert.deepEqual(ui.actions(), [], 'the other unit does not activate');
@@ -163,7 +163,7 @@ test('D2 §2 with the bar up a board button, Space, a number key and a right-cli
   assert.ok(ui.has({ btn: 'actconfirm' }));
 });
 
-test('D2 §2 clicking the same unit again says yes', () => {
+test('D2 §2 clicking the same unit again says yes CT-283', () => {
   const t = barUp(45614);
   ui.click({ act: 'unit', id: t.asks });
   assert.deepEqual(ui.actions(), [t.a], 'the second click on the unit that asked is the yes');

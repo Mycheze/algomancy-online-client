@@ -75,7 +75,7 @@ function specs(): { name: string; spec: TargetSpec; max: number }[] {
 
 /* ══ §0 THE FAMILY, DERIVED ═══════════════════════════════════════════ */
 
-test('CR D2.8a the family is derived from printed specs, and Fight is in it', () => {
+test('CR D2.8a the family is derived from printed specs, and Fight is in it BL-30', () => {
   const all = specs();
   assert.ok(all.length > 40, `fixture: ${all.length} target specs found — the census is not reading the pool`);
   const mixed = [...new Set(all.filter(s => mixedAllegiance(s.spec, s.max)).map(s => s.name))].sort();
@@ -93,7 +93,7 @@ test('CR D2.8a the family is derived from printed specs, and Fight is in it', ()
     + 'the same card". Both are real changes and both need the owner');
 });
 
-test('CR D2.8 CONTROL: the predicate rejects both single-allegiance shapes', () => {
+test('CR D2.8 CONTROL: the predicate rejects both single-allegiance shapes BL-30', () => {
   // If this ever passes everything, §1's true positive is meaningless.
   const allyOnly: TargetSpec = { what: 'allyUnit', prompt: 'x', count: 2 };
   const enemyOnly: TargetSpec = { what: 'enemyUnit', prompt: 'x', count: 2 };
@@ -138,7 +138,7 @@ const optFor = (opts: readonly DecisionOption[], id: number): DecisionOption | u
 
 /* ══ §1 THE TRUE POSITIVE ═════════════════════════════════════════════ */
 
-test('CR D2.8 Fight aimed at a second unit of your own asks whether you meant it', () => {
+test('CR D2.8 Fight aimed at a second unit of your own asks whether you meant it BL-30', () => {
   const { h, me, ally, foe, idx } = fightBoard(27800);
   h.do({ type: 'playCard', seat: me, handIndex: idx });
 
@@ -165,7 +165,7 @@ test('CR D2.8 Fight aimed at a second unit of your own asks whether you meant it
 
 /* ══ §2 THE FALSE POSITIVES, on the same card ═════════════════════════ */
 
-test('CR D2.8 the ALLY slot never asks — being an ally is what that slot is for', () => {
+test('CR D2.8 the ALLY slot never asks — being an ally is what that slot is for BL-30', () => {
   const { h, me, idx } = fightBoard(27801);
   h.do({ type: 'playCard', seat: me, handIndex: idx });
   const first = h.state.decision!;
@@ -175,7 +175,7 @@ test('CR D2.8 the ALLY slot never asks — being an ally is what that slot is fo
     + 'A guard that fires on every cast is one nobody reads');
 });
 
-test('CR D2.8 picking the ENEMY in the open slot is silent', () => {
+test('CR D2.8 picking the ENEMY in the open slot is silent BL-30', () => {
   const { h, me, ally, foe, idx } = fightBoard(27802);
   h.do({ type: 'playCard', seat: me, handIndex: idx });
   const pickAlly = h.state.decision!.options.findIndex(o => (o.value as { unit?: number })?.unit === ally);
@@ -189,7 +189,7 @@ test('CR D2.8 picking the ENEMY in the open slot is silent', () => {
 
 /* ══ §3 …AND NOTHING ELSE IN THE POOL ASKS ════════════════════════════ */
 
-test('CR D2.8 no single-allegiance spell in the pool can reach the question', () => {
+test('CR D2.8 no single-allegiance spell in the pool can reach the question BL-30', () => {
   // Derived, not driven: `mixedAllegiance` is the only gate on the engine
   // side, so proving no other printed spec passes it proves no other card can
   // ever raise the confirm — for every board, not just the ones a test builds.
@@ -206,7 +206,7 @@ test('CR D2.8 no single-allegiance spell in the pool can reach the question', ()
 
 /* ══ §4 NOTHING IS NARROWED ═══════════════════════════════════════════ */
 
-test('CR D2.8 the question changes no legality: same candidates, same outcome', () => {
+test('CR D2.8 the question changes no legality: same candidates, same outcome BL-30', () => {
   const { h, me, ally, idx } = fightBoard(27803);
   h.do({ type: 'playCard', seat: me, handIndex: idx });
   const pickAlly = h.state.decision!.options.findIndex(o => (o.value as { unit?: number })?.unit === ally);
@@ -231,7 +231,7 @@ test('CR D2.8 the question changes no legality: same candidates, same outcome', 
 /** the unit a `{unit: id}` option names */
 const unitOf = (v: unknown): number => (v as { unit: number }).unit;
 
-test('CR D2.8 the client asks before sending, and "yes" sends the very pick it interrupted', () => {
+test('CR D2.8 the client asks before sending, and "yes" sends the very pick it interrupted BL-30', () => {
   const { h, me, ally, idx } = fightBoard(27804);
   h.do({ type: 'playCard', seat: me, handIndex: idx });
   const pickAlly = h.state.decision!.options.findIndex(o => (o.value as { unit?: number })?.unit === ally);

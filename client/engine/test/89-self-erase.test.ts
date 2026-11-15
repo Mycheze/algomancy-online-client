@@ -138,7 +138,7 @@ function drain(h: Harness, guard = 40): void {
 
 // ── Collect Remains — the card the todo said to do first ─────────────────
 
-test('Collect Remains: it takes the bin card AND leaves the game, instead of joining the bin it just robbed', () => {
+test('Collect Remains: it takes the bin card AND leaves the game, instead of joining the bin it just robbed CT-15', () => {
   const { h, A, D } = attackWindow(8901);
   giveResources(h, A, 'dark', 2);                     // dd/2
   binOf(h, D).push('Good Whale');
@@ -155,7 +155,7 @@ test('Collect Remains: it takes the bin card AND leaves the game, instead of joi
   finishBattle(h);
 });
 
-test('Collect Remains: having erased itself, it is not there for the next copy to recur', () => {
+test('Collect Remains: having erased itself, it is not there for the next copy to recur CT-15', () => {
   // The consequence that made this a MAJOR item rather than a cosmetic one:
   // the printed card cannot be fished back out of the bin by a second copy,
   // and while it was binned it could be, forever.
@@ -187,7 +187,7 @@ test('Collect Remains: having erased itself, it is not there for the next copy t
 
 // ── Suspend ──────────────────────────────────────────────────────────────
 
-test('Suspend: the life lock lands for the battle and the spell erases itself on the way out', () => {
+test('Suspend: the life lock lands for the battle and the spell erases itself on the way out CT-15', () => {
   const { h, A, D } = attackWindow(8903);
   giveResources(h, A, 'light', 2);                    // ll/2
   const lifeD = h.state.players[D]!.life;
@@ -206,7 +206,7 @@ test('Suspend: the life lock lands for the battle and the spell erases itself on
 
 // ── Temporal Rift — the ordering case ────────────────────────────────────
 
-test('Temporal Rift: ending the battle does not carry off its own disposal — it still erases itself', () => {
+test('Temporal Rift: ending the battle does not carry off its own disposal — it still erases itself CT-15', () => {
   // The ordering worry, settled by measurement: the Rift's effect negates the
   // whole stack and then ends the battle, which in round 1 with no sent
   // counterattackers cascades straight through round 2 into deployment. Its
@@ -241,7 +241,7 @@ test('Temporal Rift: ending the battle does not carry off its own disposal — i
 
 // ── Skybreaker — the odd one out: a COST, not a disposal ─────────────────
 
-test('Skybreaker: "Erase me" is paid as the activation cost, and an erase is not a death', () => {
+test('Skybreaker: "Erase me" is paid as the activation cost, and an erase is not a death CT-15', () => {
   const h = new Harness(8905);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -320,7 +320,7 @@ test('Skybreaker donated as a Virus: "me" is the HOST, so the host is what leave
 
 // ── NEGATION: the ruling, pinned ─────────────────────────────────────────
 
-test('a NEGATED self-erase spell is binned, not erased — the effect it was printed in never happened', () => {
+test('a NEGATED self-erase spell is binned, not erased — the effect it was printed in never happened CT-15', () => {
   // THE RULING. CR 406.4b: a negated effect does nothing, and "Erase me." is a
   // sentence of the effect — so it is not owed. Mechanically this is not a
   // special case anywhere: the flag is raised by `run()`, a negated item never
@@ -404,7 +404,7 @@ test('a FIZZLED self-erase spell is binned too — its target went, so its text 
 
 // ── the virus / {Unstable} interaction ───────────────────────────────────
 
-test('a virus rides a self-erasing spell: it is erased ONCE, announced as Unstable, with the virus alongside', () => {
+test('a virus rides a self-erasing spell: it is erased ONCE, announced as Unstable, with the virus alongside CT-15 CT-401', () => {
   // CR 723.4b and "Erase me" want the same destination, so the risk here is not the
   // outcome but the BOOKKEEPING: two branches both firing would double-log and
   // push the card to the public pile twice. They are exclusive, and Unstable
@@ -431,7 +431,7 @@ test('a virus rides a self-erasing spell: it is erased ONCE, announced as Unstab
 
 // ── serialisation & replay ───────────────────────────────────────────────
 
-test('the erase survives a save/load: a spell mid-flight is serialised and still erases itself', () => {
+test('the erase survives a save/load: a spell mid-flight is serialised and still erases itself CT-15', () => {
   // The flag lives on the StackItem, inside GameState, precisely so that this
   // holds. A flag parked anywhere else — a field on the engine, a module-level
   // set, a closure over the cast — would be gone the moment a game was saved,
@@ -466,7 +466,7 @@ test('the erase survives a save/load: a spell mid-flight is serialised and still
 
 // ── the class is closed ──────────────────────────────────────────────────
 
-test('every card in the pool that prints a self-erase reaches the erased pile in a real game', () => {
+test('every card in the pool that prints a self-erase reaches the erased pile in a real game CT-15', () => {
   // 84-card-semantics asserts the CODE-level version of this (nobody prints
   // the clause without an erase anywhere in their run or their costs). This is
   // the behavioural counterpart for the ones that CARD-TODO #15 named and

@@ -39,7 +39,7 @@ const stripReminders = (s: string): string => s.replace(/\{i\}[\s\S]*?(?:\{\/i\}
 
 /* ── CT-33 · the headline case ──────────────────────────────────────── */
 
-test('CR D6.9/CT-33: a Poison created with X=5 says "Put 5 -1/-1 counters", from the engine', () => {
+test('CR D6.9/CT-33: a Poison created with X=5 says "Put 5 -1/-1 counters", from the engine #99', () => {
   const h = new Harness(5901);
   const e = q(h);
   const A = 0 as Seat;
@@ -66,7 +66,7 @@ test('CR D6.9a/CT-33: a token minted by a CARD specialises too (Ignis Sprite →
   assert.equal(boxText(e, fb!), 'Deal 1 damage to any target.');
 });
 
-test('CR D6.9a/CT-33: a Robot reads its X off its COUNTERS, so it stays true as they change', () => {
+test('CR D6.9a/CT-33: a Robot reads its X off its COUNTERS, so it stays true as they change #99', () => {
   const h = new Harness(5903);
   const e = q(h);
   const A = 0 as Seat;
@@ -85,7 +85,7 @@ test('CR D6.9a/CT-33: a Robot reads its X off its COUNTERS, so it stays true as 
 
 /* ── CT-33 · the whole-pool sweep (the census-first guard) ──────────────────── */
 
-test('CR D6.9a/CT-33 sweep: EVERY token card with an X placeholder renders a number', () => {
+test('CR D6.9a/CT-33 sweep: EVERY token card with an X placeholder renders a number #99', () => {
   const tokenCards = allCardNames().filter(n => /token/i.test(getCard(n).type ?? ''));
   assert.ok(tokenCards.length >= 6, `the pool's token cards were found: ${tokenCards.length}`);
   const withX = tokenCards.filter(n => BARE_X.test(stripReminders(getCard(n).text ?? '')));
@@ -113,7 +113,7 @@ test('CR D6.9a/CT-33 sweep: EVERY token card with an X placeholder renders a num
 
 /* ── CT-33 · negative controls ──────────────────────────────────────── */
 
-test('CR D6.9/CT-33: X/X, +X/+X and -X/-X are STAT notation and never substituted', () => {
+test('CR D6.9/CT-33: X/X, +X/+X and -X/-X are STAT notation and never substituted #99', () => {
   // the three spellings the pool really uses for a stat pair
   assert.equal(substituteX('Create an X/X unit, where X is the mod\'s cost.', 4),
     'Create an X/X unit, where 4 is the mod\'s cost.');
@@ -152,7 +152,7 @@ test('CR D6.9a/CT-33: a token whose text has no X renders exactly the printed ca
 
 /* ── CT-31 · the dormant-resource row ───────────────────────────────── */
 
-test('CT-31: dormant resources are muted in battle and deployment, normal in planning', () => {
+test('CT-31: dormant resources are muted in battle and deployment, normal in planning #97 CT-405', () => {
   const h = new Harness(5906);
   const A = 0 as Seat;
   // every game opens with two DORMANT prismites (apply.ts), so the row this
@@ -190,7 +190,7 @@ test('CT-31: dormant resources are muted in battle and deployment, normal in pla
     ['muted', 'muted', 'normal', 'normal', 'muted', 'muted'], 'deployment mutes them too');
 });
 
-test('CR 105.4c/CT-31: only DORMANT is muted — an expended resource is not', () => {
+test('CR 105.4c/CT-31: only DORMANT is muted — an expended resource is not #97', () => {
   assert.equal(emphasisOf({ state: 'dormant' }, 'battle'), 'muted');
   assert.equal(emphasisOf({ state: 'dormant' }, 'deploy'), 'muted');
   assert.equal(emphasisOf({ state: 'dormant' }, 'planning'), 'normal');
@@ -201,7 +201,7 @@ test('CR 105.4c/CT-31: only DORMANT is muted — an expended resource is not', (
   assert.equal(emphasisOf({ state: 'open' }, 'battle'), 'normal');
 });
 
-test('CR 106.3b/CT-31: the spendable/dormant split is the ENGINE\'s answer, not the UI\'s', () => {
+test('CR 106.3b/CT-31: the spendable/dormant split is the ENGINE\'s answer, not the UI\'s #97', () => {
   const h = new Harness(5908);
   const A = 0 as Seat;
   h.state.players[A]!.resources.length = 0;      // drop the starting prismites

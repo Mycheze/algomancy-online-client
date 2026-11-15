@@ -107,7 +107,7 @@ const GLIMPSE_CARDS: GlimpseCard[] = allCardNames()
  * future reader knows which pool the eleven was counted over. */
 const POOL = allCardNames().length;
 
-test('§1 the Glimpse list is DERIVED and complete — a NEW Glimpse card fails here', () => {
+test('§1 the Glimpse list is DERIVED and complete — a NEW Glimpse card fails here CT-81', () => {
   // CR D8.1b: registry.ts registers Training Construct too, so registry-only is 495
   assert.equal(POOL, 495,
     `this file imports src/cards/registry.ts only, which registers 495 cards. Seeing ${POOL} `
@@ -131,7 +131,7 @@ test('§1 the Glimpse list is DERIVED and complete — a NEW Glimpse card fails 
   assert.doesNotMatch(getCard('Big Glimpse Card' as CardName).text ?? '', /Glimpse/i);
 });
 
-test('§1 the parsed N and the derived `recycles` agree with what each card prints', () => {
+test('§1 the parsed N and the derived `recycles` agree with what each card prints CT-81', () => {
   // the derivation stated as data, so a wrong parse is visible as a wrong row
   // rather than as a mysteriously passing loop below
   assert.deepEqual(
@@ -182,7 +182,7 @@ for (const { name, recycles, reminder } of GLIMPSE_CARDS) {
   });
 }
 
-test('§1 every printed N>1 reminder says cache-ONE-and-recycle, matching E.glimpse', () => {
+test('§1 every printed N>1 reminder says cache-ONE-and-recycle, matching E.glimpse CT-73', () => {
   // one assertion over the group, so a single card quietly drifting out of the
   // family is visible next to the others rather than only in its own test.
   // The group is DERIVED (N>1 and a printed reminder), so a new card that
@@ -199,7 +199,7 @@ test('§1 every printed N>1 reminder says cache-ONE-and-recycle, matching E.glim
   ]);
 });
 
-test('§1 every printed N=1 reminder says cache-IT and claims no rest', () => {
+test('§1 every printed N=1 reminder says cache-IT and claims no rest CT-73', () => {
   // Visionary Construct is the card CT-81(a) named: Glimpse 1 with a FULL
   // printed reminder in wording identical to Foretell's, omitted from the
   // hand-typed list — the exact shape §1 exists to police, uncovered.
@@ -221,7 +221,7 @@ const glimpseEntry = (): { term: string; text: string; rule?: string } => {
   return e;
 };
 
-test('§2 the Glimpse glossary reminder names the recycle, and the full rule survives beside it', () => {
+test('§2 the Glimpse glossary reminder names the recycle, and the full rule survives beside it #106 CT-73', () => {
   // ⚠ CONVERTED BY THE GAME'S-WORDS RULE (CR D6.11), AND THE OLD EXPECTATIONS ARE KEPT HERE BECAUSE THEY
   // ARE STILL THE RULE — they moved, they were not dropped:
   //
@@ -284,7 +284,7 @@ test('§2 the Glimpse reminder keeps the three limits CR 801.9e and 801.9f put o
     'Caleb 2025-12-28 — printed timing still applies. The other limit the cards do not print.');
 });
 
-test('§2 the Recycle reminder no longer denies what the Glimpse one now says', () => {
+test('§2 the Recycle reminder no longer denies what the Glimpse one now says #106 CT-73', () => {
   // the two rows print TOGETHER on the four N>1 cards, because those cards'
   // text says both words. The Recycle entry used to read "the card is gone for
   // the rest of the game", which is the one thing recycling never does:
@@ -298,7 +298,7 @@ test('§2 the Recycle reminder no longer denies what the Glimpse one now says', 
 });
 
 for (const { name } of GLIMPSE_CARDS) {
-  test(`§2 ${name}'s inspector panel offers the corrected Glimpse reminder`, () => {
+  test(`§2 ${name}'s inspector panel offers the corrected Glimpse reminder #106`, () => {
     // exactly what ui/main.ts asks for: the type line and the printed text,
     // minus the card's own attributes
     const c = getCard(name);

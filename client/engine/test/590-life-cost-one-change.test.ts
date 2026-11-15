@@ -50,7 +50,7 @@ function fleshTithe(h: Harness, seat: Seat, x: number, name = 'Flesh Tithe'): vo
 }
 
 for (const as of ['unit', 'augment mod'] as const) {
-  test(`CR 702.6b / report 273: paying 29 life for Flesh Tithe makes 29 Life Plant units (Life Plant ${as === 'unit' ? 'as a unit' : 'as an augment mod'})`, () => {
+  test(`CR 702.6b / report 273: paying 29 life for Flesh Tithe makes 29 Life Plant units (Life Plant ${as === 'unit' ? 'as a unit' : 'as an augment mod'}) #273`, () => {
     const h = new Harness(as === 'unit' ? 59000 : 59001);
     toDeployment(h);
     const A = h.state.deployPlayer!;
@@ -67,7 +67,7 @@ for (const as of ['unit', 'augment mod'] as const) {
   });
 }
 
-test('CR 111.6b / report 273: the life is lost when X closes, and the running total is what is asked', () => {
+test('CR 111.6b / report 273: the life is lost when X closes, and the running total is what is asked #273', () => {
   const h = new Harness(59002);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -103,7 +103,7 @@ test('CR 109.9 / report 273: Life Plant hears a gain, and damage, as that many; 
   assert.equal(ones(h, D), dealt[0], '[once]: a second life change this turn makes nothing');
 });
 
-test('CR 702.6b / report 273: Torrential Reclamation loses its life as one change, so Life Plant makes that many', () => {
+test('CR 702.6b / report 273: Torrential Reclamation loses its life as one change, so Life Plant makes that many #273', () => {
   const h = new Harness(59004);
   toDeployment(h);
   const A = h.state.initiative;
@@ -134,7 +134,7 @@ test('CR 702.6b / report 273: Torrential Reclamation loses its life as one chang
 
 // DERIVED: every effect in the registry whose cast cost is a variable life
 // cost goes through the one collector — sized a point at a time, lost once.
-test('CR 702.6b / report 273: every variable life cost in the pool is lost as one change of X', () => {
+test('CR 702.6b / report 273: every variable life cost in the pool is lost as one change of X #273', () => {
   const subjects = allCardNames().filter(n => {
     const c = getCard(n);
     const fx = [c.spellEffect, c.graftEffect?.effect, ...(c.abilities ?? []).map(a => ('effect' in a ? a.effect : undefined))];

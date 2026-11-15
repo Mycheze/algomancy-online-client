@@ -229,7 +229,7 @@ test('CR 701.1e reach: the coverage, as a diagnostic', t => {
   for (const r of RESULTS.filter(x => x.skip)) t.diagnostic(`not driven: ${r.card} via ${r.route} (${r.skip})`);
 });
 
-test('CR 701.1e calibration: the detector sees a Stalwart Sentinel hear a unit played after it', () => {
+test('CR 701.1e calibration: the detector sees a Stalwart Sentinel hear a unit played after it CT-277', () => {
   // The Sentinel is already in play; Wake the Dead then plays Curio Drifter out
   // of the bin. That PLAY is heard (from 'bin', not the hand): one firing, two
   // counters, and the trigger line this sweep looks for is logged. Heard on the
@@ -270,11 +270,11 @@ function noneHeardItself(route: Route): void {
   assert.deepEqual(convicted, [], `these cards heard their own play from ${route}:\n  ${convicted.join('\n  ')}`);
 }
 test('CR 701.1e: no play listener hears its own play from hand', () => noneHeardItself('hand'));
-test('CR 701.1e: no play listener hears its own play from a cache', () => noneHeardItself('cache'));
-test('CR 701.1e: no play listener hears its own play from a bin', () => noneHeardItself('bin'));
-test('CR 701.1e: no play listener hears its own play from the deck', () => noneHeardItself('deck'));
+test('CR 701.1e: no play listener hears its own play from a cache CT-277', () => noneHeardItself('cache'));
+test('CR 701.1e: no play listener hears its own play from a bin CT-277', () => noneHeardItself('bin'));
+test('CR 701.1e: no play listener hears its own play from the deck CT-277', () => noneHeardItself('deck'));
 
-test('CR 701.1e: Stalwart Sentinel played from a bin by Wake the Dead takes no counters for its own play', () => {
+test('CR 701.1e: Stalwart Sentinel played from a bin by Wake the Dead takes no counters for its own play CT-277', () => {
   const r = RESULTS.find(x => x.card === 'Stalwart Sentinel' && x.route === 'bin')!;
   assert.ok(r.heard, `not driven: ${r.skip}`);
   assert.deepEqual(r.heard, [], 'Stalwart Sentinel heard its own play from the bin');

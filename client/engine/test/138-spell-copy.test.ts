@@ -396,7 +396,7 @@ test('CR 710.8/CT-176 Earthbound Replicator: a DEPLOY-timing spell is copied too
     + 'so a copy with no original to sit above must resolve where it stands');
 });
 
-test('CR 710.8a/CT-176 Earthbound Replicator: the deploy-timing copy may be RE-AIMED, at a target the original never named', () => {
+test('CR 710.8a/CT-176 Earthbound Replicator: the deploy-timing copy may be RE-AIMED, at a target the original never named #158', () => {
   const h = new Harness(13811);
   const { A, repl, idx } = deployReplicator(h);
   const other = spawn(h, A, 'Unit Token');
@@ -410,7 +410,7 @@ test('CR 710.8a/CT-176 Earthbound Replicator: the deploy-timing copy may be RE-A
   assert.deepEqual(effStats(h, other), [8, 8], 'and the copy landed on the re-aimed body (1/1 + 7/+7)');
 });
 
-test('CR 507.5/CT-176: a deploy-timing play names a REAL stack item — the snapshot is not needed and is not taken', () => {
+test('CR 507.5/CT-176: a deploy-timing play names a REAL stack item — the snapshot is not needed and is not taken #158 CT-184', () => {
   const h = new Harness(13812);
   const { A, repl, idx } = deployReplicator(h);
   h.do({ type: 'playCard', seat: A, handIndex: idx });
@@ -443,7 +443,7 @@ test('CR 507.5/CT-176: a deploy-timing play names a REAL stack item — the snap
     + 'that has already resolved is exactly the bug the snapshot would introduce');
 });
 
-test('CR 710.8/CT-176 census: every spell that could ask the Replicator to copy it outside battle is drilled above', () => {
+test('CR 710.8/CT-176 census: every spell that could ask the Replicator to copy it outside battle is drilled above #158', () => {
   const printed = JSON.parse(readFileSync(join(HERE, '../src/cards/printed.json'), 'utf8')) as
     Record<string, { name: string; kind: string; timing: string }>;
 

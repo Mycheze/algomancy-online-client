@@ -163,7 +163,7 @@ function twoWhalesOneMod(code: string, seed: number): { reveal: EngineEvent[]; r
   return { reveal: onWire(held, D), room, D };
 }
 
-test('§1a two units of the same card are TWO rows — the folding is gone', () => {
+test('§1a two units of the same card are TWO rows — the folding is gone BL-21', () => {
   const { reveal, room } = twoWhalesOneMod('BL21A', 21700);
   const view = revealView(reveal, cardOf(room));
   assert.equal(view.rows.length, 2,
@@ -173,7 +173,7 @@ test('§1a two units of the same card are TWO rows — the folding is gone', () 
   assert.notDeepEqual(first!.ids, second!.ids, 'and they are genuinely different entities');
 });
 
-test('§1b the MOD is on the surface, on the card it was applied to', () => {
+test('§1b the MOD is on the surface, on the card it was applied to BL-21', () => {
   const { reveal, room } = twoWhalesOneMod('BL21B', 21701);
   const view = revealView(reveal, cardOf(room));
   assert.deepEqual(view.rows[0]!.mods, [{ card: 'Hooba-Lin', how: 'augment' }],
@@ -212,7 +212,7 @@ test('§1d a line belonging to no card is kept as a note, not dropped', () => {
 const ev = (type: string, msg: string, data?: Record<string, unknown>): EngineEvent =>
   ({ type, msg, ...(data ? { data } : {}) }) as EngineEvent;
 
-test('§2a round 8 fixture: one card\'s chain is still one row, and repeats still count', () => {
+test('§2a round 8 fixture: one card\'s chain is still one row, and repeats still count BL-21', () => {
   // the exact screenshot, as prose-only events — the shape an event with no
   // structured subject still arrives in
   const view = revealView([
@@ -300,7 +300,7 @@ test('§2g the tense table is a table: a verb it does not know is left alone', (
   assert.equal(pastTense('spawns Good Whale.'), 'spawns Good Whale.', 'no actor before the verb: left alone');
 });
 
-test('§2c a modded copy NEVER merges with a plain one', () => {
+test('§2c a modded copy NEVER merges with a plain one BL-21', () => {
   const names: Record<number, CardName> = { 1: 'Good Whale', 2: 'Good Whale', 9: 'Hooba-Lin' };
   const view = revealView([
     ev('spawned', 'spawns Good Whale.', { unit: 1 }),
@@ -339,7 +339,7 @@ test('§2d a card that comes BACK later is a new beat, not a tally', () => {
  * to, or in the update the playback ends on. A flurry is an event told twice;
  * a gap is one never told. §3b measures both on a real barrier flush. */
 
-test('§3a sendReveal sends a haste or deploy close as frames, and the rest after them', () => {
+test('§3a sendReveal sends a haste or deploy close as frames, and the rest after them BL-21', () => {
   const src = readFileSync(join(SERVER, 'main.ts'), 'utf8');
   assert.match(src, /playbackFrames\(\{ seat, held: playback\.held, tail: tailEvents, close: playback\.close, redact \}\)/,
     'the frames are built from the held moves and the tail, for this seat, through its redactor');
@@ -349,7 +349,7 @@ test('§3a sendReveal sends a haste or deploy close as frames, and the rest afte
     'a resource-step close is not played back (the owner: planning is fine as it is)');
 });
 
-test('§3b every event goes out exactly once — measured on a real barrier flush', () => {
+test('§3b every event goes out exactly once — measured on a real barrier flush BL-21', () => {
   const room = createRoom('BL21E', 21704, [...NAMES]);
   toDeployment(room);
   const A = room.state.deployPlayer! as Seat, D = other(A);
@@ -389,7 +389,7 @@ test('§3c ui/main.ts plays the frames and has no interstitial to hold beats beh
 
 /* ══ §4 nothing is silently dropped ═════════════════════════════════════ */
 
-test('§4a every event carrying a message reaches the surface somewhere', () => {
+test('§4a every event carrying a message reaches the surface somewhere BL-21', () => {
   // The failure mode of a structured surface is that it shows LESS than it was
   // given and looks fine doing it — you cannot tell a quiet segment from one
   // the reader could not parse. So: everything in, everything out.
@@ -460,7 +460,7 @@ const glimpseEv = (seat: number, cards: string[]): EngineEvent =>
   ({ type: 'glimpsed', msg: `P${seat} glimpses ${cards.length}: ${cards.join(', ')}`,
      data: { seat, n: cards.length, cards } }) as EngineEvent;
 
-test('§5a the OPPONENT glimpse becomes a surface; your own does not', () => {
+test('§5a the OPPONENT glimpse becomes a surface; your own does not #104 CT-78', () => {
   const evs = [glimpseEv(1, ['Grox', 'Palewing'])];
   assert.deepEqual(glimpseNotice(evs, 0), { seat: 1, cards: ['Grox', 'Palewing'] },
     'seat 0 is shown what seat 1 looked at');
@@ -468,7 +468,7 @@ test('§5a the OPPONENT glimpse becomes a surface; your own does not', () => {
     'and seat 1 is not — they already have a modal full of these exact scans');
 });
 
-test('§5b an empty glimpse is not a reveal — in BOTH shapes it can arrive in', () => {
+test('§5b an empty glimpse is not a reveal — in BOTH shapes it can arrive in CT-78', () => {
   // "glimpses 3 — the deck is empty" carries no cards, and a card-sized
   // surface showing no cards would be a worse lie than the log line.
   // ⚠ TWO SHAPES, and the second is here because a break-test found the guard
@@ -491,7 +491,7 @@ test('§5c the newest glimpse in a batch wins', () => {
     'two in one batch is a cascade, and the board is now sitting on the newest');
 });
 
-test('§5d the client does not re-decide what is public', () => {
+test('§5d the client does not re-decide what is public CT-78', () => {
   // The server already made the whole privacy decision (visibleToSeat,
   // redactEvent, CR D6.2's hold). A client filtering on its own opinion
   // would be a second, quieter redactor — this repo has shipped two
@@ -517,7 +517,7 @@ test('§5e it stays up: no expiry of its own, and not dropped by a resync (repor
   assert.equal(/glimpseUp|dismissNotice\(|loadReveals\(/.test(reset), false, 'a resync or a toggle does not put the notice away');
 });
 
-test('§5f non-modal: a glimpse may land in a window you still have to act in', () => {
+test('§5f non-modal: a glimpse may land in a window you still have to act in #104 CT-78', () => {
   const src = readFileSync(join(HERE, '..', '..', 'ui', 'main.ts'), 'utf8');
   assert.match(src, /class="glimpsenotice"/, 'positive control: the surface is really drawn');
   assert.equal(/glimpsenotice[^`]*\boverlay\b/.test(src), false,

@@ -309,7 +309,7 @@ test('CR 801.2a: sacrificing and dying both trash — the card enters a bin from
 // This test used to go on "so it is trashed there … and the trash ledger
 // counted it" (the token-zone ruling plus the owner's "Tokens are trashed, yes"). The owner withdrew that half on 2026-09-28 (CR 801.2d): a token is not a card, so it is never
 // trashed. The zone fact stands; the trash does not happen.
-test('a TOKEN dying enters the bin, is NOT trashed, and is then erased', () => {
+test('a TOKEN dying enters the bin, is NOT trashed, and is then erased #39', () => {
   const h = new Harness(3523);
   const P = 0 as const;
   whiteBox(h, e => {
@@ -398,7 +398,7 @@ test('CR 304.10: the erase lands before anything the visit queued can RESOLVE', 
 // "Unstable units dying should not count as being Trashed since they don't end up
 // in the BIN." So it is back to its first reading, now with the death asserted
 // too: the unit DIES (CR 801.2h), and neither it nor its mod (CR 720.8a) is trashed.
-test('CR 801.2h (owner 2026-10-31): a modded unit dying DIES and is erased with its mod, and nothing is trashed', () => {
+test('CR 801.2h (owner 2026-10-31): a modded unit dying DIES and is erased with its mod, and nothing is trashed #93', () => {
   const h = new Harness(3524);
   const P = 0 as const;
   const u = spawn(h, P, 'Test Brute');

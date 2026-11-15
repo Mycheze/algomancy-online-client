@@ -112,7 +112,7 @@ function longLog(): Action[] {
 
 /* ═══ §1 — the stamp, and why one is not enough ═══════════════════════ */
 
-test('an unstamped file says so, and says what to do about it — it does not guess a commit', () => {
+test('an unstamped file says so, and says what to do about it — it does not guess a commit CT-66', () => {
   const v = versionsOf(roomFile([]));
   assert.equal(v.reference, null, 'a file with no `versions` must NOT be given a reference engine');
   assert.equal(v.stamps.length, 0);
@@ -121,7 +121,7 @@ test('an unstamped file says so, and says what to do about it — it does not gu
   assert.match(v.why ?? '', /--at/, 'and it has to name the escape hatch');
 });
 
-test('a forked file is two games against two engines, and the segments say where the join is', () => {
+test('a forked file is two games against two engines, and the segments say where the join is CT-66', () => {
   const actions = new Array(50).fill({ type: 'donePlanning', seat: 0 }) as Action[];
   const v = versionsOf(roomFile(actions, [
     { at: '2026-08-01T00:00:00Z', sha: SHA_A, from: 0 },
@@ -169,7 +169,7 @@ test('an "unknown" stamp is not a commit, and is refused as a reference rather t
 
 /* ═══ §2 — permanently unreplayable is NOT a divergence ═══════════════ */
 
-test('a draft file with no recorded trio is UNREPLAYABLE, not diverged — GAXG and HDGG stop being counted', () => {
+test('a draft file with no recorded trio is UNREPLAYABLE, not diverged — GAXG and HDGG stop being counted CT-66', () => {
   const dead = { seed: 1, mode: 'draft' as const, names: ['A', 'B'] as [string, string], actions: [] };
   const why = unreplayableReason(dead);
   assert.ok(why, 'a draft file with no `els` records nothing about what deal it was played from');
@@ -194,7 +194,7 @@ test('a draft file with no recorded trio is UNREPLAYABLE, not diverged — GAXG 
 
 /* ═══ §3 — a stale copy does not error, it reassures ══════════════════ */
 
-test('a truncated copy of a game is caught by the canonical file, and refused rather than replayed', () => {
+test('a truncated copy of a game is caught by the canonical file, and refused rather than replayed CT-66', () => {
   const dir = scratch();
   const copyDir = scratch();
   const prev = process.env['ALGO_GAMES_DIR'];
@@ -308,7 +308,7 @@ test('the state signature notices a DIFFERENT CARD in a zone of the same size �
 
 /* ═══ §5 — the delta, end to end ══════════════════════════════════════ */
 
-test('a game saved today replays IDENTICALLY at the engine it was recorded on — stamp, worktree, probe and diff, end to end', async () => {
+test('a game saved today replays IDENTICALLY at the engine it was recorded on — stamp, worktree, probe and diff, end to end CT-66', async () => {
   const dir = scratch();
   try {
     const sha = headSha();
@@ -330,7 +330,7 @@ test('a game saved today replays IDENTICALLY at the engine it was recorded on �
   }
 });
 
-test('against an OLDER engine the tool NAMES what changed, and measures the divergence instead of bounding it', async () => {
+test('against an OLDER engine the tool NAMES what changed, and measures the divergence instead of bounding it CT-66', async () => {
   const dir = scratch();
   try {
     const file = join(dir, 'THEN.json');
@@ -369,7 +369,7 @@ test('against an OLDER engine the tool NAMES what changed, and measures the dive
   }
 });
 
-test('a refusal index is reported as an UPPER BOUND when nothing has measured the real one', async () => {
+test('a refusal index is reported as an UPPER BOUND when nothing has measured the real one CT-66', async () => {
   // A log with one action corrupted into an illegal one: the current engine
   // refuses it, and with no reference engine that refusal index is all there
   // is. The report must not present it as a measurement.

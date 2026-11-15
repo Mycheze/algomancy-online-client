@@ -41,7 +41,7 @@ const openName = (html: string): string => /<h2 class="dkprevname">([^<]+)<\/h2>
 const sheetOf = (html: string): string => /data-dk-sheet="(\w+)"/.exec(html)?.[1] ?? '';
 const shelf = (html: string): string[] => [...html.matchAll(/<span class="dkboxname">([^<]+)</g)].map(m => m[1]!);
 
-test('§1 the page opens on a deck; a box selects its deck, the builder waits for Edit', () => {
+test('§1 the page opens on a deck; a box selects its deck, the builder waits for Edit BL-65', () => {
   let html = ui.html();
   assert.match(html, /class="[^"]*apppage[^"]*deckpage"/, 'the Decks page, in the frame');
   assert.equal(openName(html), 'Alpha');

@@ -643,7 +643,7 @@ test('Tides of the Cosmos: reveal 8, play up to two with total cost ≤ 8 for fr
 // does not trash". (b) a spell that prints "Erase me." said so as it resolved,
 // and that request now survives the inline play instead of being swallowed.
 
-test('CR 406.4a: Tides plays "Erase me." (Suspend) for free → the ERASED pile, never a bin', () => {
+test('CR 406.4a: Tides plays "Erase me." (Suspend) for free → the ERASED pile, never a bin CT-41', () => {
   const h = new Harness(1590);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -683,7 +683,7 @@ test('CR 406.4a: Tides plays "Erase me." (Suspend) for free → the ERASED pile,
   finishBattle(h);
 });
 
-test('CR 405.4a: Tides plays an ORDINARY spell for free → the bin, and it is NOT a trash', () => {
+test('CR 405.4a: Tides plays an ORDINARY spell for free → the bin, and it is NOT a trash CT-41', () => {
   const h = new Harness(1591);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;

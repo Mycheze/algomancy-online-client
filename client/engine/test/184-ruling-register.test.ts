@@ -214,7 +214,7 @@ test('§1: the scan finds the citations that are really there', () => {
 
 /* ══ §2 · EVERY CR NUMBER IS A LIVE RULE ══════════════════════════════ */
 
-test('§2: every CR number cited in client/ is a live rule of the comprehensive rules', () => {
+test('§2: every CR number cited in client/ is a live rule of the comprehensive rules CT-144 CT-389', () => {
   const dead = [...SCAN.cr.entries()].filter(([n]) => !LIVE.has(n))
     .map(([n, files]) => `CR ${n}${TOMB.has(n) ? ' (a removed rule — cite its replacement)' : ''} in ${[...files].slice(0, 3).join(', ')}`).sort();
   assert.deepEqual(dead, [],
@@ -233,7 +233,7 @@ test('§3: no number of the retired ruling register is cited, outside the allowl
     + 'Do not add an allowlist entry for a citation:\n  ' + lines.slice(0, 200).join('\n  '));
 });
 
-test('§3: every allowlist entry still matches a token — a waiver whose subject left is stale', () => {
+test('§3: every allowlist entry still matches a token — a waiver whose subject left is stale BL-09', () => {
   for (const a of ALLOWED) {
     let text = '';
     try { text = readFileSync(join(CLIENT, a.file), 'utf8'); } catch { assert.fail(`ALLOWED names ${a.file}, which does not exist`); }

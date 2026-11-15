@@ -310,7 +310,7 @@ function moddedSpellOnStack(seed: number): { h: Harness; seat: Seat; item: numbe
   return { h, seat, item: it!.id };
 }
 
-test('§3 no game icon on the stack strip is drawn at its full size', () => {
+test('§3 no game icon on the stack strip is drawn at its full size #140 CT-153', () => {
   const base15 = /img\.txticon\s*\{[^}]*width:\s*(\d+)px/.exec(STYLE);
   assert.ok(base15, 'style.css still states one base size for a text icon');
   const full = Number(base15![1]);
@@ -341,7 +341,7 @@ test('§3 no game icon on the stack strip is drawn at its full size', () => {
 
 /* ══ §4 — [#141] + [#146] the mods peeking out from under a card ══════════ */
 
-test('CR D6.12a a modded stack item composes the same picture as a modded unit', () => {
+test('CR D6.12a a modded stack item composes the same picture as a modded unit #141 CT-154', () => {
   const f = moddedSpellOnStack(25106);
   const it = f.h.state.stack.find(i => i.id === f.item)!;
   const stackStrips = modStrips(it.mods ?? []);
@@ -373,7 +373,7 @@ test('CR D6.12a a modded stack item composes the same picture as a modded unit',
     'a unit mod knows HOW it was applied and says so');
 });
 
-test('CR D6.12a [#146] the strip carries no badge, and its peek is one named number', () => {
+test('CR D6.12a [#146] the strip carries no badge, and its peek is one named number CT-159', () => {
   assert.doesNotMatch(STYLE, /\.modtag\b/,
     '#146: "That extra space/badge isn\'t needed" — the .modtag rule is what the band '
     + 'was made tall enough to fit');
@@ -425,7 +425,7 @@ test('CR D6.12a [#146] each strip starts at ITS OWN card\'s symbol, type-line [A
 
 /* ══ §5 — [#143] {Unstable} on the attribute line ═════════════════════════ */
 
-test('CR D6.10c a printed-Unstable card wears it on the attribute line', () => {
+test('CR D6.10c a printed-Unstable card wears it on the attribute line #143 CT-156', () => {
   // DERIVED: whichever cards print the marker, not the two a comment knows
   const printers = Object.entries(CARDS)
     .filter(([, d]) => /\{Unstable\}/.test(d.type ?? '')).map(([n]) => n);
@@ -471,7 +471,7 @@ test('CR D6.10c the acquired kind says WHICH way in, on the same line', () => {
     `the hand-typed footnote is gone with it: ${JSON.stringify(after.state)}`);
 });
 
-test('CR D6.11 the sentence a player reads there is the POOLs, not ours', () => {
+test('CR D6.11 the sentence a player reads there is the POOLs, not ours #143 CT-156', () => {
   // The payoff of moving the word onto the attribute line: main.ts's inspector
   // looks every attribute up in the glossary, and under CR D6.11 the glossary's
   // {Unstable} text is a reminder PRINTED on a real card. Nothing here types the
@@ -489,7 +489,7 @@ test('CR D6.11 the sentence a player reads there is the POOLs, not ours', () => 
     + 'row is back to showing our words for the game\'s rule.');
 });
 
-test('CR D6.10c the inspector really draws that row for a modded unit', () => {
+test('CR D6.10c the inspector really draws that row for a modded unit #143 CT-156', () => {
   const h = new Harness(25109);
   toDeployment(h);
   const A = h.state.deployPlayer!;

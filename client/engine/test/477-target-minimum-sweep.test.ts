@@ -81,7 +81,7 @@ function excused(row: Row): string | null {
  */
 const X_ALLOWLIST: Record<string, string> = {};
 
-test('every target spec that may stop short of its slots prints up to, any number, or a trigger may', () => {
+test('every target spec that may stop short of its slots prints up to, any number, or a trigger may CT-299 CT-305', () => {
   const rows = specs();
   assert.ok(rows.length > 150, `the registry walk reaches the pool (${rows.length} target specs)`);
   const fewer = rows.filter(r => allowsFewer(r.spec));
@@ -102,14 +102,14 @@ test('the X allowlist names only live X-count specs that still need it', () => {
   }
 });
 
-test('the X target spells require every X', () => {
+test('the X target spells require every X CT-303', () => {
   for (const name of ["Blight's End", 'Torrential Reclamation', 'Channel Through']) {
     const t = getCard(name).spellEffect?.targets;
     assert.equal(t?.min, 'X', `${name} prints "X target …" and requires all X (CT-303)`);
   }
 });
 
-test('a must-target trigger with only the controllers own units as targets picks one of them', () => {
+test('a must-target trigger with only the controllers own units as targets picks one of them CT-299', () => {
   // Unstable Singularity: "When I die, [Switch1] Delete target unit." In deployment,
   // with no enemy unit anywhere, its one legal target is its controller's other unit
   // — the owner: "which might result in damanging your own units".

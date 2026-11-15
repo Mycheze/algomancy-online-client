@@ -149,7 +149,7 @@ for (const [card, def] of DECLINED_COST) {
   });
 }
 
-test('Immolate resolved as a graft rider with its cost unpaid announces it too', () => {
+test('Immolate resolved as a graft rider with its cost unpaid announces it too CT-3', () => {
   // the same EffectDef backs the graft, so this pins that the graft path is
   // covered by the same fix rather than by luck
   const { g, A } = board(8501);
@@ -160,7 +160,7 @@ test('Immolate resolved as a graft rider with its cost unpaid announces it too',
 
 // ── 2. ABDUCT (CARD-TODO #1) ────────────────────────────────────────────
 
-test('Abduct aimed at your own unit announces that nothing happens', () => {
+test('Abduct aimed at your own unit announces that nothing happens CT-1', () => {
   const { g, A, mine } = board(8510);
   const evs = resolve(spellOf('Abduct'), g,
     { controller: A, sourceName: 'Abduct', targets: [mine], x: 9 });
@@ -177,7 +177,7 @@ test('Abduct whose ransom the target\'s controller pays announces the payment', 
   assert.equal(g.entity(theirs.id)!.controller, D, 'the ransom kept the unit where it was');
 });
 
-test('Abduct whose ransom is declined still takes the unit', () => {
+test('Abduct whose ransom is declined still takes the unit CT-1', () => {
   // the working path, pinned so the fix above cannot be "announce everything
   // and stop doing the thing"
   const { g, h, A, D, theirs } = board(8512);
@@ -194,7 +194,7 @@ test('Abduct whose ransom is declined still takes the unit', () => {
 // logged and the branch that actually rewrites another player's targets said
 // nothing. Both halves are pinned.
 
-test('Divine Intervention that changes an effect\'s targets announces the change', () => {
+test('Divine Intervention that changes an effect\'s targets announces the change CT-2', () => {
   const { g, D, A, theirs } = board(8520);
   bait(g, D, theirs.id);
   // CR 110.9: the new target must be one the menu offers — a unit in the bait's
@@ -217,7 +217,7 @@ test('Divine Intervention that declines to change anything still announces it', 
   assertSpoke(evs, 'Divine Intervention that left the targets alone');
 });
 
-test('Divine Intervention and Gravitational Correction report a retarget the same way', () => {
+test('Divine Intervention and Gravitational Correction report a retarget the same way CT-2', () => {
   // "the same way" as a STRUCTURAL claim: both carry the item and the number of
   // targets moved in the event's data, so a reader (and the UI) gets the same
   // facts from either card. Wording is not asserted and must stay free to change.
@@ -240,7 +240,7 @@ test('Divine Intervention and Gravitational Correction report a retarget the sam
   assert.equal(di!.data!['n'], gc!.data!['n']);
 });
 
-test('Divine Intervention driven through a real game reaches its success branch and speaks', () => {
+test('Divine Intervention driven through a real game reaches its success branch and speaks CT-2', () => {
   // the action path, not a hand-built ctx: the drill puts the card in a hand,
   // walks a real game, picks the playCard out of legalActions and resolves it
   // against an opponent-controlled effect on the stack.
@@ -532,7 +532,7 @@ function exchange(seed: number, sameSide: boolean): { evs: EngineEvent[]; a: Ent
   return { evs, a: ea, b: eb, g };
 }
 
-test('Organic Exchange aimed at two of your own units is still a legal, offered play', () => {
+test('Organic Exchange aimed at two of your own units is still a legal, offered play CT-6', () => {
   // the ruling, as an assertion: no different-controller restriction was added
   const spec = spellOf('Organic Exchange').targets!;
   assert.equal(spec.what, 'unit', 'both sides stay targetable');
@@ -548,7 +548,7 @@ test('Organic Exchange aimed at two of your own units swaps positions and change
     'both units are still under the same controller — the assignments cancelled');
 });
 
-test('Organic Exchange announces a same-controller swap differently from a real exchange', () => {
+test('Organic Exchange announces a same-controller swap differently from a real exchange CT-6', () => {
   // the honesty of the log, as a structural claim: whatever the two lines say,
   // they may not be the SAME line, because the two situations are not the same
   // thing. Wording is deliberately not pinned.
@@ -561,7 +561,7 @@ test('Organic Exchange announces a same-controller swap differently from a real 
     + 'it as two takings names the same player twice for a change that never happened.');
 });
 
-test('Organic Exchange across the table still exchanges control', () => {
+test('Organic Exchange across the table still exchanges control CT-6', () => {
   const { evs, a, b, g } = exchange(8603, false);
   assertSpoke(evs, 'Organic Exchange aimed across the table');
   assert.notEqual(g.entity(a.id)!.controller, g.entity(b.id)!.controller,

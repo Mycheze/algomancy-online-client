@@ -97,7 +97,7 @@ const item = (id: number, controller: Seat): StackItem => ({
 
 /* ═══ §1 THE HOLD IS SEAT-AWARE ══════════════════════════════════════ */
 
-test('CR 507.5a: seat 1 is mid-question and seat 0\'s deployment play still RESOLVES', () => {
+test('CR 507.5a: seat 1 is mid-question and seat 0\'s deployment play still RESOLVES CT-184', () => {
   const h = withWraiths(1, 3);
   assert.equal(h.state.phase, 'deploy');
   assert.equal(hiddenSegment(h.state), 'deploy', 'deployment is a hidden simultaneous segment');
@@ -118,7 +118,7 @@ test('CR 507.5a: seat 1 is mid-question and seat 0\'s deployment play still RESO
     'nothing of seat 0\'s is left standing on it');
 });
 
-test('CR 507.5: the play really went ON a stack — it did not skip one', () => {
+test('CR 507.5: the play really went ON a stack — it did not skip one CT-184', () => {
   const h = withWraiths(1, 3);
   const idx = give(h, 0, QUIET);
   const evs = h.do({ type: 'playCard', seat: 0, handIndex: idx });
@@ -129,7 +129,7 @@ test('CR 507.5: the play really went ON a stack — it did not skip one', () => 
   assert.ok(evs.some(e => e.type === 'resolved'), 'and then resolved, in the same action');
 });
 
-test('CR 703.7: seat 0 acting does not build, aim or resolve seat 1\'s held triggers', () => {
+test('CR 703.7: seat 0 acting does not build, aim or resolve seat 1\'s held triggers CT-184', () => {
   // CR D2.1d's rule, unchanged. CR 507.5a narrows the SCOPE of the hold from "everyone"
   // to "the seat being asked" and must not narrow it any further than that.
   // 2026-10-16 (report round 2026-10-16): the Wraith now asks as each trigger
@@ -164,7 +164,7 @@ function settleAs(state: GameState, actor: Seat, stack: StackItem[]): StackItem[
   return e.s.stack;
 }
 
-test('CR 703.7: the acting seat\'s TOPMOST item resolves — not the array\'s top', () => {
+test('CR 703.7: the acting seat\'s TOPMOST item resolves — not the array\'s top CT-184', () => {
   const h = withWraiths(1, 3);
   assert.equal(h.state.decision?.seat, 1, 'seat 1 holds the open question');
   // seat 1's item is ABOVE seat 0's in the one array. Under a plain `pop()`
@@ -175,7 +175,7 @@ test('CR 703.7: the acting seat\'s TOPMOST item resolves — not the array\'s to
     'seat 0 resolved SEAT 0\'S item and left seat 1\'s where it stood');
 });
 
-test('CR 703.7 CONTROL: put the question on the OTHER seat and the other item is the one that goes', () => {
+test('CR 703.7 CONTROL: put the question on the OTHER seat and the other item is the one that goes CT-184', () => {
   const h = withWraiths(1, 3);
   // the mirror image of §2: seat 0 is the one being asked, seat 1 is the one
   // acting. Same array, same order, opposite answer — which is what makes §2
@@ -189,7 +189,7 @@ test('CR 703.7 CONTROL: put the question on the OTHER seat and the other item is
     + 'Without this control §2 would pass on an engine that always took the bottom item');
 });
 
-test('CR 507.5a: with no acting seat at all, the hold from before this rule is exactly what happens', () => {
+test('CR 507.5a: with no acting seat at all, the hold from before this rule is exactly what happens CT-184', () => {
   const h = withWraiths(1, 3);
   const e = new E(structuredClone(h.state));
   // `E.acting` is null for every call that is not an action — game creation, a
@@ -204,7 +204,7 @@ test('CR 507.5a: with no acting seat at all, the hold from before this rule is e
 
 /* ═══ §3 THE PLAY IS AN ITEM — the copy sits above it ════════════════ */
 
-test('CR 507.5: the copy resolves BEFORE the original, because there is finally an original to sit above', () => {
+test('CR 507.5: the copy resolves BEFORE the original, because there is finally an original to sit above CT-184', () => {
   const h = new Harness(27610);
   toDeployment(h);
   const A = h.state.initiative as Seat;
@@ -229,7 +229,7 @@ test('CR 507.5: the copy resolves BEFORE the original, because there is finally 
 
 /* ═══ §4 NEGATIVE CONTROLS ══════════════════════════════════════════ */
 
-test('CR D2.1a: in BATTLE the hold is exactly what it was — a question stops the world', () => {
+test('CR D2.1a: in BATTLE the hold is exactly what it was — a question stops the world CT-184', () => {
   const h = withWraiths(1, 3);
   const state = structuredClone(h.state);
   state.phase = 'battle';
@@ -240,14 +240,14 @@ test('CR D2.1a: in BATTLE the hold is exactly what it was — a question stops t
     + 'genuinely does hold the game; CR D2.1a is the rule working, not a bug');
 });
 
-test('CR D2.1: your OWN question still stops you, in deployment as everywhere else', () => {
+test('CR D2.1: your OWN question still stops you, in deployment as everywhere else CT-184', () => {
   const h = withWraiths(1, 3);
   const left = settleAs(h.state, 1, [item(9001, 0), item(9002, 1)]);
   assert.deepEqual(left.map(i => i.id), [9001, 9002],
     'seat 1 is the seat being asked, so seat 1 drains nothing — CR D2.1, untouched');
 });
 
-test('CR 507.5: with NO question open the shared drain is what runs, seat filter and all', () => {
+test('CR 507.5: with NO question open the shared drain is what runs, seat filter and all CT-184', () => {
   const h = withWraiths(1, 3);
   const state = structuredClone(h.state);
   state.decision = null;

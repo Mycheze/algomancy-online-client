@@ -115,7 +115,7 @@ function staleness(key: string, ledger: readonly LedgerEntry[] = LEDGER, records
   return null;
 }
 
-test('POSITIVE CONTROL: the citation check can tell a live rule from a removed one and from none', () => {
+test('POSITIVE CONTROL: the citation check can tell a live rule from a removed one and from none CT-76 CT-80', () => {
   assert.ok(RECORDS.size > 1500, `only read ${RECORDS.size} rules — the records went missing`);
   assert.equal(staleness([...RECORDS.keys()][0]!), null, 'a live rule reads as live');
   assert.equal(staleness('concepts.no-such-rule'), 'no such rule');
@@ -234,7 +234,7 @@ const REMINDERS = (() => {
   return out;
 })();
 
-test('POSITIVE CONTROL: the printed-reminder scrape finds the pool it is supposed to read', () => {
+test('POSITIVE CONTROL: the printed-reminder scrape finds the pool it is supposed to read CT-76 CT-80', () => {
   // if this ever silently found nothing, every "printed text wins" check below
   // would pass vacuously — which is the stripCode failure mode, three times
   // over, in docs/13 §5.
@@ -334,17 +334,17 @@ function printedAgreementComplaints(e: GlossEntry): string[] {
  * 4. THE TABLE, checked
  * ════════════════════════════════════════════════════════════════════════ */
 
-test('CT-76: every glossary row cites a rule, and every citation RESOLVES and is LIVE', () => {
+test('CT-76: every glossary row cites a rule, and every citation RESOLVES and is LIVE CT-80', () => {
   const bad = GLOSSARY.flatMap(citationComplaints);
   assert.deepEqual(bad, [], `\n  ${bad.join('\n  ')}\n`);
 });
 
-test('CT-80: printed text wins — no row drops a rules word its own card prints', () => {
+test('CT-80: printed text wins — no row drops a rules word its own card prints CT-76', () => {
   const bad = GLOSSARY.flatMap(printedAgreementComplaints);
   assert.deepEqual(bad, [], `\n  ${bad.join('\n  ')}\n`);
 });
 
-test('every attribute with a printed reminder ADMITS it, so a new reminder cannot be ignored', () => {
+test('every attribute with a printed reminder ADMITS it, so a new reminder cannot be ignored CT-76 CT-80', () => {
   // the other direction of the same derivation: if a card ships a reminder for
   // an attribute, the row must be reading it. Without this a row could quietly
   // opt out of §3 by not citing 'printed'.
@@ -356,7 +356,7 @@ test('every attribute with a printed reminder ADMITS it, so a new reminder canno
     'these attributes carry a printed reminder the glossary row does not cite');
 });
 
-test('the rows resting on NEITHER a rule NOR printed text, by name', () => {
+test('the rows resting on NEITHER a rule NOR printed text, by name CT-76 CT-80', () => {
   // The honest size of the hole. Everything here is unchecked prose: no
   // rule key to resolve, no printed sentence to compare against. Shrinking the
   // list is real work; growing it needs a reason in the commit message.
@@ -580,7 +580,7 @@ const MUTANTS: readonly { why: string; row: GlossEntry; expect: RegExp }[] = [
   },
 ];
 
-test('POSITIVE CONTROL: every check above goes RED on a row broken on purpose', () => {
+test('POSITIVE CONTROL: every check above goes RED on a row broken on purpose CT-76 CT-80', () => {
   for (const { why, row, expect } of MUTANTS) {
     const bad = [...citationComplaints(row), ...printedAgreementComplaints(row)];
     assert.ok(bad.length, `NOTHING FIRED on: ${why}\n  row: ${JSON.stringify(row)}`);
@@ -589,7 +589,7 @@ test('POSITIVE CONTROL: every check above goes RED on a row broken on purpose', 
   }
 });
 
-test('POSITIVE CONTROL: and stays GREEN on the rows as they really are', () => {
+test('POSITIVE CONTROL: and stays GREEN on the rows as they really are CT-76 CT-80', () => {
   // the other half — a control that only ever fires would be just as blind.
   for (const e of GLOSSARY) {
     assert.deepEqual([...citationComplaints(e), ...printedAgreementComplaints(e)], [],
@@ -613,7 +613,7 @@ test('POSITIVE CONTROL: and stays GREEN on the rows as they really are', () => {
  * every authored sentence is still on the exported row, character for
  * character, in one field or the other. */
 
-test('CR D6.11: every authored sentence survives onto the exported row', () => {
+test('CR D6.11: every authored sentence survives onto the exported row #118', () => {
   // THE ANTI-DELETION CHECK. Not "the row still says something about
   // Piercing" — the authored sentence, verbatim, in `rule` or in `text`.
   // Fifteen of the 43 rows have a printed reminder displacing them; the other
@@ -632,7 +632,7 @@ test('CR D6.11: every authored sentence survives onto the exported row', () => {
   assert.equal(AUTHORED_GLOSSARY.length, GLOSSARY.length, 'a row went missing between the two tables');
 });
 
-test('CR D6.11: a row the pool prints a reminder for SHOWS that reminder, verbatim', () => {
+test('CR D6.11: a row the pool prints a reminder for SHOWS that reminder, verbatim #118 CT-111', () => {
   // The other direction, and the one that keeps report #118 fixed. Derived
   // from PRINTED_REMINDERS rather than from a list of the fifteen: a new card
   // shipping a reminder retires the corresponding edited row for free, and
@@ -723,7 +723,7 @@ test('CR D6.11: the two reminder scrapes in this repo agree, term for term', () 
     + "Spellbind's second sentence off, and that sentence is the cost rule");
 });
 
-test('CR 802.21a: the {Reaping} row draws ONE card for one or more kills, as the rule and the type line say', () => {
+test('CR 802.21a: the {Reaping} row draws ONE card for one or more kills, as the rule and the type line say CT-433', () => {
   // CT-433. The row read "When it kills a unit, its controller draws a card.",
   // which reads as a card per kill. CR 802.21a (owner ruling 2026-08-30) and
   // the printed type-line reminder ("When a reaping source kills one or more

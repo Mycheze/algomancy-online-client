@@ -163,7 +163,7 @@ function rockfall(which: 0 | 1): { h: Harness; a: Asked } {
   return { h, a: answerFirst(h, which, 'Rockfall') };
 }
 
-test('Rockfall: the second chooser is served the same thing whichever unit the first chose, except the open pick in decision.earlier', () => {
+test('Rockfall: the second chooser is served the same thing whichever unit the first chose, except the open pick in decision.earlier #317', () => {
   const x = rockfall(0), y = rockfall(1);
   assert.notEqual(x.a.firstPicked, y.a.firstPicked, 'the two runs really differ in the first pick');
   assert.equal(x.a.second, y.a.second);
@@ -201,7 +201,7 @@ function smof(which: 0 | 1): { h: Harness; a: Asked } {
   return { h, a: answerFirst(h, which, 'General Smof') };
 }
 
-test('General Smof: the second sacrificer is served the same thing whichever unit the first chose, except the open pick in decision.earlier', () => {
+test('General Smof: the second sacrificer is served the same thing whichever unit the first chose, except the open pick in decision.earlier #317', () => {
   const x = smof(0), y = smof(1);
   assert.notEqual(x.a.firstPicked, y.a.firstPicked, 'the two runs really differ in the first pick');
   assert.equal(x.a.second, y.a.second);
@@ -244,7 +244,7 @@ function culler(which: 0 | 1): { h: Harness; a: Asked } {
   return { h, a: answerFirst(h, which, 'Cthyrian Culler') };
 }
 
-test('CR 102.3b: Cthyrian Culler — the second discarder is served the same thing whichever card the first chose (a hand is hidden)', () => {
+test('CR 102.3b: Cthyrian Culler — the second discarder is served the same thing whichever card the first chose (a hand is hidden) #317 CT-471', () => {
   const x = culler(0), y = culler(1);
   assert.notEqual(x.a.firstPicked, y.a.firstPicked, 'the two runs really differ in the first pick');
   assert.equal(x.a.second, y.a.second);

@@ -68,7 +68,7 @@ function attackTwoColumns(h: Harness, A: Seat, D: Seat, first: EntityId, second:
   pass(h); pass(h);
 }
 
-test('report 215 - Vroot beside a 1/1 shows X=4 on the stack and the opponent gains 4', () => {
+test('report 215 - Vroot beside a 1/1 shows X=4 on the stack and the opponent gains 4 #215', () => {
   const h = new Harness(6640);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -121,7 +121,7 @@ function* everyEffect(): Generator<[string, ReturnType<typeof effectByKey>]> {
   }
 }
 
-test('report 215 - every effect that reads a per-column combat share declares eventAmount', () => {
+test('report 215 - every effect that reads a per-column combat share declares eventAmount #215', () => {
   // The resolver's own source is the evidence: a run that asks for a column's
   // share (faceDamageDealtBy / combatFaceHits / the hits breakdown) computes an
   // amount that is NOT the event n, so the UI must be told.

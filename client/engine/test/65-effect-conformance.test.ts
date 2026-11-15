@@ -591,7 +591,7 @@ function driveOne(board: Board, s: Slot): void {
   });
 }
 
-test('effect conformance: drive every effect in the registry', () => {
+test('effect conformance: drive every effect in the registry CT-61', () => {
   for (const board of BOARDS) for (const s of slots) driveOne(board, s);
   assert.equal(runs.length, slots.length * BOARDS.length,
     'every effect must be driven in every board state');
@@ -622,7 +622,7 @@ function verdicts(): Map<string, { silent: boolean; fair: boolean; where: string
 
 // ── 1. the `creates` declarations ─────────────────────────────────────
 
-test('every token an effect creates is declared in EffectDef.creates', () => {
+test('every token an effect creates is declared in EffectDef.creates #36', () => {
   const problems: string[] = [];
   for (const [def, tokens] of recorded) {
     const cards = owners.get(def)!;
@@ -778,7 +778,7 @@ const SILENT_KNOWN: Record<string, KnownSilence> = {
   },
 };
 
-test('no effect resolves into silence — every completed run says something', () => {
+test('no effect resolves into silence — every completed run says something #7 CT-61 CT-70 CT-74', () => {
   // The fix for "it just did nothing". A guard that aborts an effect must LOG
   // why: `g.ev('info', '<Card>: <why> — nothing happens.')`.
   const problems: string[] = [];
@@ -795,7 +795,7 @@ test('no effect resolves into silence — every completed run says something', (
     + '"Nothing happened" is a legitimate outcome; not SAYING so never is.');
 });
 
-test('the known-silent list is still accurate — tick an entry off when it is fixed', () => {
+test('the known-silent list is still accurate — tick an entry off when it is fixed CT-74', () => {
   const v = verdicts();
   const stale: string[] = [];
   for (const [label, entry] of Object.entries(SILENT_KNOWN)) {
@@ -865,7 +865,7 @@ const UNJUDGED: Record<string, string> = {
 // The title keeps the substring CT-7's guard names ("the drive actually covers
 // the pool"), because the claim is the same one made harder: the pass no
 // longer COVERS the pool, it exhausts it.
-test('the drive actually covers the pool — every effect in the registry is driven', () => {
+test('the drive actually covers the pool — every effect in the registry is driven CT-7 CT-61', () => {
   // The point of the whole rewrite, as one assertion. The old fuzz drive
   // reached 280 of these and the number moved whenever an unrelated card
   // changed; this is an equality, and it can only fail by an effect throwing.
@@ -875,7 +875,7 @@ test('the drive actually covers the pool — every effect in the registry is dri
   assert.equal(driven.size, slots.length);
 });
 
-test('the residue is named individually, and an entry that stops being needed fails', () => {
+test('the residue is named individually, and an entry that stops being needed fails CT-61', () => {
   const v = verdicts();
   const stale: string[] = [];
   const surprise: string[] = [];
@@ -899,7 +899,7 @@ test('the residue is named individually, and an entry that stops being needed fa
 
 // CT-7's other guard names this title; the reach it reports is now exhaustive
 // in cards and in defs, and a floor only where a floor still means something.
-test('the drive states its reach in CARDS, not only in EffectDefs (and in token-makers)', () => {
+test('the drive states its reach in CARDS, not only in EffectDefs (and in token-makers) CT-7', () => {
   const withEffects = new Set<string>();
   for (const s of slots) withEffects.add(s.card);
   const declaring = [...owners.keys()].filter(d => (d.creates?.length ?? 0) > 0 || d.createsAny);
@@ -1107,7 +1107,7 @@ test('CR D7.3a positive control: the source scan can actually SEE the idiom', ()
   ]) assert.ok(!convict(ok), `the scan over-convicts: ${ok}`);
 });
 
-test('CR D7.3a: no card reads a declared target without the shared fizzle helper', () => {
+test('CR D7.3a: no card reads a declared target without the shared fizzle helper CT-89', () => {
   const hits = scanCardSources();
   assert.deepEqual(hits.map(h => `${h.file}:${h.line}  ${h.text}`), [],
     'a non-null assertion on `ctx.targets` — the `!` is a TypeScript token, not a guard, and '

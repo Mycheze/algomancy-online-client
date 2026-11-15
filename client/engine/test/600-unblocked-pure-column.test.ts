@@ -94,7 +94,7 @@ test('CR 802.25: the attribute list is the Attr union, and every attribute the p
   }
 });
 
-test('CR 608.2d, 802.25c: PREMISE: without Pure, Swift, Sluggish, Powerful, Thieving, Lethal and Blessed each change an unblocked strike on the player', () => {
+test('CR 608.2d, 802.25c: PREMISE: without Pure, Swift, Sluggish, Powerful, Thieving, Lethal and Blessed each change an unblocked strike on the player CT-358', () => {
   assert.deepEqual(PLAIN, { lost: 3, gained: 0, drew: 0, subs: ['normal'], killed: false });
   const acting = OTHER.filter(a => JSON.stringify(strike(60001, [[a]])) !== JSON.stringify(PLAIN));
   for (const a of ['Swift', 'Sluggish', 'Powerful', 'Thieving', 'Lethal', 'Blessed']) {
@@ -102,7 +102,7 @@ test('CR 608.2d, 802.25c: PREMISE: without Pure, Swift, Sluggish, Powerful, Thie
   }
 });
 
-test('CR 608.2d, 802.25a: an unblocked Pure column strikes in the normal sub-step and does not double or draw — its own attributes are all off', () => {
+test('CR 608.2d, 802.25a: an unblocked Pure column strikes in the normal sub-step and does not double or draw — its own attributes are all off CT-358', () => {
   // every attribute checked before failing, so a regression names them all
   const kept = OTHER.filter(a => JSON.stringify(strike(60001, [['Pure', a]])) !== JSON.stringify(PLAIN));
   assert.deepEqual(kept, [], 'a Pure unit with any of these, unblocked, strikes the player as a plain one');
@@ -111,7 +111,7 @@ test('CR 608.2d, 802.25a: an unblocked Pure column strikes in the normal sub-ste
   assert.deepEqual(strike(60002, [['Pure', 'Swift', 'Sluggish']]), PLAIN, 'Pure: once, in the normal sub-step');
 });
 
-test('CR 802.25b, 802.25k: in an unblocked column with a Pure unit, a column-mate attributes are off too', () => {
+test('CR 802.25b, 802.25k: in an unblocked column with a Pure unit, a column-mate attributes are off too CT-358', () => {
   const base = strike(60003, [['Pure'], []]);
   assert.deepEqual(base, { lost: 4, gained: 0, drew: 0, subs: ['normal'], killed: false });
   const kept = OTHER.filter(a => JSON.stringify(strike(60003, [['Pure'], [a]])) !== JSON.stringify(base));

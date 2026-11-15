@@ -201,7 +201,7 @@ const cssPx = (v: string): number => Number(v.match(/(-?[\d.]+)px/)?.[1]);
  * `notBurst` set below is its subject. */
 const NOT_BURST = TOKEN_KIND.filter(n => !BURST.includes(n));
 
-test('§0a the spell-token KIND is a superset of burst — the container is not the rule', () => {
+test('§0a the spell-token KIND is a superset of burst — the container is not the rule CT-125', () => {
   for (const b of BURST) {
     assert.ok(TOKEN_KIND.includes(b), `${b} is burst but not a spell token — the strip would never show it`);
   }
@@ -249,7 +249,7 @@ test('§0d POSITIVE CONTROL — the swept sets are not empty, so a green sweep m
 
 /* ══ §1 — the strip: how many, of which name, at which size ═══════════════ */
 
-test('§1a every burst name you hold gets its own row, named, counted', async () => {
+test('§1a every burst name you hold gets its own row, named, counted #132 CT-125', async () => {
   // one of each, so the aggregate count cannot stand in for the breakdown
   const { s, seat } = holding(23301, BURST.map((name, i) => ({ name, x: i + 2 })));
   const rows = tallyRows(await paint(s, seat));
@@ -258,7 +258,7 @@ test('§1a every burst name you hold gets its own row, named, counted', async ()
   for (const r of rows) assert.equal(r.n, 1, `${r.name} is counted once`);
 });
 
-test('§1b a group of one name at different sizes prints every size — the report verbatim', async () => {
+test('§1b a group of one name at different sizes prints every size — the report verbatim #132 CT-125', async () => {
   for (const name of BURST) {
     // the shape from the report: several of ONE name, two of them alike,
     // the rest different. apply.ts groups on the name and ignores the X, so
@@ -281,7 +281,7 @@ test('§1b a group of one name at different sizes prints every size — the repo
   }
 });
 
-test('§1c the tiles are ordered so a burst group is contiguous and reads BIGGEST first', async () => {
+test('§1c the tiles are ordered so a burst group is contiguous and reads BIGGEST first CT-125', async () => {
   const name = BURST[0]!, other = BURST[BURST.length - 1]!;
   assert.notEqual(name, other, 'two distinct burst names to interleave');
   // seated in the order that makes id order WRONG: alternating names, sizes
@@ -348,7 +348,7 @@ test('§1g alike tokens share one stack with a count; any difference keeps them 
   assert.match(stacks[1]!, /<b class="tokcount">×3<\/b>/, 'under one count');
 });
 
-test('§1f a spell token that is NOT burst gets a row that does not claim the chain', async () => {
+test('§1f a spell token that is NOT burst gets a row that does not claim the chain CT-125', async () => {
   for (const name of NOT_BURST) {
     const { s, seat } = holding(23305, [{ name, x: 2 }, { name, x: 4 }]);
     const rows = tallyRows(await paint(s, seat));
@@ -429,7 +429,7 @@ test('§2a from six deep the kind word alone spends the visible sliver', async (
   }
 });
 
-test('§2b every buried card wears its X where the overlap cannot reach it', async () => {
+test('§2b every buried card wears its X where the overlap cannot reach it #132 CT-125', async () => {
   const xs = [1, 1, 3, 7, 2, 5];
   const { s, seat } = chainOnStack(23311, BURST.find(b => MINTERS.get(b)!.length >= 2) ?? BURST[0]!, xs);
   const cards = stackCards(await paint(s, seat));
@@ -444,7 +444,7 @@ test('§2b every buried card wears its X where the overlap cannot reach it', asy
 });
 
 // owner 2026-11-03: the 'N deep' tag goes — the run it carried stays, as its own chip (stackruns)
-test('§2c the run chip counts the run, so you can see how many are left', async () => {
+test('§2c the run chip counts the run, so you can see how many are left #132 CT-125', async () => {
   const xs = [1, 1, 3, 7, 2, 5];
   const name = BURST.find(b => MINTERS.get(b)!.length >= 2) ?? BURST[0]!;
   const { s, seat } = chainOnStack(23312, name, xs);

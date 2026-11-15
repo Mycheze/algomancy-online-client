@@ -35,7 +35,7 @@ import { readStyles } from './read-styles.ts';
 
 const labels = (it: StackItem, s: GameState): string[] => stackBadges(it, s).map(b => b.t);
 
-test('a Fireball token cast under Emberflame Enlightener wears a Powerful chip on the stack, in both seat views', () => {
+test('a Fireball token cast under Emberflame Enlightener wears a Powerful chip on the stack, in both seat views #188', () => {
   const h = new Harness(36500);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;

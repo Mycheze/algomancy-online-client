@@ -64,7 +64,7 @@ function board(seed: number): { h: Harness; A: Seat; D: Seat } {
   return { h, A, D: (1 - A) as Seat };
 }
 
-test('CR 802.21 PREMISE: the kill-diff seam really pays a reaping source for one dead unit', () => {
+test('CR 802.21 PREMISE: the kill-diff seam really pays a reaping source for one dead unit CT-172', () => {
   const { h, A, D } = board(28300);
   const victim = spawn(h, D, 'Unit Token');
   const e = new E(h.state);
@@ -88,7 +88,7 @@ test('CR 802.21 CONTROL: a diff with no dead unit pays nothing', () => {
     'nothing died, so nothing is drawn — the payout is not unconditional');
 });
 
-test('CR 802.21 THE FIX: two units dying in one kill draw ONE card, not two', () => {
+test('CR 802.21 THE FIX: two units dying in one kill draw ONE card, not two CT-172', () => {
   const { h, A, D } = board(28302);
   const a = spawn(h, D, 'Unit Token');
   const b = spawn(h, D, 'Unit Token');
@@ -107,7 +107,7 @@ test('CR 802.21 THE FIX: two units dying in one kill draw ONE card, not two', ()
     + 'because the printed reminder never reached printed.json');
 });
 
-test('CR 802.21 and it does not scale with the body count — three dead still draw one', () => {
+test('CR 802.21 and it does not scale with the body count — three dead still draw one CT-172', () => {
   const { h, A, D } = board(28303);
   const ids = [spawn(h, D, 'Unit Token'), spawn(h, D, 'Unit Token'), spawn(h, D, 'Unit Token')];
   const e = new E(h.state);
@@ -123,7 +123,7 @@ test('CR 802.21 and it does not scale with the body count — three dead still d
     + 'some other off-by-one, three cannot');
 });
 
-test('CR 802.21 the fix is barely reachable in this pool, and that is recorded not guessed', () => {
+test('CR 802.21 the fix is barely reachable in this pool, and that is recorded not guessed CT-173', () => {
   const printers = allCardNames().filter(n => (getCard(n).attrs ?? []).includes('Reaping'));
   assert.deepEqual(printers.sort(),
     ['Flame of History', 'Invasive Reassignment', 'Noxious Demise', 'Seismomancy'],
@@ -141,7 +141,7 @@ test('CR 802.21 the fix is barely reachable in this pool, and that is recorded n
   }
 });
 
-test('CR 802.21 nothing in the pool can give a UNIT reaping, which is why the second sentence is not built', () => {
+test('CR 802.21 nothing in the pool can give a UNIT reaping, which is why the second sentence is not built CT-173', () => {
   const printers = allCardNames().filter(n => (getCard(n).attrs ?? []).includes('Reaping'));
   assert.ok(printers.length > 0, 'non-vacuity: the pool really does print {Reaping}');
   // (a) no printer can donate it as an augment/virus — an augment on a spell donates its augmentAttrs (CR 721.4b)

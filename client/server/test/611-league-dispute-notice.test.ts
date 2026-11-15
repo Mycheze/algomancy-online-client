@@ -81,7 +81,7 @@ test('§1 BL-48 / CT-339: a disputed league game sends every organizer a bell li
   assert.equal(disputeRows(ann.id).length + disputeRows(bo.id).length, 0, 'the players are not sent the organizer notice');
 });
 
-test('§2 the one who filed it is not told, even as an organizer; a dispute that flags no match sends nothing', async () => {
+test('§2 the one who filed it is not told, even as an organizer; a dispute that flags no match sends nothing CT-339', async () => {
   const before = L.outboxRows().filter(r => r.kind === 'dispute').length;
   const [mine, theirs] = [disputeRows(org.id).length, disputeRows(org2.id).length];
   const { room } = settled(org, bo, 'D611B', 61101, bo);

@@ -80,7 +80,7 @@ function walk(seed: number): { seen: Seen[]; D: Seat } {
   return { seen, D };
 }
 
-test('CT-523 §1 a seat on Pass all runs no clock in any priority window of the battle', () => {
+test('CT-523 §1 a seat on Pass all runs no clock in any priority window of the battle #323', () => {
   const { seen } = walk(114400);
   const armedWindows = seen.filter(x => x.armed && x.passWindow);
   assert.ok(armedWindows.length >= 3, `fixture: several armed pass windows (saw ${armedWindows.length})`);

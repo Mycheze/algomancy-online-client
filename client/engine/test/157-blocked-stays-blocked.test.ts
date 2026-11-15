@@ -55,7 +55,7 @@ const runOut = (h: Harness): void => { pass(h); pass(h); pass(h); pass(h); };
 /* ── the negative control comes FIRST, because without it every assertion
  *    below passes on a board where nothing was ever going to connect ──── */
 
-test('CR 606.3a (control): an UNBLOCKED column really does connect, so the rest of this file means something', () => {
+test('CR 606.3a (control): an UNBLOCKED column really does connect, so the rest of this file means something CT-62', () => {
   const { h, D, life } = blockedColumn(7701, false);
   runOut(h);
   assert.ok(h.state.players[D]!.life < life,
@@ -63,7 +63,7 @@ test('CR 606.3a (control): an UNBLOCKED column really does connect, so the rest 
     + 'is not delivering damage at all and every "no damage through" assertion below is vacuous.');
 });
 
-test('CR 606.3a: a blocker that DIES leaves the column blocked', () => {
+test('CR 606.3a: a blocker that DIES leaves the column blocked CT-62', () => {
   const { h, D, blk, life } = blockedColumn(7702, true);
   whiteBox(h, e => e.destroy(e.entity(blk)!, 'is deleted'));
   assert.ok(!ent(h, blk), 'the blocker is gone before damage');
@@ -71,7 +71,7 @@ test('CR 606.3a: a blocker that DIES leaves the column blocked', () => {
   assert.equal(h.state.players[D]!.life, life, 'no damage through the blocked column');
 });
 
-test('CR 606.3a: a blocker that is RECALLED leaves the column blocked', () => {
+test('CR 606.3a: a blocker that is RECALLED leaves the column blocked CT-62', () => {
   const { h, D, blk, life } = blockedColumn(7703, true);
   whiteBox(h, e => (e as unknown as { recall(u: unknown): void }).recall(e.entity(blk)!));
   assert.ok(!ent(h, blk), 'the blocker left play without dying');
@@ -79,7 +79,7 @@ test('CR 606.3a: a blocker that is RECALLED leaves the column blocked', () => {
   assert.equal(h.state.players[D]!.life, life, 'no damage through the blocked column');
 });
 
-test('CR 606.3a: a blocker that is ERASED leaves the column blocked', () => {
+test('CR 606.3a: a blocker that is ERASED leaves the column blocked CT-62', () => {
   const { h, D, blk, life } = blockedColumn(7704, true);
   whiteBox(h, e => (e as unknown as { eraseFromPlay(u: unknown): void }).eraseFromPlay(e.entity(blk)!));
   assert.ok(!ent(h, blk), 'the blocker left play without dying');
@@ -87,7 +87,7 @@ test('CR 606.3a: a blocker that is ERASED leaves the column blocked', () => {
   assert.equal(h.state.players[D]!.life, life, 'no damage through the blocked column');
 });
 
-test('CR 606.3a: a blocker STOLEN mid-combat (Download) leaves the column blocked', () => {
+test('CR 606.3a: a blocker STOLEN mid-combat (Download) leaves the column blocked CT-62', () => {
   // The route the ruling was actually asked about. The steal fix (CR 711.3) pinned the other half
   // of this — the stolen token sits out of the formation until regroup — but
   // said nothing about the column it was blocking.

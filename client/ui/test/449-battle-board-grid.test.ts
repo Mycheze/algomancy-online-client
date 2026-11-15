@@ -112,7 +112,7 @@ test('§2 the battle board: the feet full width, the middle two columns, the ban
   assert.doesNotMatch(paint(R1, 0), /data-wide/);
 });
 
-test('§3 the columns stand in the middle of the fight, clear of the invader strip', () => {
+test('§3 the columns stand in the middle of the fight, clear of the invader strip #204', () => {
   assert.match(rule('.lboard[data-fight] .lfight.focus .cols > :first-child'), /margin-left: auto/);
   assert.match(rule('.lboard[data-fight] .lfight.focus .cols > :last-child'), /margin-right: auto/);
   assert.match(rule('.lboard[data-fight] .lfight.focus .cols > .col'), /margin-top: auto; margin-bottom: auto/);

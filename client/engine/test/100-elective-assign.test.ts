@@ -66,7 +66,7 @@ function overkillBoard(seed: number) {
   return { h, A, D, big, b1, b2, mark };
 }
 
-test('CR 608.6c: the ATTACKER is asked, and ALL 4 onto the front 1/1 leaves the back one untouched', () => {
+test('CR 608.6c: the ATTACKER is asked, and ALL 4 onto the front 1/1 leaves the back one untouched #84', () => {
   const { h, A, D, big, b1, b2, mark } = overkillBoard(12001);
   const dec = h.state.decision!;
   assert.ok(dec, 'a real split raises a decision');
@@ -87,7 +87,7 @@ test('CR 608.6c: the ATTACKER is asked, and ALL 4 onto the front 1/1 leaves the 
     'the block-side strike (1+1 onto one victim) stayed silent and landed as before');
 });
 
-test('CR D1.2g: the FIRST option is the default split, and one click reproduces the pre-election numbers exactly', () => {
+test('CR D1.2g: the FIRST option is the default split, and one click reproduces the pre-election numbers exactly #84', () => {
   const { h, D, big, b1, b2, mark } = overkillBoard(12002);
   const dec = h.state.decision!;
   assert.equal(dec.options[0]!.value, 'default', 'the one-click default leads the menu');

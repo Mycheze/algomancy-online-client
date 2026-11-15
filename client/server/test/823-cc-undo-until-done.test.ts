@@ -36,7 +36,7 @@ function resourceMove(s: GameState, seat: Seat): Action | undefined {
   return legalActions(s, seat).find(a => a.type === 'recycleForResource' || a.type === 'activateResource' || a.type === 'exchangePrismite');
 }
 
-test('§1-§6 the INT takes back their own resource step until Done, and nobody else can', () => {
+test('§1-§6 the INT takes back their own resource step until Done, and nobody else can CT-500', () => {
   const { room } = F.start(3);
   const int = room.state.initiative;
   const nit = other(int);

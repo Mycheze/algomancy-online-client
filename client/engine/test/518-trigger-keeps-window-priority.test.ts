@@ -90,7 +90,7 @@ function nonVacuous(cls: string[], fired: string[], what: string, must: string[]
 
 /* ══ §1 — THE ATTACK WINDOW, every on-attack trigger card ═══════════════ */
 
-test('CR 605.1a every on-attack trigger card: after the initiative player attacks, the initiative player has priority', () => {
+test('CR 605.1a every on-attack trigger card: after the initiative player attacks, the initiative player has priority #234 CT-318', () => {
   const fired: string[] = [];
   ATTACK.forEach((name, i) => {
     const h = new Harness(51800 + i);
@@ -115,7 +115,7 @@ test('CR 605.1a every on-attack trigger card: after the initiative player attack
 
 /* ══ §2 — THE BLOCK WINDOW, every on-block trigger card ═════════════════ */
 
-test('CR 703.3a every on-block trigger card: a block trigger controlled by the initiative player leaves the block window with them', () => {
+test('CR 703.3a every on-block trigger card: a block trigger controlled by the initiative player leaves the block window with them CT-318', () => {
   // the discriminating case is a trigger the INITIATIVE player controls (the
   // old code handed priority to its controller's opponent), so the blocker
   // is the initiative player's: round two, where the other seat attacks
@@ -195,7 +195,7 @@ test('CR 608.3b the damage window between split sub-steps opens with the initiat
   windowIsInitiatives(h, 'Adversary of the Deep', 'damage window');
 });
 
-test('CR 703.3c a trigger queued by a resolution: the new window still opens with the initiative player', () => {
+test('CR 703.3c a trigger queued by a resolution: the new window still opens with the initiative player #234 CT-318', () => {
   // the defender kills the attacking Geode; Geode's "when I die" trigger is
   // the INITIATIVE player's, and it goes on the stack as the new window opens
   const h = new Harness(52101);
@@ -242,7 +242,7 @@ test('Annex D2.9 the control: a cast in battle hands priority to the opponent of
 
 /* ══ §6 — THE REPORT'S BOARD ═══════════════════════════════════════════ */
 
-test('report 234 RCUY at 180: Tomzy has the initiative, attacks with Rousing Spirit, and receives priority first', () => {
+test('report 234 RCUY at 180: Tomzy has the initiative, attacks with Rousing Spirit, and receives priority first #234 CT-318', () => {
   // RCUY's board at [180], as the replay builds it: Tomzy (initiative)
   // attacks with [[Plague Bellower], [Rousing Spirit], [Ephemeral Skywalker,
   // Flourishing Flora]] into LordZZX's Tempest Oracle and Shoreline Specter,

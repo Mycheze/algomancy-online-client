@@ -324,7 +324,7 @@ function shield(h: Harness, id: EntityId): void {
   h.state = g.s;
 }
 
-test('Piercing: 5 effect damage to a 1/1 kills it and the other 4 hit its controller', () => {
+test('Piercing: 5 effect damage to a 1/1 kills it and the other 4 hit its controller CT-4', () => {
   const { h, A, D, src, tgt } = duel(7210, 'Ruinbringer', 'Unit Token');
   assert.deepEqual(effStats(h, tgt), [1, 1], 'a 1/1 — 1 point is lethal, 4 are excess');
   const evs = dealFrom(h, A, src, tgt, 5);
@@ -342,7 +342,7 @@ test('Piercing: 5 effect damage to a 1/1 kills it and the other 4 hit its contro
     'both halves belong to ONE damage resolution, not two');
 });
 
-test('Piercing: exactly lethal pierces nothing', () => {
+test('Piercing: exactly lethal pierces nothing CT-4', () => {
   const { h, A, D, src, tgt } = duel(7211, 'Ruinbringer', 'Bubb');
   assert.deepEqual(effStats(h, tgt), [5, 6], 'Bubb is a 5/6, so 6 is exactly lethal');
   const evs = dealFrom(h, A, src, tgt, 6);
@@ -359,7 +359,7 @@ test('Piercing: less than lethal pierces nothing and the unit lives', () => {
   assert.deepEqual(damageTo(evs).players, [], 'Piercing is an OVERFLOW rule, not a redirect');
 });
 
-test('Piercing + Powerful: the excess is what is left after the doubling', () => {
+test('Piercing + Powerful: the excess is what is left after the doubling CT-4', () => {
   // Chitin Shredder is {Powerful}; the {Piercing} is donated. 4 → 8 at the
   // source, 6 of which Bubb needs, so 2 pierce. Computing the excess BEFORE
   // the doubling would pierce nothing at all (4 < 6).
@@ -372,7 +372,7 @@ test('Piercing + Powerful: the excess is what is left after the doubling', () =>
   assert.deepEqual(players.map(p => p.n), [2]);
 });
 
-test('Piercing vs a Vulnerable victim: the excess is what is left after the RECEIVE-side doubling', () => {
+test('Piercing vs a Vulnerable victim: the excess is what is left after the RECEIVE-side doubling CT-4', () => {
   // Crumbling Ancient is a 3/8 {Vulnerable}: it RECEIVES double, so only 4 of
   // the pool are needed to kill it and 6 pierce. Pricing it at its raw 8
   // toughness would pierce only 2 — the receive-side doubling is why this is
@@ -386,7 +386,7 @@ test('Piercing vs a Vulnerable victim: the excess is what is left after the RECE
   assert.deepEqual(units.map(u => u.n), [8], 'and the unit was DEALT the doubled 8, not the 4 assigned');
 });
 
-test('Piercing vs a damage-shielded unit: the shield changes what is dealt, never what pierces', () => {
+test('Piercing vs a damage-shielded unit: the shield changes what is dealt, never what pierces CT-4', () => {
   // RAQ "[Solved] Excessive Combat Damage & interaction with Piercing, Deadly
   // and Phytochemical Protection", on a shielded unit standing in front of a
   // 5/6 Bubb: "Atleast 5 damage to Awoken (gets atleast +5/+5, won't create
@@ -406,7 +406,7 @@ test('Piercing vs a damage-shielded unit: the shield changes what is dealt, neve
   assert.deepEqual(effStats(h, tgt), [11, 12], '+1/+1 for each of the 6 prevented');
 });
 
-test('Piercing + Deadly: one point is all it needs, so almost the whole hit pierces', () => {
+test('Piercing + Deadly: one point is all it needs, so almost the whole hit pierces CT-4', () => {
   // Same RAQ, the Deadly line: "Atleast 1 dmg to Awoken (gets +1/+1, won't
   // create 1/1 unit), rest of the damage can go to Bubb." One point is the
   // whole of what a Deadly source must spend on a victim, so 1 sticks and 4
@@ -441,7 +441,7 @@ test('Piercing + Poisonous: the counters are lethal at the same number, so the r
     'the pierced remainder is ordinary damage to the face');
 });
 
-test('Piercing DONATED by a virus pierces exactly like a printed one', () => {
+test('Piercing DONATED by a virus pierces exactly like a printed one CT-4', () => {
   // Caleb 2025-03-06 (now CR 721.4b), the ruling that authorises the donation and names
   // this attribute: "you can only do this with attributes — mostly Deadly,
   // Piercing, and Powerful are impacted by this." The Foretold is a vanilla
@@ -455,7 +455,7 @@ test('Piercing DONATED by a virus pierces exactly like a printed one', () => {
   assert.deepEqual(damageTo(evs).players.map(p => p.n), [4]);
 });
 
-test('Piercing in a BATCH: each unit\'s excess goes to THAT unit\'s controller', () => {
+test('Piercing in a BATCH: each unit\'s excess goes to THAT unit\'s controller CT-4', () => {
   // One effect, two victims on opposite sides, both overkilled. "That unit's
   // controller" is the load-bearing half of the ruling: a version that sent
   // every remainder to the opponent would pass a one-victim test and be wrong
@@ -489,7 +489,7 @@ test('Piercing: a unit named twice in one batch is overkilled ONCE, and the rest
 
 // ── the two paths, measured against each other ──────────────────────────
 
-test('combat and effect damage agree on how much was dealt', () => {
+test('combat and effect damage agree on how much was dealt #84', () => {
   // The overkill ruling (report #84, 2026-08-23; now CR 608.6d): "ALL damage is dealt to units, even if it
   // surpasses its defense."
   //

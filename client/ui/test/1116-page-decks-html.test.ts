@@ -46,7 +46,7 @@ function state(over: Partial<DecksState> = {}): DecksState {
 const html = (over: Partial<DecksState> = {}): string => decksHtml(decksView(state(over)));
 const btns = (h: string): Set<string> => new Set([...h.matchAll(/data-btn="([^"]+)"/g)].map(m => m[1]!));
 
-test('1116 §1 the page in the frame, the shelf bar, the boxes; signed out', () => {
+test('1116 §1 the page in the frame, the shelf bar, the boxes; signed out BL-65', () => {
   const h = html();
   assert.match(h, /^<div class="ui-app-shell ui-app-shell--contained ui-app-shell--fill apppage framewide deckpage">/,
     'in the frame, the page class last (report.ts names the page "deck" from it)');

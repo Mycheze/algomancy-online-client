@@ -132,7 +132,7 @@ const RESOLUTION_EVENTS = new Set(['stackPushed', 'resolved', 'stackFlash']);
 /** Lithoghul: "[Augment] Whenever I am dealt damage, I deal that much damage
  * to you." A 4/4 with a self damage trigger that needs no target and cannot
  * fizzle — the cleanest damage trigger in the pool to read a log against. */
-test('CR 608.9: a combat-damage trigger is announced INSIDE the damage step and pushed to the stack AFTER it', () => {
+test('CR 608.9: a combat-damage trigger is announced INSIDE the damage step and pushed to the stack AFTER it #119 CT-112', () => {
   const h = new Harness(23901);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -169,7 +169,7 @@ test('CR 608.9: a combat-damage trigger is announced INSIDE the damage step and 
  * did NOT control the trigger is holding priority with a live window and a
  * castable card. Under the old engine `legalActions` for that seat was the
  * empty array and priority was null — test/229 pins that historical state. */
-test('CR 608.9b: the other seat holds priority over a combat-damage trigger and can actually respond to it', () => {
+test('CR 608.9b: the other seat holds priority over a combat-damage trigger and can actually respond to it #119 CT-112', () => {
   const h = new Harness(23902);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -247,7 +247,7 @@ function damageTriggerUnits(): string[] {
   });
 }
 
-test('THE SWEEP: over every unit in the pool that triggers on combat damage, nothing resolves inside a SUB-STEP', () => {
+test('THE SWEEP: over every unit in the pool that triggers on combat damage, nothing resolves inside a SUB-STEP #119 CT-112', () => {
   const names = damageTriggerUnits();
   assert.ok(names.length >= 50,
     `the derived subject set collapsed (${names.length}) — a check with an empty subject set `
@@ -384,7 +384,7 @@ test('CR 608.9b: a combat DEATH trigger waits with the rest — when I die is on
  * This is the shape playtest report #165 was filed about, reduced to its
  * smallest form: what a sub-step fires must land before the next sub-step
  * deals its damage, or a card built to grow first cannot. */
-test('CR 608.9c: in a SPLIT damage step a death trigger resolves at the boundary, not after combat', () => {
+test('CR 608.9c: in a SPLIT damage step a death trigger resolves at the boundary, not after combat #165', () => {
   const h = new Harness(23913);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -613,7 +613,7 @@ test('CR 608.9: a sub-step suspended by a CR 608.6a election resumes with the he
  * assert them. This was the only silent one. It is asserted now rather than
  * funded away — funding the attacker would put ITS pay question in front of
  * the Geode one and change what `taxed.state.decision` even is. */
-test('CR 111.10g WIDENED BY CR 608.9d: a combat-damage trigger is taxed by Crevice Lurker, and is not without one', () => {
+test('CR 111.10g WIDENED BY CR 608.9d: a combat-damage trigger is taxed by Crevice Lurker, and is not without one CT-146', () => {
   const build = (seed: number, lurker: boolean): Harness => {
     const h = new Harness(seed);
     toDeployment(h);

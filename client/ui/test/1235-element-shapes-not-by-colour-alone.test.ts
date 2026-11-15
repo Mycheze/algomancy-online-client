@@ -138,7 +138,7 @@ test('1235 §3 the stylesheet: the icon is hidden in the standard look, shown at
   }
 });
 
-test('1235 §4 a census of the sources: no element swatch, segment or dot is drawn without its icon', () => {
+test('1235 §4 a census of the sources: no element swatch, segment or dot is drawn without its icon BL-51', () => {
   const files: string[] = [];
   const walk = (dir: string): void => {
     for (const e of readdirSync(dir, { withFileTypes: true })) {

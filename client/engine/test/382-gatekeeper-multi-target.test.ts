@@ -19,7 +19,7 @@ import type { Seat } from '../src/types.ts';
 const values = (h: Harness): unknown[] => h.state.decision!.options.map(o => o.value)
   .filter(v => !(v as { doneTargets?: true }).doneTargets);
 
-test('CR 110.12: a two-target spell aims at the Gatekeeper first and then at anything else', () => {
+test('CR 110.12: a two-target spell aims at the Gatekeeper first and then at anything else #199', () => {
   const h = new Harness(4380);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -45,7 +45,7 @@ test('CR 110.12: a two-target spell aims at the Gatekeeper first and then at any
   finishBattle(h);
 });
 
-test('CR 110.12: two Gatekeepers — each one must be targeted if able, so both slots go to them', () => {
+test('CR 110.12: two Gatekeepers — each one must be targeted if able, so both slots go to them #199', () => {
   const h = new Harness(4381);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;

@@ -136,7 +136,7 @@ test('Skybreaker: paying "Erase me" negates all spell effects on the stack', () 
   finishBattle(h);
 });
 
-test('Squish: target ally deals its defense to another unit (amount at resolution, CR 107.8)', () => {
+test('Squish: target ally deals its defense to another unit (amount at resolution, CR 107.8) #48', () => {
   const h = new Harness(1805);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -204,7 +204,7 @@ test('Swirling Shardform: spawning creates two dormant Shards', () => {
 
 // Playtest VEAV: "the 'I get -2/-2' isn't a trigger that should go on the
 // stack, it's a static effect". These two pin the layer, not the counters.
-test('Tenebrous Bulborb: played normally, its own "[Augment] I gain -2/-2" makes it 3/2', () => {
+test('Tenebrous Bulborb: played normally, its own "[Augment] I gain -2/-2" makes it 3/2 #46', () => {
   const h = new Harness(1808);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -213,7 +213,7 @@ test('Tenebrous Bulborb: played normally, its own "[Augment] I gain -2/-2" makes
   assert.deepEqual(effStats(h, tb), [3, 2], '5/4 - 2/2 = 3/2');
 });
 
-test('Tenebrous Bulborb: augmenting a host gives THE HOST -2/-2, and it LEAVES with the virus', () => {
+test('Tenebrous Bulborb: augmenting a host gives THE HOST -2/-2, and it LEAVES with the virus #46', () => {
   const h = new Harness(1809);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -231,7 +231,7 @@ test('Tenebrous Bulborb: augmenting a host gives THE HOST -2/-2, and it LEAVES w
   assert.deepEqual(effStats(h, host), [7, 5], 'the -2/-2 left with the virus');
 });
 
-test('Tenebrous Bulborb: two of them on one host stack to -4/-4', () => {
+test('Tenebrous Bulborb: two of them on one host stack to -4/-4 #46', () => {
   const h = new Harness(1811);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -309,7 +309,7 @@ test('Throw off a Cliff: deletes a 4+-defense target; an under-4 target is not o
  * activated, and then resolved into nothing.
  */
 
-test('CR 111.7b: Throwing Boulder with an adjacent ally — offered, and it connects', () => {
+test('CR 111.7b: Throwing Boulder with an adjacent ally — offered, and it connects #44', () => {
   const h = new Harness(1812);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -332,7 +332,7 @@ test('CR 111.7b: Throwing Boulder with an adjacent ally — offered, and it conn
   finishBattle(h);
 });
 
-test('CR 111.7b: with NO adjacent ally the ability is not offered, and apply() refuses it', () => {
+test('CR 111.7b: with NO adjacent ally the ability is not offered, and apply() refuses it #44', () => {
   const h = new Harness(1813);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -354,7 +354,7 @@ test('CR 111.7b: with NO adjacent ally the ability is not offered, and apply() r
 // adjacency is between neighbours in one formation), so "an adjacent enemy"
 // cannot be built; what this board has is an enemy FACING it, and that does not
 // unlock the ability either.
-test('CR 111.7b: an ALLY is required — an enemy blocking it (facing, not adjacent) does not unlock it', () => {
+test('CR 111.7b: an ALLY is required — an enemy blocking it (facing, not adjacent) does not unlock it #44 CT-241', () => {
   const h = new Harness(1818);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -369,7 +369,7 @@ test('CR 111.7b: an ALLY is required — an enemy blocking it (facing, not adjac
   finishBattle(h);
 });
 
-test('CR 111.7b: out of formation there are no adjacent slots at all, so it is never offered', () => {
+test('CR 111.7b: out of formation there are no adjacent slots at all, so it is never offered #44', () => {
   // The owner (now CR 603.2b): "adjacent slots … only exist if it's in a formation". During
   // deployment the Boulder is standing in its region, not in a line.
   const h = new Harness(1819);

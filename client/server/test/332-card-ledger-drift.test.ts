@@ -73,7 +73,7 @@ test('card stats drift (b) fingerprints and no card log: the replay verifies and
   assert.deepEqual({ ...ledger, source: 'live' }, live, 'a verified replay must be the recorded game, fact for fact');
 });
 
-test('card stats drift (c) the deal moved and nothing recorded it: caught at 0, and the refs still say what was DONE', async () => {
+test('card stats drift (c) the deal moved and nothing recorded it: caught at 0, and the refs still say what was DONE CT-360', async () => {
   const file = await playedFile('DR3', 31, 200, 99);
   const live = ledgerForFile(file).ledger;
   const { ledger, audit } = ledgerForFile({ ...strip(file), seed: file.seed + 1 });

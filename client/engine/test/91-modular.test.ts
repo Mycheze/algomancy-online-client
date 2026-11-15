@@ -108,7 +108,7 @@ const damageTo = (h: Harness, id: number): number[] =>
  * Any filter reintroduced above `canPayCard` drops at least one of these, so
  * this test fails the moment the menu is narrowed again.
  */
-test('CR 724.2: the {Modular} menu offers every card you can pay for — graft, virus, non-virus augment, [Augment] text, and a card that can do nothing at all', () => {
+test('CR 724.2: the {Modular} menu offers every card you can pay for — graft, virus, non-virus augment, [Augment] text, and a card that can do nothing at all CT-19', () => {
   const { h, A } = window(9101);
   giveResources(h, A, 'dark', 1);
   giveResources(h, A, 'earth', 2);
@@ -135,7 +135,7 @@ test('CR 724.2: the {Modular} menu offers every card you can pay for — graft, 
   assert.ok(dec!.options.some(o => o.label === 'No more mods'), 'and declining is always on the menu');
 });
 
-test('CR 724.2: a card in the BIN is offered beside the hand, and an unaffordable one is not', () => {
+test('CR 724.2: a card in the BIN is offered beside the hand, and an unaffordable one is not CT-19', () => {
   const { h, A } = window(9102);
   giveResources(h, A, 'dark', 4);                    // Spellbind 1, then 3 left
   bin(h, A).push('Primordial Coalescence');          // d/3 — affordable from the bin
@@ -148,7 +148,7 @@ test('CR 724.2: a card in the BIN is offered beside the hand, and an unaffordabl
 
 // ── 2. what a mod contributes ─────────────────────────────────────────
 
-test('CR 724.4: a GRAFT mod still contributes its [Switch] effect as an extra part', () => {
+test('CR 724.4: a GRAFT mod still contributes its [Switch] effect as an extra part CT-19', () => {
   const { h, A } = window(9103);
   giveResources(h, A, 'dark', 4);
   give(h, A, 'Primordial Coalescence');              // "[Switch1] Create three Wraiths and gain 2 Rot."
@@ -165,7 +165,7 @@ test('CR 724.4: a GRAFT mod still contributes its [Switch] effect as an extra pa
   assert.equal(unitsNamed(h, 'Wraith').length, 3, "and the rider's three Wraiths");
 });
 
-test('CR 724.4: a mod with NO graft effect adds no part, and the spell resolves rather than throwing', () => {
+test('CR 724.4: a mod with NO graft effect adds no part, and the spell resolves rather than throwing CT-19', () => {
   const { h, A } = window(9104);
   giveResources(h, A, 'dark', 1);
   giveResources(h, A, 'earth', 2);
@@ -194,7 +194,7 @@ test('CR 724.4: a mod with NO graft effect adds no part, and the spell resolves 
  * Two runs, identical but for the one mod, so the doubling is a DIFF: 2 → 4,
  * which is also the difference between a 3/3 attacker living and dying.
  */
-test('CR 724.4a: a type-line [Augment] mod really donates — {Powerful} turns a Spellbind-carried Twin Flame from 2 damage into 4', () => {
+test('CR 724.4a: a type-line [Augment] mod really donates — {Powerful} turns a Spellbind-carried Twin Flame from 2 damage into 4 CT-19', () => {
   // control: the graft alone
   {
     const { h, A, atk } = window(9105);
@@ -258,7 +258,7 @@ test('CR 724.4a: a donated attribute reaches EffectCtx.grantedAttrs, the one fie
  * test plays a spell while it rides the stack and proves the trigger stays
  * dead, on a card that demonstrably HAS the text.
  */
-test('CR 724.4b: an [Augment]-TEXT mod is accepted and does nothing — a spell has no body for a triggered ability, and that is correct', () => {
+test('CR 724.4b: an [Augment]-TEXT mod is accepted and does nothing — a spell has no body for a triggered ability, and that is correct CT-19', () => {
   const { h, A } = window(9108);
   giveResources(h, A, 'dark', 2);
   giveResources(h, A, 'fire', 1);
@@ -324,7 +324,7 @@ test('CR 724.3: "you still pay their costs" — the mod is charged at cast, and 
  * If someone later "tidies" the erase back into a bin, this test is what says
  * no: the graft becomes infinitely reusable and the drawback disappears.
  */
-test('CR 724.5: the flashback line — a graft card in the BIN is replayed by Spellbind, happens, and is ERASED so it can never be flashed back twice', () => {
+test('CR 724.5: the flashback line — a graft card in the BIN is replayed by Spellbind, happens, and is ERASED so it can never be flashed back twice CT-19', () => {
   const { h, A } = window(9110);
   giveResources(h, A, 'dark', 4);
   bin(h, A).push('Primordial Coalescence');          // "[Switch1] Create three Wraiths and gain 2 Rot."
@@ -352,7 +352,7 @@ test('CR 724.5: the flashback line — a graft card in the BIN is replayed by Sp
     'nothing was TRASHED: CR 801.2b — it came from the stack, and it never entered a bin to be trashed out of');
 });
 
-test('CR 724.5a: an UNMODDED {Modular} spell is not Unstable — it is binned like any other spell (CR 704.2)', () => {
+test('CR 724.5a: an UNMODDED {Modular} spell is not Unstable — it is binned like any other spell (CR 704.2) CT-19', () => {
   const { h, A } = window(9111);
   giveResources(h, A, 'dark', 2);
   giveResources(h, A, 'water', 1);
@@ -375,7 +375,7 @@ test('CR 724.5a: an UNMODDED {Modular} spell is not Unstable — it is binned li
  * (Spellbind), two routes, one assertion: if the two paths ever diverge again,
  * this fails.
  */
-test('CR 803.8f: the {Modular} window and the virus window agree — either way the carrier and the mod are erased, never binned', () => {
+test('CR 803.8f: the {Modular} window and the virus window agree — either way the carrier and the mod are erased, never binned CT-19', () => {
   /** cast a Spellbind with Chitin Shredder attached by `route`, and report where everything ended up */
   const run = (seed: number, route: 'modular' | 'virus'): Record<string, number> => {
     const { h, A } = window(seed);
@@ -410,7 +410,7 @@ test('CR 803.8f: the {Modular} window and the virus window agree — either way 
     'and the virus window (CR 723.4) agrees exactly — the same act cannot have two disposals');
 });
 
-test('CR 724.5: a NEGATED modded Spellbind is erased too — Unstable is a bin replacement, so no exit reaches a bin', () => {
+test('CR 724.5: a NEGATED modded Spellbind is erased too — Unstable is a bin replacement, so no exit reaches a bin CT-19', () => {
   const { h, A, D } = window(9114);
   giveResources(h, A, 'dark', 4);
   giveResources(h, D, 'fire', 2);

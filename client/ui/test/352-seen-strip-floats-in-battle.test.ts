@@ -89,7 +89,7 @@ test('CT-191 outside a battle the seen strip floats over their region (board rou
 });
 
 for (const [attacker, label] of [[ME, 'I attack, so the fight is in their region'], [THEM, 'they attack, so the fight is in mine']] as const) {
-  test(`CT-191 in a battle the seen strip floats over the region not being fought in: ${label}`, () => {
+  test(`CT-191 in a battle the seen strip floats over the region not being fought in: ${label} #177`, () => {
     const { battle, fought } = game(35202 + attacker, attacker);
     const html = paint(battle);
     assert.match(html, /class="lboard fighting"/, 'fixture: the regions board, fighting');
@@ -122,7 +122,7 @@ test('CT-191 the stylesheet places the float by grid area, at the In Play\'s out
 });
 
 for (const [attacker, label] of [[ME, 'I am choosing my attackers'], [THEM, 'they are choosing theirs']] as const) {
-  test(`CT-552 report 365 - while attackers are chosen the seen strip is not over the attacker's own units: ${label}`, () => {
+  test(`CT-552 report 365 - while attackers are chosen the seen strip is not over the attacker's own units: ${label} #365`, () => {
     const { declare } = game(35204 + attacker, attacker);
     assert.equal(declare.phase, 'battle', 'fixture: a battle is on');
     assert.equal(declare.battle!.step, 'declare', 'fixture: attackers are being chosen');

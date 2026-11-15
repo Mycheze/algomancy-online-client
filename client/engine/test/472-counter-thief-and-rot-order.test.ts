@@ -72,7 +72,7 @@ function growth(seed: number, thieves: number) {
   return { h, A, D, ct, mark };
 }
 
-test('CR 708.4a: two Counter Thieves of one player — their controller is asked which keeps them', () => {
+test('CR 708.4a: two Counter Thieves of one player — their controller is asked which keeps them CT-438', () => {
   // RED before: no question, and the higher-id thief kept them
   const r = growth(47201, 2);
   const dec = r.h.state.decision;

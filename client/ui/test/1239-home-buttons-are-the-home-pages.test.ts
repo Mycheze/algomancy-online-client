@@ -40,7 +40,7 @@ const read = (f: string): string => readFileSync(new URL(`../${f}`, import.meta.
 const HOME_BTNS = ['home-mode', 'home-format', 'home-els', 'home-sheet', 'home-sheet-close', 'eltoggle', 'elrandom',
   'clockpick', 'newgame', 'deckimporturl', 'deckimporttext', 'joincode'];
 
-test('1239 §1 main.ts handles none of the home buttons and holds no element pick', () => {
+test('1239 §1 main.ts handles none of the home buttons and holds no element pick BL-63', () => {
   const main = read('main.ts');
   const page = read('pages/home.ts');
   const handler = page.slice(page.indexOf('export function handleHomeButton('));

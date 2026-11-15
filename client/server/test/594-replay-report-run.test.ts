@@ -59,7 +59,7 @@ function byHand(n: number): GameState {
   return s;
 }
 
-test('CR D8.1 / report 271 §1 the replay rebuilds the reported board, and the whole run to its goal', () => {
+test('CR D8.1 / report 271 §1 the replay rebuilds the reported board, and the whole run to its goal #271', () => {
   const r = replayRun(RUN);
   assert.equal(r.refused, null);
   assert.equal(r.at, AT, 'stopped where the reporter was');
@@ -128,7 +128,7 @@ test('CR D8.1 / report 271 §4 a Learn to Play game replays from its own deal', 
   assert.equal(runLines({ ts: '', run: { kind: 'learn', deal, actions: log, at: log.length } }, { quiet: true }).lines[0], `═ Learn to Play game · seed 59400 · Lea vs Tutorial Bot · ${log.length} actions logged`);
 });
 
-test('CR D8.1 / report 271 §5 npm run reports brings the runs down and names the replay', () => {
+test('CR D8.1 / report 271 §5 npm run reports brings the runs down and names the replay #271', () => {
   const src = join(DIR, 'box');      // laid out like the deploy box's checkout
   const dest = join(DIR, 'repo');    // laid out like this repo
   mkdirSync(join(src, 'var'), { recursive: true });

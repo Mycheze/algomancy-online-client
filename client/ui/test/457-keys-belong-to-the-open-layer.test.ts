@@ -57,7 +57,7 @@ test('D3 §1 negative control: on the bare board Ctrl+Z is the game undo', () =>
   assert.equal(undos(), 1, 'or the guards below prove nothing');
 });
 
-test('D3 §1 report open: Ctrl+Z in its box or on the page sends no game undo', () => {
+test('D3 §1 report open: Ctrl+Z in its box or on the page sends no game undo CT-284', () => {
   board(45702);
   openReport();
   ui.key('z', { ctrl: true, field: true });
@@ -67,7 +67,7 @@ test('D3 §1 report open: Ctrl+Z in its box or on the page sends no game undo', 
   ui.click({ report: 'close' });
 });
 
-test('D3 §1 any layer open, or any text box: Ctrl+Z sends no game undo', () => {
+test('D3 §1 any layer open, or any text box: Ctrl+Z sends no game undo CT-284', () => {
   board(45703);
   ui.key('z', { ctrl: true, field: true });
   assert.equal(undos(), 0, 'a text box anywhere owns its own Ctrl+Z');
@@ -79,7 +79,7 @@ test('D3 §1 any layer open, or any text box: Ctrl+Z sends no game undo', () => 
 
 /* ── §2 the Control hold, and the moment after a send ─────────────────── */
 
-test('D3 §2 Control pressed in a text box is not the full-control hold', () => {
+test('D3 §2 Control pressed in a text box is not the full-control hold CT-284', () => {
   board(45704);
   // the Ctrl+Z presses above latched Control as a chord; letting go clears it
   ui.key('Control', { up: true });
@@ -95,7 +95,7 @@ test('D3 §2 Control pressed in a text box is not the full-control hold', () => 
   ui.sent();
 });
 
-test('D3 §2 just after a sent report closes, the board does not take the keys yet', async () => {
+test('D3 §2 just after a sent report closes, the board does not take the keys yet CT-284', async () => {
   board(45705);
   openReport();
   ui.click({ report: 'kind', kind: 'other' });
@@ -158,7 +158,7 @@ function pageKeyListeners(): Listener[] {
   return out;
 }
 
-test('D3 §3 census: every page-level keydown listener checks inputOwned, is the hotkeys, a layer capture, or is named', () => {
+test('D3 §3 census: every page-level keydown listener checks inputOwned, is the hotkeys, a layer capture, or is named CT-284', () => {
   const all = pageKeyListeners();
   assert.ok(all.length >= 12, `the census found ${all.length} page-level keydown listeners — too few to be reading the files`);
   const main = all.filter(l => l.file === 'main.ts');

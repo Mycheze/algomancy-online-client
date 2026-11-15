@@ -192,7 +192,7 @@ const DIRS: [number, number][] = Array.from({ length: 16 }, (_, k) => {
 
 /* ── the guards ────────────────────────────────────────────────────────── */
 
-test('[CR D6.18] the fixtures are the bug: at the old inset the head sits on their text', () => {
+test('[CR D6.18] the fixtures are the bug: at the old inset the head sits on their text #133 CT-126', () => {
   // THE POSITIVE CONTROL. Every assertion below is about arrowheads that no
   // longer cover text; a fixture table that had quietly stopped occluding
   // anything would satisfy all of them and prove nothing. So first: the ones
@@ -211,7 +211,7 @@ test('[CR D6.18] the fixtures are the bug: at the old inset the head sits on the
   }
 });
 
-test('[CR D6.18] every measured endpoint has an arrowhead that clears its text', () => {
+test('[CR D6.18] every measured endpoint has an arrowhead that clears its text #133 CT-126', () => {
   for (const e of ALL) {
     for (const [ux, uy] of DIRS) {
       const inset = headStop(e.box, e.text, ux, uy);
@@ -222,7 +222,7 @@ test('[CR D6.18] every measured endpoint has an arrowhead that clears its text',
   }
 });
 
-test('[CR D6.18] an endpoint with nothing legible in the middle is not moved at all', () => {
+test('[CR D6.18] an endpoint with nothing legible in the middle is not moved at all #133 CT-126', () => {
   // [26] is intact where it was asked for: ZQPC wanted the head on the middle
   // of a CARD, and a card whose scan is showing keeps exactly that.
   const untouched = ALL.filter(e => !e.occluding);
@@ -237,7 +237,7 @@ test('[CR D6.18] an endpoint with nothing legible in the middle is not moved at 
   assert.equal(headStop(boxOf(78, 108), [], 1, 0), HEAD_INSET);
 });
 
-test('[CR D6.18] the head stops just short of the label, never far from the thing it points at', () => {
+test('[CR D6.18] the head stops just short of the label, never far from the thing it points at #133 CT-126', () => {
   for (const e of ALL) {
     for (const [ux, uy] of DIRS) {
       const inset = headStop(e.box, e.text, ux, uy);
@@ -266,7 +266,7 @@ test('[CR D6.18] a label too big to clear keeps the old inset rather than parkin
   assert.equal(headStop(box, smothered, 1, 0), HEAD_INSET);
 });
 
-test('[CR D6.18] arrowGeometry keeps aiming at the exact centre, and reports its own inset', () => {
+test('[CR D6.18] arrowGeometry keeps aiming at the exact centre, and reports its own inset #133 CT-126', () => {
   const a: ArrowBox = { left: 100, top: 100, width: 60, height: 84 };
   const pill = ENDPOINTS.player[0]!;
   const plain = arrowGeometry(a, pill.box)!;

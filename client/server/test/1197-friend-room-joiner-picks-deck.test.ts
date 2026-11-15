@@ -26,7 +26,7 @@ import { ccWire } from './cc-wire.ts';
 const sleep = (ms: number): Promise<void> => new Promise(r => setTimeout(r, ms));
 const sorted = (xs: readonly string[]): string[] => [...xs].sort();
 
-test('§1-§2 a friend arriving in a constructed room is not dealt in until they pick a deck there', async () => {
+test('§1-§2 a friend arriving in a constructed room is not dealt in until they pick a deck there #357 CT-542', async () => {
   const w = await ccWire('t1197');
   const [ann, bo, cy] = w.people as [typeof w.people[0], typeof w.people[0], typeof w.people[0]];
   try {

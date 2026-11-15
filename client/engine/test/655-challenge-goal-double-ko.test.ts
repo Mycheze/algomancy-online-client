@@ -29,7 +29,7 @@ const def: ChallengeDef = { id: 'e65500', week: '2027-01-10', title: 'T', blurb:
 const passAction: Action = { type: 'passPriority', seat: PLAYER };
 const ev = (type: string, data: Record<string, unknown>): EngineEvent => ({ type, msg: '', data } as unknown as EngineEvent);
 
-test('§1 CR 104.1a / CT-409: doubleKO is met by a game-over that says the winner fell too, and by nothing else', () => {
+test('§1 CR 104.1a / CT-409: doubleKO is met by a game-over that says the winner fell too, and by nothing else BL-49', () => {
   const before = structuredClone(newChallengeGame(def, DECK).state);
   const fold = (lives: [number, number], data: Record<string, unknown>) => {
     const after: GameState = structuredClone(before);

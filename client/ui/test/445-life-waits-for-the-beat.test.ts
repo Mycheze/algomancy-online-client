@@ -102,7 +102,7 @@ function lifeTrigger(seed = 44501): { h: Harness; seat: Seat; before: GameState;
 
 /* ── §1 the pure half ───────────────────────────────────────────────────── */
 
-test('§1a the spawn trigger beat carries the life it gained, and nothing else does', () => {
+test('§1a the spawn trigger beat carries the life it gained, and nothing else does #203', () => {
   const { h, seat, before, events } = lifeTrigger();
   const gained = h.state.players[seat]!.life - before.players[seat]!.life;
   assert.ok(gained > 0, 'the fixture is the real thing: the trigger gained life');
@@ -116,7 +116,7 @@ test('§1a the spawn trigger beat carries the life it gained, and nothing else d
   assert.ok(q.filter(f => f !== beat).every(f => !f.life), 'the unit play itself moved no life');
 });
 
-test('§1b the life is held while the beat waits or shows, and comes back the moment it ends', () => {
+test('§1b the life is held while the beat waits or shows, and comes back the moment it ends #203', () => {
   const { h, before, events } = lifeTrigger();
   const q = queueFlashes([], events, 0, new Map(), bornSince(before, h.state));
   const beat = q.find(f => f.life)!;
@@ -127,7 +127,7 @@ test('§1b the life is held while the beat waits or shows, and comes back the mo
   assert.deepEqual(shownLife(life, heldLife(q, beat.until)), life, 'the beat ends: the new total');
 });
 
-test('§1b2 the identity row pulse reads the shown life, so it waits for the beat too', () => {
+test('§1b2 the identity row pulse reads the shown life, so it waits for the beat too #203', () => {
   // ui/motion.ts diffCensus pulses the player row when its slot's sig changes;
   // a sig read off the state would pulse at the click, before the beat
   const { h, seat, before, events } = lifeTrigger();
@@ -143,7 +143,7 @@ test('§1b2 the identity row pulse reads the shown life, so it waits for the bea
   assert.equal(sigAt(beat.until), now, 'the beat ends: the row pulses with the number');
 });
 
-test('§1c a life change after the window closes is not held by the beat before it', () => {
+test('§1c a life change after the window closes is not held by the beat before it #203', () => {
   // the same batch, and then something no resolution spans — a phase line —
   // and a life loss after it (rot at the start of a step, say)
   const { h, seat, before, events } = lifeTrigger();
@@ -157,7 +157,7 @@ test('§1c a life change after the window closes is not held by the beat before 
     'the loss after the phase line belongs to no beat');
 });
 
-test('§1d a resync holds no life back, whatever beats it carries', () => {
+test('§1d a resync holds no life back, whatever beats it carries #203', () => {
   const { events } = lifeTrigger();
   const q = queueFlashes([], events, 0, new Map(), [], false);
   assert.ok(q.length > 0 && q.every(f => !f.life), 'a wholesale arrival: the number on screen was never the old one');
@@ -179,7 +179,7 @@ const lifeOn = (p: Seat): number => {
 /** the clock moves on to `t` and every repaint the client booked runs */
 const at = (t: number): void => { clock = t; ui.tick(); ui.tick(); };
 
-test('§2a the spawn trigger life gain, its number and its sound, wait until the trigger beat resolves', () => {
+test('§2a the spawn trigger life gain, its number and its sound, wait until the trigger beat resolves #203', () => {
   const { h, seat, before, events } = lifeTrigger(44502);
   const was = before.players[seat]!.life, now = h.state.players[seat]!.life;
   assert.ok(now > was);
@@ -202,7 +202,7 @@ test('§2a the spawn trigger life gain, its number and its sound, wait until the
   assert.equal(PLAYED.filter(c => c === 'lifeup').length, 1, 'and is heard, once');
 });
 
-test('§2b a life change with no beat behind it (a cost) is shown and heard at once', () => {
+test('§2b a life change with no beat behind it (a cost) is shown and heard at once #203', () => {
   const h = new Harness(44503);
   toDeployment(h);
   const seat = h.state.deployPlayer!;
@@ -219,7 +219,7 @@ test('§2b a life change with no beat behind it (a cost) is shown and heard at o
   assert.equal(PLAYED.filter(c => c === 'lifedown').length, 1, 'and was heard with it');
 });
 
-test('§2c with motion switched off there are no beats, so the trigger\'s life gain is not delayed', () => {
+test('§2c with motion switched off there are no beats, so the trigger\'s life gain is not delayed #203', () => {
   const { h, seat, before, events } = lifeTrigger(44504);
   localStorage.setItem('algoMotion', '0');
   try {

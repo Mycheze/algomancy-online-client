@@ -75,7 +75,7 @@ const box = (html: string): string => {
   return /pwform/.test(sec) ? sec : '';
 };
 
-test('§1 report 296: a signed-in named account has a Change password box on its own profile', async () => {
+test('§1 report 296: a signed-in named account has a Change password box on its own profile #296', async () => {
   who = named;
   const b = box(await profile());
   assert.ok(b, 'there is no password box on the profile');
@@ -95,7 +95,7 @@ test('§2 report 296: a guest has no password box', async () => {
   assert.ok(box(await profile()), 'and it is back for a named account');
 });
 
-test('§3 report 296: Change password posts the old and new password, and shows the answer', async () => {
+test('§3 report 296: Change password posts the old and new password, and shows the answer #296', async () => {
   who = named;
   await profile();
   POSTS.length = 0;

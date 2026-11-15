@@ -334,7 +334,7 @@ test('§3 "no email, therefore no reset" is stated as a consequence', () => {
 
 // ── §4 everything the server writes down ──────────────────────────────
 
-test('§4 the page accounts for every file the server writes', () => {
+test('§4 the page accounts for every file the server writes CT-519', () => {
   // statepaths.ts is the one place that names the deployment's mutable state,
   // so it is also the complete list of what a privacy page owes an explanation.
   const getters = [...read(STATEPATHS_TS).matchAll(/^export const (\w+) = \(\): string =>/gm)]

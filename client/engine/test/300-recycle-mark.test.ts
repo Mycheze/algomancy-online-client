@@ -138,7 +138,7 @@ test('CR 408.2b the reshuffle really shuffles — it is not the pile in the orde
 
 /* ══ §4 — BOTH EMPTY IS STILL BOTH EMPTY ════════════════════════════ */
 
-test('CR 401.4 an empty deck AND an empty pile draws fewer — no loop, no crash; the draw then ends the game (CR 104.5)', () => {
+test('CR 401.4 an empty deck AND an empty pile draws fewer — no loop, no crash; the draw then ends the game (CR 104.5) CT-385', () => {
   const { h, g, P } = board(30004);
   deckDownTo(g, P, 0);
   assert.equal(g.recycleOf(P).length, 0, 'the fixture really has nothing anywhere');
@@ -164,7 +164,7 @@ test('CR 401.4 an empty deck AND an empty pile draws fewer — no loop, no crash
 
 /* ══ §5 — WHOSE PILE IS IT ══════════════════════════════════════════ */
 
-test('CR 408.2e constructed gives each seat its own pile; shared and draft share one', () => {
+test('CR 408.2e constructed gives each seat its own pile; shared and draft share one CT-241', () => {
   const h = new Harness(30005);
   toDeployment(h);
   const g = new E(h.state);

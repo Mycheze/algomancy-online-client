@@ -59,7 +59,7 @@ function ambushOverASpell(seed: number) {
   return { h, A, D, ally, flame, amb };
 }
 
-test('Cosmic Reversal recalls the spell but not the Ambush, which stays and resolves (report 218)', () => {
+test('Cosmic Reversal recalls the spell but not the Ambush, which stays and resolves (report 218) #218 CT-301', () => {
   const { h, A, D, ally, amb } = ambushOverASpell(47501);
   passUntil(h, A);
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Cosmic Reversal') });
@@ -75,7 +75,7 @@ test('Cosmic Reversal recalls the spell but not the Ambush, which stays and reso
   assert.ok(!ent(h, ally), 'and the ally it named was recalled');
 });
 
-test('Nothyr negates an Ambush: it is a nonspell effect (report 218)', () => {
+test('Nothyr negates an Ambush: it is a nonspell effect (report 218) CT-301', () => {
   const { h, A, D, flame, amb } = ambushOverASpell(47502);
   passUntil(h, A);
   // A answers with Nothyr's discard line: "negate up to one target nonspell effect"

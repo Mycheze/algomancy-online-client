@@ -52,7 +52,7 @@ function answerAll(h: Harness, prefer: EntityId): number {
 // A lone 1/1 carrying two Wraith augments: both lines trigger, the first
 // shrinks the host (its only ally, so nothing is asked) and kills it. The
 // second shrink then finds NO ally at all, and so do both death lines.
-test('report 2026-10-16: a Wraith shrink that finds no ally in play asks nothing and fizzles', () => {
+test('report 2026-10-16: a Wraith shrink that finds no ally in play asks nothing and fizzles CT-282', () => {
   const h = sterile(46100);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -74,7 +74,7 @@ test('report 2026-10-16: a Wraith shrink that finds no ally in play asks nothing
 // The death line alone: a Wraith body is the last unit its controller has,
 // and it dies. "Augment a Wraith onto an ally" finds nobody, asks nothing,
 // and fizzles; no Wraith mod is minted.
-test('report 2026-10-16: a Wraith death line with no ally in play asks nothing, mints nothing and fizzles', () => {
+test('report 2026-10-16: a Wraith death line with no ally in play asks nothing, mints nothing and fizzles CT-282', () => {
   const h = sterile(46103);
   toDeployment(h);
   const P = h.state.deployPlayer!;

@@ -33,7 +33,7 @@ function tokens(h: Harness, A: Seat, name: string): string[] {
     .map(u => `${e.printedStats(u).join('/')}+${u.counters}`).sort();
 }
 
-test('CR 708.4: two Automatons of Abundance turn one created token into three', () => {
+test('CR 708.4: two Automatons of Abundance turn one created token into three CT-287', () => {
   const h = new Harness(45901);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -54,7 +54,7 @@ test('CR 708.4: two Automatons and a 3/3 Unit Token give three 3/3s', () => {
   assert.deepEqual(tokens(h, A, 'Unit Token'), ['3/3+0', '3/3+0', '3/3+0']);
 });
 
-test('CR 708.4: three Automatons turn one created token into four', () => {
+test('CR 708.4: three Automatons turn one created token into four CT-287', () => {
   const h = new Harness(45903);
   toDeployment(h);
   const A = h.state.deployPlayer!;

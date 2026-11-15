@@ -74,7 +74,7 @@ function shown(seed: number): { h: Harness; A: Seat; D: Seat; cards: CardName[] 
   return { ...t, cards };
 }
 
-test('a minute later, and every tick on the way, it is still up', () => {
+test('a minute later, and every tick on the way, it is still up #224', () => {
   shown(49501);
   for (let s = 0; s < 60; s++) { clock += 1000; ui.tick(); }
   assert.ok(notice(ui.html()), 'still up after 60 s — there is no timer');
@@ -114,7 +114,7 @@ test('a finger: a tap on the ✕ puts it away too', () => {
   assert.equal(notice(ui.html()), null, 'dismissed by a tap');
 });
 
-test('a newer reveal takes its place', () => {
+test('a newer reveal takes its place #224', () => {
   const { h, A, D, cards } = shown(49506);
   const second = glimpse(h, A, D);
   assert.notDeepEqual(second.cards, cards, 'non-vacuous: the second glimpse shows other cards');

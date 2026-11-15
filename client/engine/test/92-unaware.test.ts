@@ -72,7 +72,7 @@ const effAttrs = (h: Harness, id: EntityId): Set<string> =>
 
 /* ══ the owner's three worked examples ═══════════════════════════════════ */
 
-test('"Bubb blocking a Robot token would kill it… no matter how many +1/+1 counters it has"', () => {
+test('"Bubb blocking a Robot token would kill it… no matter how many +1/+1 counters it has" CT-5', () => {
   // "(do Bubb, it has 0 power and 0 defense)" — the Robot is printed 0/0, so
   // in the exchange it deals nothing and is already dead. Run at three sizes,
   // because "no matter how many" is the load-bearing half of the sentence.
@@ -97,7 +97,7 @@ test('"Bubb blocking a Robot token would kill it… no matter how many +1/+1 cou
   }
 });
 
-test('"Bubb would also survive 100 -1/-1 counters just fine"', () => {
+test('"Bubb would also survive 100 -1/-1 counters just fine" CT-5', () => {
   const h = new Harness(9203);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -110,7 +110,7 @@ test('"Bubb would also survive 100 -1/-1 counters just fine"', () => {
   assert.equal(ent(h, bubb)!.counters, -100, 'the counters are ON it — they are just not read');
 });
 
-test('"Haboob kills anything that has 1 defense printed at the card level"', () => {
+test('"Haboob kills anything that has 1 defense printed at the card level" CT-5', () => {
   const h = new Harness(9204);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -137,7 +137,7 @@ test('"Haboob kills anything that has 1 defense printed at the card level"', () 
 
 /* ══ the SELF half ═══════════════════════════════════════════════════════ */
 
-test('a +1/+1 counter on Bubb leaves it a 5/6', () => {
+test('a +1/+1 counter on Bubb leaves it a 5/6 CT-5', () => {
   const h = new Harness(9210);
   toDeployment(h);
   const A = h.state.deployPlayer!;

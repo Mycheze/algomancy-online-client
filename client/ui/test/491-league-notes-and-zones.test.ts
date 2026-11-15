@@ -25,7 +25,7 @@ function serverKinds(): string[] {
 const note = (kind: string, data: Record<string, unknown> = {}): LeagueNote =>
   ({ id: 1, kind, season: 's', at: 0, read: false, data: { season: 'October', ...data } });
 
-test('§1 ⭐ every league message the server can send has a line in the bell', () => {
+test('§1 ⭐ every league message the server can send has a line in the bell CT-339', () => {
   const kinds = serverKinds();
   assert.ok(kinds.length >= 14 && kinds.includes('time-reminder'), `found ${kinds.join(', ')}`);
   const fallback = noteLine(note('a-kind-from-the-future'), () => '').html;

@@ -113,7 +113,7 @@ function sourceFiles(): string[] {
 
 /* ── §1 · the instrument, and proof it can see ───────────────────────────── */
 
-test('§1: the lint is not blind — it convicts a local absorb under any name, and acquits every near miss', () => {
+test('§1: the lint is not blind — it convicts a local absorb under any name, and acquits every near miss CT-88', () => {
   // ⚠ 149-strip-code's question, asked of this checker: what would a BLIND
   // version of this file do? It would return [] for everything and §2 would
   // read clean — which is the state the whole suite was in before this round.
@@ -181,7 +181,7 @@ test('§1: the lint is not blind — it convicts a local absorb under any name, 
 
 /* ── §2 · the lint ───────────────────────────────────────────────────────── */
 
-test('§2: no test source hand-rolls Harness.absorb — the rule lives in test/util.ts alone', () => {
+test('§2: no test source hand-rolls Harness.absorb — the rule lives in test/util.ts alone CT-88', () => {
   const offences: Offence[] = [];
   for (const f of sourceFiles()) offences.push(...offencesIn(fs.readFileSync(path.join(HERE, f), 'utf8'), f));
   assert.deepEqual(offences.map(o => `${o.where}  ${o.why}`), [],

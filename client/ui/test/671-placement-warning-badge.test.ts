@@ -106,7 +106,7 @@ function sweep(h: Harness, D: Seat, def: EntityId[]): { total: number; refusedN:
   return { total, refusedN };
 }
 
-test('CR D1.3 / 802.12 / CT-410: the badge shows exactly when the engine refuses the plan — Feeble, Pure, Flying, Evasive', () => {
+test('CR D1.3 / 802.12 / CT-410: the badge shows exactly when the engine refuses the plan — Feeble, Pure, Flying, Evasive BL-50', () => {
   // three attacking columns: plain, Flying, Evasive. Three defenders: Bripp
   // (Feeble), a flyer, and a Pure unit granted Feeble.
   const { h, D, def } = battlefield(67101,
@@ -133,7 +133,7 @@ test('CR D1.3 / 802.14 / CT-410: the badge shows exactly when the engine refuses
   assert.ok(refusedN > 0, 'blocking the lone Sneaky attacker is refused for the plain blocker');
 });
 
-test('CR 802.12 / CT-410: the Feeble unit in a block column is the card marked, in the engine words, and only while it is there', () => {
+test('CR 802.12 / CT-410: the Feeble unit in a block column is the card marked, in the engine words, and only while it is there #284', () => {
   const { h, D, def } = battlefield(67104, ['The Foretold', 'The Foretold'], ['Bripp', 'The Foretold']);
   const [bripp, plain] = def as [EntityId, EntityId];
   const placed = placementWarnings(h.state, D, { 0: [bripp], 1: [plain] }, [], []);
@@ -150,7 +150,7 @@ test('CR 802.12b / CT-410: a Pure and Feeble unit is never marked for blocking',
   assert.equal(refused(h, D, { 0: [def[0]!] }, []), null, 'and the engine takes that block');
 });
 
-test('CR 606.2e / CT-410: an unmet Alluring duty marks the lured unit, wherever it is', () => {
+test('CR 606.2e / CT-410: an unmet Alluring duty marks the lured unit, wherever it is BL-50', () => {
   const { h, D, def } = battlefield(67106, ['Tempest Wrangler', 'The Foretold'], ['The Foretold', 'The Foretold']);
   const [lured, other] = def as [EntityId, EntityId];
   assert.ok(h.state.entities[lured]!.allured, 'premise: the first defender is lured');
@@ -180,7 +180,7 @@ function cardOf(html: string, id: EntityId): string {
   return html.slice(at, next < 0 ? undefined : at + 10 + next);
 }
 
-test('CR 802.12 / CT-410: on the board, a Feeble unit clicked into a block column wears the (!) before Confirm, and loses it when moved out', () => {
+test('CR 802.12 / CT-410: on the board, a Feeble unit clicked into a block column wears the (!) before Confirm, and loses it when moved out #284 BL-50', () => {
   const { h, D, def } = battlefield(67107, ['The Foretold', 'The Foretold'], ['Bripp', 'The Foretold']);
   const [bripp] = def as [EntityId];
   const first = ui.join(h.state, D, legalActions(h.state, D));

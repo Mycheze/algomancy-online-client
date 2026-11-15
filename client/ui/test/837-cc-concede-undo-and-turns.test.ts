@@ -92,7 +92,7 @@ test('§3 undo until Done: the button follows ccUndo, and sends the ordinary und
   assert.equal(ui.has({ btn: 'undo' }), false, 'after Done (or past a reveal) it goes');
 });
 
-test('§4 whose step it is, said to the seat that waits', () => {
+test('§4 whose step it is, said to the seat that waits CT-510', () => {
   const who = (html: string): string => /<span class="who">(?:<span class="livedot">●<\/span> )?([^<]*)/.exec(html)?.[1] ?? '';
   // the resource step: Ann (initiative) first
   let h = ccBottomed(ccGame(0));

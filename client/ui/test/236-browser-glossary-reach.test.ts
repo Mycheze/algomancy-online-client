@@ -85,7 +85,7 @@ function inspectorTerms(name: string): Set<string> | null {
  * 1. THE TWO SURFACES AGREE
  * ════════════════════════════════════════════════════════════════════════ */
 
-test('CT-129: the browser panel never explains less than the in-game inspector', () => {
+test('CT-129: the browser panel never explains less than the in-game inspector CT-130', () => {
   const short: string[] = [];
   let subjects = 0;
   for (const r of rows) {
@@ -114,7 +114,7 @@ const typeLineTerms = (r: CardRow): Set<string> => new Set(GLOSSARY
   .filter(g => r.attrs.includes(g.term) || r.keywords.includes(g.term.toLowerCase()))
   .map(g => g.term));
 
-test('CR D6.11c: the panel is a UNION — the text scan is added to the type line, never swapped for it', () => {
+test('CR D6.11c: the panel is a UNION — the text scan is added to the type line, never swapped for it CT-129 CT-130', () => {
   // WHY THIS EXISTS. The obvious reading of CR D6.11c is "the text path covers
   // everything, so drop the type-line filter" — and it does not.
   // `mechanicsOf()` sets its flags off BOOLEANS on the printed row, and a
@@ -152,7 +152,7 @@ test('CR D6.11c: the panel is a UNION — the text scan is added to the type lin
     + 'off a boolean with the word nowhere in the printed text.');
 });
 
-test('CT-130: every glossary row is reachable somewhere in the card browser', () => {
+test('CT-130: every glossary row is reachable somewhere in the card browser #118 CT-129', () => {
   // Rot, Cache, Glimpse, Trash, Battle, Haste, Once, Recycle, Shard and
   // Prismite were ten rows no card in the browser could ever draw, because
   // none of them is an attribute and the panel only read the type line. A row
@@ -218,7 +218,7 @@ test('the two channels agree about which cards name an attribute they do not car
     + 'scans disagree about the same data');
 });
 
-test('CT-129: an attribute a card grants from its text box gets a reminder row', () => {
+test('CT-129: an attribute a card grants from its text box gets a reminder row #118 CT-130', () => {
   const subjects = [...grantedInTextViaRegistry()];
   assert.ok(subjects.length > 10,
     `only ${subjects.length} cards name an attribute off their type line — the scan is broken, `
@@ -236,7 +236,7 @@ test('CT-129: an attribute a card grants from its text box gets a reminder row',
     + 'on Child of Aether while refusing to show it on Brough.');
 });
 
-test('CT-130: rot is explained on every card that mentions it', () => {
+test('CT-130: rot is explained on every card that mentions it CT-129', () => {
   const rot = GLOSSARY.find(g => g.term === 'Rot');
   assert.ok(rot, 'the glossary has lost its Rot row');
   const re = matcherFor(rot);

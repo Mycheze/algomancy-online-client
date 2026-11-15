@@ -46,7 +46,7 @@ test('§1 the builder’s row: gaps, the end, the bare felt', () => {
   assert.match(tableHtml({ ...BUILDER, holding: true }), /^<div class="tttablewrap ttholding"/);
 });
 
-test('§2 the rail: Sideboard n/7 with its slot, then Maybe, not in the deck', () => {
+test('§2 the rail: Sideboard n/7 with its slot, then Maybe, not in the deck BL-65', () => {
   const html = tableHtml(BUILDER);
   const rail = /<aside class="ttrail" data-scroll="tt-rail">([\s\S]*)<\/aside>/.exec(html)?.[1] ?? '';
   assert.ok(rail, 'a rail');

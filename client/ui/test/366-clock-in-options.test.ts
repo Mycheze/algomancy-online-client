@@ -48,7 +48,7 @@ const onChip = (h: string): string | null =>
   /class="ui-segmented__option on" data-btn="clockpick" type="button" data-value="([^"]+)"/.exec(h)?.[1] ?? null;
 const rulesRow = (h: string): string => /<span class="homerulessum">([^]*?)<\/span>\s*<button/.exec(h)?.[1] ?? '';
 
-test('366 the clock chips are the Play card Clock row, and Custom rules has none', () => {
+test('366 the clock chips are the Play card Clock row, and Custom rules has none #191', () => {
   let html = ui.html();
   assert.match(html, /class="ui-app-shell ui-app-shell--contained apppage homepage"/, 'positive control: the home screen really was painted');
   const play = playCard(html);
@@ -75,7 +75,7 @@ test('366 the clock chips are the Play card Clock row, and Custom rules has none
   ui.click({ btn: 'home-mode', mode: 'draft' });
 });
 
-test('366 changing the clock does not make the game custom', () => {
+test('366 changing the clock does not make the game custom #191', () => {
   assert.equal(crp.createPayload(null), null, 'positive control: an untouched panel sends nothing');
   ui.click({ btn: 'clockpick', ms: '0', clockfor: 'draft' });
   assert.equal(localStorage.getItem('algoClockMs'), '0', 'the click did not reach the clock handler');

@@ -91,7 +91,7 @@ test('§1 the builder\'s table in the frame, the match in its toolbar, no pool',
   assert.doesNotMatch(html, /ccsbask/, 'nothing asked: no row under the toolbar');
 });
 
-test('§2 Undo takes the last move back through moveCopy, sending what a tap would', () => {
+test('§2 Undo takes the last move back through moveCopy, sending what a tap would BL-65', () => {
   let html = ui.html();
   assert.match(undoTag(html), /disabled/, 'nothing to take back yet');
   html = ui.click({ btn: 'cc-move', from: 'main', card: N[0]! });          // 29 / 6: illegal

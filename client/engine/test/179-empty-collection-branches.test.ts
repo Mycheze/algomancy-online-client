@@ -452,7 +452,7 @@ test('Dragnol — the [2] is paid and 2 life gained; with no opponent here the d
 // life." — and its OWN PROMPT says "(each opponent loses 2 life)", which is
 // what makes the silence a broken promise rather than merely a missing line.
 
-test('Shoreline Specter — its prompt promises "each opponent loses 2 life"; with none here it says why not', () => {
+test('Shoreline Specter — its prompt promises "each opponent loses 2 life"; with none here it says why not CT-74 CT-81', () => {
   const b = home(7912);
   const others = b.g.s.regions[b.region]!.presentSeats.filter(s => s !== b.A);
   assert.deepEqual(others, [], 'Shoreline Specter: CR 601.4d\'s case — nobody else in this region');

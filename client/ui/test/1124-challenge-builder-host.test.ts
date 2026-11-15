@@ -64,7 +64,7 @@ const names = (html: string): string[] => {
 const draft = (): string[] => JSON.parse((g['localStorage'] as Storage).getItem('algoChallengeDecks') ?? '{}')[DEF.id] ?? [];
 const sheetOpen = (html: string): boolean => /id="ch-importsheet"/.test(html);
 
-test('§1 a pool tap adds one copy at the END of the strip, and the draft is saved so', () => {
+test('§1 a pool tap adds one copy at the END of the strip, and the draft is saved so BL-65', () => {
   let html = ui.html();
   assert.deepEqual(names(html), LIST, 'non-vacuous: the draft is on the strip');
   const tiles = [...html.matchAll(/data-btn="tt-add" data-tt-src="(binder\|[^"]+)"/g)].map(m => unesc(m[1]!));

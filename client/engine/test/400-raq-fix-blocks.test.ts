@@ -45,7 +45,7 @@ function place(h: Harness, re: RegExp): void {
 
 // ── CR 606.4: side-blocks ──
 
-test('side-blocks: two units block where no attacker is, each its own column, and Roving Quillback counts both', () => {
+test('side-blocks: two units block where no attacker is, each its own column, and Roving Quillback counts both CT-203', () => {
   const h = new Harness(40001);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -67,7 +67,7 @@ test('side-blocks: two units block where no attacker is, each its own column, an
   assert.equal(ent(h, s1)!.damage, 0, 'and take none');
 });
 
-test('CR 606.4f a Piercing side-blocker deals no combat damage to the attacking player', () => {
+test('CR 606.4f a Piercing side-blocker deals no combat damage to the attacking player CT-203', () => {
   // _passer: "Does my side-blocking units deal combat damage to enemy face?
   // No. … They wouldn't attack at all since they don't have any attacking
   // enemy units in front of them."

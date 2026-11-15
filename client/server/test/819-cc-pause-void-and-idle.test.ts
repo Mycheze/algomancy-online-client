@@ -26,7 +26,7 @@ function between() {
   return { m, room: F.current(m) };
 }
 
-test('§1-§4 a pause is agreed, held through the idle sweep, resumed where it stood, and void at 7 days', () => {
+test('§1-§4 a pause is agreed, held through the idle sweep, resumed where it stood, and void at 7 days CT-501', () => {
   const { m, room } = between();
   F.seatUp(room, 0, 1);
   const t0 = Date.now();
@@ -88,7 +88,7 @@ test('§5 an unpaused waiting room idles out as any room does, and voids its mat
   assert.match(m.voided!.why, /waiting room closed/);
 });
 
-test('§6 a league week that closed voids a league match between games', () => {
+test('§6 a league week that closed voids a league match between games CT-509', () => {
   const { m } = between();
   M.setLeagueWeekClosed(x => x.id === m.id);
   M.sweepMatches(Date.now());
@@ -97,7 +97,7 @@ test('§6 a league week that closed voids a league match between games', () => {
   assert.match(m.voided!.why, /league week/);
 });
 
-test('§7 Your matches says the opponent is here and has asked to resume', () => {
+test('§7 Your matches says the opponent is here and has asked to resume CT-517', () => {
   const { m, room } = between();
   F.seatUp(room, 0, 1);
   M.matchOp(room, 1, 'pause', {});

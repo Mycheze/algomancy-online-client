@@ -141,7 +141,7 @@ test('§2 POSITIVE CONTROL: a bare .zonelabel is seen, one in context is not', (
   assert.equal(bareZonelabel('.zonelabel .txticon { width: 12px; }'), false);
 });
 
-test('§2 .zonelabel is declared bare in base.css, and in no other piece (board/ included)', () => {
+test('§2 .zonelabel is declared bare in base.css, and in no other piece (board/ included) BL-63', () => {
   assert.ok(base && bareZonelabel(base.text), 'base.css declares `.zonelabel { … }` bare (not :where — it was (0,1,0) in board/03 and its in-context overrides rely on that)');
   const others = pieces.filter(p => p !== base && bareZonelabel(p.text)).map(p => p.piece);
   assert.deepEqual(others, [],

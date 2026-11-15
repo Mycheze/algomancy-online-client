@@ -114,7 +114,7 @@ const carries = (h: Harness, id: EntityId, card: string): boolean =>
 /* ═══ §1 THE CLASS: A BATTLE VIRUS ON A UNIT, EVERY CHANGER ═══════════════ */
 
 for (const [k, changer] of CHANGERS.entries()) {
-  test(`CT-322 ${changer} moves a battle Virus being applied onto another unit in the region, and it lands there`, () => {
+  test(`CT-322 ${changer} moves a battle Virus being applied onto another unit in the region, and it lands there #262 #263`, () => {
     const { h, A, D, atk, theirs, source } = board(52200 + k, changer);
     h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, VIRUS), hostId: atk });
     const item = h.state.stack.find(i => i.kind === 'virus' && i.card === VIRUS);
@@ -167,7 +167,7 @@ for (const [k, changer] of CHANGERS.filter(isSpell).entries()) {
 
 /* ═══ §3 THE NEW HOST MUST BE LEGAL ═════════════════════════════════════ */
 
-test('CT-322 a Virus host slot offers exactly the units in the battle region, either side', () => {
+test('CT-322 a Virus host slot offers exactly the units in the battle region, either side #262 #263', () => {
   const { h, A, atk } = board(52290, 'Divine Intervention');
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, VIRUS), hostId: atk });
   const item = h.state.stack.find(i => i.kind === 'virus')!;

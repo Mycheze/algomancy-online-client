@@ -166,7 +166,7 @@ test('CR 507.5a: a Wraith pile suspends its own seat, not the other one', () => 
   assert.equal(h.state.decision, null, 'the pile drains once its owner answers');
 });
 
-test('CR D2.1b: every kind of action seat 0 had is still theirs', () => {
+test('CR D2.1b: every kind of action seat 0 had is still theirs CT-44', () => {
   const h = withWraiths(1, 3);
   const seat: Seat = 0;
   // what seat 0 would have been offered with nothing pending at all
@@ -210,7 +210,7 @@ test('CR D2.1d: seat 0 acting does not drain seat 1\'s trigger pile for them', (
 
 /* ═══ §2 THE CLOBBER — one slot, and it is not up for grabs ═══════════ */
 
-test('CR D2.1d: seat 0 may not overwrite seat 1\'s open decision', () => {
+test('CR D2.1d: seat 0 may not overwrite seat 1\'s open decision CT-44', () => {
   const h = withWraiths(1, 3);
   const asked = h.state.decision!;
   assert.equal(asked.seat, 1);
@@ -246,7 +246,7 @@ test('CR D2.1d: seat 0 may not overwrite seat 1\'s open decision', () => {
 
 /* ═══ §3 THE REWIND — the resolve snapshot, and why the queue survives ══════ */
 
-test('CR D2.1c: a mid-resolution suspension still blocks the other seat', () => {
+test('CR D2.1c: a mid-resolution suspension still blocks the other seat CT-44', () => {
   const h = withWraiths(1, 0);
   assert.equal(h.state.phase, 'deploy');
   assert.equal(h.state.decision, null, 'no Wraiths, so deployment opens quietly');
@@ -278,7 +278,7 @@ test('CR D2.1c: a mid-resolution suspension still blocks the other seat', () => 
 
 /* ═══ §4 NEGATIVE CONTROLS ════════════════════════════════════════════ */
 
-test('CR D2.1a: in BATTLE the gate refuses the non-owning seat, exactly as before', () => {
+test('CR D2.1a: in BATTLE the gate refuses the non-owning seat, exactly as before CT-44', () => {
   const h = withWraiths(1, 3);
   // the SAME state, moved into the battle phase: only the phase differs, so a
   // difference in verdict can only be the segment rule
@@ -346,7 +346,7 @@ test('CR D2.1e: concede is always reachable, from either seat', () => {
 
 /* ═══ §5 WHY §2 IS SOUND ══════════════════════════════════════════════ */
 
-test('CR D2.1d: apply() never mutates its input, so a draft may be discarded', () => {
+test('CR D2.1d: apply() never mutates its input, so a draft may be discarded CT-44', () => {
   const h = withWraiths(1, 3);
   const frozen = structuredClone(h.state);
   give(h, 0, HALTS);

@@ -84,7 +84,7 @@ test('every "create a Shard" card that is live uses E.createShard', async () => 
 
 /* ── 2. "When I become targeted" is dispatched, not merely logged ──────── */
 
-test('Mohruung has a live targeted trigger', () => {
+test('Mohruung has a live targeted trigger #1', () => {
   const c = getCard('Mohruung');
   const ab = (c.abilities ?? []).find(a => a.type === 'triggered' && a.events.includes('targeted'));
   assert.ok(ab, 'Mohruung must listen for the targeted event');
@@ -92,7 +92,7 @@ test('Mohruung has a live targeted trigger', () => {
   assert.equal(ab.bounded, true, '[Switch1] — once per turn (CR 722.5)');
 });
 
-test('a spell aimed at Mohruung actually creates the Crystal 2', () => {
+test('a spell aimed at Mohruung actually creates the Crystal 2 #1 #5', () => {
   // The bug at the table: Ben targeted Mohruung and got nothing. commitItem
   // built the `targeted` event and dropped it on the floor — modding fired it
   // (doAugment/doGraft) but the STACK path never did, so no spell in the game
@@ -137,7 +137,7 @@ function hasAugmentMarker(text: string): boolean {
   return /(^|\{\/n\})\s*\[Augment\]/i.test(text);
 }
 
-test('every card printing a text-box [Augment] marker is applicable as an augment', () => {
+test('every card printing a text-box [Augment] marker is applicable as an augment #2', () => {
   // The bin bug: Brough prints "[Augment] Everything is balanced" but its
   // behaviour is a `static`, not `augmentText`, so isAugment() was false and
   // it could not be slid under a unit from hand or bin at all. Three more
@@ -155,7 +155,7 @@ test('the four cards from the report are augmentable', () => {
   }
 });
 
-test('a spell that merely mentions [Augment] in reminder text is not an augment', () => {
+test('a spell that merely mentions [Augment] in reminder text is not an augment #2', () => {
   // Reconfigure: "Augment target unit ... {i}(The first target must have [Augment]...)"
   assert.equal(hasAugmentMarker(getCard('Reconfigure').text ?? ''), false);
   assert.equal(isAugment('Reconfigure'), false);

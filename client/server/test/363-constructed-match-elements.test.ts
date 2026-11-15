@@ -101,7 +101,7 @@ test('§1 premise: the room trio a constructed join falls back to is fire water 
     'both seats put cards down, so both have colours to read');
 });
 
-test('§1 ⭐ a constructed game of mono wood against mono metal is never labelled with DRAFT_TRIO', () => {
+test('§1 ⭐ a constructed game of mono wood against mono metal is never labelled with DRAFT_TRIO #190', () => {
   assert.notDeepEqual(SUMMARY.els, DRAFT_TRIO);
   assert.deepEqual(SUMMARY.els, ['wood', 'metal'], 'the game is the union of what the two sides played');
   for (const el of DRAFT_TRIO) assert.ok(!SUMMARY.els.includes(el), `${el} was never played`);
@@ -166,7 +166,7 @@ accounts.stashHistory(storedRow('QGUM', 'constructed', [THEIR, MY], ['Gember', '
   [{ earth: 13, wood: 1 }, { metal: 1, light: 19, dark: 13 }]));
 accounts.rebuildProfiles();
 
-test('§2 ⭐ a stored constructed row reads mine vs theirs from the side of whoever is looking', () => {
+test('§2 ⭐ a stored constructed row reads mine vs theirs from the side of whoever is looking #190', () => {
   const mine = accounts.recentGames(MY).find(g => g.code === 'TVXN')!;
   assert.deepEqual(mine.sides, [['water'], ['fire', 'dark']]);
   const theirs = accounts.recentGames(THEIR).find(g => g.code === 'TVXN')!;
@@ -195,7 +195,7 @@ test('§2b a draft row still reads its trio, with no sides', () => {
 
 /* ══ §3 — the trio picker ═══════════════════════════════════════════════ */
 
-test('§3 ⭐ the trio history for the something-not-played picker holds draft rows only', () => {
+test('§3 ⭐ the trio history for the something-not-played picker holds draft rows only #190', () => {
   const rows = accounts.trioHistoryRows(accounts.gameHistory(), [MY, null], ['Mycheze', 'someone']);
   assert.ok(rows.length > 0, 'the draft row is there');
   const keys = rows.map(r => r.els.join('+'));

@@ -42,7 +42,7 @@ function evoker(seed: number, grafts: string[]) {
 const robots = (h: Harness, A: Seat): number[] =>
   unitsOf(h, A).filter(u => u.card === 'Robot').map(u => u.counters).sort((a, b) => a - b);
 
-test('CR 708.9: Omniwield Evoker grafted with Manufacture and Construct Overseer, one extra Robot 1, not two', () => {
+test('CR 708.9: Omniwield Evoker grafted with Manufacture and Construct Overseer, one extra Robot 1, not two #289 CT-294 CT-422', () => {
   const { h, A, at } = evoker(70001, ['Manufacture', 'Construct Overseer']);
   assert.equal(h.state.decision, null);
   assert.deepEqual(robots(h, A), [1, 1, 1, 2, 2, 3, 3],
@@ -66,7 +66,7 @@ test('CR 708.9: a token not yet copied in the effect is still copied in a later 
   assert.equal(xs.length, 8);
 });
 
-test('CR 708.9: two activations are two effects — the second copies again', () => {
+test('CR 708.9: two activations are two effects — the second copies again CT-294', () => {
   const { h, A } = evoker(70003, ['Construct Overseer']);
   assert.deepEqual(robots(h, A), [1, 1], 'the first activation: a Robot 1 and its copy');
   h.do({ type: 'activateAbility', seat: A, entityId: unitsOf(h, A).find(u => u.card === 'Omniwield Evoker')!.id, abilityIndex: 0 });

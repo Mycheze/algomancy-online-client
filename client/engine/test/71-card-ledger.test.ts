@@ -518,7 +518,7 @@ test('CT-83: every NOT_A_GAP exemption still waives a real sweep hit', () => {
 
 // ── (1) SWEEP → LEDGER: the assertion that would have caught Harbinger ──
 
-test('every card with a readably-dead half is declared in the card ledger', () => {
+test('every card with a readably-dead half is declared in the card ledger CT-8', () => {
   const byName = new Map(CARD_LEDGER.map(e => [e.card, e]));
   const undeclared: string[] = [];
   for (const name of allCardNames()) {
@@ -559,7 +559,7 @@ registerSynthetic({
   }],
 });
 
-test('the sweep has teeth: it recognises the shape Harbinger of Immolation was fixed out of', () => {
+test('the sweep has teeth: it recognises the shape Harbinger of Immolation was fixed out of CT-8', () => {
   const CANARY = 'T71 Canary';
   const shapes = deadShapes(CANARY);
   assert.ok(shapes.some(s => /events:\[\]/.test(s)),
@@ -834,7 +834,7 @@ test('the ledger reports honestly on how many card halves are dead', () => {
 // scanned", and a refactor that renamed `statics` would otherwise turn this
 // sweep into a green check over an empty set — which is how a guard dies
 // quietly rather than loudly.
-test('the static/cost/flag sweep reports its population, and none of it is provably inert', () => {
+test('the static/cost/flag sweep reports its population, and none of it is provably inert CT-93', () => {
   const pool = allCardNames().filter(n => !(n in NOT_A_GAP));
   let statics = 0, costMods = 0, guards = 0;
   const inert: string[] = [];

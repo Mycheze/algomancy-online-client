@@ -51,7 +51,7 @@ function graftComposite(seed: number): { h: Harness; A: Seat; D: Seat; mush: Ent
   return { h, A, D, mush };
 }
 
-test('CR 722.4f: a graft composite that loses its ONLY target fizzles whole — no Poison from the untargeted grafts', () => {
+test('CR 722.4f: a graft composite that loses its ONLY target fizzles whole — no Poison from the untargeted grafts #71', () => {
   const { h, A, D, mush } = graftComposite(7101);
   // D deletes the Mushroom out from under its own trigger. The trigger now
   // holds exactly one declared target and that target is gone. (The attack
@@ -75,7 +75,7 @@ test('CR 722.4f: a graft composite that loses its ONLY target fizzles whole — 
     'and it said so, once, as a fizzle rather than as a resolution');
 });
 
-test('CR 704.6b: one surviving target carries the untargeted grafts through', () => {
+test('CR 704.6b: one surviving target carries the untargeted grafts through #71', () => {
   const { h, A, D, mush } = graftComposite(7102);
   // The mirror image: nothing dies, so nothing is lost, so everything happens.
   // "currently at least 1 target must remain for whole effect to be carried
@@ -87,7 +87,7 @@ test('CR 704.6b: one surviving target carries the untargeted grafts through', ()
     'three Poisons from Biotoxicity plus the printed Poison X: the composite resolved in full');
 });
 
-test('CR 704.6d: an item that declares NO target anywhere never fizzles', () => {
+test('CR 704.6d: an item that declares NO target anywhere never fizzles #71', () => {
   // The other half of the rule, and the reason it is asked of the ITEM rather
   // than part by part: Ignis Sprite's spawn trigger is untargeted, so it has
   // nothing to lose and must not be dragged into a fizzle by the new gate.
@@ -101,7 +101,7 @@ test('CR 704.6d: an item that declares NO target anywhere never fizzles', () => 
     'and nothing fizzled');
 });
 
-test('CR 704.6g: a required target with no legal candidate at cast still fizzles', () => {
+test('CR 704.6g: a required target with no legal candidate at cast still fizzles #71 CT-348', () => {
   // The regression this rule could have caused and did not. A Poison token
   // cast into a region with nothing to aim at declares NO target — but its
   // spec REQUIRES one (min 1), so the item is targeted, has no live part, and
@@ -150,7 +150,7 @@ function counterattackWithToken(seed: number): {
   return { h, A, D, atk, ctr, tok };
 }
 
-test('CR 610.3: declareBlocks takes spellTokens, and they ride out with the counterattackers', () => {
+test('CR 610.3: declareBlocks takes spellTokens, and they ride out with the counterattackers #67', () => {
   const { h, A, D, ctr, tok } = counterattackWithToken(6701);
   h.do({ type: 'declareBlocks', seat: D, blocks: {}, send: [ctr], spellTokens: [tok] });
   assert.ok(ent(h, tok)!.absent, 'the token left with the counterattack and "does not exist" until round 2');
@@ -171,7 +171,7 @@ test('CR 610.3: declareBlocks takes spellTokens, and they ride out with the coun
   assert.equal(ent(h, tok)!.region, b2.region, 'the token is in the contested region, castable there');
 });
 
-test('CR 610.3: legalActions offers the counterattack-with-token shape', () => {
+test('CR 610.3: legalActions offers the counterattack-with-token shape #67', () => {
   const { h, D, ctr, tok } = counterattackWithToken(6702);
   // The whole of report #67: the engine accepted this shape and nothing ever
   // said so, so the client could not build it and the tokens stayed home.
@@ -185,7 +185,7 @@ test('CR 610.3: legalActions offers the counterattack-with-token shape', () => {
     'the free unit and the Poison beside it are offered together');
 });
 
-test('CR 604.2c: spell tokens still travel only with units, and only from the region they stand in', () => {
+test('CR 604.2c: spell tokens still travel only with units, and only from the region they stand in #67', () => {
   const { h, D, tok } = counterattackWithToken(6703);
   assert.throws(() => h.do({ type: 'declareBlocks', seat: D, blocks: {}, spellTokens: [tok] }),
     /spell tokens travel only with units/,

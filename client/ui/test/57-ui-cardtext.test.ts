@@ -276,7 +276,7 @@ test('Transmogrifant: the projection line keeps the half no other row states', (
     'and the banner is where that fact is stated');
 });
 
-test('CT-328: under Transmogrifant a later Piercing shows live, the printed Flying struck', () => {
+test('CT-328: under Transmogrifant a later Piercing shows live, the printed Flying struck #231', () => {
   // Report #231's board: the Robot's "Piercing until regroup" arrived after
   // the strip, so it pierces (CR 712.2: a stripper takes only what is older),
   // and the panel crossed it out because `attrLines` struck EVERY attribute

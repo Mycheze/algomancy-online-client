@@ -47,7 +47,7 @@ test('packBadgeLine leaves a strip that already fits completely alone', () => {
 
 /* ── the overflow folds, it does not vanish ────────────────────────────── */
 
-test('packBadgeLine folds the overflow into a +N chip that names what it hid', () => {
+test('packBadgeLine folds the overflow into a +N chip that names what it hid BL-23', () => {
   // a real unit: counters, an activated ability, three attributes, two mods
   const bs: Badge[] = [
     { t: '+2/+2', ctr: true },
@@ -91,7 +91,7 @@ test('packBadgeLine draws what stayed in push order, not in fold order', () => {
 
 /* ── which chip folds first ────────────────────────────────────────────── */
 
-test('packBadgeLine folds printed attributes before live state', () => {
+test('packBadgeLine folds printed attributes before live state BL-23', () => {
   // the attributes are also on the card's own text box; the counter, the mod
   // and the "sent" flag are on the scan or nowhere
   const bs: Badge[] = [
@@ -113,7 +113,7 @@ test('packBadgeLine folds printed attributes before live state', () => {
 
 /* ── one chip too wide for the strip ───────────────────────────────────── */
 
-test('packBadgeLine truncates a lone over-long label instead of letting it run', () => {
+test('packBadgeLine truncates a lone over-long label instead of letting it run BL-23', () => {
   const long: Badge = { t: '👁 until end of turn', cls: 'glimpse on' };
   const line = packBadgeLine([long]);
   assert.equal(line.more, null, 'one chip cannot overflow into a +N — it is the only chip');
@@ -136,7 +136,7 @@ test('packBadgeLine never draws an empty strip for a badged card', () => {
 
 /* ── it holds at the SMALL card sizes too ──────────────────────────────── */
 
-test('packBadgeLine holds one line at every card width in style.css', () => {
+test('packBadgeLine holds one line at every card width in style.css BL-23', () => {
   // every card width style.css sets, less the strip's 2px insets: 40px
   // .sentstrip, 44px .seenhand, 46px .regionbinthumbs, 52px .invaders and
   // .tokenstrip, 56px .ridecol, 58px .binzone, 78px board, 92px .handdock and

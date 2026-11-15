@@ -42,7 +42,7 @@ test('the same exclusions as every other fold, and shared is not a game here', (
   assert.equal(r.seatGames, 2);
 });
 
-test('GIH, OH, played, GNS and the deck rate, from both seats', () => {
+test('GIH, OH, played, GNS and the deck rate, from both seats BL-13', () => {
   const r = foldCardStats([game('A', 0), game('B', 1)], { mode: 'all' });
   const jelly = r.cards.find(c => c.card === 'Jelly')!;
   assert.deepEqual(jelly.gih, { n: 2, w: 1 }, 'seat 0 held it in both games and won one');
@@ -73,7 +73,7 @@ test('"my games" folds only my own seat', () => {
   assert.equal(r.cards.find(c => c.card === 'Jelly')!.gns.n, 0, 'seat 1\'s unseen Jelly is not my fact');
 });
 
-test('filters: mode, dates, rated, both signed in', () => {
+test('filters: mode, dates, rated, both signed in BL-13', () => {
   const gs = [game('A', 0), game('B', 0, { playedAt: '2026-09-25T00:00:00.000Z', rated: true }), game('C', 0, { users: ['u0', null] })];
   assert.equal(foldCardStats(gs, { mode: 'draft' }).games, 0);
   assert.equal(foldCardStats(gs, { mode: 'all', from: '2026-09-21' }).games, 1);
@@ -88,7 +88,7 @@ test('a seat\'s colours are the elements carrying a quarter of its weight', () =
   assert.deepEqual(identity({}), []);
 });
 
-test('the public floor refuses a filter narrow enough to show one game\'s hands', async () => {
+test('the public floor refuses a filter narrow enough to show one game\'s hands BL-13', async () => {
   const { PUBLIC_FLOOR } = await import('../api-cardstats.ts');
   assert.ok(PUBLIC_FLOOR >= 5, 'a floor below five games prints individual hands');
 });

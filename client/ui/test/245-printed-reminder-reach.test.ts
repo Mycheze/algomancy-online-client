@@ -64,7 +64,7 @@ test('POSITIVE CONTROL: the pool, the glossary and both reviewed channels all lo
  * 1. THE DERIVED CANDIDATE SET IS EXACTLY THE REVIEWED ONE
  * ════════════════════════════════════════════════════════════════════════ */
 
-test('CR D6.11: every convention-B candidate the pool produces has a reviewed verdict', () => {
+test('CR D6.11: every convention-B candidate the pool produces has a reviewed verdict CT-141', () => {
   // THE POINT OF THE WHOLE FILE. The candidate set is DERIVED from printed
   // card data; the verdict on each candidate is REVIEWED, because the
   // derivation admits real noise ("create a Shard. {i}(It spawns dormant.)"
@@ -118,7 +118,7 @@ test('CR D6.11: no term is claimed by both reminder conventions', () => {
  * ui/glossary.ts, so this is a check on the POOL and not on that code */
 const flat = (s: string): string => s.replace(/\{\/n\}/g, ' ').replace(/\s+/g, ' ').trim();
 
-test('CR D6.11: each accepted convention-B reminder is printed on a real card, verbatim', () => {
+test('CR D6.11: each accepted convention-B reminder is printed on a real card, verbatim CT-141', () => {
   const bad: string[] = [];
   for (const term of Object.keys(LEAD_VERDICTS.accepted)) {
     const shown = GLOSSARY.find(e => e.term === term);
@@ -171,7 +171,7 @@ test('CR D6.11: the three rows this ruling moved are the ones the pool actually 
  * 3. THE CARD-LIBRARY CHANNEL REBUILDS OUT OF THE CHECKED-IN RULES FILE
  * ════════════════════════════════════════════════════════════════════════ */
 
-test('CR D6.11: every card-library sentence is quoted verbatim from the file it cites', () => {
+test('CR D6.11: every card-library sentence is quoted verbatim from the file it cites CT-141', () => {
   // The same standard 231 holds the manual to, one channel over. What this
   // proves is that WE TRANSCRIBED THE CARD FAITHFULLY. It does NOT prove the
   // card is in the current print run, and the _README says so in as many words.
@@ -216,7 +216,7 @@ test('CR D6.11: the card library is consulted LAST, never over the pool or the m
  * 4. THE MEASUREMENT — what each channel actually reaches
  * ════════════════════════════════════════════════════════════════════════ */
 
-test('CR D6.11: the four channels partition the glossary, and the split is pinned', () => {
+test('CR D6.11: the four channels partition the glossary, and the split is pinned CT-141', () => {
   // Not decoration. The manual ruling (§3) published a number for this and the number was
   // wrong, so the number is now derived and asserted rather than written in
   // prose where nothing can check it.

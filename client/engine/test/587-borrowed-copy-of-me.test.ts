@@ -87,7 +87,7 @@ const SCENARIOS: Record<string, (h: Harness) => Seat> = {
   },
 };
 
-test('CR 710.7a / report 270: every borrowable copy-of-me card has a scenario here', () => {
+test('CR 710.7a / report 270: every borrowable copy-of-me card has a scenario here #270', () => {
   const cards = copyOfMeCards();
   assert.ok(cards.includes('Echo of Despair'), 'the sweep finds the reported card');
   assert.deepEqual(cards, Object.keys(SCENARIOS).sort(),
@@ -95,7 +95,7 @@ test('CR 710.7a / report 270: every borrowable copy-of-me card has a scenario he
 });
 
 for (const name of Object.keys(SCENARIOS)) {
-  test(`CR 710.5, 710.7a / report 270: an Ancient One borrowing ${name} copies itself, not ${name}`, () => {
+  test(`CR 710.5, 710.7a / report 270: an Ancient One borrowing ${name} copies itself, not ${name} #270`, () => {
     const h = new Harness(58700 + Object.keys(SCENARIOS).indexOf(name));
     const A = SCENARIOS[name]!(h);
     assert.equal(tokens(h, A, 'Ancient One'), 1,
@@ -103,7 +103,7 @@ for (const name of Object.keys(SCENARIOS)) {
   });
 }
 
-test('CR 710.5 / report 270: three Echoes beside an Ancient One make three Ancient Ones (the designer)', () => {
+test('CR 710.5 / report 270: three Echoes beside an Ancient One make three Ancient Ones (the designer) #270', () => {
   const h = new Harness(58710);
   toDeployment(h);
   const A = h.state.initiative;

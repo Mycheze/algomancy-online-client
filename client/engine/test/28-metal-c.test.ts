@@ -688,7 +688,7 @@ test('Worldbender: registers and plays as a 2/2 {Feeble} body', () => {
   assert.ok(ownAttrs(h, wb).has('Feeble'));
 });
 
-test('Worldbender in a live draft: the pack is never offered, the hand gains 3, and life is untouched', () => {
+test('Worldbender in a live draft: the pack is never offered, the hand gains 3, and life is untouched #87 CT-24', () => {
   const h = new Harness(2819, undefined, 'draft');
   const A: Seat = 0, B: Seat = 1;
   spawn(h, A, 'Worldbender');
@@ -718,7 +718,7 @@ test('Worldbender in a live draft: the pack is never offered, the hand gains 3, 
   assert.equal(h.state.packs[A]!.length, 10);
 });
 
-test('Worldbender in constructed: no draw-4-put-2-back — the hand gains 3 and 3 life is paid', () => {
+test('Worldbender in constructed: no draw-4-put-2-back — the hand gains 3 and 3 life is paid #87 CT-24 CT-386', () => {
   const h = constructedGame(2820);
   const A: Seat = 0, B: Seat = 1;
   spawn(h, A, 'Worldbender');

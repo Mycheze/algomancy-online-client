@@ -44,7 +44,7 @@ function smofBattle(seed: number): { h: Harness; A: Seat; D: Seat } {
   return { h, A, D };
 }
 
-test('CR 102.3a: General Smof asks the initiative player first, not the owner of the battle region', () => {
+test('CR 102.3a: General Smof asks the initiative player first, not the owner of the battle region CT-471', () => {
   const { h, A, D } = smofBattle(78101);
   assert.equal(h.state.initiative, A);
   const region = h.state.battle!.region;
@@ -58,7 +58,7 @@ test('CR 102.3a: General Smof asks the initiative player first, not the owner of
   assert.equal(h.state.decision?.seat, D, 'then the player without initiative');
 });
 
-test('CR 102.3b: the second sacrificer is told which unit the first chose (a unit in play is open)', () => {
+test('CR 102.3b: the second sacrificer is told which unit the first chose (a unit in play is open) #317 CT-471', () => {
   const { h, A, D } = smofBattle(78102);
   const first = h.state.decision!;
   const pickedOpt = first.options[1]!;
@@ -94,7 +94,7 @@ function cullerBattle(seed: number): { h: Harness; A: Seat; D: Seat } {
   return { h, A, D };
 }
 
-test('CR 102.3b: the second discarder is told only THAT the first chose (a card in hand is hidden)', () => {
+test('CR 102.3b: the second discarder is told only THAT the first chose (a card in hand is hidden) CT-471', () => {
   const { h, A, D } = cullerBattle(78103);
   const first = h.state.decision!;
   assert.ok(first, 'the Culler asks');

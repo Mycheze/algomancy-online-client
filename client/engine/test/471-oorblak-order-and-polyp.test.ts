@@ -73,7 +73,7 @@ function choose(h: Harness, id: EntityId): void {
   h.do({ type: 'decide', seat: dec.seat, choice: i });
 }
 
-test('CR 708.4a: two Oorblaks and combat damage — the player being hit is asked which takes it, and the answer decides it', () => {
+test('CR 708.4a: two Oorblaks and combat damage — the player being hit is asked which takes it, and the answer decides it CT-290', () => {
   // RED before: no question, and the first Oorblak (lowest id) always took it
   const r = strike(47101, ['Oorblak', 'Oorblak'], 3, false);
   const dec = r.h.state.decision;

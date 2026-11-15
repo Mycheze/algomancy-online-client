@@ -22,7 +22,7 @@ const OLD = (escaped: string): string => `<div class="joinscreen"><h2>Algomancy<
         <p>${escaped}</p>
         <button data-btn="gohome">Home</button></div>`;
 
-test('1234 §1 kickedHtml is the old notice byte for byte, the reason escaped', () => {
+test('1234 §1 kickedHtml is the old notice byte for byte, the reason escaped BL-63', () => {
   const why = 'another connection took over seat 1 — this tab is done (close it, or rejoin)';
   assert.equal(kickedHtml(why), OLD(why));
   assert.equal(kickedHtml(undefined), OLD('another connection took over this seat'));

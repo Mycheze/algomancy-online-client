@@ -47,7 +47,7 @@ function krakenBoard(seed: number) {
   return { h, A, kraken };
 }
 
-test('report 206 - Kraken grafted with Fester offers No targets as an ordinary button', async () => {
+test('report 206 - Kraken grafted with Fester offers No targets as an ordinary button #206', async () => {
   const ui = await client();
   const { h, A, kraken } = krakenBoard(6660);
   const dec = h.state.decision!;
@@ -70,7 +70,7 @@ test('report 206 - Kraken grafted with Fester offers No targets as an ordinary b
   assert.match(h.state.decision?.prompt ?? '', /Fester/, 'the grafted Fester is the next question');
 });
 
-test('report 206 - an up to one slot finishes at one pick with no further decision', () => {
+test('report 206 - an up to one slot finishes at one pick with no further decision #206', () => {
   const { h, kraken } = krakenBoard(6661);
   pick(h, { unit: kraken });
   const d = h.state.decision;

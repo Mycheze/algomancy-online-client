@@ -60,7 +60,7 @@ test('§1 the control: a mouse click on the one playable card still plays it', (
   assert.deepEqual(ui.actions(), legal, 'one legal play, one click, played — the desktop is unchanged');
 });
 
-test('§2 a finger\'s tap on that card in battle sends nothing and opens no menu — it reads', () => {
+test('§2 a finger\'s tap on that card in battle sends nothing and opens no menu — it reads #201', () => {
   const { state, i, legal } = battleWithACard();
   ui.join(state, me, legal);
   ui.sent();
@@ -75,7 +75,7 @@ test('§2 a finger\'s tap on that card in battle sends nothing and opens no menu
   assert.doesNotMatch(html, /id="preview"/);
 });
 
-test('§3 the same on every surface: deployment, and planning (no recycle menu)', () => {
+test('§3 the same on every surface: deployment, and planning (no recycle menu) #201', () => {
   const h = new Harness(38402);
   toDeployment(h);
   const i = give(h, me, 'Fireball');
@@ -97,7 +97,7 @@ test('§3 the same on every surface: deployment, and planning (no recycle menu)'
   assert.match(ui.click({ act: 'hand', p: me, i: j }), /Recycle →/, 'a mouse click still opens the recycle menu');
 });
 
-test('§4 a tap that ANSWERS a question still answers it: a hand card that is an option is picked', () => {
+test('§4 a tap that ANSWERS a question still answers it: a hand card that is an option is picked #201 CT-420', () => {
   const { state, i } = battleWithACard();
   const s = structuredClone(state);
   const card = s.players[me]!.hand[i]!;
@@ -112,7 +112,7 @@ test('§4 a tap that ANSWERS a question still answers it: a hand card that is an
     'answering is not playing — the board pick still takes a finger');
 });
 
-test('§5 a cached card that is playable now: a tap reads it, a mouse click plays it', () => {
+test('§5 a cached card that is playable now: a tap reads it, a mouse click plays it #201', () => {
   const { state } = battleWithACard();
   const s = structuredClone(state);
   s.players[me]!.cache = [{ card: 'Fireball', uid: 777 }];
@@ -127,7 +127,7 @@ test('§5 a cached card that is playable now: a tap reads it, a mouse click play
   assert.deepEqual(ui.actions(), legal, 'a mouse click still does');
 });
 
-test('§6 it is the POINTER, not the device: a mouse after a finger plays again', () => {
+test('§6 it is the POINTER, not the device: a mouse after a finger plays again #201', () => {
   const { state, i, legal } = battleWithACard();
   ui.join(state, me, legal);
   ui.sent();

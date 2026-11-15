@@ -68,7 +68,7 @@ function triggeredSlots(): TriggerSlot[] {
   return out;
 }
 
-test('§1 no triggered effect carries a castCost unless its printed text marks a cost', () => {
+test('§1 no triggered effect carries a castCost unless its printed text marks a cost #259 CT-264', () => {
   const slots = triggeredSlots();
   assert.ok(slots.length > 100, `only ${slots.length} triggered abilities seen — the scan would be vacuous`);
   // the mark detector must actually see the printed costs it claims to see
@@ -188,7 +188,7 @@ test('§2 the class is derived from the printed text, and every member has a sce
 });
 
 for (const [card, sc] of Object.entries(SCENARIOS)) {
-  test(`§2 ${card}: the trigger waits on the stack with its source still in play`, () => {
+  test(`§2 ${card}: the trigger waits on the stack with its source still in play #259 CT-264`, () => {
     const h = new Harness(51500);
     const { src } = sc.setUp(h);
     assert.ok(triggerUp(h, src), `the ${card} trigger is on the stack`);
@@ -206,7 +206,7 @@ for (const [card, sc] of Object.entries(SCENARIOS)) {
     finishBattle(h);
   });
 
-  test(`§2 ${card}: killed in response, its trigger does nothing`, () => {
+  test(`§2 ${card}: killed in response, its trigger does nothing #259 CT-264`, () => {
     const h = new Harness(51502);
     const { src, A, D, seen } = sc.setUp(h);
     assert.ok(triggerUp(h, src));

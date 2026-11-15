@@ -169,7 +169,7 @@ function checkAgainstEngine(h: Harness, seat: Seat, why: string): number {
   return slots.length;
 }
 
-test('§1a the ATTACKING grid: every offered spot points at the column the engine named', () => {
+test('§1a the ATTACKING grid: every offered spot points at the column the engine named CT-94', () => {
   const { h, A } = attackerAsk(21500);
   const n = checkAgainstEngine(h, A, 'attacker');
   assert.equal(n, 4, 'two ends and a back slot on each of the two columns');
@@ -179,7 +179,7 @@ test('§1a the ATTACKING grid: every offered spot points at the column the engin
 // ⚠ The title is kept for the CARD-TODO proof that names it; what it pins
 // changed with CT-249: the blocking grid is NOT compacted any more, it is
 // indexed by attack column, and the anchor reads that index straight through.
-test('§1b the BLOCKING grid is COMPACTED, and the anchor un-compacts it', () => {
+test('§1b the BLOCKING grid is COMPACTED, and the anchor un-compacts it CT-94', () => {
   const { h, D } = defenderAsk(21501);
   const b = h.state.battle!;
   assert.equal(b.blocks[0], undefined, 'attack column 0 is unblocked — the case that tells the readings apart');
@@ -221,7 +221,7 @@ test('§1c a spot the board has moved out from under resolves to nothing, not to
 
 /* ── §2 whose grid — derived from the question, not from Decision.seat ──── */
 
-test('§2 gridSeatOf reads the grid off the OFFER, and agrees with the engine on both sides', () => {
+test('§2 gridSeatOf reads the grid off the OFFER, and agrees with the engine on both sides CT-94', () => {
   const atk = attackerAsk(21503);
   assert.equal(gridSeatOf(atk.h.state, atk.h.state.decision!), atk.h.state.battle!.attacker,
     'an offer containing an end spot is the attacking grid — only it can widen (CR 602.6c)');
@@ -253,7 +253,7 @@ test('§2b the derivation is not Decision.seat wearing a disguise', () => {
 
 /* ── §3 the client: CT-94's own measurement, from the other side ────────── */
 
-test('§3a the battlefield is no longer inert — the drop targets are really on screen', () => {
+test('§3a the battlefield is no longer inert — the drop targets are really on screen #107 CT-94', () => {
   const { h, A } = attackerAsk(21506);
   const html = ui.join(h.state as GameState, A, legalActions(h.state, A) as Action[]);
   const offer = formationSlotOffer(h.state, h.state.decision);
@@ -266,7 +266,7 @@ test('§3a the battlefield is no longer inert — the drop targets are really on
   done(h);
 });
 
-test('§3b clicking a spot on the line sends the decision, keyed by OPTION INDEX', () => {
+test('§3b clicking a spot on the line sends the decision, keyed by OPTION INDEX #107 CT-94', () => {
   const { h, A } = attackerAsk(21507);
   ui.join(h.state as GameState, A, legalActions(h.state, A) as Action[]);
   ui.sent();                                       // drop the join chatter
@@ -279,7 +279,7 @@ test('§3b clicking a spot on the line sends the decision, keyed by OPTION INDEX
   done(h);
 });
 
-test('§3c the click really places the unit where the spot said it would', () => {
+test('§3c the click really places the unit where the spot said it would #107 CT-94', () => {
   // end to end: the client\'s action, applied, puts the token in the column the
   // target was DRAWN at. This is what makes the drawing worth anything.
   const { h, A } = attackerAsk(21508);
@@ -298,7 +298,7 @@ test('§3c the click really places the unit where the spot said it would', () =>
   done(h);
 });
 
-test('§3d the BLOCKING question draws on the blocking half, at the right column', () => {
+test('§3d the BLOCKING question draws on the blocking half, at the right column #107 CT-94', () => {
   const { h, D } = defenderAsk(21509);
   const html = ui.join(h.state as GameState, D, legalActions(h.state, D) as Action[]);
   assert.equal(dropTargets(html), 3,
@@ -335,7 +335,7 @@ test('§4b a decision of another kind is never mistaken for a placement', () => 
   done(h);
 });
 
-test('§4c an offer where NOTHING resolves draws nothing rather than an empty invitation', () => {
+test('§4c an offer where NOTHING resolves draws nothing rather than an empty invitation CT-94', () => {
   const { h, A } = attackerAsk(21512);
   const dec = h.state.decision!;
   const stale = {

@@ -423,7 +423,7 @@ test('Tempest Oracle: on despawn, may pay [one] to draw a card and lose 1 life (
 
 // ── Torrential Reclamation ───────────────────────────────────────────────
 
-test('Torrential Reclamation: recall X nontoken allies → per recall, sacrifices + 1 life', () => {
+test('Torrential Reclamation: recall X nontoken allies → per recall, sacrifices + 1 life CT-356', () => {
   const h = new Harness(1916);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;

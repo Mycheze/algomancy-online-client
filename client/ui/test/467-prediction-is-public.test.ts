@@ -57,7 +57,7 @@ function cardHtml(html: string, id: EntityId): string {
   return html.slice(html.lastIndexOf('<div class="card', at), at + 2000);
 }
 
-test('Prediction Prophet - the opponent sees the prediction on the card', async () => {
+test('Prediction Prophet - the opponent sees the prediction on the card CT-285', async () => {
   const ui = await client();
   const { h, D, prophet, want } = predicted(46701, life => life + 7);
   const view = viewFor(h.state, D) as GameState;
@@ -69,7 +69,7 @@ test('Prediction Prophet - the opponent sees the prediction on the card', async 
   assert.ok(box.state.includes(`Predicted life: ${want}`), `the text box says it too: ${JSON.stringify(box.state)}`);
 });
 
-test('Prediction Prophet - a prediction of 0 is a prediction and shows', async () => {
+test('Prediction Prophet - a prediction of 0 is a prediction and shows CT-285', async () => {
   const ui = await client();
   const { h, A, prophet } = predicted(46702, () => 0);
   assert.equal(predictionOf(ent(h, prophet)!, h.state.turn), 0);

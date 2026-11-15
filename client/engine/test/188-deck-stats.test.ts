@@ -87,7 +87,7 @@ test('§3 maxAffinity is the ceiling: reaching it casts everything', () => {
   assert.equal(a.pips['fire'], 2 * 1 + 2 * 2);
 });
 
-test('§3 the cumulative column carries a requirement DOWN the curve, never up', () => {
+test('§3 the cumulative column carries a requirement DOWN the curve, never up BL-14', () => {
   // Rune Channeler is [3] with two fire pips; Ignis Sprite is [1] with one
   const a = analyzeDeck([...copies('Ignis Sprite', 2), ...copies('Rune Channeler', 2)]);
   const at = (m: number) => a.rows.find(r => r.mana === m)!;
@@ -118,7 +118,7 @@ test('§3 the cumulative column carries a requirement DOWN the curve, never up',
   assert.equal(a.rows[a.rows.length - 1]!.cumulative['fire'], a.maxAffinity['fire']);
 });
 
-test('§3 `first` fires exactly once per level of a requirement', () => {
+test('§3 `first` fires exactly once per level of a requirement BL-14', () => {
   for (const deck of defaultDecks()) {
     const a = analyzeDeck(deck.cards);
     for (const el of Object.keys(a.maxAffinity)) {
@@ -199,7 +199,7 @@ test('§5 copies counts duplicates once, with their number', () => {
 
 // ── §6 the text export round-trips through the real importer ──────────
 
-test('§6 a deck exported as text imports back as the same deck', () => {
+test('§6 a deck exported as text imports back as the same deck BL-14', () => {
   for (const deck of defaultDecks()) {
     const text = deckListText(deck.name, deck.cards);
     // through the SERVER's own parser, not a second copy of the format —

@@ -141,7 +141,7 @@ test('Debt Blep: [once] gain 2 debt for +3/+3 until regroup — and only once a 
 
 // ── Divine Intervention ──────────────────────────────────────────────────
 
-test("Divine Intervention: may change the targets of an effect on the stack", () => {
+test("Divine Intervention: may change the targets of an effect on the stack #6", () => {
   const h = new Harness(3904);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -213,7 +213,7 @@ test('Divine Intervention: "you may" — declining leaves the targets alone', ()
  * pass by accident: it asserts the trigger is on the menu (which 'stackSpell'
  * would not offer) and then retargets it.
  */
-test('Divine Intervention: "target effect" reaches a TRIGGER on the stack, not just a spell (CR 700.1)', () => {
+test('Divine Intervention: "target effect" reaches a TRIGGER on the stack, not just a spell (CR 700.1) #6', () => {
   const h = new Harness(3905.5);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;

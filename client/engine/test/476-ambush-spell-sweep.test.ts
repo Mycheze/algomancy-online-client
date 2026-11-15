@@ -96,7 +96,7 @@ test('the predicate: an Ambush is not a spell effect, a spell unit and a spell t
   for (const k of ['unit', 'virus', 'triggered', 'activated'] as const) assert.equal(isSpellEffect(k), false, k);
 });
 
-test('census: every card whose text mentions spells lands in a bucket', () => {
+test('census: every card whose text mentions spells lands in a bucket CT-301', () => {
   assert.ok(pool.length >= 40, `non-vacuity: the pool's spell-text cards were found (${pool.length})`);
   const unplaced = pool.filter(n => {
     const c = getCard(n), t = c.text;
@@ -128,7 +128,7 @@ test('target spell effect never offers an Ambush; target nonspell effect always 
   }
 });
 
-test('negate or recall all spells leaves the Ambush on the stack and takes the spell', () => {
+test('negate or recall all spells leaves the Ambush on the stack and takes the spell #218 CT-301', () => {
   const cards = pool.filter(n => SWEEP_SPELLS.test(getCard(n).text));
   assert.ok(cards.length >= 3, `non-vacuity: Cosmic Reversal, Skybreaker, Molten Riftbreaker at least (${cards})`);
   for (const n of cards) {

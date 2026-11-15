@@ -306,7 +306,7 @@ test('Phytochemical Protection: combat damage is prevented and paid back as +1/+
   finishBattle(h);
 });
 
-test('Phytochemical Protection: the whole hit is prevented, not just the lethal part', () => {
+test('Phytochemical Protection: the whole hit is prevented, not just the lethal part #79', () => {
   // The RAQ, and now CR 608.6f in the engine:
   //   "Q: No Deadly, No Piercing. Single enemy with Phytochemical Protection?
   //    A: All damage must be assigned to this single unit and whole damage
@@ -355,7 +355,7 @@ test('Phytochemical Protection: a 2-power {Deadly} column into a shielded 7/3 pa
   finishBattle(h);
 });
 
-test('Phytochemical Protection: prevented damage is NOT dealt — no damage event fires', () => {
+test('Phytochemical Protection: prevented damage is NOT dealt — no damage event fires #72', () => {
   // RAQ "[Solved] Poisonous vs 'Whenever I am dealt damage' vs Phytochemical
   // Protection": "Jollyglop doesn't trigger". Prevention unmakes the damage,
   // unlike the rot ruling's replacements ("replacing the damage does NOT unmake it"; CR 708.11).
@@ -371,7 +371,7 @@ test('Phytochemical Protection: prevented damage is NOT dealt — no damage even
   assert.equal(ent(h, u)!.counters, 3, '+1/+1 per damage prevented, from effect damage too');
 });
 
-test('Phytochemical Protection: Poisonous does not bypass it, and lays no -1/-1 counters', () => {
+test('Phytochemical Protection: Poisonous does not bypass it, and lays no -1/-1 counters #72', () => {
   // RAQ, verbatim: "Does Poisonous bypass Phytochemical Protection? No it
   // doesn't. … if there is not damage being dealt, then no counters are
   // placed." The victim ends UP counters, not down.
@@ -384,7 +384,7 @@ test('Phytochemical Protection: Poisonous does not bypass it, and lays no -1/-1 
   assert.equal(ent(h, u)!.counters, 2, '+2, not -2 — the Poisonous damage was never dealt');
 });
 
-test('Phytochemical Protection: {Deadly} cannot kill through it', () => {
+test('Phytochemical Protection: {Deadly} cannot kill through it #72', () => {
   // The RAQ line is "Atleast 1 dmg to Awoken (gets +1/+1, won't create 1/1
   // unit)". Deadly kills through DAMAGE DEALT; the shield leaves none.
   const h = new Harness(2424);
@@ -481,7 +481,7 @@ function controlEvents(h: Harness, from: number): { unit: number; from: Seat; to
   });
 }
 
-test('Mindspore Fiend gives away a MODDED blocker: its mods change controller, it leaves the formation, and it stays in the battle region (CR 711.2, 711.3/CT-38)', () => {
+test('Mindspore Fiend gives away a MODDED blocker: its mods change controller, it leaves the formation, and it stays in the battle region (CR 711.2, 711.3/CT-38) CT-39', () => {
   const h = new Harness(2420);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -524,7 +524,7 @@ test('Mindspore Fiend gives away a MODDED blocker: its mods change controller, i
   assert.equal(ent(h, mod)!.region, ent(h, gift)!.region, 'the augment went with it');
 });
 
-test('Organic Exchange hands over MODDED units: each unit\'s mods follow it, and the positions still swap (CR 711.5/CT-38)', () => {
+test('Organic Exchange hands over MODDED units: each unit\'s mods follow it, and the positions still swap (CR 711.5/CT-38) CT-39', () => {
   const h = new Harness(2421);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -561,7 +561,7 @@ test('Organic Exchange hands over MODDED units: each unit\'s mods follow it, and
   finishBattle(h);
 });
 
-test('an UNMODDED control change behaves exactly as it did before the control-change choke point — the negative control', () => {
+test('an UNMODDED control change behaves exactly as it did before the control-change choke point — the negative control CT-39', () => {
   const h = new Harness(2422);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;

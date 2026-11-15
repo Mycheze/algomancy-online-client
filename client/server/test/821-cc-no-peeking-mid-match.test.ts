@@ -12,7 +12,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ccWire, startWireMatch } from './cc-wire.ts';
 
-test('§1-§3 the replay and the omniscient watch are refused to the players until the match is over', async () => {
+test('§1-§3 the replay and the omniscient watch are refused to the players until the match is over CT-501 CT-509', async () => {
   const w = await ccWire('t821');
   const [ann, bo, cy] = w.people as [typeof w.people[0], typeof w.people[0], typeof w.people[0]];
   try {

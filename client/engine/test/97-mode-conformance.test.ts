@@ -136,7 +136,7 @@ const printsModal = (name: string): boolean => MODAL.test(getCard(name).text ?? 
 
 /* ── (a) printed ⇒ declared ────────────────────────────────────────────── */
 
-test('CR 205.3: a card printing a modal bracket declares EffectDef.modes', () => {
+test('CR 205.3: a card printing a modal bracket declares EffectDef.modes #81', () => {
   const late: string[] = [];
   for (const name of allCardNames()) {
     if (!printsModal(name)) continue;
@@ -200,7 +200,7 @@ test('CR 205.3: every mode exemption is still needed, and still names a real car
 const modesOnStack = (h: Harness): unknown[] =>
   h.state.stack.flatMap(i => i.parts.map(p => p.mode));
 
-test('CR 702.5: Burgeon names its half before the stack, and the opponent can read it there', () => {
+test('CR 702.5: Burgeon names its half before the stack, and the opponent can read it there #81', () => {
   const h = new Harness(9700);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -249,7 +249,7 @@ test('CR 702.5: Wither and Bloom declares which half before anyone may respond',
   finishBattle(h);
 });
 
-test('CR 702.5: Siphon Life says whether it is a burn or a heal before the response window', () => {
+test('CR 702.5: Siphon Life says whether it is a burn or a heal before the response window #81', () => {
   const h = new Harness(9702);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -357,7 +357,7 @@ E.prototype.suspend = function (susp: Suspension, dec: Omit<Decision, 'id'>): ne
   return origSuspend.call(this, susp, dec);
 };
 
-test('CR 205.3a: no \'mode\' decision is ever raised mid-resolution', () => {
+test('CR 205.3a: no \'mode\' decision is ever raised mid-resolution #81', () => {
   for (let seed = 9700; seed <= 9759; seed++) fuzzGame(seed, 2500);
   for (let seed = 9760; seed <= 9779; seed++) fuzzGame(seed, 2500, 'draft');
 
@@ -518,7 +518,7 @@ test('CR 205.3a: Void Memory declares its half at cast, and a hand with no card 
   finishBattle(h);
 });
 
-test('Void Memory\'s victim still picks WHICH card, among the ones the half admits', () => {
+test('Void Memory\'s victim still picks WHICH card, among the ones the half admits CT-398', () => {
   const h = new Harness(9708);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;

@@ -77,7 +77,7 @@ const BOGUS = 'ZZQX';
 
 // ── §1 the server half: the refusal is a value, not a socket event ────
 
-test('CR D7.5 a code the server never minted is refused, and the refusal names it', () => {
+test('CR D7.5 a code the server never minted is refused, and the refusal names it #135 CT-148', () => {
   const why = joinRefusal(BOGUS);
   assert.notEqual(why, null, 'an unminted code must be refused — otherwise a typo silently creates an empty game');
   assert.match(why!, /No game with code ZZQX/,
@@ -105,7 +105,7 @@ test('CR D7.5 the connecting screen does not already carry the refusal', () => {
 
 // ── §2 THE REGRESSION ────────────────────────────────────────────────
 
-test('CR D7.5 a refused join reaches the connecting screen instead of Connecting forever', () => {
+test('CR D7.5 a refused join reaches the connecting screen instead of Connecting forever #135 CT-148', () => {
   const html = ui.push({ t: 'error', msg: joinRefusal(BOGUS)! });
   assert.match(html, /No game with code ZZQX/,
     'the server said the room does not exist and the player was not told — playtest #135/CT-148');
@@ -117,7 +117,7 @@ test('CR D7.5 a refused join reaches the connecting screen instead of Connecting
 
 // ── §3 the same crash one screen further in ──────────────────────────
 
-test('CR D7.5 an error in the constructed waiting room lands too, where there is still no board', () => {
+test('CR D7.5 an error in the constructed waiting room lands too, where there is still no board #135 CT-148', () => {
   // the server's waiting-room 'joined': joined === true, and state is STILL
   // null, which is exactly the case a fix guarded on NET.joined would miss
   const waiting = ui.push({

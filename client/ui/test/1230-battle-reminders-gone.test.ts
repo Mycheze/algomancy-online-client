@@ -23,7 +23,7 @@ import { client } from './ui-driver.ts';
 
 const ui = await client();
 
-test('report #385: watching the other seat choose an attack with nothing placed, no "nothing placed yet" line', () => {
+test('report #385: watching the other seat choose an attack with nothing placed, no "nothing placed yet" line CT-560', () => {
   const h = new Harness(123001);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -38,7 +38,7 @@ test('report #385: watching the other seat choose an attack with nothing placed,
   assert.doesNotMatch(html, /nothing placed yet/);
 });
 
-test('report #385: the counterattackers in transit carry no "arrives next round" line', () => {
+test('report #385: the counterattackers in transit carry no "arrives next round" line CT-560', () => {
   const h = new Harness(123002);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;

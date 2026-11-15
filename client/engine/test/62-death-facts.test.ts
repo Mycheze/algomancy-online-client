@@ -120,7 +120,7 @@ test('CR 714.9: a dying TOKEN says so on the event (it used to be a log-message 
 // where the card is during the event window, which is the only thing a listener
 // can act on — and it is erased right after (CR 405.5). The 2026-10-31 reversal
 // (CR 801.2h: not trashed) changed only the trash, not this.
-test('CR 405.5 / 714.9: an Unstable death says BIN, like a token, and still DIES (the earlier reading inverted)', () => {
+test('CR 405.5 / 714.9: an Unstable death says BIN, like a token, and still DIES (the earlier reading inverted) #93', () => {
   const h = new Harness(6203);
   toDeployment(h);
   const P = h.state.deployPlayer!;

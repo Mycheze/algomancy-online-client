@@ -70,7 +70,7 @@ const fileOf = (dir: string, code: string): Record<string, unknown> =>
 
 const scratch = (): string => mkdtempSync(join(tmpdir(), 'idle-'));
 
-test('367 §1 a room with fewer than five actions closes after an hour without a move, not before', async () => {
+test('367 §1 a room with fewer than five actions closes after an hour without a move, not before CT-193', async () => {
   const dir = scratch();
   try {
     const mod = await roomsAt(dir);
@@ -102,7 +102,7 @@ test('367 §1 a room with fewer than five actions closes after an hour without a
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
-test('367 §2 a room with five or more actions closes after twelve hours without a move, not before', async () => {
+test('367 §2 a room with five or more actions closes after twelve hours without a move, not before CT-193', async () => {
   const dir = scratch();
   try {
     const mod = await roomsAt(dir);
@@ -131,7 +131,7 @@ test('367 §2 a room with five or more actions closes after twelve hours without
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
-test('367 §3 a connected seat or a watcher keeps an idle room open, and an empty one gets a grace to reconnect', async () => {
+test('367 §3 a connected seat or a watcher keeps an idle room open, and an empty one gets a grace to reconnect CT-193', async () => {
   const dir = scratch();
   try {
     const mod = await roomsAt(dir);
@@ -188,7 +188,7 @@ test('367 §4 a closed room is not restored at boot and its link says it closed'
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
-test('367 §5 a file from before the field is aged by its version stamps and not by its mtime', async () => {
+test('367 §5 a file from before the field is aged by its version stamps and not by its mtime CT-193', async () => {
   const dir = scratch();
   try {
     const mod = await roomsAt(dir);
@@ -238,7 +238,7 @@ test('367 §5 a file from before the field is aged by its version stamps and not
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
-test('367 §6 a closed game has no winner, is not rated and reads as unfinished', async () => {
+test('367 §6 a closed game has no winner, is not rated and reads as unfinished CT-193', async () => {
   const dir = scratch();
   try {
     const mod = await roomsAt(dir);

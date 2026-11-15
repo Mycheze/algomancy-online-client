@@ -169,7 +169,7 @@ const classOf = (tag: string): string => (/class="([^"]*)"/.exec(tag) ?? [])[1] 
 
 /* ═══ §1 THE PLAIN CARD IS UNTOUCHED ══════════════════════════════════ */
 
-test('CR D6.14: a plainly castable card in hand is drawn exactly as it always was', () => {
+test('CR D6.14: a plainly castable card in hand is drawn exactly as it always was CT-54', () => {
   const h = deployment();
   const i = give(h, SEAT, PLAIN);
   const html = ui.show(structuredClone(h.state));
@@ -191,7 +191,7 @@ test('CR D6.14: a plainly castable card in hand is drawn exactly as it always wa
 
 /* ═══ §2 THE #80 CASE ═════════════════════════════════════════════════ */
 
-test('CR D6.14: a {Battle} spell in deployment is NOT drawn like a castable deployment card', () => {
+test('CR D6.14: a {Battle} spell in deployment is NOT drawn like a castable deployment card CT-54', () => {
   const h = deployment();
   spawn(h, SEAT, HOST);                       // something with a graft cause to land on
   const plain = give(h, SEAT, PLAIN);
@@ -223,7 +223,7 @@ test('CR D6.14: a {Battle} spell in deployment is NOT drawn like a castable depl
 
 /* ═══ §3 TWO KINDS AT ONCE ════════════════════════════════════════════ */
 
-test('CR D6.14: a card offering two kinds at once says which two', () => {
+test('CR D6.14: a card offering two kinds at once says which two CT-54', () => {
   const h = deployment();
   spawn(h, SEAT, HOST);                       // a unit of mine for the augment to land on
   const both = give(h, SEAT, TWO_WAYS);
@@ -242,7 +242,7 @@ test('CR D6.14: a card offering two kinds at once says which two', () => {
     'and both verbs are named on the chip');
 });
 
-test('CR D6.14: the offer chip is the pure judgement, not a coincidence of this position', () => {
+test('CR D6.14: the offer chip is the pure judgement, not a coincidence of this position CT-54', () => {
   // the vocabulary as a function: same input, same words, no DOM in sight.
   assert.equal(handOfferBadge(['cast']), null,
     'cast alone is the unmarked case — no chip');
@@ -269,7 +269,7 @@ function glimpse(h: Harness, seat: Seat, name: string): number {
   return pl.cache.length - 1;
 }
 
-test('CR D6.14: a playable cached card is drawn at the right of the hand AND left in the cache row', () => {
+test('CR D6.14: a playable cached card is drawn at the right of the hand AND left in the cache row #103 CT-63', () => {
   const h = deployment();
   const inHand = give(h, SEAT, PLAIN);
   const i = glimpse(h, SEAT, CACHED_NOW);
@@ -301,7 +301,7 @@ test('CR D6.14: a playable cached card is drawn at the right of the hand AND lef
     'the chip is the EXPIRY, because forgetting it is the loss the ticket is about');
 });
 
-test('CR D6.14: clicking the copy beside the hand plays the cached card, exactly as the cache row does', () => {
+test('CR D6.14: clicking the copy beside the hand plays the cached card, exactly as the cache row does #103 CT-63', () => {
   const h = deployment();
   glimpse(h, SEAT, CACHED_NOW);
 
@@ -328,7 +328,7 @@ test('CR D6.14: clicking the copy beside the hand plays the cached card, exactly
 
 /* ═══ §5 PERMITTED BUT NOT NOW — DARK, NOT GONE (report #358) ═══════════ */
 
-test('CR D6.14: a cached card you may play this turn but not this step stays beside the hand, dark (report #358)', () => {
+test('CR D6.14: a cached card you may play this turn but not this step stays beside the hand, dark (report #358) #382 CT-547 CT-557', () => {
   // Owner, #358: "Cached cards that are playable in a turn should probably
   // ALWAYS appear to the right of the hand (even when not playable due to
   // timing restrictions or something), but with the same 'playable/not
@@ -364,7 +364,7 @@ test('CR D6.14: a cached card you may play this turn but not this step stays bes
   assert.match(zone(html, 'cache:0'), new RegExp(CACHED_LATER));
 });
 
-test('CR D6.14: a cached card with no permission this turn stays out of the hand strip', () => {
+test('CR D6.14: a cached card with no permission this turn stays out of the hand strip #103 CT-63 CT-547', () => {
   // the negative control: a glimpse whose turn is over (CR 403.3) is cached
   // and nothing more — it must not be drawn as if it could still be played.
   const h = deployment();

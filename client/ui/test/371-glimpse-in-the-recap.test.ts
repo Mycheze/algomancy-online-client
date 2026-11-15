@@ -76,7 +76,7 @@ function act(room: Room, a: Action, seat: Seat) {
   return playbackFrames({ seat, held: frames[seat]!, tail: events, close, redact: evs => onWire(evs, seat) });
 }
 
-test('CR D5.2: the opponent\'s glimpse notice pops when its recap frame plays, not before', () => {
+test('CR D5.2: the opponent\'s glimpse notice pops when its recap frame plays, not before #192', () => {
   const room = createRoom('R371A', 37101, [...NAMES]);
   act(room, { type: 'donePlanning', seat: 0 }, 0);
   act(room, { type: 'donePlanning', seat: 1 }, 0);

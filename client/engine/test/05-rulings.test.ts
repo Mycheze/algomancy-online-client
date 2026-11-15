@@ -232,7 +232,7 @@ function damageTo(h: Harness, id: number): number[] {
     .map(e => e.data!['n'] as number);
 }
 
-test('CR 608.6d: without Piercing the excess is not lost, it lands on the unit', () => {
+test('CR 608.6d: without Piercing the excess is not lost, it lands on the unit #84', () => {
   // Report #84 (Bena, 2026-08-23): "ALL damage is dealt to units, even if it
   // surpasses its defense. The only exception is Piercing, which deals excess
   // to the controller." The engine used to CAP the hit at lethal and drop the
@@ -255,7 +255,7 @@ test('CR 608.6d: without Piercing the excess is not lost, it lands on the unit',
   // piercing-automatic is asserted in 02-combat ("piercing overflow hit player")
 });
 
-test("CR 802.3b: {Deadly}'s 1 is a pass-along floor, not a cap on what is dealt", () => {
+test("CR 802.3b: {Deadly}'s 1 is a pass-along floor, not a cap on what is dealt #79", () => {
   // Report #79 (EGCW 212): a 2-power {Deadly} column into a 7/3. {Deadly}
   // means one point of the pool SUFFICES to kill, so only 1 has to be paid
   // before the rest may walk on — it never means only 1 is dealt.
@@ -279,7 +279,7 @@ test("CR 802.3b: {Deadly}'s 1 is a pass-along floor, not a cap on what is dealt"
   finishBattle(h);
 });
 
-test('CR 802.16b: {Piercing} is still the exception — excess goes to the controller, not the unit', () => {
+test('CR 802.16b: {Piercing} is still the exception — excess goes to the controller, not the unit #84', () => {
   // The ruling's own carve-out, fenced so the dealt-in-full fix cannot swallow it.
   const h = new Harness(1085);
   toDeployment(h);
@@ -340,7 +340,7 @@ test('CR 109.9d: once-per-turn budgets are per card and survive control change',
  *
  * There is no todo left in this slot. There is no todo left to put here.
  */
-test('CR 802.9: Unaware is printed and carried on Bubb / Trashling / Haboob, and stat layer 6 reads it', () => {
+test('CR 802.9: Unaware is printed and carried on Bubb / Trashling / Haboob, and stat layer 6 reads it CT-5', () => {
   // 1. the printed data. Three cards, one attribute — if a data refresh ever
   //    drops it, this is the first thing that notices.
   for (const name of ['Bubb', 'Trashling', 'Haboob']) {

@@ -53,7 +53,7 @@ function zoomThumb(board: string, slot: string): string {
   return copy.hung();
 }
 
-test("report 364 - zooming the opponent's prophesied card in their cache keeps its countdown", () => {
+test("report 364 - zooming the opponent's prophesied card in their cache keeps its countdown #364 CT-551", () => {
   const h = new Harness(11990);
   toDeployment(h);
   // Debeli's shape: seat 1's counting prophecy, watched from seat 0
@@ -67,7 +67,7 @@ test("report 364 - zooming the opponent's prophesied card in their cache keeps i
   assert.match(hung, /title="Prophecy: 4 Turns Pass\. 1 of 4 turns so far"/, 'with the same full sentence on hover');
 });
 
-test('report 364 - a state-condition prophecy zooms with "waiting", your own cache too', () => {
+test('report 364 - a state-condition prophecy zooms with "waiting", your own cache too CT-551', () => {
   const h = new Harness(11991);
   toDeployment(h);
   withE(h, e => {

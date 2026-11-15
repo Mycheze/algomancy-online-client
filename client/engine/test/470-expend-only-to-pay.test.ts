@@ -44,7 +44,7 @@ import type { Action, GameState, Seat } from '../src/types.ts';
 const expendedOf = (s: GameState): number[] =>
   s.players.map(p => p.resources.filter(r => r.state === 'expended').length);
 
-test('CR 106.5: Keeper of Tithes with six open resources and nothing paid makes no token', () => {
+test('CR 106.5: Keeper of Tithes with six open resources and nothing paid makes no token #209', () => {
   const h = new Harness(4701);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -87,7 +87,7 @@ const PAYING = new Set<Action['type']>([
   'activateAbility', 'castSpellToken', 'decide', 'donePlanning',
 ]);
 
-test('CR 106.5: no action expends a resource except by paying a cost', () => {
+test('CR 106.5: no action expends a resource except by paying a cost #209', () => {
   // count every E.payMana call, per seat, made while one action is applied
   const tally: number[] = [0, 0];
   const real = E.prototype.payMana;
@@ -134,7 +134,7 @@ test('CR 106.5: no action expends a resource except by paying a cost', () => {
   assert.ok((rises['playCard'] ?? 0) > 0, `no playCard paid anything: ${JSON.stringify(rises)}`);
 });
 
-test('CR 106.5: the Action union has no expend, tap, spend or float action', () => {
+test('CR 106.5: the Action union has no expend, tap, spend or float action #209', () => {
   const src = fs.readFileSync(path.join(ENGINE_SRC_DIR, 'types.ts'), 'utf8');
   const start = src.indexOf('export type Action =');
   assert.ok(start >= 0, 'types.ts still declares the Action union');

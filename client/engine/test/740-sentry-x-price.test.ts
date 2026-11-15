@@ -40,7 +40,7 @@ const answer = (h: Harness): void => {
   h.do({ type: 'decide', seat: dec.seat, choice: dec.pickOrder ? dec.options.map((_, i) => i) : 0 });
 };
 
-test('report FXMF #304: Torrential Reclamation at X = 2 under a Stasis Sentry — castable with two allies, two targets, pays [3]', () => {
+test('report FXMF #304: Torrential Reclamation at X = 2 under a Stasis Sentry — castable with two allies, two targets, pays [3] CT-224', () => {
   const h = new Harness(74001);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - h.state.initiative) as Seat;

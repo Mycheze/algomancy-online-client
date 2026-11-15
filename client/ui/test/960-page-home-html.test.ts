@@ -208,7 +208,7 @@ test('960 §3 Draft: rules, clock, elements, Alternate modes, More settings, Cre
   assert.ok(refused.indexOf('pageerr') <refused.indexOf('class="homeactions"'));
 });
 
-test('960 §4 Constructed: Casual and Competitive', () => {
+test('960 §4 Constructed: Casual and Competitive #356 BL-73 CT-546', () => {
   // casual, signed out: the bundled decks, Import… opens a sheet, Single Card Duel is a quiet link
   const out = homeHtml(cons(view()));
   assert.match(out, /data-btn="home-mode"[^>]*aria-pressed="true"[^>]*data-mode="constructed"/);

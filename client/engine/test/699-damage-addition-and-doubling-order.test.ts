@@ -62,7 +62,7 @@ function boulder(seed: number) {
   return { h, A, D, b, c, w };
 }
 
-test('CR 708.6a: Conduit of Pain and Powerful, the default is the addition first and says it gives the higher number', () => {
+test('CR 708.6a: Conduit of Pain and Powerful, the default is the addition first and says it gives the higher number CT-422 CT-425', () => {
   const r = boulder(69901);
   const dec = r.h.state.decision;
   assert.ok(dec, 'the order changes the number: asked');
@@ -80,7 +80,7 @@ test('CR 708.6a: Conduit of Pain and Powerful, the default is the addition first
   assert.deepEqual(r.w.map(id => ent(r.h, id)!.damage), [4, 4], '(1+1)x2 to each unit');
 });
 
-test('CR 708.6a: choosing Powerful first, the damage is doubled and then one is added', () => {
+test('CR 708.6a: choosing Powerful first, the damage is doubled and then one is added CT-425', () => {
   const r = boulder(69902);
   const dec = r.h.state.decision!;
   r.h.do({ type: 'decide', seat: r.A, choice: dec.options.findIndex(o => (o.value as { unit?: number }).unit === r.b) });
@@ -102,7 +102,7 @@ function burn(seed: number, who: { dealer: 'int' | 'nit'; arbiter: 'dealer' | 'o
   return { h, dealer, other, c, a, lost: () => life - h.state.players[other]!.life };
 }
 
-test('CR 708.6a: Conduit of Pain and Arbiter of Vitality of one player, the default doubles the whole loss', () => {
+test('CR 708.6a: Conduit of Pain and Arbiter of Vitality of one player, the default doubles the whole loss CT-430', () => {
   const r = burn(69903, { dealer: 'int', arbiter: 'dealer' });
   const dec = r.h.state.decision;
   assert.ok(dec, 'asked');
@@ -117,7 +117,7 @@ test('CR 708.6a: Conduit of Pain and Arbiter of Vitality of one player, the defa
   assert.equal(r.lost(), 6, '(2+1)x2');
 });
 
-test('CR 708.6a: choosing Arbiter of Vitality first, the doubled loss has the addition added after', () => {
+test('CR 708.6a: choosing Arbiter of Vitality first, the doubled loss has the addition added after CT-430', () => {
   const r = burn(69904, { dealer: 'int', arbiter: 'dealer' });
   const dec = r.h.state.decision!;
   r.h.do({ type: 'decide', seat: r.dealer, choice: dec.options.findIndex(o => (o.value as { unit?: number }).unit === r.a) });
@@ -126,7 +126,7 @@ test('CR 708.6a: choosing Arbiter of Vitality first, the doubled loss has the ad
     'the log says which went first');
 });
 
-test('CR 708.4a: Conduit of Pain and an Arbiter of Vitality of the other player, nothing is asked and the initiative player applies first', () => {
+test('CR 708.4a: Conduit of Pain and an Arbiter of Vitality of the other player, nothing is asked and the initiative player applies first CT-422', () => {
   // the dealer has the initiative: the Conduit first, the whole loss doubled
   const a = burn(69905, { dealer: 'int', arbiter: 'other' });
   assert.equal(a.h.state.decision, null, 'each player had one replacement to order');

@@ -117,15 +117,15 @@ function roomOf(sel: string, ring: number, what: string): void {
   assert.ok(m >= ring, `${sel} clips ${what} ${ring - m}px inside its ring (clip margin ${m}px, ring ${ring}px)`);
 }
 
-test('In Play: a unit flush against the zone keeps its whole ring', () => {
+test('In Play: a unit flush against the zone keeps its whole ring #315', () => {
   roomOf('.lplay .regionmain .zone', CARD.ring, `a unit's ${CARD.from} ring`);
 });
 
-test('the resources: the first card keeps its edge and its wake ring', () => {
+test('the resources: the first card keeps its edge and its wake ring #315', () => {
   roomOf('.linfo .lres', RES.ring, `a resource's ${RES.from} ring`);
 });
 
-test('the hand: the dock\'s scroller is inset by the ring, and no card moves', () => {
+test('the hand: the dock\'s scroller is inset by the ring, and no card moves #315', () => {
   const sel = '#app.board.v2 .handdock:not(.tucked) > .zone';
   const b = bodyOf(sel);
   const pad = (decl(b, 'padding') ?? '').split(/\s+/).map(px);
@@ -179,7 +179,7 @@ function keyframeShadows(name: string): string[] {
   return [...CSS.slice(start, i).matchAll(/box-shadow\s*:\s*([^;}]+)/g)].map(m => m[1]!.trim());
 }
 
-test('In Play: an activatable unit flush against the zone keeps its whole pulsing halo', () => {
+test('In Play: an activatable unit flush against the zone keeps its whole pulsing halo CT-474', () => {
   const b = bodyOf('.card.activatable');
   const anim = decl(b, 'animation') ?? '';
   const name = anim.split(/\s+/).find(t => /^[a-z][\w-]*$/i.test(t) && !/^(ease|linear|infinite|alternate|both|forwards)/.test(t));

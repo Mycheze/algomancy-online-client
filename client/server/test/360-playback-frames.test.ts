@@ -126,7 +126,7 @@ test('§2 the end of turn is a frame per trigger, and the frames cut its events 
 
 /* ── §3 a frame says nothing the freeze did not already hide ─────────── */
 
-test('§3 an opponent frame: their move on their half, their hand still face down, your half as you left it', () => {
+test('§3 an opponent frame: their move on their half, their hand still face down, your half as you left it BL-21', () => {
   const room = createRoom('PB361', 36021, [...NAMES]);
   toDeployment(room);
   const A = room.state.deployPlayer! as Seat, D = other(A);

@@ -64,7 +64,7 @@ function oorblaks(seed: number, n: number, power: number, piercing: boolean) {
   };
 }
 
-test('CR 708.4: two Oorblaks and combat damage to you — one takes all of it, the other takes 0', () => {
+test('CR 708.4: two Oorblaks and combat damage to you — one takes all of it, the other takes 0 CT-290', () => {
   const r = oorblaks(46901, 2, 3, false);
   assert.equal(r.lost, 0, 'none of it reached the player');
   assert.deepEqual(r.damage, [3, 0],
@@ -78,7 +78,7 @@ test('CR 708.4: two Oorblaks and 10 Piercing — 4 destroy the first, the 6 left
     'owner 2026-10-16: "it\'s all combat damage, and that damage is still considered combat damage, so it\'d go to the second one"');
 });
 
-test('CR 708.4: three Oorblaks and 10 Piercing — 4, 4, and the third takes the last 2', () => {
+test('CR 708.4: three Oorblaks and 10 Piercing — 4, 4, and the third takes the last 2 CT-228', () => {
   const r = oorblaks(46903, 3, 10, true);
   assert.deepEqual(r.damage, ['dead', 'dead', 2], 'each Oorblak applied once, to what the ones before it let through');
   assert.equal(r.lost, 0, 'nothing reached the player');

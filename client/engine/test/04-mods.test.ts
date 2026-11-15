@@ -137,7 +137,7 @@ test('grafts can be applied from the bin', () => {
   assert.equal(tokensOf(h, p).length, 4, 'Fireball 1 (base) + three Fireball 1 (Flame Juggle graft)');
 });
 
-test("graft from the bin goes through the CR 405.7 choke point: exactly one 'leftBin', reason 'modded'", () => {
+test("graft from the bin goes through the CR 405.7 choke point: exactly one 'leftBin', reason 'modded' CT-26", () => {
   // zoneTake's bin branch used to splice the bin DIRECTLY, so no 'leftBin'
   // ever fired for a graft applied out of the bin (CARD-TODO #26). Nothing
   // reachable broke — Rotling, the only listener, carries no graft symbol —
@@ -158,7 +158,7 @@ test("graft from the bin goes through the CR 405.7 choke point: exactly one 'lef
     'through E.removeFromBin, with the mod-application reason verb');
 });
 
-test("augment from the bin goes through the CR 405.7 choke point: exactly one 'leftBin', reason 'modded'", () => {
+test("augment from the bin goes through the CR 405.7 choke point: exactly one 'leftBin', reason 'modded' CT-26", () => {
   // the augment sibling of the graft test above — doAugment's deployment
   // branch routes through the same zoneTake, and CR 507.2 allows the bin zone.
   const h = new Harness(922);
@@ -256,7 +256,7 @@ test('composite is ONE stack item in battle: single negation kills all of it (CR
   assert.equal(h.state.players[o]!.life, 30, 'no Tidewraith damage either');
 });
 
-test('mods move with a stolen unit: controller of the unit controls its mods (CR 711.2)', () => {
+test('mods move with a stolen unit: controller of the unit controls its mods (CR 711.2) CT-241', () => {
   const h = new Harness(97);
   toDeployment(h);
   const p = h.state.deployPlayer!, o = 1 - p;

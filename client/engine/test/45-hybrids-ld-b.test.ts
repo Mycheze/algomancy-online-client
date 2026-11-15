@@ -477,7 +477,7 @@ test('Deferral Drone: CR 111.10k — the charge is spent by the next play even w
   assert.equal(mid - open(), 4, 'the one after it pays in full');
 });
 
-test('Deferral Drone: CR 111.10k — an unspent charge does not carry into the next turn', () => {
+test('Deferral Drone: CR 111.10k — an unspent charge does not carry into the next turn CT-187', () => {
   const h = new Harness(4542);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -496,7 +496,7 @@ test('Deferral Drone: CR 111.10k — an unspent charge does not carry into the n
     'the charge did not survive the turn (which is also a phase boundary)');
 });
 
-test('Deferral Drone: ERRATA — the charge expires at a MID-TURN phase boundary, not just the turn', () => {
+test('Deferral Drone: ERRATA — the charge expires at a MID-TURN phase boundary, not just the turn CT-187', () => {
   // THE TEST THAT SEPARATES "this phase" FROM "this turn": one turn, no turn
   // boundary crossed, and the charge still dies.
   //

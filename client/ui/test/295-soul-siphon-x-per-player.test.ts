@@ -62,7 +62,7 @@ const screen = (h: Harness, seat: Seat): string =>
 const optionOf = (h: Harness, seat: Seat): number =>
   h.state.decision!.options.findIndex(o => JSON.stringify(o.value) === JSON.stringify({ player: seat }));
 
-test('§1 each player target carries that player\'s X — on the life total it is picked by', () => {
+test('§1 each player target carries that player\'s X — on the life total it is picked by #159', () => {
   const { h, A, D } = bled(2950);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Soul Siphon') });
   assert.equal(h.state.decision?.kind, 'targets', 'the premise: the target question is open');
@@ -81,7 +81,7 @@ test('§1 each player target carries that player\'s X — on the life total it i
   assert.match(them, /X = 0/, `the attacker's option says 0 — they lost nothing: ${them}`);
 });
 
-test('§2 on the stack only the declared target\'s row is shown', () => {
+test('§2 on the stack only the declared target\'s row is shown #159', () => {
   const { h, A, D } = bled(2951);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Soul Siphon') });
   h.do({ type: 'decide', seat: D, choice: optionOf(h, D) });
@@ -96,7 +96,7 @@ test('§2 on the stack only the declared target\'s row is shown', () => {
   }
 });
 
-test('§3 the control: a mode-narrowed card and a plain option are untouched', () => {
+test('§3 the control: a mode-narrowed card and a plain option are untouched #159', () => {
   // Retribution Thing narrows by MODE (lost / gained), not by a player — its
   // rows carry no seat, and its target is a unit, so nothing here applies
   const { h, A, D } = bled(2952);

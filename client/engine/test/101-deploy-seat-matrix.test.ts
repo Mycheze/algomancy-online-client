@@ -304,7 +304,7 @@ const EXEMPT: Record<string, string> = {
     + 'duplicating the matrix here would count the same coverage twice',
 };
 
-test('deployment seat-matrix census: every deployment-"you" card in printed.json is in the matrix or exempt with a reason', () => {
+test('deployment seat-matrix census: every deployment-"you" card in printed.json is in the matrix or exempt with a reason CT-23', () => {
   const printed = JSON.parse(fs.readFileSync(
     path.join(HERE, '../src/cards/printed.json'), 'utf8')) as
     Record<string, { name: string; text?: string }>;

@@ -49,7 +49,7 @@ const timeless = (g: Record<string, unknown>): Record<string, unknown> => {
   return rest;
 };
 
-test('§1 the record is stashed only when the worker answers, and is the synchronous record\'s row', async () => {
+test('§1 the record is stashed only when the worker answers, and is the synchronous record\'s row CT-533', async () => {
   const room = finished('OFT1', 55000);
   let stashedBeforeLanding: boolean | undefined;
   const pending = H.recordLiveGameOffThread(room, () => {
@@ -70,7 +70,7 @@ test('§1 the record is stashed only when the worker answers, and is the synchro
   assert.ok(row.game.finished);
 });
 
-test('§2 a worker stopped mid-job hands its jobs to the main thread, and they still come back right', async () => {
+test('§2 a worker stopped mid-job hands its jobs to the main thread, and they still come back right CT-533', async () => {
   const rooms = [finished('OFT2', 55001), finished('OFT3', 55002)];
   const recs = rooms.map(r => ({ code: r.code, seed: r.seed, mode: r.mode, els: r.els, names: r.names,
     actions: r.actions, winner: r.winner, playedAt: '2026-11-06T00:00:00.000Z' }));
@@ -104,7 +104,7 @@ function client(port: number): { ws: WebSocket; msgs: Msg[]; next: (pred: (m: Ms
   };
 }
 
-test('§3 over the wire: the server serves another room before the post-game screen lands', async () => {
+test('§3 over the wire: the server serves another room before the post-game screen lands CT-533', async () => {
   // every game goes to the worker, however short
   const server = await spawnServer({ ALGO_RECORD_OFF_THREAD_FROM: '0' });
   try {
@@ -139,7 +139,7 @@ test('§3 over the wire: the server serves another room before the post-game scr
   }
 });
 
-test('§4 a row kept against the room as it was decided is not handed to the room once it has moved on', async () => {
+test('§4 a row kept against the room as it was decided is not handed to the room once it has moved on CT-533', async () => {
   const { keepPostgameRow, postgameRow, postgameStamp } = await import('../postgame-row.ts');
   const room = finished('OFT4', 55003);
   const row = H.recordLiveGame(room).game;

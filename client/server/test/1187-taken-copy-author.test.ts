@@ -53,11 +53,11 @@ const takeOf = (author: string | undefined, url?: string) => {
   return r.deck;
 };
 
-test('§1 a copy of a deck its owner built is by the owner, not "you"', () => {
+test('§1 a copy of a deck its owner built is by the owner, not "you" #355', () => {
   assert.equal(takeOf(undefined).author, 'Publisher1187');
 });
 
-test('§2 a copy of a deck whose author is an id is by the owner, not the id', () => {
+test('§2 a copy of a deck whose author is an id is by the owner, not the id CT-541', () => {
   assert.equal(takeOf('d72d0675-355f-44ca-beee-6f1ebfb5dcc1').author, 'Publisher1187');
   assert.equal(takeOf('5f1b2c3d4e5f60718293a4b5').author, 'Publisher1187');
 });

@@ -49,7 +49,7 @@ function selfAssembly(seed: number, cards: string[]) {
   return { h, A, ids };
 }
 
-test('CR 708.4a: two token replacements, the question is drawn on the board, says what it asks, and a click on Automaton of Abundance answers it', () => {
+test('CR 708.4a: two token replacements, the question is drawn on the board, says what it asks, and a click on Automaton of Abundance answers it #289 CT-422', () => {
   const { h, A, ids: [aoa, cc] } = selfAssembly(70101, ['Automaton of Abundance', 'Cosmic Conspirator']);
   const dec = h.state.decision!;
   assert.equal(dec.seat, A);
@@ -121,7 +121,7 @@ registerSynthetic({
   },
 });
 
-test('CR 708.7: the default is the bar primary button, first, naming its result, and the board takes the other orders', () => {
+test('CR 708.7: the default is the bar primary button, first, naming its result, and the board takes the other orders CT-422', () => {
   const h = new Harness(70104);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;

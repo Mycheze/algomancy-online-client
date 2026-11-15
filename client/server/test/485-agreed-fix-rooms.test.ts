@@ -138,7 +138,7 @@ function threeInPlanning(code: string): Room {
   return room;
 }
 
-test('§2 the per-seat undo cannot walk back past an agreed fix', () => {
+test('§2 the per-seat undo cannot walk back past an agreed fix BL-46', () => {
   // the control: with no fix, seat 0's two undos walk back to its recycle
   const control = threeInPlanning('FX2A');
   assert.deepEqual(R.undoForSeat(control, 0), { ok: true });
@@ -193,7 +193,7 @@ test('§3 a rewind cuts the log and every claim about the cut actions', () => {
 
 /* ── §4 ─────────────────────────────────────────────────────────────── */
 
-test('§4 rewind options: never a cut at a forced step, at most five actions, and the start of the step, and of the step before', () => {
+test('§4 rewind options: never a cut at a forced step, at most five actions, and the start of the step, and of the step before CT-340', () => {
   const room = game('FX4', 48530);
   const forcedAt = (r: Room): boolean[] => r.actions.map((a, i) => {
     const s = replay(48530, r.actions.slice(0, i), [...NAMES], 'shared').state;
@@ -300,7 +300,7 @@ test('§5 edits and rewinds both work in a hidden step; some rooms take no fixes
 
 /* ── §6 ─────────────────────────────────────────────────────────────── */
 
-test('§6 a fixed game survives a restart and replays FAITHFUL, sigs and all', async () => {
+test('§6 a fixed game survives a restart and replays FAITHFUL, sigs and all BL-46', async () => {
   const room = game('FX6', 48550);
   live(room);
   const P = room.state.priority as Seat;

@@ -22,7 +22,7 @@ const ui = await client();
 const optIdx = (dec: Decision, key: string): number =>
   dec.options.findIndex(o => !!o.value && typeof o.value === 'object' && key in (o.value as object));
 
-test('CR 111.6b / report 273: with 3 of 30 life chosen, the pay-X-life dial still tops out at X = 29', () => {
+test('CR 111.6b / report 273: with 3 of 30 life chosen, the pay-X-life dial still tops out at X = 29 #273', () => {
   const h = new Harness(59100);
   toDeployment(h);
   giveResources(h, 0, 'light', 8);

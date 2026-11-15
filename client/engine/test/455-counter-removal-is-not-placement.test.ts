@@ -59,7 +59,7 @@ function burnBoard(seed: number, mine: string[], victimSide: 'enemy' | 'ally', k
   return { h, A, D, victim, evs, hand0 };
 }
 
-test('Burn the Blight removing an enemy +1/+1 counters is not a counter you put: Blightshell draws nothing', () => {
+test('Burn the Blight removing an enemy +1/+1 counters is not a counter you put: Blightshell draws nothing #216 CT-286', () => {
   const { h, A, victim, evs, hand0 } = burnBoard(45501, ['Wandering Blightshell'], 'enemy', 2);
   assert.equal(ent(h, victim)!.counters, 0, 'all counters removed');
   assert.equal(handOf(h, A), hand0, 'a removal is not a placement');
@@ -76,12 +76,12 @@ test('Burn the Blight removing +1/+1 counters from your own ally: Scrapyard Cust
   assert.equal(handOf(h, A), hand0, 'Custodian hears only counters PUT on an ally');
 });
 
-test('Flux Resonator does not enlarge a removal: Burn the Blight on a +2 unit leaves it at 0', () => {
+test('Flux Resonator does not enlarge a removal: Burn the Blight on a +2 unit leaves it at 0 CT-286', () => {
   const { h, victim } = burnBoard(45503, ['Flux Resonator'], 'enemy', 2);
   assert.equal(ent(h, victim)!.counters, 0, 'a scaled removal would leave -1');
 });
 
-test('CR 708.8 example: Proliferating Slime does not change how many counters Burn the Blight removes', () => {
+test('CR 708.8 example: Proliferating Slime does not change how many counters Burn the Blight removes CT-286', () => {
   const { h, victim } = burnBoard(45504, ['Proliferating Slime'], 'enemy', 2);
   assert.equal(ent(h, victim)!.counters, 0, 'a scaled removal would leave -1');
 });
@@ -143,7 +143,7 @@ test('E.removeCounters clamps at zero and never crosses it', () => {
  * the last assertion pins. A card whose source has already left play
  * (Powerforge Synergist: "When I despawn, … move my counters") has nothing to
  * remove and is the one declared exemption. */
-test('CR 708.8 class guard: every printed counter removal or move goes through removeCounters', () => {
+test('CR 708.8 class guard: every printed counter removal or move goes through removeCounters CT-286', () => {
   const printed = JSON.parse(fs.readFileSync(path.join(ENGINE_SRC_DIR, 'cards', 'printed.json'), 'utf8')) as
     Record<string, { text?: string }>;
   const REMOVE = /\b(remove|move)s?\b[^.]*\bcounters?\b/i;

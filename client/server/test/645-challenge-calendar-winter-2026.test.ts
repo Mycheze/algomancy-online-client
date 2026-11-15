@@ -56,7 +56,7 @@ function walk(id: string): { def: ChallengeDef; steps: { before: GameState; a: A
   return { def, steps };
 }
 
-test('§1 The Parade is parked, and the nine new weeks run from Sun 15 Nov with the grafts on 20 Dec and the double KO on 10 Jan', () => {
+test('§1 The Parade is parked, and the nine new weeks run from Sun 15 Nov with the grafts on 20 Dec and the double KO on 10 Jan BL-49', () => {
   assert.equal(challengeById('2026-11-22-parade'), null, 'off the calendar');
   assert.ok(existsSync(join(REFERENCE_RUNS_DIR, 'parked', '2026-11-22-parade.json')), 'its run kept for later');
   assert.ok(!existsSync(join(REFERENCE_RUNS_DIR, '2026-11-22-parade.json')), 'and not where the gate replays');
@@ -77,7 +77,7 @@ test('§1 The Parade is parked, and the nine new weeks run from Sun 15 Nov with 
   for (const c of rows) assert.ok(!/one game|course of/i.test(c.blurb), `${c.id}: the challenge is the game`);
 });
 
-test('§2 each reference run does what its goal says', () => {
+test('§2 each reference run does what its goal says BL-49', () => {
   // the full ladder
   const grafts = walk('2026-12-20-grafts');
   assert.deepEqual(grafts.steps.at(-1)!.acc.graftSizes, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);

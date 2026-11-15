@@ -81,7 +81,7 @@ const leaks = (rows: readonly GlossEntry[]): string[] =>
     .filter(f => R_NUMBER.test(f.value))
     .map(f => `{${e.term}}.${f.field}: ${R_NUMBER.exec(f.value)![0]} in "${f.value}"`));
 
-test('CR D6.11: no string a renderer can reach off a glossary row carries an R-number', () => {
+test('CR D6.11: no string a renderer can reach off a glossary row carries an R-number #118 CT-111', () => {
   assert.deepEqual(leaks(GLOSSARY), [],
     'an R-number means nothing outside this repository (report #118). Citations belong in '
     + '`ruling`, which no renderer prints and 177 still resolves.');
@@ -152,7 +152,7 @@ const glossaryConsumers = (): { file: string; src: string }[] =>
  * the field was `ruling` until the 2026-10 migration renamed it `cites`) */
 const RENDERS_CITATIONS = /\.(?:ruling|cites)\b|[{,]\s*(?:ruling|cites)\s*[,}]/;
 
-test('CR D6.11: no module that imports the glossary touches its citation field', () => {
+test('CR D6.11: no module that imports the glossary touches its citation field #118 CT-111', () => {
   const consumers = glossaryConsumers();
   assert.ok(consumers.length >= 3,
     `only found ${consumers.length} ui modules importing the glossary — the directory scan is `
@@ -195,7 +195,7 @@ test('POSITIVE CONTROL: the citation-render scan fires on the line that shipped'
  * red on the report without anybody having worked out WHY the number was
  * getting through. */
 
-test('CR D6.11: rendering every card in the pool leaks no R-number', () => {
+test('CR D6.11: rendering every card in the pool leaks no R-number #118 CT-111 CT-129 CT-130', () => {
   const rows = allRows();
   assert.ok(rows.length > 450, `only ${rows.length} rows — the index is not loading`);
   let withGlossary = 0;
@@ -337,7 +337,7 @@ test('CR D6.11: an attribute never has two different printed reminders to choose
     + 'deliberately — do not let printed.json key order pick it.');
 });
 
-test('CR D6.11: a row no channel reminds a player about keeps its full authored rule', () => {
+test('CR D6.11: a row no channel reminds a player about keeps its full authored rule CT-111', () => {
   // the failure this whole design is guarding against: shortening a row to a
   // reminder that does not exist would leave a player with nothing, and the Reaping
   // ruling was decided by reading one of these.

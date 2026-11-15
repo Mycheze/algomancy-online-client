@@ -392,7 +392,7 @@ test('[CR D7.4] the card pool announces the same class and the tier carries that
     'the only pool member the tier drops must be one the board already pulses');
 });
 
-test('[CR D7.4] the whole tier, as one number, over engine and pool together', () => {
+test('[CR D7.4] the whole tier, as one number, over engine and pool together CT-142', () => {
   const all = [...costlyClass(structuralSites()), ...costlyClass(cardSites())];
   const toasted = all.filter(s => costToast(eventOf(s)));
   // 22 → 23 with the Deferral Drone errata; see the tier-1 population above.
@@ -477,7 +477,7 @@ test('[CR D7.4] a repeat of a notice on the line counts up and becomes the newes
   assert.equal(again[1]!.n, 2, 'with two on it');
 });
 
-test('[CR D7.4] the line draws the newest and counts the rest, never dropping them in silence', () => {
+test('[CR D7.4] the line draws the newest and counts the rest, never dropping them in silence CT-142', () => {
   const evs: EngineEvent[] = Array.from({ length: 4 }, (_, i) => ({
     type: 'info' as EventType, msg: `Ann: the [${i} Fire] cost cannot be paid — that effect is skipped.`, data: {},
   }));
@@ -548,7 +548,7 @@ function show(state: GameState, events?: EngineEvent[]): string {
   return ui.key('s');
 }
 
-test('[CR D7.4] the client puts a costly absence on the screen and not only in the log', () => {
+test('[CR D7.4] the client puts a costly absence on the screen and not only in the log CT-142', () => {
   const h = new Harness(2562);
   toDeployment(h);
   ui.join(h.state, 0);
@@ -593,7 +593,7 @@ test('[CR D7.4] the notice line has a stylesheet of its own, and the corner stri
     'a notice alone still shows the bar it lives in');
 });
 
-test('[CR D7.4] the log still carries every one of them', () => {
+test('[CR D7.4] the log still carries every one of them CT-142', () => {
   // CR D7.4 is about the log not being the ONLY surface. Nothing in this round
   // may take a line OUT of it, so the tier is asserted to be additive: every
   // toasted announcement still has a message, which is what puts it in the log.

@@ -87,7 +87,7 @@ const RULINGS_ONLY = new Set([
   'Debt', 'Cache', 'Prophecy', 'Trash', 'Graft', 'Once', 'Prismite',
 ]);
 
-test('POSITIVE CONTROL: the three channels and the register all loaded', () => {
+test('POSITIVE CONTROL: the three channels and the register all loaded CT-171', () => {
   assert.ok(AUTHORED_GLOSSARY.length > 30, `only ${AUTHORED_GLOSSARY.length} rows`);
   assert.ok(PRINTED_REMINDERS.size > 10, `printed scrape found ${PRINTED_REMINDERS.size} terms`);
   assert.ok(MANUAL_REMINDERS.size > 0 && LIBRARY_REMINDERS.size > 0,
@@ -97,7 +97,7 @@ test('POSITIVE CONTROL: the three channels and the register all loaded', () => {
   assert.ok([...secs.values()].some(t => /\bProphecy\b/.test(t)), 'positive control: the rules are readable and name keywords');
 });
 
-test('every row declares what it rests on, and the rulings-only set is the pinned one', () => {
+test('every row declares what it rests on, and the rulings-only set is the pinned one CT-171', () => {
   const found = new Set<string>();
   const tally: Record<Basis, number> = { printed: 0, document: 0, 'rulings-only': 0 };
   for (const r of AUTHORED_GLOSSARY) {
@@ -116,7 +116,7 @@ test('every row declares what it rests on, and the rulings-only set is the pinne
     + 'auditing against the rules it cites before the list is edited — see CT-171.');
 });
 
-test('every ruling a rulings-only row cites NAMES that row term', () => {
+test('every ruling a rulings-only row cites NAMES that row term CT-171', () => {
   const secs = sections();
   const problems: string[] = [];
   let checked = 0;

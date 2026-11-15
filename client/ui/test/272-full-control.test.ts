@@ -229,7 +229,7 @@ test('BL-18 §3 full control offers no standing pass and no auto-yield', () => {
     'full control offers an auto-yield it would not honour');
 });
 
-test('BL-18 §3 the chip is on screen and says whether it is held right now', () => {
+test('BL-18 §3 the chip is on screen and says whether it is held right now CT-183', () => {
   const { s, seat } = passOnlyWindow(27208);
   prefs({ full: false });
   const off = ui.join(viewFor(s, seat), seat, legalActions(s, seat));
@@ -257,7 +257,7 @@ test('BL-18 §3 the chip is on screen and says whether it is held right now', ()
   hold(false);
 });
 
-test('BL-18 §3 the switch reaches the SERVER, on the join and on every change', () => {
+test('BL-18 §3 the switch reaches the SERVER, on the join and on every change CT-183', () => {
   // The fourth row is drained on the server, so the server has to be told.
   // This is the client end of that wire; server/e2e/test-full-control.ts is the
   // other end. Without this the two halves could drift apart with both suites

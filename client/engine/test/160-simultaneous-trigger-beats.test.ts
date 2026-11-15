@@ -235,7 +235,7 @@ function show(s: Sweep, now: number): void {
 
 /* ── the report ─────────────────────────────────────────────────────── */
 
-test('CR D6.7 THE REPORT: a trigger sweep puts every trigger on the strip in ONE frame', () => {
+test('CR D6.7 THE REPORT: a trigger sweep puts every trigger on the strip in ONE frame #105 CT-72', () => {
   const now = (base += 100_000);
   const s = hasteSweep(6181, 3);
   assert.equal(s.triggers.length, 3, 'three triggers to be simultaneous about');
@@ -257,7 +257,7 @@ test('CR D6.7 THE REPORT: a trigger sweep puts every trigger on the strip in ONE
     + 'on the screen');
 });
 
-test('CR D6.7 a beat explains and never gates: the board under it is already final', () => {
+test('CR D6.7 a beat explains and never gates: the board under it is already final CT-72', () => {
   const now = (base += 100_000);
   const s = hasteSweep(6182, 3);
   const hand = s.h.state.players[s.seat]!.hand.length;
@@ -282,7 +282,7 @@ test('CR D6.7 a beat explains and never gates: the board under it is already fin
 
 /* ── the other direction (#53) ──────────────────────────────────────── */
 
-test('CR D6.7 a play and the triggers it caused are TWO beats, and the second is three cards at once', () => {
+test('CR D6.7 a play and the triggers it caused are TWO beats, and the second is three cards at once #105 CT-72', () => {
   const now = (base += 100_000);
   const s = hasteSweep(6183, 3);
   show(s, now);
@@ -299,7 +299,7 @@ test('CR D6.7 a play and the triggers it caused are TWO beats, and the second is
   assert.deepEqual(onStrip(s.triggers), s.triggers, 'all three of it, in the same frame');
 });
 
-test('CR D6.7 a second batch queues behind the first — two updates are never one beat', () => {
+test('CR D6.7 a second batch queues behind the first — two updates are never one beat #105 CT-72', () => {
   const now = (base += 100_000);
   const one = hasteSweep(6184, 3);
   const two = hasteSweep(6185, 3);
@@ -324,7 +324,7 @@ test('CR D6.7 a second batch queues behind the first — two updates are never o
 
 /* ── the classifier, on real events ─────────────────────────────────── */
 
-test('CR D6.7 flashBatches cuts a real batch where the RULES cut it', () => {
+test('CR D6.7 flashBatches cuts a real batch where the RULES cut it #105 CT-72', () => {
   const three = hasteSweep(6187, 3).events;
   assert.deepEqual(flashBatches(three).map(g => g.length), [1, 3],
     'the play is one generation and the three triggers it caused are the next — and the '
@@ -340,7 +340,7 @@ test('CR D6.7 flashBatches cuts a real batch where the RULES cut it', () => {
     + 'rather than any fixed shape of the batch');
 });
 
-test('CR D6.7 positive evidence only: flashes with no queue marker keep a beat each', () => {
+test('CR D6.7 positive evidence only: flashes with no queue marker keep a beat each CT-72', () => {
   const { events } = hasteSweep(6190, 3);
   const bare = events.filter(e => e.type === 'stackFlash');
   assert.equal(events.filter(e => e.type === 'triggered').length, 3, 'three markers…');

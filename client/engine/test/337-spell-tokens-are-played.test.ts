@@ -73,7 +73,7 @@ function playGodray(t: Table): void {
 
 // ── TAXED ─────────────────────────────────────────────────────────────────
 
-test('CR 702.7a: The Silent taxes a Crystal [2] after one prior spell this battle, and the mana is spent', () => {
+test('CR 702.7a: The Silent taxes a Crystal [2] after one prior spell this battle, and the mana is spent #174', () => {
   // The UYRX report, on a clean board: one spell played this battle, then a
   // Crystal 4. The Silent prints "Spells cost each player [two] more to play
   // for each spell their team has previously played in this battle".
@@ -94,7 +94,7 @@ test('CR 702.7a: The Silent taxes a Crystal [2] after one prior spell this battl
   finishBattle(h);
 });
 
-test('CR 702.7a: a Crystal cast counts as a played spell, so it raises the tax on the next spell', () => {
+test('CR 702.7a: a Crystal cast counts as a played spell, so it raises the tax on the next spell #174', () => {
   let tok = 0;
   const t = battle(33702, (h, A) => {
     spawn(h, A, 'The Silent');
@@ -114,7 +114,7 @@ test('CR 702.7a: a Crystal cast counts as a played spell, so it raises the tax o
   finishBattle(h);
 });
 
-test('CR 702.7a: an unaffordable token cast is not offered, and is refused if forced', () => {
+test('CR 702.7a: an unaffordable token cast is not offered, and is refused if forced #174', () => {
   let tok = 0;
   const t = battle(33703, (h, A) => {
     spawn(h, A, 'The Silent');

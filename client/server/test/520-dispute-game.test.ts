@@ -61,7 +61,7 @@ function finished(code: string, seed: number, loser: Seat = 0, users = true): im
   return room;
 }
 
-test('§1 a dispute files a report row and marks the room; the result stands', async () => {
+test('§1 a dispute files a report row and marks the room; the result stands #231 BL-48', async () => {
   const room = finished('DSP1', 52000);
   const before = issues().length;
   const r = await fileDispute(room, 0, '  I won because a trigger fired twice  ');
@@ -87,7 +87,7 @@ test('§1 a dispute files a report row and marks the room; the result stands', a
   assert.equal(file.winner, 1, 'and the saved result is the same');
 });
 
-test('§2 refused: no seat, an unfinished game, a second dispute, no note, a scenario or test-mode room', async () => {
+test('§2 refused: no seat, an unfinished game, a second dispute, no note, a scenario or test-mode room BL-48', async () => {
   const before = issues().length;
   const room = finished('DSP2', 52001);
   const no = async (r: import('../rooms.ts').Room, seat: Seat | null, note: string, why: RegExp, label: string) => {
@@ -149,7 +149,7 @@ test('§4 the match history and the admin games list show the tag; nothing else 
   assert.equal(A.accountByName('Bo520')!.profile.wins, winsBefore, 'and so do the stats');
 });
 
-test('§5 a league match: the organizer sees the dispute, a player does not, a friendly flags nothing', async () => {
+test('§5 a league match: the organizer sees the dispute, a player does not, a friendly flags nothing BL-48', async () => {
   const OPEN = Date.parse('2026-10-04T09:00:00Z'), WEEK1 = Date.parse('2026-10-11T07:00:00Z'), HOUR = 3_600_000;
   assert.ok(L.createSeason({ id: 'dp520', name: 'Test dp', signupOpens: new Date(OPEN).toISOString(), start: new Date(WEEK1).toISOString(), weeks: 3, perWeek: 2, auto: false, hidden: false }, OPEN - HOUR).ok);
   const s = L.seasonById('dp520')!;

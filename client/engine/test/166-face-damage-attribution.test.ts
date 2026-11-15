@@ -178,7 +178,7 @@ const fired = (h: Harness, card: string): boolean =>
 
 /* ── the seam itself ────────────────────────────────────────────────────── */
 
-test("CR 608.9a — a combat 'lifeLost' names the columns that dealt it, and only the units that dealt damage", () => {
+test("CR 608.9a — a combat 'lifeLost' names the columns that dealt it, and only the units that dealt damage CT-50", () => {
   const h = new Harness(6600);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;

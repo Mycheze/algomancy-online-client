@@ -61,7 +61,7 @@ const pickMenu = (unit: number, n: number, counterMax?: number): CounterDecision
   ...(counterMax === undefined ? {} : { counterMax }),
 });
 
-test('the stepper clamps at 1 and at the max the engine gave it', () => {
+test('the stepper clamps at 1 and at the max the engine gave it BL-25', () => {
   const dec = pickMenu(7, 6, 6);
   assert.equal(counterStepper(dec, 1).count, 1, 'one is the floor');
   assert.equal(counterStepper(dec, 0).count, 1, 'zero counters removed is not a pick');
@@ -84,7 +84,7 @@ test('the max is the engine\'s counterMax, not the UI\'s own count of the menu',
   assert.equal(counterStepperCount(dec, 1, 'all').count, 2);
 });
 
-test('"All" sets the count to the max and does NOT submit', () => {
+test('"All" sets the count to the max and does NOT submit BL-25', () => {
   const dec = pickMenu(7, 9, 9);
   const all = counterStepperCount(dec, 1, 'all');
   assert.equal(all.count, 9, 'jumps straight to the max');
@@ -173,7 +173,7 @@ test('clampCounterCount is total — every out-of-range input lands in range', (
 /** the pending decision, as the client sees it */
 const dec = (h: Harness): Decision => h.state.decision!;
 
-test('CR D7.2: the Discharge cost prompt tells you to click a unit', () => {
+test('CR D7.2: the Discharge cost prompt tells you to click a unit BL-25', () => {
   const h = new Harness(13901);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -191,7 +191,7 @@ test('CR D7.2: the Discharge cost prompt tells you to click a unit', () => {
     'and the cost is still named — the instruction is added, not swapped in');
 });
 
-test('CR D7.2: the stepper max is counterPool(), asked of the engine', () => {
+test('CR D7.2: the stepper max is counterPool(), asked of the engine BL-25', () => {
   const h = new Harness(13902);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -215,7 +215,7 @@ test('CR D7.2: the stepper max is counterPool(), asked of the engine', () => {
   assert.deepEqual(counterPickUnits(dec(h)), [ally], 'still one scan for the one ally');
 });
 
-test('CR D7.2: one click pays several counters, and X is what was taken', () => {
+test('CR D7.2: one click pays several counters, and X is what was taken BL-25', () => {
   const h = new Harness(13903);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -319,7 +319,7 @@ test('CR D7.2: an activated ability\'s counter cost gets the same prompt and max
 
 /* ── the EFFECT path (Chombot — "move up to two counters") ─────────────── */
 
-test('CR D7.2: an effect that removes counters carries its own ceiling', () => {
+test('CR D7.2: an effect that removes counters carries its own ceiling BL-25', () => {
   const h = new Harness(13907);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;

@@ -39,7 +39,7 @@ test('§1 in the frame, ttpage last', () => {
   assert.match(builderLoadingHtml(V.chrome), /apppage ttpage"[\s\S]*Setting out the table/);
 });
 
-test('§2 the toolbar', () => {
+test('§2 the toolbar BL-65', () => {
   const html = builderHtml(V);
   const top = html.slice(0, html.indexOf('<main'));
   assert.match(top, /data-btn="deck-settings"[^>]*><span class="tttitlename">Ember &lt;Rush&gt;<\/span><svg/, 'the name opens Deck info, escaped');

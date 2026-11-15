@@ -265,7 +265,7 @@ test('cr:concepts.starting.constructed.first-draw — the only draws of a new co
   assert.deepEqual(c.state.bottomDone, [false, false]);
 });
 
-test('cr:concepts.starting.constructed.initiative — a constructed game\'s first initiative is a seeded coin flip, as in a live draft: either seat can get it, and the same seed gives the same seat', () => {
+test('cr:concepts.starting.constructed.initiative — a constructed game\'s first initiative is a seeded coin flip, as in a live draft: either seat can get it, and the same seed gives the same seat CT-504', () => {
   // CT-504: the Manual's setup spread (p.10-11) is written for every format —
   // "In constructed formats, there will be no shared deck …" — and its player
   // preparation says "Randomly assign a player The Initiative." Competitive

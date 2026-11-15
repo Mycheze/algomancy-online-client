@@ -45,7 +45,7 @@ test('an unresolvable target is left as literal text, not a link', () => {
   assert.match(out, /\[this\]\(Not A Real Card At All\)/);
 });
 
-test('[[Card Name]] is a link to the card, and the double brackets are consumed', () => {
+test('[[Card Name]] is a link to the card, and the double brackets are consumed CT-522', () => {
   // CT-522: the common wiki/forum convention showed its brackets around a
   // bare-linked name, "[[<a>Name</a>]]"
   const out = linkify(`open on [[${CARD}]], then pass`);
@@ -215,7 +215,7 @@ test('descSummary keeps the card name when the link text is empty', () => {
   assert.match(descSummary(`play [](${CARD}) early`), new RegExp(CARD.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 });
 
-test('descSummary reads [[Card Name]] as the name, without its brackets', () => {
+test('descSummary reads [[Card Name]] as the name, without its brackets CT-522', () => {
   assert.equal(descSummary(`play [[${CARD}]] early`), `play ${CARD} early`);
 });
 

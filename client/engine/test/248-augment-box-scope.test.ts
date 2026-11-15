@@ -128,7 +128,7 @@ test('§0 POSITIVE CONTROL: the partition and the channel scan both see a real p
  * 1-2. THE GUARD
  * ════════════════════════════════════════════════════════════════════════ */
 
-test('§1 GUARD: a continuous clause printed inside the [Augment] box is declared in augmentBox', () => {
+test('§1 GUARD: a continuous clause printed inside the [Augment] box is declared in augmentBox #139 CT-152', () => {
   const wrong = BOX_ONLY.filter(n => bodyChannels(n).length > 0);
   assert.deepEqual(wrong, [],
     'these cards print NOTHING outside their [Augment] box, yet declare a continuous channel '
@@ -186,7 +186,7 @@ function boardWith(name: string, as: 'unit' | 'mod'): Harness {
   return h;
 }
 
-test('§3 GUARD: a card that prints both halves radiates its body clause from play, never from a mod', () => {
+test('§3 GUARD: a card that prints both halves radiates its body clause from play, never from a mod #139 CT-152', () => {
   // the derived population: cards printing BOTH a body and a box, whose BODY
   // declares a continuous channel. That is the whole set in which CR 721.1 can be
   // observed at all, and it is computed, never typed.
@@ -239,7 +239,7 @@ test('§4 PIN: a text-box [Augment] static still transfers to the host it is app
     'the mod-carried box static stopped radiating: host 1/1 plus +2/+2 for its two other allies');
 });
 
-test('§5 PIN: a card played normally still reads its own [Augment] box', () => {
+test('§5 PIN: a card played normally still reads its own [Augment] box #139 CT-152', () => {
   // The Manual Q&A the whole ruling hangs off: CR 721.1 is NOT symmetric. The box
   // is live in both modes; only the BODY is mod-silent.
   const h = new Harness(2682);

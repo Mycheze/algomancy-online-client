@@ -48,7 +48,7 @@ function rules(css: string): Array<[string, string]> {
 const pe = (body: string): string | null => /pointer-events:\s*([a-z-]+)/.exec(body)?.[1] ?? null;
 const LIFT = '.homeside > :not(.homeart):not(.homesideopen)';
 
-test("the lifted title and body of a home side card let a click through to the card's own button", () => {
+test("the lifted title and body of a home side card let a click through to the card's own button #352 CT-543", () => {
   const all = rules(readStyles());
   const lift = all.filter(([sel]) => sel.split(',').map(s => s.trim()).includes(LIFT));
   assert.ok(lift.length, 'the rule that lifts the words over the painting is still there');
@@ -66,7 +66,7 @@ test("the lifted title and body of a home side card let a click through to the c
   }
 });
 
-test('a Join button inside the Matchmaking card still takes its own click', () => {
+test('a Join button inside the Matchmaking card still takes its own click CT-543', () => {
   const html = queueGlanceHtml({ counts: null, openGames: [
     { id: 'g1', username: 'Gember', mode: 'draft', ranked: false, rating: 0, waitedMs: 30_000 } as never,
   ] });

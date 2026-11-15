@@ -58,7 +58,7 @@ const px = (v: string): number => {
 /** the bottom of a `padding:` shorthand (1–4 values) */
 const padBottom = (vals: string[]): number => px(vals[vals.length === 1 ? 0 : 2] ?? vals[0] ?? "");
 
-test("the home page's League card is never squeezed below its words, so the standings are not clipped", () => {
+test("the home page's League card is never squeezed below its words, so the standings are not clipped #353 CT-544", () => {
   const all = rules(readStyles());
   for (const card of ['.homeside--league', '.homeside--challenge']) {
     // the last min-height any rule gives this card, or the card in general
@@ -73,7 +73,7 @@ test("the home page's League card is never squeezed below its words, so the stan
   }
 });
 
-test("the League card's glass keeps room under its last line", () => {
+test("the League card's glass keeps room under its last line CT-544", () => {
   const all = rules(readStyles());
   let bottom = NaN;
   for (const [sel, body] of all) {

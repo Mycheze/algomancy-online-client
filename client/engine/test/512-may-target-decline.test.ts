@@ -75,7 +75,7 @@ const CLASS = ALL.filter(r => r.route === 'triggered' && r.may.length);
 
 /* ══ §1 ═══════════════════════════════════════════════════════════════ */
 
-test('CT-309 the may-target class is derived from printed text and every member declines at the target step', () => {
+test('CT-309 the may-target class is derived from printed text and every member declines at the target step #232', () => {
   for (const must of ['Shoreline Specter', 'Mindspore Fiend', 'Apex Prime', 'Chombot', 'Hooba-Mon', 'Blightwalker']) {
     assert.ok(CLASS.some(r => r.card === must), `${must} is found by the derivation`);
   }
@@ -167,7 +167,7 @@ function specterBoard(seed: number) {
   return { h, A, D, wh, dec, life: h.state.players[D]!.life };
 }
 
-test('CT-309 Shoreline Specter declined at the target step: no recall and no life loss', () => {
+test('CT-309 Shoreline Specter declined at the target step: no recall and no life loss #232', () => {
   const { h, D, wh, dec, life } = specterBoard(51290);
   const stop = dec.options.findIndex(o => isDone(o.value));
   assert.ok(stop >= 0, 'the decline is on the target menu');
@@ -182,7 +182,7 @@ test('CT-309 Shoreline Specter declined at the target step: no recall and no lif
   finishBattle(h);
 });
 
-test('CT-309 Shoreline Specter given a target recalls it and drains with no further prompt', () => {
+test('CT-309 Shoreline Specter given a target recalls it and drains with no further prompt #232', () => {
   const { h, A, D, wh, life } = specterBoard(51291);
   pick(h, { unit: wh });
   for (let n = 0; n < 6 && h.state.stack.length; n++) {

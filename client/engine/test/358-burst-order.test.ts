@@ -41,7 +41,7 @@ function burstInBattle(seed: number): { h: Harness; A: Seat; D: Seat; atk: numbe
 const fireballs = (h: Harness, D: Seat) => tokensOf(h, D).filter(t => t.card === 'Fireball');
 const byX = (h: Harness, D: Seat, x: number) => fireballs(h, D).find(t => t.x === x)!.id;
 
-test('CR 803.5d: the caster picks each Fireball in RESOLVE order and aims it — the first pick ends on top', () => {
+test('CR 803.5d: the caster picks each Fireball in RESOLVE order and aims it — the first pick ends on top #183', () => {
   const { h, A, D } = burstInBattle(35800);
   h.do({ type: 'castSpellToken', seat: D, entityId: byX(h, D, 1), ordered: true });
   assert.equal(h.state.suspension?.type, 'burstPick', 'the first question is which resolves first');
@@ -111,7 +111,7 @@ test('an ordered burst is deterministic — the same actions from the same state
  * last one is asked for like every other. `ordered` alone keeps the 2026-10-01
  * flow above, which is what every ordered action logged before it replays as. */
 
-test('CR 803.5d / #322: with firstPick the clicked Fireball is #1 — it is aimed at once, nobody asks which resolves first', () => {
+test('CR 803.5d / #322: with firstPick the clicked Fireball is #1 — it is aimed at once, nobody asks which resolves first CT-528', () => {
   const { h, A, D } = burstInBattle(35805);
   h.do({ type: 'castSpellToken', seat: D, entityId: byX(h, D, 1), ordered: true, firstPick: true });
   assert.equal(h.state.suspension?.type, 'cast', 'no "which resolves first" — the clicked one is being aimed');

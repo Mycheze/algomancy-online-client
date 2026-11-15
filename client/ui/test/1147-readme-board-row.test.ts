@@ -18,7 +18,7 @@ import { CLIENT_DOCS_DIR, CLIENT_README } from '../../engine/scripts/paths.mjs';
 
 const SPEC = '18-board-layout-v2.md';
 
-test('client/README.md: the regions board row names no toggle or classic board while the spec says it is the only board', () => {
+test('client/README.md: the regions board row names no toggle or classic board while the spec says it is the only board CT-431', () => {
   const spec = readFileSync(join(CLIENT_DOCS_DIR, SPEC), 'utf8');
   const status = (spec.split('\n## ')[0] ?? '').replace(/\s+/g, ' ');
   assert.match(status, /the only board/, `${SPEC}'s status block no longer says the regions board is the only board — re-read it and update this test`);

@@ -70,7 +70,7 @@ function game(code: string, seed: number): Room {
   return room;
 }
 
-test('1243 §1 a ticked take-back needs no reason; an unticked fix still does', () => {
+test('1243 §1 a ticked take-back needs no reason; an unticked fix still does BL-76', () => {
   const room = game('TB1', 124300);
   const P = room.state.priority as Seat;
   const draw = { kind: 'drawCards', target: P, n: 1 };
@@ -112,7 +112,7 @@ test('1243 §3 a take-back rewind keeps the mark in the game record', () => {
 const fix = (over: Partial<FiledFix> = {}): FiledFix =>
   ({ kind: 'rewind', what: 'back to before Ann played Good Whale', reason: '', seat: 0, by: 1, takeBack: true, ...over });
 
-test('1243 §4 a run of take-backs files a take-back row, not a bug report', () => {
+test('1243 §4 a run of take-backs files a take-back row, not a bug report BL-76', () => {
   const one = fixReportFields({ from: 2, at: 17, fixes: [fix()] });
   assert.equal(one.kind, 'other', 'not filed as a bug');
   assert.equal(one.severity, null);

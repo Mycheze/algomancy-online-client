@@ -47,7 +47,7 @@ function typeFilter(text: string): string {
 }
 const boxValue = (html: string): string => /id="meta-q"[^>]*\bvalue="([^"]*)"/.exec(html.replace(/\n\s*/g, ' '))?.[1] ?? '?';
 
-test('1228 a card typed on the ladder does not filter the published-deck list, and back again', async () => {
+test('1228 a card typed on the ladder does not filter the published-deck list, and back again BL-63', async () => {
   await flush();
   ui.click({ btn: 'meta-openpage' });
   await flush();

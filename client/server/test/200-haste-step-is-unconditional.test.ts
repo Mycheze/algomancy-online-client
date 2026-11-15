@@ -92,7 +92,7 @@ const served = (h: Harness): string => JSON.stringify(viewFor(h.state, D));
 
 /* ═══ §1 — the channel is closed, and the instrument can still see ═════ */
 
-test('CR 504.5: seat 1 is served the same view whatever seat 0 is holding', () => {
+test('CR 504.5: seat 1 is served the same view whatever seat 0 is holding #109 CT-90 CT-96', () => {
   // one printed {Haste} unit (r/1, affordable) against one {Battle} unit that
   // no timing and no grant can make playable here. Same hand SIZE, which is
   // public and must stay public; different contents, which are not.
@@ -121,7 +121,7 @@ test('CR 504.5: seat 1 is served the same view whatever seat 0 is holding', () =
     'the two SEATS are served different views — the redactor is doing something');
 });
 
-test('CR 504.5 control: the same comparison DOES fire on a difference seat 1 may see', () => {
+test('CR 504.5 control: the same comparison DOES fire on a difference seat 1 may see CT-90', () => {
   // docs/13 §7.4: an observation channel needs a control showing it can see.
   // If `served()` compared two boards as equal no matter what, §1 above would
   // be green and unfalsifiable. Here the boards differ in something PUBLIC —
@@ -213,7 +213,7 @@ const HANDS: Record<string, string[]> = {
   'an unaffordable haste unit': ['The Everywhere'],
 };
 
-test('CR 504.5: at donePlanning → haste, the step does not depend on hand contents', () => {
+test('CR 504.5: at donePlanning → haste, the step does not depend on hand contents CT-90', () => {
   // The claim CR 504.5 actually makes, stated once over the whole matrix rather
   // than card by card — and stated as an INVARIANT, so a future card cannot
   // reintroduce the dependency without reddening this.
@@ -287,7 +287,7 @@ test(`CR 504.5: the under-permissive population (once just ${RECLAIMER}) is empt
 
 /* ═══ §5 — nothing else moved ═════════════════════════════════════════ */
 
-test('CR 504.5a: no seat is auto-done, and BOTH have to close the step', () => {
+test('CR 504.5a: no seat is auto-done, and BOTH have to close the step CT-90', () => {
   // the old code marked a seat done before it could act, which is the same
   // broadcast wearing a different hat. Now `doneHaste` is a thing a player
   // says, and one saying it is not two.
@@ -302,7 +302,7 @@ test('CR 504.5a: no seat is auto-done, and BOTH have to close the step', () => {
   assert.equal(h.state.hasteDone, null, 'the window is nulled on the way out');
 });
 
-test('CR 504.6: the step still ENDS properly — endOfHaste fires exactly once', () => {
+test('CR 504.6: the step still ENDS properly — endOfHaste fires exactly once CT-90', () => {
   // The end-of-haste event (CR 504.6): 'endOfHaste' used to fire even on the skipped path, because *an
   // optimisation must not be observable*. There is no skipped path any more,
   // so the guarantee is now structural — but firing it twice, or not at all,
@@ -316,7 +316,7 @@ test('CR 504.6: the step still ENDS properly — endOfHaste fires exactly once',
   assert.equal(h.state.phase, 'battle');
 });
 
-test('CR 504.5a: a bluff is a real move — you may sit in the step holding nothing', () => {
+test('CR 504.5a: a bluff is a real move — you may sit in the step holding nothing #109 CT-96', () => {
   // playtest report #109, "Bluff Haste", granted as the fix. The empty-handed
   // seat is offered the step, may sit in it, and the OTHER seat's served view
   // never says which of those two things is happening.

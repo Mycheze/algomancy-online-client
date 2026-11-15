@@ -861,7 +861,7 @@ test('Rotwall: damage dealt to it gives each opponent a rot (CR 112.13)', () => 
 
 // ── Swarmling ────────────────────────────────────────────────────────────
 
-test('Swarmling: discarding IT fires its own trigger from the bin — pay [1] for a copy', () => {
+test('Swarmling: discarding IT fires its own trigger from the bin — pay [1] for a copy CT-392', () => {
   const h = new Harness(4624);
   toDeployment(h);
   const P = h.state.deployPlayer!;

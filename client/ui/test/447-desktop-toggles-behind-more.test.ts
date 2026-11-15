@@ -38,7 +38,7 @@ const controls = [...group.matchAll(/<button\b([^>]*)>/g)].map(m => ({
 // the ▦ board toggle went with the classic board (board round 8, 2026-10-29)
 const TOGGLES = ['fullcontrol', 'autopasstoggle', 'bluffhastetoggle', 'motiontoggle', 'soundtoggle'];
 
-test('every toggle waits behind more, and only toggles do', () => {
+test('every toggle waits behind more, and only toggles do #205', () => {
   assert.ok(groupAt > 0, 'the toolbar has a setgroup');
   for (const k of TOGGLES) {
     const c = controls.find(x => x.key === k);
@@ -52,7 +52,7 @@ test('every toggle waits behind more, and only toggles do', () => {
   }
 });
 
-test('the group is a popover, shut unless "more" is open — on every width and device', () => {
+test('the group is a popover, shut unless "more" is open — on every width and device #205', () => {
   assert.match(bar, /<div class="setgroup tbpop\$\{settingsOpen \? ' open' : ''\}">/, 'open follows settingsOpen');
   assert.match(CSS, /^#app\.board\.v2 > \.toolbar \.setgroup\.tbpop \{ display: none;/m);
   assert.match(CSS, /^#app\.board\.v2 > \.toolbar \.setgroup\.tbpop\.open \{ display: flex; \}/m);

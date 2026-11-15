@@ -89,7 +89,7 @@ function look(seed: number): GameState {
 
 /* ══ §1 — the aid survives its own last card ═══════════════════════════ */
 
-test('CT-174 crossing off the last card does not delete the aid', () => {
+test('CT-174 crossing off the last card does not delete the aid #156', () => {
   const s = look(26800);
   const seen = s.seenHand[ME]!;
   assert.ok(seen.cards.length >= 2, 'fixture: there is more than one card to cross off');
@@ -133,7 +133,7 @@ test('CT-174 a restore touches only THIS look — another look\'s record is not 
 
 /* ══ §2 — the explicit dismiss is the only path to hidden ══════════════ */
 
-test('CT-174 the only way the aid comes off the screen is the player dismissing it', () => {
+test('CT-174 the only way the aid comes off the screen is the player dismissing it #156', () => {
   const s = look(26803);
   const seen = s.seenHand[ME]!;
 
@@ -164,7 +164,7 @@ test('CT-174 the only way the aid comes off the screen is the player dismissing 
 
 const DQVZ = join(GAMES_DIR, 'DQVZ.json');
 
-test('CT-174 across every state of the reported game, the aid is never taken away', { skip: !existsSync(DQVZ) && 'var/games/DQVZ.json is not on this machine (var/ is gitignored)' }, (t) => {
+test('CT-174 across every state of the reported game, the aid is never taken away #156', { skip: !existsSync(DQVZ) && 'var/games/DQVZ.json is not on this machine (var/ is gitignored)' }, (t) => {
   // THE REPORT'S OWN GAME. This is the measurement the ticket's premise needed
   // and did not have: if any of turn-decay, hand-change, redaction or a
   // timeout could clear the look, it would show up here as a `show` that goes
@@ -220,7 +220,7 @@ test('CT-174 across every state of the reported game, the aid is never taken awa
 
 /* ══ §4 — the strip on the real client ═════════════════════════════════ */
 
-test('CT-174 on the real client the strip collapses to its head instead of disappearing', () => {
+test('CT-174 on the real client the strip collapses to its head instead of disappearing #156', () => {
   const s = look(26804);
   ui.join(viewFor(s, ME), ME, legalActions(s, ME));
   const shown = ui.html();

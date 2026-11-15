@@ -56,7 +56,7 @@ function openDialog(seed: number): { me: Seat; them: Seat } {
 
 const sendOff = (): boolean => /data-amend="send"[^>]*disabled/.test(ui.html());
 
-test('1243 §1 ticked, the fix sends with no reason and says take-back; unticked, the reason is required', () => {
+test('1243 §1 ticked, the fix sends with no reason and says take-back; unticked, the reason is required BL-76', () => {
   const { me } = openDialog(124310);
   const html = ui.html();
   assert.match(html, /id="amend-reason"[\s\S]*?<label class="amendtakeback"><input type="checkbox" data-amend="takeback">\s*Not a bug! Just taking something back\.<\/label>/,
@@ -94,7 +94,7 @@ test('1243 §2 the other seat reads take-back on the bar, with the fix it names'
   ui.push({ t: 'amend', how: 'cancelled', fix: {} });
 });
 
-test('1243 §3 the admin reports page shows a take-back row as a take-back', () => {
+test('1243 §3 the admin reports page shows a take-back row as a take-back BL-76', () => {
   const base = { ledgerId: null, room: 'QXZK', seat: 0, actionIndex: 3, by: { name: 'Bo' }, status: null, guards: [], ledgerNote: null, mark: null, markedBy: null };
   const v: AdminView = {
     access: true, current: 'reports', isLoading: false, actionMsg: '', faultMsg: '', overview: null,

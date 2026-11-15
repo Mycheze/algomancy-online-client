@@ -108,7 +108,7 @@ function refuse(state: GameState, action: Action): IllegalAction {
 
 /* ═══ §1 DIVERGENCE, NOT A SKIP COUNT ════════════════════════════════ */
 
-test('CT-45: a log whose decision answer can no longer be accepted names the FIRST diverging action, not a skip count', () => {
+test('CT-45: a log whose decision answer can no longer be accepted names the FIRST diverging action, not a skip count CT-51', () => {
   const log = orderingLog();
   const asked = log.actions[log.at]!;
   assert.ok(asked.type === 'decide' && Array.isArray(asked.choice) && asked.choice.length >= 2,
@@ -188,7 +188,7 @@ test('CT-45 (negative control): the same log UNCORRUPTED replays clean and is re
 
 /* ═══ §2 THE ENGINE'S HALF — refuse, never coerce ════════════════════ */
 
-test('a scalar answer to an orderTriggers question is refused as UNANSWERABLE, not coerced into an ordering', () => {
+test('a scalar answer to an orderTriggers question is refused as UNANSWERABLE, not coerced into an ordering CT-45', () => {
   const log = orderingLog();
   const s = stateBefore(log);
   const dec = s.decision!;
@@ -215,7 +215,7 @@ test('a scalar answer to an orderTriggers question is refused as UNANSWERABLE, n
     'and the seat is not recorded as having ordered anything');
 });
 
-test('an ordering answer of the WRONG LENGTH is unanswerable too — that is queue drift, not a typo', () => {
+test('an ordering answer of the WRONG LENGTH is unanswerable too — that is queue drift, not a typo CT-45', () => {
   const log = orderingLog();
   const s = stateBefore(log);
   const dec = s.decision!;
@@ -229,7 +229,7 @@ test('an ordering answer of the WRONG LENGTH is unanswerable too — that is que
   assert.equal(long.unanswerable, true, 'a too-LONG answer is the same failure');
 });
 
-test('a right-length ordering answer with junk indices is an ordinary retryable refusal, NOT unanswerable', () => {
+test('a right-length ordering answer with junk indices is an ordinary retryable refusal, NOT unanswerable CT-45', () => {
   const log = orderingLog();
   const s = stateBefore(log);
   const dec = s.decision!;

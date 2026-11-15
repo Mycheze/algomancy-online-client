@@ -132,7 +132,7 @@ test('CR D7.2b the premise: a pay-X-life cost really is one repeatable option an
 
 // ═══ §2 THE ARROWS AND THE BOX ════════════════════════════════════════
 
-test('CR D7.2b the pay-X-life bar carries the number-entry arrows and its typed box', () => {
+test('CR D7.2b the pay-X-life bar carries the number-entry arrows and its typed box #147 CT-162', () => {
   const h = payXLife();
   const html = ui.join(h.state, 0, []);
   assert.ok(html.includes('id="num-entry"'),
@@ -147,7 +147,7 @@ test('CR D7.2b the pay-X-life bar carries the number-entry arrows and its typed 
     'there are two numeric boxes on screen — the ramp built its own instead of sharing the number entry');
 });
 
-test('CR D7.2b the dial goes DOWN as well as up, and never below what is already paid', () => {
+test('CR D7.2b the dial goes DOWN as well as up, and never below what is already paid #147 CT-162', () => {
   const h = payXLife();
   ui.join(h.state, 0, []);
   // nothing paid: the floor IS the value, so down is dark
@@ -167,7 +167,7 @@ test('CR D7.2b the dial goes DOWN as well as up, and never below what is already
 
 // ═══ §3 THE COMMIT BUTTON ═════════════════════════════════════════════
 
-test('CR D7.2c that is enough is a full button, and the plain declines stay quiet', () => {
+test('CR D7.2c that is enough is a full button, and the plain declines stay quiet #147 #161 CT-162', () => {
   const h = payXLife();
   const html = ui.join(h.state, 0, []);
   const done = optIdx(h.state.decision!, 'doneCost');
@@ -223,7 +223,7 @@ test('CR D7.2c that is enough is a full button, and the plain declines stay quie
 
 // ═══ §4 ONE CLICK SPENDS THE DIALLED X, AND NO MORE ═══════════════════
 
-test('CR D7.2b one confirm walks the ramp to the dialled X and then stops', () => {
+test('CR D7.2b one confirm walks the ramp to the dialled X and then stops #147 CT-162', () => {
   const h = payXLife();
   ui.join(h.state, 0, []);
   ui.actions();                              // drop the join traffic
@@ -283,7 +283,7 @@ test('CR D6.6d the premise: a stack item really aims at a card the bin strip hid
 
 // ═══ §6 IT SURFACES ═══════════════════════════════════════════════════
 
-test('CR D6.6d a targeted bin card surfaces onto the region strip, on top', () => {
+test('CR D6.6d a targeted bin card surfaces onto the region strip, on top #154 CT-169', () => {
   const { h, buried } = binTargeted();
   // the CONTROL first: before anything aims at it, the buried card is not
   // drawn — so §6 is measuring the targeting and not the fixture
@@ -308,7 +308,7 @@ test('CR D6.6d a targeted bin card surfaces onto the region strip, on top', () =
   assert.ok(after.includes(`data-prev="${buried}"`), 'the thumb carries the hover handle');
 });
 
-test('CR D6.6d the dialog marks it too, so one fact reaches both surfaces', () => {
+test('CR D6.6d the dialog marks it too, so one fact reaches both surfaces #154 CT-169', () => {
   const { h, buried } = binTargeted();
   aimAt(h, buried);
   ui.join(viewFor(h.state, 0), 0, []);
@@ -342,7 +342,7 @@ test('CR D6.6d the premise: either seat can already open the other seats bin, an
   assert.equal(viewFor(h.state, 1).decision, null);
 });
 
-test('CR D6.6d the opponent sees the target too, which is the half the report is really about', () => {
+test('CR D6.6d the opponent sees the target too, which is the half the report is really about #154 CT-169', () => {
   const { h, buried } = binTargeted();
   aimAt(h, buried);
   // seat 1 is NOT the controller of the trigger and not the owner of the bin.

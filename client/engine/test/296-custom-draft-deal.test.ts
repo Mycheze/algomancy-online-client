@@ -62,7 +62,7 @@ test('BL-43 §1a control: a custom deal changes the draft for the same seed', ()
   assert.notDeepEqual(custom.state, plain.state);
 });
 
-test('BL-43 §1b no deal and a deal left at the defaults deal the identical game in every mode', () => {
+test('BL-43 §1b no deal and a deal left at the defaults deal the identical game in every mode #163', () => {
   const untouched = { ...DEAL_DEFAULTS, excluded: [] } as DraftDeal;
   for (const mode of ['draft', 'shared', 'constructed'] as GameMode[]) {
     for (let seed = 1; seed <= 30; seed++) {
@@ -86,7 +86,7 @@ test('BL-43 §1c a custom deal is ignored outside a live draft', () => {
 
 // ── §2 each knob ─────────────────────────────────────────────────────────
 
-test('BL-43 §2a pack size: packs of 5 at the deal, the commit leaves 5, and the turn-4 refresh deals 5', () => {
+test('BL-43 §2a pack size: packs of 5 at the deal, the commit leaves 5, and the turn-4 refresh deals 5 #163', () => {
   const h = new Harness(2006, undefined, 'draft', undefined, undefined, deal({ packSize: 5 }));
   assert.deepEqual(h.state.draftDeal, { packSize: 5, draftDraw: 2 });
   for (const seat of [0, 1]) assert.equal(h.state.packs[seat]!.length, 5, `seat ${seat} pack`);
@@ -113,7 +113,7 @@ test('BL-43 §2b opening hand, draws per turn and starting life', () => {
   for (const seat of [0, 1]) assert.equal(none.state.players[seat]!.hand.length, 6, `seat ${seat} drew nothing on turn 2`);
 });
 
-test('BL-43 §2c two elements: the rulebook pair by default, a chosen pair when given, 113 cards', () => {
+test('BL-43 §2c two elements: the rulebook pair by default, a chosen pair when given, 113 cards #163', () => {
   const d = deal({ elements: 2 });
   const byDefault = new Harness(2020, undefined, 'draft', undefined, undefined, d);
   assert.deepEqual(byDefault.state.elements, ['fire', 'wood']);

@@ -35,7 +35,7 @@ function during(h: Harness, fn: () => void): EngineEvent[] {
 /** from blocks declared to the end of combat */
 const fight = (h: Harness): void => { pass(h); pass(h); assignDefault(h); throughDamageWindows(h); resolveAfterCombat(h); };
 
-test('Poisonous BLOCKER: its -1/-1 counters on the attacker are put by the defender, and Blightshell draws', () => {
+test('Poisonous BLOCKER: its -1/-1 counters on the attacker are put by the defender, and Blightshell draws #210', () => {
   const h = new Harness(45401);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -56,7 +56,7 @@ test('Poisonous BLOCKER: its -1/-1 counters on the attacker are put by the defen
   assert.equal(handOf(h, D), hand0 + 1, 'Blightshell drew');
 });
 
-test('Poisonous ATTACKER: its -1/-1 counters on the blocker are put by the attacker, and Blightshell draws', () => {
+test('Poisonous ATTACKER: its -1/-1 counters on the blocker are put by the attacker, and Blightshell draws #210', () => {
   const h = new Harness(45402);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -75,7 +75,7 @@ test('Poisonous ATTACKER: its -1/-1 counters on the blocker are put by the attac
   assert.equal(handOf(h, A), hand0 + 1, 'Blightshell drew');
 });
 
-test('Flux Resonator: a Poisonous combat hit by your unit is an allied source, one counter more', () => {
+test('Flux Resonator: a Poisonous combat hit by your unit is an allied source, one counter more #216', () => {
   // CR 708.8a + 708.8b: "by an allied source" — your Poisonous unit's hit is
   // your placement, so 1 damage arrives as two -1/-1 counters.
   const h = new Harness(45403);

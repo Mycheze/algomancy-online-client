@@ -70,7 +70,7 @@ test('971 §3 locked in: the choice is frozen, and Change my mind is the way bac
   assert.match(html, /Ann \(you\) — <b class="lockedin">ready<\/b>/);
 });
 
-test('971 §4 the opponent away: share the code (and invite a friend); a league room says nothing more (report #329)', () => {
+test('971 §4 the opponent away: share the code (and invite a friend); a league room says nothing more (report #329) CT-531', () => {
   const away = lobbyHtml(view({ peers: [true, false] }));
   assert.match(away, /Send your opponent the room code <b>QXZZ<\/b>/);
   assert.match(away, /<!--SLOT:friends-->/);

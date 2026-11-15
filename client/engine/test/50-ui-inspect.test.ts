@@ -255,7 +255,7 @@ test('duplicate offers of one entry collapse to a single name', () => {
  * the one it must not now destroy in the other direction.
  */
 
-test('a permitted cached card blocked only by MANA does not blame the step', () => {
+test('a permitted cached card blocked only by MANA does not blame the step #78', () => {
   // the EGCW shape: Gatekeeper of Souls (l/4, {Deployment}), glimpse-cached
   // this turn, in the deployment phase, with 2 open mana against its 4
   const h = new Harness(5041, ['Ben', 'Rashi']);
@@ -281,7 +281,7 @@ test('a permitted cached card blocked only by MANA does not blame the step', () 
   assert.equal(cacheBlockReason(new E(h.state), A, 0, legalActions(h.state, A)), 'none');
 });
 
-test('and a battle card cached during deployment DOES blame the step', () => {
+test('and a battle card cached during deployment DOES blame the step #78', () => {
   // widening a label must not widen it past the truth: when the step really
   // IS the problem, the panel must still say so
   const h = new Harness(5042, ['Ben', 'Rashi']);
@@ -296,7 +296,7 @@ test('and a battle card cached during deployment DOES blame the step', () => {
   assert.equal(cacheBlockReason(e, A, 0, legalActions(h.state, A)), 'timing');
 });
 
-test('a cache entry with no permission at all blames permission, not the step', () => {
+test('a cache entry with no permission at all blames permission, not the step #78', () => {
   const h = new Harness(5043, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -354,7 +354,7 @@ function evokerBoard(seed: number): { h: Harness; seat: Seat; id: number } {
   return { h, seat, id };
 }
 
-test('a unit whose activated ability is payable is in the activatable set', () => {
+test('a unit whose activated ability is payable is in the activatable set #35', () => {
   const { h, seat, id } = evokerBoard(5900);
   giveResources(h, seat, 'metal', 3);
   assert.ok(activatableUnits(legalActions(h.state, seat)).has(id),
@@ -443,7 +443,7 @@ test('the token scan matches the PLURAL the printed text actually uses', () => {
   assert.deepEqual(tokensNamedIn('nothing is created here'), []);
 });
 
-test('Primordial Coalescence shows the Wraiths it creates', () => {
+test('Primordial Coalescence shows the Wraiths it creates #36', () => {
   assert.ok(tokensCreatedBy('Primordial Coalescence').includes('Wraith'),
     'the card the report was filed about');
   for (const n of ['Legion of the Depths', 'Aberrant Populace', 'Spectrogenesis']) {
@@ -515,7 +515,7 @@ test('an unknown card yields no tokens rather than throwing', () => {
 
 /* ── what a card TRANSFORMS INTO (playtest ledger #24) ──────────────────── */
 
-test('the inspector says what Scholar of the Void transforms into, before the hand is discarded', () => {
+test('the inspector says what Scholar of the Void transforms into, before the hand is discarded #24', () => {
   // The report, verbatim (ZQPC, 2026-08-20): "Scholar of the Void doesn't say
   // what the Beyond card it can transform into does". The complaint is about
   // the INSPECTOR, not the transform: the card asks you to discard your entire
@@ -533,7 +533,7 @@ test('the inspector says what Scholar of the Void transforms into, before the ha
   assert.deepEqual(transformFaces('No Such Card At All'), []);
 });
 
-test('a card that has already transformed shows no row, and a host wearing the mod shows none either', () => {
+test('a card that has already transformed shows no row, and a host wearing the mod shows none either #24', () => {
   // Both answers come from reading the ENTITY's own card name, and both agree
   // with the engine: Beyond has no back face of its own, and "transform me"
   // donated to a host rebinds to a host that has its own reverse side (which
@@ -568,7 +568,7 @@ test('the back face is NOT listed as a token Scholar of the Void creates', () =>
 
 /* ── the erased pile, as it is SHOWN ──────────────────────────────── */
 
-test('the erased viewer lists the real cards that are out of the game', () => {
+test('the erased viewer lists the real cards that are out of the game #31 #347', () => {
   const v = erasedPileView(['Rotling', 'Good Whale', 'Luminous Arc']);
   assert.deepEqual(v.cards, ['Rotling', 'Good Whale', 'Luminous Arc'],
     'in the order they were erased');
@@ -645,7 +645,7 @@ const xItem = (over: Partial<StackItem>): StackItem => ({
   negated: false, parts: [], ...over,
 });
 
-test('stackItemX keeps the two X\'s apart', () => {
+test('stackItemX keeps the two X\'s apart #43', () => {
   const it = xItem({
     card: 'Fight', x: 3,
     parts: [
@@ -664,7 +664,7 @@ test('stackItemX keeps the two X\'s apart', () => {
   assert.equal(rows[1]!.receipt, 'erased 2 cards');
 });
 
-test('a declared mode is readable off the stack, so a responder is not blind', () => {
+test('a declared mode is readable off the stack, so a responder is not blind #81', () => {
   // CR 702.5 / report #81 (EGCW). Choosing the half at cast time is only half the
   // fix — if the opponent cannot READ it while the item sits there, they are
   // still paying for a response without knowing what they are responding to,
@@ -686,13 +686,13 @@ test('a part with no mode, and a spent one, contribute no mode row', () => {
   })), [], 'a spent part resolves to nothing, so its half is not news');
 });
 
-test('a spent part\'s X is not shown — it resolves to nothing', () => {
+test('a spent part\'s X is not shown — it resolves to nothing #43', () => {
   const it = xItem({ parts: [{ effectKey: 'spell:Fight', targets: [], spent: true, costPaid: { x: 5 } }] });
   assert.deepEqual(stackItemX(it), []);
   assert.equal(stackXMark(it), '');
 });
 
-test('the stack card\'s X tag folds duplicates and stays out of the way', () => {
+test('the stack card\'s X tag folds duplicates and stays out of the way #43', () => {
   assert.equal(stackXMark(xItem({})), '', 'no X, no tag');
   assert.equal(stackXMark(xItem({ x: 4 })), 'X=4');
   assert.equal(stackXMark(xItem({
@@ -712,7 +712,7 @@ const dmgEvent = (n: number, total = n) => ({
   data: { unit: 9, n, total, source: 'Channel Through', controller: 0 },
 });
 
-test("a triggered ability's X is the amount its event carried", () => {
+test("a triggered ability's X is the amount its event carried #45", () => {
   const it = xItem({
     kind: 'triggered', card: 'Awoken Tomb',
     label: 'create an X/X unit (X = the damage dealt)',
@@ -776,7 +776,7 @@ test('ability rows carry the X of the clause that paid for it', () => {
   assert.equal(rows[1]!.part, 1, 'so the DOM can tell which clause it belongs to');
 });
 
-test('Necromantic Rebuke carries its paid X onto the real stack', () => {
+test('Necromantic Rebuke carries its paid X onto the real stack #43', () => {
   // the UZRG game, end to end: a 10-card variable cost that the client threw
   // away. Two erasures here, but it is the same code path.
   const h = new Harness(5907);
@@ -828,7 +828,7 @@ test('Necromantic Rebuke carries its paid X onto the real stack', () => {
  * is when they're cast." Its cost is one sacrifice, a fixed amount, so its
  * `costPaid.x` is never written; the X is a stat the receipt snapshotted. */
 
-test('Volatile Toxicity: the X read off its cost RECEIPT reaches the stack', () => {
+test('Volatile Toxicity: the X read off its cost RECEIPT reaches the stack #65', () => {
   const h = new Harness(5911);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -857,7 +857,7 @@ test('Volatile Toxicity: the X read off its cost RECEIPT reaches the stack', () 
   assert.equal(stackAbilityRows(item)[0]!.x, 5, 'the clause row says it too');
 });
 
-test('a sacrifice cost whose clause names no stat wears no X — Immolate just draws', () => {
+test('a sacrifice cost whose clause names no stat wears no X — Immolate just draws #65', () => {
   // the receipt is the same shape; only the printed sentence differs. Inventing
   // an X here would put a number on a spell that has none.
   const it = xItem({
@@ -872,7 +872,7 @@ test('a sacrifice cost whose clause names no stat wears no X — Immolate just d
   assert.equal(stackAbilityRows(it)[0]!.x, undefined);
 });
 
-test("Structural Collapse's bar is the same snapshot, so it is shown too", () => {
+test("Structural Collapse's bar is the same snapshot, so it is shown too #65", () => {
   // "…until their total defense is at least equal to the defense of your
   // sacrificed unit" — the card never writes X, but that number is the whole
   // question a responder has about the spell.
@@ -982,7 +982,7 @@ test('the cast list is empty until the game shows something', () => {
   assert.deepEqual(namesInEvents([]), []);
 });
 
-test('UFAB: "Battle:" is a card name and must NOT link in the phase line', () => {
+test('UFAB: "Battle:" is a card name and must NOT link in the phase line #55', () => {
   // `Battle` is a real card ("Two target units fight"), and the phase line the
   // engine emits every single turn starts with it. This is the whole report.
   const raw = linkCardNames('Battle: Ben may attack.');
@@ -1006,7 +1006,7 @@ test('UFAB: "Battle:" is a card name and must NOT link in the phase line', () =>
   assert.equal(spans.length, 1, 'the demoted name is welded back into the prose');
 });
 
-test('a card that IS in the game links on its very first mention', () => {
+test('a card that IS in the game links on its very first mention #55', () => {
   // The first line about a card is the line announcing it, so the ledger has
   // to grow from the batch and the new state BEFORE those lines are rendered.
   const h = new Harness(5121);
@@ -1459,7 +1459,7 @@ test('an update that says anything at all is never read as a silent cast', () =>
   assert.equal(waitingNote(viewFor(h.state, opp), w.casting), 'Waiting for opponent…');
 });
 
-test('waitingNote prefers the fact it can prove over the one it inferred', () => {
+test('waitingNote prefers the fact it can prove over the one it inferred #18', () => {
   const { h, me } = battleReady(5094);
   const s = h.state;
   assert.equal(waitingNote(s, false), 'Waiting for opponent…');
@@ -1496,7 +1496,7 @@ test('waitingNote prefers the fact it can prove over the one it inferred', () =>
  * into the client function, with nothing hand-built in between. The leak half
  * — that the stub carries nothing new — lives in server/e2e/test-pending-ask.ts.
  */
-test('CR D6.4: the pause bar names the effect an opponent is answering, off the server stub', () => {
+test('CR D6.4: the pause bar names the effect an opponent is answering, off the server stub #116 CT-109', () => {
   const h = new Harness(5095);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1534,7 +1534,7 @@ const monoLightDeck = (): CardName[] => DECK_LIST
   .filter(n => { const f = getCard(n).factions ?? []; return f.length === 1 && f[0] === 'light'; })
   .slice(0, 30);
 
-test('the resource menu leads with your own decks elements and keeps the rest behind an expander', () => {
+test('the resource menu leads with your own decks elements and keeps the rest behind an expander #63', () => {
   // The report, verbatim (GETD, 2026-08-22): "In constructed, the resource
   // options from recycling and prismites should be limited just to the elements
   // that are in your deck. No need to put the whole list for every single game
@@ -1562,7 +1562,7 @@ test('the resource menu leads with your own decks elements and keeps the rest be
   assert.deepEqual(opened.hidden, [], 'and has nothing left to expand');
 });
 
-test('a mono element deck still gets a prismite MENU rather than a silent auto exchange', () => {
+test('a mono element deck still gets a prismite MENU rather than a silent auto exchange #63', () => {
   // THE HAZARD. An ACTIVE prismite offers seven exchanges and no activate, so
   // for a mono-element deck the display list narrows to exactly one — and the
   // click handler has always auto-fired on a single option. Filter first and

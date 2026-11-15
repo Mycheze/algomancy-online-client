@@ -44,14 +44,14 @@ function moddedAttacker(seed: number) {
   return { h, A, D, hostId, modId, region, home };
 }
 
-test('report #342: an attacker\'s mod travels into the battle region with it', () => {
+test('report #342: an attacker\'s mod travels into the battle region with it CT-536', () => {
   const { h, hostId, modId, region } = moddedAttacker(11830);
   assert.equal(ent(h, hostId)!.region, region, 'the host is in the battle region');
   assert.equal(ent(h, modId)!.region, region, 'and so is its mod — it is part of the host (CR 720.6)');
   checkInvariants(h.state);
 });
 
-test('report #342: a mod trashed off a recalled attacker counts as trashed in that battle (Dropslime\'s count)', () => {
+test('report #342: a mod trashed off a recalled attacker counts as trashed in that battle (Dropslime\'s count) CT-536', () => {
   const { h, hostId, region, home } = moddedAttacker(11831);
   let here = -1, there = -1;
   withE(h, e => {
@@ -66,7 +66,7 @@ test('report #342: a mod trashed off a recalled attacker counts as trashed in th
   assert.equal(there, 0, 'and not in the home region the host left');
 });
 
-test('report #342: a modded counterattacker arrives with its mods', () => {
+test('report #342: a modded counterattacker arrives with its mods CT-536', () => {
   const h = new Harness(11832);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;

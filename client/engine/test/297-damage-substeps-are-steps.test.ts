@@ -53,7 +53,7 @@ import type { Seat } from '../src/types.ts';
 
 /* ══ §1 — THE REPORT ═════════════════════════════════════════════════ */
 
-test('CR 802.5b the report: a {Sluggish} Adversary of the Deep grows on the normal step BEFORE it strikes', () => {
+test('CR 802.5b the report: a {Sluggish} Adversary of the Deep grows on the normal step BEFORE it strikes #165', () => {
   const h = new Harness(29701);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -88,7 +88,7 @@ test('CR 802.5b the report: a {Sluggish} Adversary of the Deep grows on the norm
 
 /* ══ §2 — PRIORITY IS REAL AT THE BOUNDARY ══════════════════════════ */
 
-test('CR 608.3b the boundary is a real priority window: the other seat can respond before the next strike', () => {
+test('CR 608.3b the boundary is a real priority window: the other seat can respond before the next strike #165', () => {
   const h = new Harness(29702);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -118,7 +118,7 @@ test('CR 608.3b the boundary is a real priority window: the other seat can respo
 
 /* ══ §3 — THE CONTROL: AN UNSPLIT STEP IS UNCHANGED ═════════════════ */
 
-test('CR 608.3a the control: with no {Swift} and no {Sluggish} anywhere, the unsplit step is untouched', () => {
+test('CR 608.3a the control: with no {Swift} and no {Sluggish} anywhere, the unsplit step is untouched #165', () => {
   const h = new Harness(29703);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -163,7 +163,7 @@ test('CR 608.3c an EMPTY sub-step opens no window — a Swift-only battle gets o
 
 /* ══ §4 — WHAT IS FIXED ONCE, STAYS FIXED ═══════════════════════════ */
 
-test('CR 608.3d damageSubs is fixed when the step opens: a Swift unit dying cannot unsplit the battle', () => {
+test('CR 608.3d damageSubs is fixed when the step opens: a Swift unit dying cannot unsplit the battle #165', () => {
   const h = new Harness(29705);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;

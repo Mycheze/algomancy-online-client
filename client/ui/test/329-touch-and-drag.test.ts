@@ -95,7 +95,7 @@ function dragSection(): string {
   return MAIN.slice(a, b);
 }
 
-test('§4 EVERY DROP IS A CLICK ROUTE: the plans send nothing themselves', () => {
+test('§4 EVERY DROP IS A CLICK ROUTE: the plans send nothing themselves CT-420', () => {
   const src = dragSection();
   // the functions the clicks call are the only way a drop acts
   for (const fn of ['handleHandClick(', 'handleCacheClick(', 'handleAction(', 'applyMod(', 'dropCarried(', 'moveInBuild(', 'takeOutOfBuild(']) {

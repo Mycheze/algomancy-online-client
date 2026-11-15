@@ -31,7 +31,7 @@ import {
 
 // ── Counter Thief ─────────────────────────────────────────────────────────
 
-test('CR 708.4: two Counter Thieves chain — the second takes the counters from the first, once', () => {
+test('CR 708.4: two Counter Thieves chain — the second takes the counters from the first, once CT-290', () => {
   // RED before the chain: the lower id kept all 3.
   const h = new Harness(46801);
   toDeployment(h);

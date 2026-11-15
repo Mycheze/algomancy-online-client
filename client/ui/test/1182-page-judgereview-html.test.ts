@@ -126,7 +126,7 @@ test('1182 §6 the way in: a judge\'s or the owner\'s profile, and main.ts route
   assert.match(main, /jr\.initJudgeReview\(\{ app: \$app/);
 });
 
-test('1182 §7 a question a judge or the owner asked says so, by badge alone', () => {
+test('1182 §7 a question a judge or the owner asked says so, by badge alone BL-17', () => {
   const asked: JudgeQuestion[] = [
     { ...Q[1]!, id: id('d'), asker: { judge: 3 } },
     { ...Q[1]!, id: id('e'), asker: { owner: true } },

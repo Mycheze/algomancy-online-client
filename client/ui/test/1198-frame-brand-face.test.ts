@@ -32,7 +32,7 @@ const decls = (sel: string): string => {
   return out.join(';');
 };
 
-test(`1198 §1 the frame's footer says "Algomancy" in the wordmark, as the home's does`, () => {
+test(`1198 §1 the frame's footer says "Algomancy" in the wordmark, as the home's does CT-550`, () => {
   assert.match(CLIENT_INFO, /aria-label="Algomancy Online \(Unofficial Client\)"/, 'the accessible name is unchanged');
   assert.match(CLIENT_INFO,
     /<span class="homewordmark">Algomancy<\/span> Online <span class="homewordsub">\(Unofficial Client\)<\/span>/);
@@ -40,7 +40,7 @@ test(`1198 §1 the frame's footer says "Algomancy" in the wordmark, as the home'
   assert.match(html, /<footer class="ui-app-shell__bottom">[\s\S]*frameinfo[\s\S]*class="homewordmark"/, 'every framed page draws it');
 });
 
-test("1198 §2 the frame's title takes the brand face; what rides beside it does not", () => {
+test("1198 §2 the frame's title takes the brand face; what rides beside it does not #361 CT-550", () => {
   const title = decls('.frametitle');
   assert.match(title, /font-family:\s*var\(--font-brand\)/, 'the page name is in the brand face');
   assert.match(title, /text-transform:\s*uppercase/, 'set as the home sets its headings');

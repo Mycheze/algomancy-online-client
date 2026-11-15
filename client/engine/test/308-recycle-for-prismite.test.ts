@@ -32,7 +32,7 @@ const recycleKinds = (h: Harness, seat: 0 | 1): string[] =>
     .filter(a => a.type === 'recycleForResource' && a.handIndex === 0)
     .map(a => (a as { element: string }).element);
 
-test('CR 106.6a every hand card offers a Prismite, then a Shard, after the elements', () => {
+test('CR 106.6a every hand card offers a Prismite, then a Shard, after the elements #168', () => {
   for (const [label, h] of [
     ['shared', new Harness(30801)],
     ['draft', new Harness(30802, undefined, 'draft')],
@@ -48,7 +48,7 @@ test('CR 106.6a every hand card offers a Prismite, then a Shard, after the eleme
   }
 });
 
-test('CR 106.6b a recycled Prismite behaves like a starting one', () => {
+test('CR 106.6b a recycled Prismite behaves like a starting one #168', () => {
   const h = new Harness(30803);
   const P = 0;
   const before = h.state.players[P]!.hand.length;
@@ -76,7 +76,7 @@ test('CR 106.6b a recycled Prismite behaves like a starting one', () => {
   assert.equal(new E(h.state).affinity(P, 'water'), 1);
 });
 
-test('a recycled Shard is mana only: no affinity, no Shard of its own, no exchange', () => {
+test('a recycled Shard is mana only: no affinity, no Shard of its own, no exchange #168', () => {
   const h = new Harness(30805);
   const P = 0;
   const res = (): Harness['state']['players'][number]['resources'] => h.state.players[P]!.resources;
@@ -94,7 +94,7 @@ test('a recycled Shard is mana only: no affinity, no Shard of its own, no exchan
   assert.throws(() => h.do({ type: 'exchangePrismite', seat: P, index: start, element: 'fire' }), IllegalAction);
 });
 
-test('CR 106.8d / CT-237: a Prismite exchanges into any non-prismite resource, a Shard included, but never a Prismite', () => {
+test('CR 106.8d / CT-237: a Prismite exchanges into any non-prismite resource, a Shard included, but never a Prismite #168', () => {
   // The printed Prismite: "Erase me: Create a non-prismite resource, then
   // activate it". A Shard is a non-prismite resource.
   const h = new Harness(30804);

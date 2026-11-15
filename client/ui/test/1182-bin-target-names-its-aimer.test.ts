@@ -122,7 +122,7 @@ test('CT-537 the region strip\'s crosshair names its aimer on hover, for the opp
   }
 });
 
-test('CT-537 two items aiming at two copies of one card: each copy names its own aimer (the ASSX case)', () => {
+test('CT-537 two items aiming at two copies of one card: each copy names its own aimer (the ASSX case) #341', () => {
   const h = aimed();
   secondAimer(h);
   const a = aimedIndex(h, 0);

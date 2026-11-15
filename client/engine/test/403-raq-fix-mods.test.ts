@@ -254,7 +254,7 @@ test('CR 720.7e: a Borrower that copied a modded unit dies to the bin; a mod put
 
 // ── CR 720.10b / CT-213: a moved mod stays spent; CR 109.9k: its use is its own ──
 
-test('CR 720.10b: a moved mod carries its spent augment budget, and a second Graxxlid left behind keeps its own use', () => {
+test('CR 720.10b: a moved mod carries its spent augment budget, and a second Graxxlid left behind keeps its own use #269', () => {
   // Until report 269 the [Augment] use was kept on the HOST and copied here,
   // so the old host stayed marked and a second Graxxlid on it was spent too.
   // The use is the MOD's now (CR 109.9k): it moves with the mod and is nobody

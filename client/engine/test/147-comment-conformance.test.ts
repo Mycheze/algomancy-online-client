@@ -696,7 +696,7 @@ test('§3 every negative claim about the card pool is allowlisted with its reaso
     + bad.join('\n'));
 });
 
-test('§3 every POOL_CLAIM_ALLOWLIST entry still waives a live claim, and its basis holds', () => {
+test('§3 every POOL_CLAIM_ALLOWLIST entry still waives a live claim, and its basis holds CT-83', () => {
   // CT-83's assertion, on the list CT-83 named. An allowlist entry is a claim
   // about a COMMENT and a claim about the POOL, and both go stale.
   const hits = poolClaimHits();
@@ -951,7 +951,7 @@ test('§4: the one-day ui/ exclusion really did expire, and NOT_SCANNED is hones
     + 'the directory is listed and unread, which reports as clean either way');
 });
 
-test('§4 no card-file helper has zero call sites — nor any helper in src/ test/ scripts/', () => {
+test('§4 no card-file helper has zero call sites — nor any helper in src/ test/ scripts/ CT-60', () => {
   const sources = allSources();
   assert.ok(sources.length >= 200,
     `only ${sources.length} source files scanned for call sites — the walk has gone blind`);
@@ -1003,7 +1003,7 @@ test('§4 no card-file helper has zero call sites — nor any helper in src/ tes
     + dead.join('\n'));
 });
 
-test('§4 every DEAD_EXEMPT entry still names a real declaration', () => {
+test('§4 every DEAD_EXEMPT entry still names a real declaration CT-68', () => {
   // The staleness check the original sweep left out, and the reason CARD-TODO #68 exists. An
   // exemption is a claim about the code AS OF THE DAY IT WAS WRITTEN; unchecked,
   // it outlives the code and nobody finds out.
@@ -1018,7 +1018,7 @@ test('§4 every DEAD_EXEMPT entry still names a real declaration', () => {
   }
 });
 
-test('§4 the sweep can see a dead helper — positive control over a synthetic file', () => {
+test('§4 the sweep can see a dead helper — positive control over a synthetic file CT-68', () => {
   // §4 answers "no dead helpers" and the honest question about any such answer
   // is whether it could still say that if it were blind. So: run its own two
   // primitives over a corpus built to contain exactly one dead helper, one live

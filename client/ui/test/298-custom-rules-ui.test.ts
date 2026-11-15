@@ -42,7 +42,7 @@ test('BL-43 ui §1 untouched rules are the standard game and send nothing', () =
   assert.equal(elementCount(), 3);
 });
 
-test('BL-43 ui §2 the Beginner preset sends two elements, simple cards and packs of 5', () => {
+test('BL-43 ui §2 the Beginner preset sends two elements, simple cards and packs of 5 #163', () => {
   reset();
   assert.ok(click('cr-preset', { preset: 'beginner' }));
   const payload = createPayload(['wood', 'fire']);

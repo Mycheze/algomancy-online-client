@@ -50,7 +50,7 @@ function crowd(seed: number, units: number): { h: Harness; probe: EntityId } {
   return { h, probe };
 }
 
-test('§1 the number of board walks one effStats makes does not grow with the board', () => {
+test('§1 the number of board walks one effStats makes does not grow with the board CT-529', () => {
   const small = crowd(114900, 5), big = crowd(114900, 40);
   const a = walks(small.h, small.probe), b = walks(big.h, big.probe);
   assert.ok(a > 0, 'the read walks the board at all (the probe counts)');
@@ -58,7 +58,7 @@ test('§1 the number of board walks one effStats makes does not grow with the bo
   assert.equal(b, a, `5 units: ${a} walks; 40 units: ${b} walks — the walk count must not scale with the board`);
 });
 
-test('§2 Ancient One still borrows its neighbour\'s static in a crowded column', () => {
+test('§2 Ancient One still borrows its neighbour\'s static in a crowded column CT-529', () => {
   const h = new Harness(114901);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;

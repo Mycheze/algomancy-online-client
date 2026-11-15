@@ -308,7 +308,7 @@ test('playtest #93 / CR 801.2h (owner 2026-10-31): Dropslime fires from HAND, bu
     'and the log sends it straight to ERASED, not to a bin');
 });
 
-test('ANBB / CR 801.2h (owner 2026-10-31): on the SAME damage step the unmodded death trashes and fires, the Unstable death does neither', () => {
+test('ANBB / CR 801.2h (owner 2026-10-31): on the SAME damage step the unmodded death trashes and fires, the Unstable death does neither #93', () => {
   const h = new Harness(4291);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -343,7 +343,7 @@ test('ANBB / CR 801.2h (owner 2026-10-31): on the SAME damage step the unmodded 
   assert.ok(h.q.erased(D).includes('Dropslime'), 'it is in the public erased pile (CR 407.1)');
 });
 
-test('CR 801.2h (owner 2026-10-31): Muck Rummager does NOT draw off an Unstable death, and does off an unmodded one', () => {
+test('CR 801.2h (owner 2026-10-31): Muck Rummager does NOT draw off an Unstable death, and does off an unmodded one #93', () => {
   const h = new Harness(4292);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -373,7 +373,7 @@ test('CR 801.2h (owner 2026-10-31): Muck Rummager does NOT draw off an Unstable 
 // in this battle". The owner ruled (CR 801.2h): an Unstable unit that dies is
 // erased, not trashed — it never ends up in a bin. The discard at the end is
 // the control: the same Cerebrox, in range, does hear a real trash.
-test('report BPNS #301/#302: Wildfire kills a modded Hooba-Nan → it dies and is erased, nothing is trashed, Cerebrox and Dropslime\'s count do not move', () => {
+test('report BPNS #301/#302: Wildfire kills a modded Hooba-Nan → it dies and is erased, nothing is trashed, Cerebrox and Dropslime\'s count do not move CT-246', () => {
   const h = new Harness(4298);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -535,7 +535,7 @@ test('Hooba-Mon: attacking may exchange it for a cheap unit in your bin', () => 
 // 2026-10-31) — the exact route E.destroy takes. Before the first fix the card
 // was binned and simply left there, recurrable.
 
-test('CR 410.4d / 801.2h (owner 2026-10-31): Hooba-Mon exchanges a MODDED host → the host is ERASED and NOT trashed (not left in a bin)', () => {
+test('CR 410.4d / 801.2h (owner 2026-10-31): Hooba-Mon exchanges a MODDED host → the host is ERASED and NOT trashed (not left in a bin) CT-40 CT-43 CT-423', () => {
   const h = new Harness(4290);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -569,7 +569,7 @@ test('CR 410.4d / 801.2h (owner 2026-10-31): Hooba-Mon exchanges a MODDED host �
   assert.deepEqual(order, ['erased'], 'erased, and never trashed (CR 410.4d, 801.2h)');
 });
 
-test('CR 405.4 control: Hooba-Mon exchanges an UNMODDED host → it still BINS and stays there', () => {
+test('CR 405.4 control: Hooba-Mon exchanges an UNMODDED host → it still BINS and stays there CT-40', () => {
   const h = new Harness(4291);
   toDeployment(h);
   const A = h.state.initiative;
@@ -612,7 +612,7 @@ test('CR 405.4 control: Hooba-Mon exchanges an UNMODDED host → it still BINS a
 // yes" (the token ruling) is withdrawn — a token is not a card, so it is never trashed.
 // It still enters the bin and is swept out of it; that zone fact is what the
 // 2026-08-25 ruling was about, and it stands.
-test('CR 410.5: Hooba-Mon exchanges a TOKEN host → binned, NOT trashed (CR 801.2d), THEN swept', () => {
+test('CR 410.5: Hooba-Mon exchanges a TOKEN host → binned, NOT trashed (CR 801.2d), THEN swept CT-40', () => {
   const h = new Harness(4292);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -999,7 +999,7 @@ test('Necromantic Rebuke: negates unless its controller erases X from their bin'
  * putting "×2" in the label would re-key every saved game holding one of these
  * decisions and report the cosmetic change as replay divergence.
  */
-test('Necromantic Rebuke: the bin menu says how many copies one row stands for', () => {
+test('Necromantic Rebuke: the bin menu says how many copies one row stands for #112', () => {
   const h = new Harness(4221);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1063,7 +1063,7 @@ test('Necromantic Rebuke: the ransom saves the effect', () => {
 // negate can never happen. It stays LEGAL (explicitly not made illegal, unlike
 // Lost Shade's xMin: 1, which prevents burning a [once] budget) — the
 // player is simply told, at the one moment they can still change their mind.
-test('Necromantic Rebuke: stopping at X = 0 is offered WITH a warning, and stays legal (CR D7.1a)', () => {
+test('Necromantic Rebuke: stopping at X = 0 is offered WITH a warning, and stays legal (CR D7.1a) #42', () => {
   const h = new Harness(4221.5);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1190,7 +1190,7 @@ test('Necromantic Rebuke: a bin of exactly X is a FORCED set — everything goes
   assert.ok(ent(h, victim)!.damage > 0, 'and the Flame survived');
 });
 
-test('Necromantic Rebuke: DECLINING the ransom is unchanged — negated, bin untouched', () => {
+test('Necromantic Rebuke: DECLINING the ransom is unchanged — negated, bin untouched CT-178', () => {
   const h = new Harness(4237);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1432,7 +1432,7 @@ test('Skittering Blight: the replacement rides along when it AUGMENTS a host', (
 
 // ── Thought Extraction ────────────────────────────────────────────────
 
-test('Thought Extraction: strip a card from a hand you can see, at the cost of a rot', () => {
+test('Thought Extraction: strip a card from a hand you can see, at the cost of a rot CT-84', () => {
   const h = new Harness(4231);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1487,7 +1487,7 @@ test('Umbral Decay: two -1/-1 counters, and {Afflicting} rots the controller of 
 // test above owner and controller are one seat, so it cannot tell them apart;
 // here A steals D's unit and kills it, so the rot must land on A (the
 // controller), not on D (the owner, who is also the caster's opponent).
-test('Umbral Decay: {Afflicting} rots the CONTROLLER of a stolen unit it kills, never its owner (CR 802.23a)', () => {
+test('Umbral Decay: {Afflicting} rots the CONTROLLER of a stolen unit it kills, never its owner (CR 802.23a) CT-235', () => {
   const h = new Harness(4234);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1618,7 +1618,7 @@ test('Writhing Host (CR 504.7): a JSON round trip mid-offer still drives, and tw
   assert.deepEqual(h.state.players[P]!.erased, ['Writhing Host']);
 });
 
-test("Writhing Host (CR 504.7, 405.7): the grantor leaves through the CR 405.7 choke point — 'leftBin' reason 'erased', erased pile exactly once", () => {
+test("Writhing Host (CR 504.7, 405.7): the grantor leaves through the CR 405.7 choke point — 'leftBin' reason 'erased', erased pile exactly once CT-26", () => {
   // the grantor used to be spliced out of the bin DIRECTLY (CARD-TODO #26),
   // so its exit fired no 'leftBin'. It goes through E.removeFromBin now; the
   // site's own 'erased' announce is still the only thing feeding the CR 407.1

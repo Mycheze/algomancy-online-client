@@ -79,7 +79,7 @@ const arm = (over: Partial<AutoPassArm> = {}): AutoPassArm => ({
   armed: false, armedStack: 0, armedSig: [], prefOn: false, yieldIds: new Set(), ...over,
 });
 
-test('[59] the auto-pass toggle and an auto-yielded trigger produce ONE pass, not two', () => {
+test('[59] the auto-pass toggle and an auto-yielded trigger produce ONE pass, not two #59', () => {
   // the exact configuration Bena was in: the C4 toggle on, AND a unit whose
   // triggers he had chosen to yield to sitting on top of the stack. The old
   // code asked two independent functions, each with its own one-shot stamp,
@@ -102,7 +102,7 @@ test('[59] the auto-pass toggle and an auto-yielded trigger produce ONE pass, no
   assert.equal(sends, 1, 'one authoritative state, one intent on the wire');
 });
 
-test('[59] the latch releases only when the server state moves on', () => {
+test('[59] the latch releases only when the server state moves on CT-262', () => {
   const s = stacked([{ kind: 'triggered', sourceId: 7 }]);
   const plan = autoPassPlan(s, 0, PASS, arm({ yieldIds: new Set([7]) }));
   assert.equal(plan.pass, 'yield');
@@ -113,7 +113,7 @@ test('[59] the latch releases only when the server state moves on', () => {
   assert.equal(takeAutoPass(plan, 41, latch), true, 'a new state is a new window');
 });
 
-test('[59] an intent already on the wire blocks the automatic one too', () => {
+test('[59] an intent already on the wire blocks the automatic one too CT-262', () => {
   // the shared latch is the point: a manual click and an automatic pass are
   // both intents spending the same state, and only one of them may.
   const s = stacked([{ kind: 'triggered', sourceId: 7 }]);
@@ -183,7 +183,7 @@ test('[59] activationKeys and castableTokens read a legal list, nothing else', (
 
 /* ── [08b] prophesying never fires on the click that reveals it ────────── */
 
-test('[08b] a hand card whose only option is prophesy opens a menu, it does not just fire', () => {
+test('[08b] a hand card whose only option is prophesy opens a menu, it does not just fire #8', () => {
   // Air Plant: lg/[7] {Flying}, banner "[2lg] Prophecy". During deployment
   // with the banner paid for and no host to augment, prophesying is the ONLY
   // legal thing the card can do — which is exactly when offer() used to fire
@@ -241,7 +241,7 @@ test('[08b] prophesy is the action that needs the menu; playing a card is not', 
 const box = (left: number, top: number, width = 60, height = 84):
   { left: number; top: number; width: number; height: number } => ({ left, top, width, height });
 
-test('[26] an arrow starts at one card’s centre and is aimed at the other’s', () => {
+test('[26] an arrow starts at one card’s centre and is aimed at the other’s #26', () => {
   // ZQPC: "can you make the arrows originate from and point to the middle of
   // the cards? Rather than from the side." The helper this replaced (`edge()`)
   // deliberately stopped at the borders, and a head resting on a border in a
@@ -253,7 +253,7 @@ test('[26] an arrow starts at one card’s centre and is aimed at the other’s'
   assert.deepEqual([g.x2, g.y2], [530, 342], 'and the target is the destination box’s exact centre');
 });
 
-test('[26] only the arrowHEAD is inset, and only by HEAD_INSET', () => {
+test('[26] only the arrowHEAD is inset, and only by HEAD_INSET #26', () => {
   const g = arrowGeometry(box(0, 0), box(400, 0))!;
   // the tip stops HEAD_INSET short of the destination centre, along the
   // curve's final tangent — so the triangle sits ON the art, not past it
@@ -271,7 +271,7 @@ test('[26] two cards on top of each other get no arrow at all', () => {
 
 const boardState = (): GameState => { const h = new Harness(6003); toDeployment(h); return h.state; };
 
-test('[31] the board menu offers BOTH erased piles, counted', () => {
+test('[31] the board menu offers BOTH erased piles, counted #31 #347', () => {
   const s = boardState();
   // an erased token is neither listed nor counted (the owner, 2026-09-28)
   s.players[0]!.erased = ['Fight', 'Wisp'] as never;
@@ -283,7 +283,7 @@ test('[31] the board menu offers BOTH erased piles, counted', () => {
   assert.equal(erased.every(e => !e.confirm), true, 'looking at a pile asks nothing');
 });
 
-test('[30] the board menu offers concede — and only ever OPENS the question', () => {
+test('[30] the board menu offers concede — and only ever OPENS the question #30', () => {
   const s = boardState();
   const con = boardMenuEntries(s, 0).filter(isConcede);
   assert.equal(con.length, 1, 'net: my own seat, and nobody else’s');
@@ -308,7 +308,7 @@ test('[30] hotseat offers both seats; a finished game offers neither', () => {
 
 /* ── [35] the .activatable halo ────────────────────────────────────────── */
 
-test('[35] a unit with a legal activated ability is drawn with the .activatable class', () => {
+test('[35] a unit with a legal activated ability is drawn with the .activatable class #35', () => {
   // UZRG: "units with activated abilities don't get a green highlight around
   // them indicating you can activate their abilities". activatableUnits() has
   // always been guarded; the class it feeds had nothing holding it down, so
@@ -386,7 +386,7 @@ for (const [strip, zone] of [['.invaders', '.invaderzone']]) {
   });
 }
 
-test('[61] the token corner widens with its stacks, so they stand side by side', () => {
+test('[61] the token corner widens with its stacks, so they stand side by side #25 #61', () => {
   // report [61], on the regions board (board round 8): the corner is as wide as
   // --tokcols base cards (main.ts sets it to the number of stacks, up to four),
   // capped by a share of the band, and its zone wraps the rest
@@ -398,11 +398,11 @@ test('[61] the token corner widens with its stacks, so they stand side by side',
   assert.match(MAIN, /style="--tokcols:\$\{Math\.min\(4, r\.tokenStackCount\)\}"/, 'one column per stack, up to four');
 });
 
-test('[61] .zone still wraps — the strips are relying on it', () => {
+test('[61] .zone still wraps — the strips are relying on it #61', () => {
   assert.match(rule('.zone'), /flex-wrap:\s*wrap/);
 });
 
-test('[35] the halo itself is still in the stylesheet', () => {
+test('[35] the halo itself is still in the stylesheet #35', () => {
   // the other end of the wire: `.activatable` is emitted for nothing else, so
   // deleting this rule removes the feature and breaks not one other test
   assert.match(rule('.card.activatable'), /box-shadow:/);
@@ -458,7 +458,7 @@ function priorityWindow(seed: number): { h: Harness; seat: Seat } {
   return { h, seat: h.state.priority! };
 }
 
-test('[59] a window that is being auto-passed is never painted as yours to spend', () => {
+test('[59] a window that is being auto-passed is never painted as yours to spend #59', () => {
   const { h, seat } = priorityWindow(6010);
   const passOnly: Action[] = [{ type: 'passPriority', seat }];
 
@@ -482,7 +482,7 @@ test('[59] a window that is being auto-passed is never painted as yours to spend
     + 'back "you do not have priority".');
 });
 
-test('[59] …and the pass it painted really does go out, exactly once per state', () => {
+test('[59] …and the pass it painted really does go out, exactly once per state #59', () => {
   const { h, seat } = priorityWindow(6011);
   const passOnly: Action[] = [{ type: 'passPriority', seat }];
   ui.join(h.state, seat, passOnly);
@@ -564,7 +564,7 @@ function method(name: string): string {
   return MAIN.slice(at, end === -1 ? MAIN.length : end);
 }
 
-test('[59] a fresh authoritative state clears the error from the previous one', () => {
+test('[59] a fresh authoritative state clears the error from the previous one #59', () => {
   // uiError was cleared in act() and nowhere on the way IN, and the auto-pass
   // paths never go through act() — so a refusal one of them earned stayed on
   // screen for the rest of the game.

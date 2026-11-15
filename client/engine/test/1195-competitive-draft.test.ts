@@ -26,7 +26,7 @@ const keepPack = (h: Harness, seat: Seat): number[] => {
   return Array.from({ length: pack }, (_, i) => hand + i);
 };
 
-test('Competitive draft: the draft step is both players at once, and the resource step waits for both', () => {
+test('Competitive draft: the draft step is both players at once, and the resource step waits for both BL-73', () => {
   for (const seed of [42, 7]) {
     const h = draftGame(seed);
     assert.equal(h.state.sequential, true);
@@ -52,7 +52,7 @@ test('Competitive draft: the draft step is both players at once, and the resourc
   }
 });
 
-test('Competitive draft: the initiative player who drafts first waits for the other before the resource step', () => {
+test('Competitive draft: the initiative player who drafts first waits for the other before the resource step CT-546', () => {
   const h = draftGame(42);
   const int = h.state.initiative, nit = (1 - int) as Seat;
   h.do({ type: 'draftCommit', seat: int, packIndices: keepPack(h, int) });

@@ -169,7 +169,7 @@ test('the class is derived from the registry and holds the report cards', () => 
 });
 
 for (const [scene, seed] of SCENES) {
-  test(`CR 110.7: on the ${scene} board Tides offers a targeted spell exactly when it could be played from hand`, () => {
+  test(`CR 110.7: on the ${scene} board Tides offers a targeted spell exactly when it could be played from hand #238 CT-308`, () => {
     const wrong: string[] = [];
     for (const card of OFFER_SUBJECTS) {
       if (getCard(card).mana === 'X') continue;   // hand X is free; Tides X is 0
@@ -181,7 +181,7 @@ for (const [scene, seed] of SCENES) {
   });
 
   for (const policy of ['first', 'last'] as const) {
-    test(`CR 702.3c: on the ${scene} board a Tides play asks and declares what a hand play does (answering ${policy})`, () => {
+    test(`CR 702.3c: on the ${scene} board a Tides play asks and declares what a hand play does (answering ${policy}) #238 CT-308`, () => {
       const wrong: string[] = [];
       let compared = 0;
       for (const card of SUBJECTS) {
@@ -209,7 +209,7 @@ for (const [scene, seed] of SCENES) {
   }
 }
 
-test('CT-308: Tidal Reversion under Tides takes one unit of each player', () => {
+test('CT-308: Tidal Reversion under Tides takes one unit of each player #238', () => {
   const t = viaTides(51001, 'rich', 'Tidal Reversion', 'first');
   assert.equal(t.item?.parts[0]?.targets.length, 2, `declared ${JSON.stringify(t.targets)}`);
   const owners = t.item!.parts[0]!.targets.map(r => t.h!.state.entities[(r as { unit: number }).unit]?.controller);

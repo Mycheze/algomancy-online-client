@@ -92,7 +92,7 @@ function damageCtx(g: E, seat: Seat, sourceName: string): EffectCtx {
 // `hits.length` rather than on `order.length` — see the comment there for why
 // that is the place the three shapes are distinguishable.
 
-test('a damage batch handed an empty hit list announces that there was nothing to damage', () => {
+test('a damage batch handed an empty hit list announces that there was nothing to damage CT-16', () => {
   const { g, A } = board(9300);
   const before = g.events.length;
   g.dealEffectDamageAll(damageCtx(g, A, 'Immolate'), []);
@@ -105,7 +105,7 @@ test('a damage batch handed an empty hit list announces that there was nothing t
     + 'reader both learn WHICH card did nothing');
 });
 
-test('a damage batch with a real hit list still deals its damage and fires a damage event', () => {
+test('a damage batch with a real hit list still deals its damage and fires a damage event CT-16', () => {
   // the fix may not be "announce everything and stop doing the thing"
   const { g, A, theirs } = board(9301);
   const before = g.events.length;
@@ -118,7 +118,7 @@ test('a damage batch with a real hit list still deals its damage and fires a dam
     'a batch that dealt damage must NOT also claim there was nothing to damage');
 });
 
-test('a damage batch whose every hit computed zero damage stays silent', () => {
+test('a damage batch whose every hit computed zero damage stays silent CT-16', () => {
   // NOT the bug: the card decided the amount, and it is the card's business to
   // explain a deliberate zero (Siphon Life for X = 0 does exactly that).
   const { g, A, theirs } = board(9302);
@@ -130,7 +130,7 @@ test('a damage batch whose every hit computed zero damage stays silent', () => {
   assert.equal(g.entity(theirs.id)!.damage, 0, 'and nothing was dealt');
 });
 
-test('a fully prevented damage batch reports only the prevention, never emptiness', () => {
+test('a fully prevented damage batch reports only the prevention, never emptiness CT-16', () => {
   // CR 112.11: prevented damage was never DEALT, and `preventUnitDamage` already logs
   // itself. Prevention runs after the empty check, so a prevented batch can
   // never be mistaken for an empty one.
@@ -150,7 +150,7 @@ test('a fully prevented damage batch reports only the prevention, never emptines
   assert.equal(g.entity(theirs.id)!.damage, 0, 'no damage was marked');
 });
 
-test('Meteor Shower with no unit anywhere to hit announces each empty rockfall — one per Meteor Shower', () => {
+test('Meteor Shower with no unit anywhere to hit announces each empty rockfall — one per Meteor Shower CT-16', () => {
   // A REAL CARRIER that was never patched card-side, driven through its own
   // spellEffect: no unit in the region, an empty batch. This is the whole
   // point of fixing it in the engine — no card had to know.
@@ -247,7 +247,7 @@ test('a unit raised out of the enemy bin dies into the bin of whoever CONTROLS i
     'and not the owner one, however much it is still their card');
 });
 
-test('Wake the Dead raising a unit from your OWN bin is unchanged', () => {
+test('Wake the Dead raising a unit from your OWN bin is unchanged CT-17', () => {
   const { g, A, u } = wake(9312, a => a);
   assert.equal(u.controller, A, 'you control it');
   assert.equal(u.owner, A, 'and you own it — the default is still "the seat it enters under"');
@@ -255,7 +255,7 @@ test('Wake the Dead raising a unit from your OWN bin is unchanged', () => {
   assert.ok(g.player(A).bin.includes('Tidal Menace'), 'it dies back to your own bin');
 });
 
-test('the borrowed spawn says so in its event, and an ordinary spawn does not', () => {
+test('the borrowed spawn says so in its event, and an ordinary spawn does not CT-17', () => {
   // the log has to be able to show "it dies to THEIR bin" coming. Asserted as a
   // FIELD, not a sentence.
   const borrowed = wake(9313, (_A, d) => d);
@@ -268,7 +268,7 @@ test('the borrowed spawn says so in its event, and an ordinary spawn does not', 
     'and an ordinary spawn must carry exactly the payload it always did');
 });
 
-test('Uglk hands an opponent CONTROL of a unit without handing over the card', () => {
+test('Uglk hands an opponent CONTROL of a unit without handing over the card CT-17', () => {
   // "[Augment] After combat, each player puts a unit from their bin into play
   // under an opponent's control." The two halves of CR 711.1 and CR 102.5a in one sentence,
   // which is what makes this the neighbour worth checking.
@@ -358,7 +358,7 @@ function hexbane(seed: number, opts: { endOfTurn?: boolean; answers?: Record<str
   return { g, A, D, carrier, bait, run };
 }
 
-test('Hexbane Shiitake in the end-of-turn window is ASKED, and declining does not spend its [once]', () => {
+test('Hexbane Shiitake in the end-of-turn window is ASKED, and declining does not spend its [once] CT-18', () => {
   // the headline case, INVERTED 2026-08-23. This card used to read
   // `inEndOfTurn(g) ? false : ctx.choose(...)`: the player was never asked and
   // the [once] burnt on a question nobody heard. The designer took the silent
@@ -377,7 +377,7 @@ test('Hexbane Shiitake in the end-of-turn window is ASKED, and declining does no
     'declining never spends the budget — not even here');
 });
 
-test('a Hexbane Shiitake that DECLINED can still fire later the same turn', () => {
+test('a Hexbane Shiitake that DECLINED can still fire later the same turn CT-18', () => {
   // "the same trigger can ask again later the same turn" — the half of the
   // ruling that makes the refund mean something. Same turn, no budget reset.
   const { g, carrier, run } = hexbane(9321, { endOfTurn: true, answers: { '0:swap': false } });
@@ -390,7 +390,7 @@ test('a Hexbane Shiitake that DECLINED can still fire later the same turn', () =
     + 'that has not been used');
 });
 
-test('Hexbane Shiitake whose exchange is DECLINED keeps its [once]', () => {
+test('Hexbane Shiitake whose exchange is DECLINED keeps its [once] CT-18', () => {
   // the ordinary decline, which the ruling settles the same way as the
   // never-asked one. NOTE the branch announces itself (CARD-TODO #3 saw to
   // that), so an event-count refund would miss this entirely.
@@ -403,7 +403,7 @@ test('Hexbane Shiitake whose exchange is DECLINED keeps its [once]', () => {
     'and the declining branch still SPEAKS — the refund is not a licence to go silent');
 });
 
-test('a SUCCESSFUL Hexbane Shiitake exchange really does spend its [once]', () => {
+test('a SUCCESSFUL Hexbane Shiitake exchange really does spend its [once] CT-18', () => {
   // the test that stops the refund from making [once] meaningless.
   const { g, A, carrier, bait, run } = hexbane(9323, {
     answers: { '0:swap': true, '0:rt:0:0': { keep: true } },
@@ -417,7 +417,7 @@ test('a SUCCESSFUL Hexbane Shiitake exchange really does spend its [once]', () =
     'and it cannot be composed a second time this turn');
 });
 
-test('a declined "you may pay" on a bounded trigger keeps its budget (Afflicting Anima)', () => {
+test('a declined "you may pay" on a bounded trigger keeps its budget (Afflicting Anima) CT-18', () => {
   // a second carrier, a different branch shape (a declined payment rather than
   // a declined exchange), so the seam is pinned as a RULE and not as one card's
   // special case.
@@ -440,7 +440,7 @@ test('a declined "you may pay" on a bounded trigger keeps its budget (Afflicting
     'and the [once] was not spent — declining never spends it');
 });
 
-test('a bounded ability that DID something keeps the budget spent (Afflicting Anima)', () => {
+test('a bounded ability that DID something keeps the budget spent (Afflicting Anima) CT-18', () => {
   const KEY = 'ability:Afflicting Anima#0';
   const { g, h, A } = board(9325);
   giveResources(h, A, 'dark', 2);   // the [1] has to be payable, or this tests the wrong branch
@@ -472,7 +472,7 @@ test('a bounded ability that DID something keeps the budget spent (Afflicting An
 // intuitive-feeling behaviour, and it makes removing a target in response a
 // free answer to every one of the pool's 61 targeted bounded abilities.
 
-test('a bounded ability that FIZZLES for want of a target has SPENT its [once] (CR 109.9a)', () => {
+test('a bounded ability that FIZZLES for want of a target has SPENT its [once] (CR 109.9a) CT-20', () => {
   const KEY = 'ability:Minor Kraken#0';
   const { g, h, A, D } = board(9330);
   const kraken = g.entity(spawn(h, A, 'Minor Kraken'))!;

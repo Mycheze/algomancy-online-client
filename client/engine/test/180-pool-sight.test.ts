@@ -245,7 +245,7 @@ const BLIND_ON_PURPOSE: { file: string; why: string; harmless: () => string | nu
   },
 ];
 
-test('§3 every test file that sweeps the card pool can see all of it', () => {
+test('§3 every test file that sweeps the card pool can see all of it CT-83', () => {
   // A ninth sweep is one `import '../src/cards/registry.ts'` away, and nothing
   // about writing it feels like a decision. This is the assertion that makes
   // it one.
@@ -279,7 +279,7 @@ test('§3 every test file that sweeps the card pool can see all of it', () => {
     + 'sentence is what let this happen the first time.');
 });
 
-test('§3 every BLIND_ON_PURPOSE entry still names a file, and its reason still holds', () => {
+test('§3 every BLIND_ON_PURPOSE entry still names a file, and its reason still holds CT-83', () => {
   // CT-83's shape, applied to this file's own exemption list on the day it was
   // written rather than the round after somebody notices.
   const stale: string[] = [];
@@ -303,7 +303,7 @@ test('§3 every BLIND_ON_PURPOSE entry still names a file, and its reason still 
 
 // ── §4 · positive controls ──────────────────────────────────────────────
 
-test('§4 the import walker finds a blind file, a sighted one, and a bare import', () => {
+test('§4 the import walker finds a blind file, a sighted one, and a bare import CT-83', () => {
   // §3's whole verdict rests on `reaches`, and the honest question about any
   // "nothing is blind" answer is whether it could still say that if the walker
   // were broken. Three cases over a synthetic corpus, all three of which the
@@ -339,7 +339,7 @@ test('§4 the import walker finds a blind file, a sighted one, and a bare import
   }
 });
 
-test('§4 the pool floor the eight sweeps carry can actually fail', () => {
+test('§4 the pool floor the eight sweeps carry can actually fail CT-83', () => {
   // The floor is `allCardNames().length >= 496`. Proving it can go red means
   // proving it is evaluated against a pool that CAN be 495 (Training Construct, CR D8.1b, put a fourth
   // synthetic in registry.ts, so a blind sweep now sees 495, not 494) — which §2 already

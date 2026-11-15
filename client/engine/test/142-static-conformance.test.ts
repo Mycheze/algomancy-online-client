@@ -441,7 +441,7 @@ const STACK_ANYWAY: Record<string, string> = {
 
 // ── the assertions ──────────────────────────────────────────────────────
 
-test('the classifier accounts for every sentence in the pool', () => {
+test('the classifier accounts for every sentence in the pool #46 CT-48', () => {
   // THE ANTI-BLINDNESS ASSERTION, and the reason the buckets are all positive
   // matches. A classifier that silently drops what it cannot read shrinks its
   // own population and goes green; `stripCode` was blind for weeks and every
@@ -513,7 +513,7 @@ test("the replacement bucket still matches 88's population exactly", () => {
     + 'overlap: it prints TWO sentences, a targeted rot replacement and "Your units are inverted.")');
 });
 
-test('a card printing a standing statement of fact declares a CONTINUOUS layer', () => {
+test('a card printing a standing statement of fact declares a CONTINUOUS layer #46 #75 CT-48', () => {
   const problems: string[] = [];
   for (const name of STATIC_CARDS) {
     if (name in NO_LAYER) continue;
@@ -530,7 +530,7 @@ test('a card printing a standing statement of fact declares a CONTINUOUS layer',
     + 'simply true and stops being true when the source leaves. Build it with the layer.');
 });
 
-test('a card whose whole printed text is continuous declares NOTHING that reaches the stack', () => {
+test('a card whose whole printed text is continuous declares NOTHING that reaches the stack #46 #75 CT-48', () => {
   // The negative half, and the one that actually catches the reported bug.
   // Per-CARD rather than per-clause on purpose, exactly as 88 does it: a card
   // that prints a trigger as well is allowed the trigger that sentence names
@@ -552,7 +552,7 @@ test('a card whose whole printed text is continuous declares NOTHING that reache
     + 'wrote counters then counter-matters cards see counters the card never printed.');
 });
 
-test('every behaviour key in the pool is classified — a new CardBehavior field fails here', () => {
+test('every behaviour key in the pool is classified — a new CardBehavior field fails here #75 CT-48', () => {
   // THE INVERSION, asserted. `abilityFree` in batch-earth-c.ts tested four
   // behaviour channels and so called 44 cards with statics / cost mods /
   // permissions / replacements "ability-free"; a list of behaviour fields rots
@@ -578,7 +578,7 @@ test('every behaviour key in the pool is classified — a new CardBehavior field
     + 'incident (see ledgers/card-ledger.ts). Either a card should be using it, or the name is wrong.');
 });
 
-test('every exemption is still needed — one that outlives its cause fails here', () => {
+test('every exemption is still needed — one that outlives its cause fails here #46 CT-48', () => {
   // 68-target-conformance's rule, for 68's reason: an exemption list nobody
   // re-reads becomes a list of things that used to be true.
   const stale: string[] = [];
@@ -623,7 +623,7 @@ test('the tally: how much of the pool is a standing fact, printed on every run',
 
 // ── the card this ruling fixed ──────────────────────────────────────────
 
-test('CR 721.1e: Aetherflux Golem is a STATIC, like the two cards printing its sentence', () => {
+test('CR 721.1e: Aetherflux Golem is a STATIC, like the two cards printing its sentence CT-48', () => {
   // The named regression test for the one card CARD-TODO #48 filed. It would
   // have failed before the fix: the card declared `augmentText` (a triggered
   // ability adding two +1/+1 counters) and no `statics` at all.

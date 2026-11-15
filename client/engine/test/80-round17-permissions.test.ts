@@ -45,7 +45,7 @@ function accepted(h: Harness, a: Action): boolean {
 
 // ── 1. CR 803.2b: the three gates agree, in both directions ──────────────────
 
-test('CR 803.2b: every hand play legalActions offers in the haste step is really accepted', () => {
+test('CR 803.2b: every hand play legalActions offers in the haste step is really accepted #74', () => {
   const h = new Harness(8001);
   const A: Seat = 0;
   spawn(h, A, 'Dispatch Courier');
@@ -104,7 +104,7 @@ test('the grant is REGION-scoped and belongs to the grantor’s controller', () 
 
 // ── 2. CR 708.11: prevention and replacement are different layers ────────────
 
-test('CR 708.11: a REPLACED hit still counts as dealt; a PREVENTED one never happened', () => {
+test('CR 708.11: a REPLACED hit still counts as dealt; a PREVENTED one never happened #72', () => {
   // Caleb 2024-10-24 on replacement (Blightsea Polyp): the damage still counts
   // as having been DEALT. The Phytochemical RAQ on prevention: "if there is
   // not damage being dealt, then no counters are placed." Same board, same

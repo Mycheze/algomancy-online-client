@@ -131,7 +131,7 @@ function inlinePlayCallSites(): { file: string; args: string }[] {
   return out;
 }
 
-test('CR 701.4a: every mid-resolution play names the zone it came out of', () => {
+test('CR 701.4a: every mid-resolution play names the zone it came out of CT-138', () => {
   const sites = inlinePlayCallSites();
   // POSITIVE CONTROL. A scan that matched nothing passes forever and looks
   // exactly like one that works.
@@ -256,7 +256,7 @@ test('CR 701.4a: Insidious Invitation plays from each seat own hand, so neither 
  * both watchers fire — and this is the one mid-resolution play that feeds them.
  */
 
-test('CR 410.6: Tides of the Cosmos plays off the top of the deck, so Proph draws and the Sentinel grows', () => {
+test('CR 410.6: Tides of the Cosmos plays off the top of the deck, so Proph draws and the Sentinel grows CT-138', () => {
   const h = new Harness(24103, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -375,7 +375,7 @@ test('CR 701.4a: an in-place SPELL play stamps the zone on its hand-rolled spell
  * something narrower than "any arrival".
  */
 
-test('CR 410.6b: an effect-created token carries no zone at all, so neither watcher fires', () => {
+test('CR 410.6b: an effect-created token carries no zone at all, so neither watcher fires CT-138', () => {
   const h = new Harness(24106);
   toDeployment(h);
   const A = h.state.deployPlayer!;

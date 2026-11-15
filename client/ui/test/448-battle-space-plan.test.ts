@@ -76,7 +76,7 @@ const half = (i: BattleBoardIn) => (i.board.w - i.gapX) / 2;
 
 const BATTLES: Array<[number, number, number]> = [[1, 1, 1], [2, 2, 2], [3, 0, 2], [2, 1, 2], [5, 1, 1], [7, 0, 1], [9, 2, 2]];
 
-test('§1 the fight is as wide as its columns need, never under the old half', () => {
+test('§1 the fight is as wide as its columns need, never under the old half #204 CT-278', () => {
   for (const [name, board] of Object.entries(BOARDS)) {
     for (const [c, t, b] of BATTLES) {
       const i = input(board, c, t, b);
@@ -112,7 +112,7 @@ test('§1 the fight is as wide as its columns need, never under the old half', (
   assert.equal(p129.wide, needW(i129, p129) > half(i129));
 });
 
-test('§2 the HPTR four-rank fight grows at 1440x900 and every rank stands at 1280x720', () => {
+test('§2 the HPTR four-rank fight grows at 1440x900 and every rank stands at 1280x720 #204 CT-278', () => {
   const m = battleMeasure(2, 2, 2, input(BOARDS['1440x900']!, 2, 2, 2).o);
   // before: 43px at 1440x900 (cols box 559×296)
   const big = input(BOARDS['1440x900']!, 2, 2, 2);
@@ -132,7 +132,7 @@ test('§2 the HPTR four-rank fight grows at 1440x900 and every rank stands at 12
   }
 });
 
-test('§3 units grow to the owner cap of 100px where there is room, and never past it', () => {
+test('§3 units grow to the owner cap of 100px where there is room, and never past it CT-278', () => {
   assert.equal(BATTLE_CAP, 100, 'the owner, on the board (2026-10-11): "it should cap at 100px/card during a fight"');
   assert.ok(BATTLE_CAP > Math.round(78 * GROW), 'above the field\'s cap the battle used to share');
   const roomy = plan(input(BOARDS['1920x1080']!, 1, 1, 1));
@@ -145,7 +145,7 @@ test('§3 units grow to the owner cap of 100px where there is room, and never pa
   }
 });
 
-test('§4 what the fight cannot use goes back to the bands, and the bands never fall under the name line', () => {
+test('§4 what the fight cannot use goes back to the bands, and the bands never fall under the name line #204', () => {
   for (const [name, board] of Object.entries(BOARDS)) {
     for (const [c, t, b] of BATTLES) {
       const i = input(board, c, t, b);
@@ -167,7 +167,7 @@ test('§4 what the fight cannot use goes back to the bands, and the bands never 
   assert.ok(p.bandTop > 2 * BAND.want, `seven columns one rank deep: the bands get ${p.bandTop}px`);
 });
 
-test('§5 a wide attack pushes the other region aside only as far as it needs, and never past a floor card', () => {
+test('§5 a wide attack pushes the other region aside only as far as it needs, and never past a floor card CT-278', () => {
   // seven columns one rank deep (HPTR, turn 6): wide at every size
   for (const [name, board] of Object.entries(BOARDS)) {
     const i = input(board, 7, 0, 1);

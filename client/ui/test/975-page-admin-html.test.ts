@@ -99,7 +99,7 @@ test('975 §5 loading, an action error and a server fault each say so', () => {
 
 /* §6 BL-17 — a report from a badged account is surfaced ahead of the others
  * while nobody has judged it; judged, it is back in date order. */
-test('975 §6 unjudged reports from the owner and judges come first, highest level first', () => {
+test('975 §6 unjudged reports from the owner and judges come first, highest level first BL-17', () => {
   const base = view().reportRows[0]!;
   // newest first, as the server sends them
   const r = (id: number, by: AdminView['reportRows'][number]['by'], mark: 'real' | 'not' | null = null) =>

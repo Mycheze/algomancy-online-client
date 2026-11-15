@@ -47,7 +47,7 @@ const PAR: Record<string, RunScore> = {
 
 const fileOf = (id: string): string => join(REFERENCE_RUNS_DIR, `${id}.json`);
 
-test('§1 every calendar row has a reference run file that names it', () => {
+test('§1 every calendar row has a reference run file that names it BL-49', () => {
   for (const c of CHALLENGES) {
     assert.ok(existsSync(fileOf(c.id)), `${c.id} has no reference run: node server/challenge-solve.ts ${c.id} --write`);
     const ref = JSON.parse(readFileSync(fileOf(c.id), 'utf8')) as { challengeId?: unknown };

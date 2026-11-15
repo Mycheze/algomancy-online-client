@@ -45,7 +45,7 @@ function battle(seed: number): { h: Harness; A: Seat; D: Seat } {
 const tok = (D: Seat, x: number): number =>
   Object.values(ui.state().entities).find(t => t.kind === 'spellToken' && t.controller === D && t.x === x)!.id;
 
-test('§1 clicking a Fireball makes it #1 (report #322), and the board answers which resolves next — the last one too', () => {
+test('§1 clicking a Fireball makes it #1 (report #322), and the board answers which resolves next — the last one too #183 CT-528', () => {
   const { h, A, D } = battle(35810);
   ui.show(structuredClone(h.state));
   ui.click({ act: 'token', id: tok(D, 1) });
@@ -99,7 +99,7 @@ test('§3 a token wears its X as a die face, not "X=n" in the stat corner', () =
   assert.doesNotMatch(card, /class="stats">X=/, 'and no "X=3" in the corner');
 });
 
-test('§4 Undo last pick sends one undo, only once a token is picked, and Cancel reads Start over', async () => {
+test('§4 Undo last pick sends one undo, only once a token is picked, and Cancel reads Start over BL-47', async () => {
   const { h, D } = battle(35813);
   const ids = (x: number): number =>
     Object.values(h.state.entities).find(t => t.kind === 'spellToken' && t.controller === D && t.x === x)!.id;

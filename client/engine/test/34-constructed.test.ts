@@ -146,7 +146,7 @@ test('the other modes still create games without decks', () => {
 
 // ── CR D6.14b: deck element identity (playtest ledger #63) ──────────────────
 
-test('deckElements: constructed records each seat’s deck element identity', () => {
+test('deckElements: constructed records each seat’s deck element identity #63', () => {
   // Ledger #63 (GETD): "In constructed, the resource options from recycling
   // and prismites should be limited just to the elements that are in your
   // deck." This is the engine half — the field the client defaults its menu to.
@@ -165,7 +165,7 @@ test('deckElements: constructed records each seat’s deck element identity', ()
   assert.deepEqual(b, ALL_ELEMENTS.filter(el => fromDeck.has(el)), 'the union of the decklist’s factions');
 });
 
-test('deckElements: it is a PRESENTATION default — all seven stay legal', () => {
+test('deckElements: it is a PRESENTATION default — all seven stay legal #63', () => {
   // The restraint is the point: making an off-element resource is legal in its
   // own right, whatever the deck holds (BL-44, the owner, 2026-09-19).
   const mono: CardName[] = DECK_LIST.filter(n => {

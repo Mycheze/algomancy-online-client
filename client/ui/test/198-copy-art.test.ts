@@ -143,7 +143,7 @@ function copyNote(h: Harness, id: EntityId): string | undefined {
 
 /* ═══ §1 BORROWER OF FORMS ════════════════════════════════════════════ */
 
-test('CR D6.8: a Borrower of Forms is DRAWN as the card it borrowed', () => {
+test('CR D6.8: a Borrower of Forms is DRAWN as the card it borrowed #108 CT-95', () => {
   const h = new Harness(19801);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -191,7 +191,7 @@ test('CR D6.8: a Borrower of Forms is DRAWN as the card it borrowed', () => {
 
 /* ═══ §2 APEX PRIME — N BODIES, ONE RESOLUTION ════════════════════════ */
 
-test('CR D6.8: Apex Prime redraws EVERY unit it copied onto, in one resolution', () => {
+test('CR D6.8: Apex Prime redraws EVERY unit it copied onto, in one resolution CT-95', () => {
   const h = new Harness(19802);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -235,7 +235,7 @@ test('CR D6.8: Apex Prime redraws EVERY unit it copied onto, in one resolution',
 
 /* ═══ §3 THE GUARD: ANCIENT ONE MUST NOT MOVE ═════════════════════════ */
 
-test('CR D6.8: an Ancient One keeps its OWN art — a projection is not an identity', () => {
+test('CR D6.8: an Ancient One keeps its OWN art — a projection is not an identity #108 CT-95', () => {
   const h = new Harness(19803);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -269,7 +269,7 @@ test('CR D6.8: an Ancient One keeps its OWN art — a projection is not an ident
 
 /* ═══ §3b THE HOLE THE ART FIX OPENS, AND THE CHIP THAT CLOSES IT ═════ */
 
-test('CR D6.8: a copy is marked even when the borrowed body matches its own', () => {
+test('CR D6.8: a copy is marked even when the borrowed body matches its own CT-95', () => {
   /* The green plate marks a copy only when the numbers CHANGED. Borrower of
    * Forms prints 2/2 and Sporebloom Siren is a 2/2, so with the art now
    * following the face there was nothing left on the board to tell the copy

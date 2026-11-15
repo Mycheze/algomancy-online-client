@@ -48,7 +48,7 @@ function timed<T>(label: string, f: () => T): T {
   return out;
 }
 
-test("Blight's End against ten units with X up to 14: legal actions and the X menu answer at once", () => {
+test("Blight's End against ten units with X up to 14: legal actions and the X menu answer at once CT-303", () => {
   const mana = Array.from({ length: 16 }, (_, i) => open(i % 2 ? 'wood' : 'dark'));
   const { h, D } = bigBattle(48901, 10, mana);
   const hi = give(h, D, "Blight's End");

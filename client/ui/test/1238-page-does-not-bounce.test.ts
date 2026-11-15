@@ -45,7 +45,7 @@ function noBounce(el: string): void {
 }
 
 // the titles are spelled out, not templated: a ledger guard names a test by its literal title
-test('§1 html has overscroll-behavior: none outside any media query, so a phone does not drag the whole page', () => noBounce('html'));
+test('§1 html has overscroll-behavior: none outside any media query, so a phone does not drag the whole page #388 CT-563', () => noBounce('html'));
 test('§1 body has overscroll-behavior: none outside any media query, so a phone does not drag the whole page', () => noBounce('body'));
 
 test('§2 the bounce is stopped without stopping the scroll: the root keeps its overflow, and the shell below a tablet still lets the page scroll', () => {

@@ -118,7 +118,7 @@ for (const [k, changer] of CHANGERS.filter(toMe).entries()) {
 }
 
 for (const [k, changer] of CHANGERS.filter(n => !toMe(n)).entries()) {
-  test(`CT-307 ${changer}: the targetless effect asks first, the targeted one does not`, () => {
+  test(`CT-307 ${changer}: the targetless effect asks first, the targeted one does not #235 #236 #237`, () => {
     const { h, trig, inv } = board(52900 + k, changer);
     const opts: DecisionOption[] = h.state.decision!.options;
     assert.ok(trig >= 0 && inv >= 0, 'both effects are on the menu: the stop is never a narrowing');
@@ -130,7 +130,7 @@ for (const [k, changer] of CHANGERS.filter(n => !toMe(n)).entries()) {
 
 /* ══ §3 ═══════════════════════════════════════════════════════════════ */
 
-test('CT-307 the client asks before sending a targetless pick, and Continue sends that pick', () => {
+test('CT-307 the client asks before sending a targetless pick, and Continue sends that pick #235 #236 #237', () => {
   const { h, D, trig, trigId } = board(52950, 'Gravitational Correction');
   ui.join(viewFor(h.state, D), D, legalActions(h.state, D));
   ui.sent();

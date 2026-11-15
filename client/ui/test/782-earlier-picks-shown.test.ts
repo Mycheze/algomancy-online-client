@@ -56,7 +56,7 @@ function unitChunk(html: string, id: EntityId): string {
   return html.slice(open, next > 0 ? next : at + 3000);
 }
 
-test('§1 the second sacrificer is told what the first chose, and the unit is marked', async () => {
+test('§1 the second sacrificer is told what the first chose, and the unit is marked #317', async () => {
   const ui = await client();
   const { h, A, D, picked, label } = smofAsked();
   const html = ui.join(viewFor(h.state, D), D, legalActions(h.state, D));

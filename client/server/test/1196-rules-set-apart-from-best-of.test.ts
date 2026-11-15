@@ -23,7 +23,7 @@ import { ccWire, joinNext, type Msg } from './cc-wire.ts';
 
 const sleep = (ms: number): Promise<void> => new Promise(r => setTimeout(r, ms));
 
-test('1196 §1-§3 the rules set apart from Best of: a Casual match, and a Competitive draft', async () => {
+test('1196 §1-§3 the rules set apart from Best of: a Casual match, and a Competitive draft #356 BL-73 CT-546', async () => {
   const w = await ccWire('t1196');
   const [ann, bo] = w.people as [typeof w.people[0], typeof w.people[0]];
   /** a Best of 3 created with `cc`, both registered; game 1 as each seat sees it */

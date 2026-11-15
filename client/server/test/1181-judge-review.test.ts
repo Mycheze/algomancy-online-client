@@ -118,7 +118,7 @@ test('§1 who may look: a 404 to anybody unbadged, the page to a judge, the owne
   assert.equal((await page(ADMIN.token)).you.canResolve, true);
 });
 
-test('§2 a flag goes in the journal with its copy, and the flagged answer leads, the highest badge first', async () => {
+test('§2 a flag goes in the journal with its copy, and the flagged answer leads, the highest badge first BL-17', async () => {
   assert.equal((await flag(L1.token, { id: rid(1), action: 'flag', note: 'Fight cannot target your own unit.' })).status, 200);
   let d = await page(L3.token);
   assert.deepEqual(d.questions.map(q => q.id), [rid(1), rid(3), rid(2)], 'the flagged answer first');
@@ -227,7 +227,7 @@ test('§7 the order: badge first, then the newest flag, then the unflagged by da
   assert.deepEqual(d.questions.map(q => q.question), ['q3', 'q1', 'q4', 'q2', 'q6', 'q5']);
 });
 
-test('§8 the questions judges asked: after the flagged ones, the asker\'s badge first, back in date order once dealt with', () => {
+test('§8 the questions judges asked: after the flagged ones, the asker\'s badge first, back in date order once dealt with BL-17', () => {
   const me = accountForToken(L1.token)!;
   const ans = (n: number, asker?: unknown): BotAnswer => ({ id: rid(n), ts: `2026-11-0${n}T00:00:00Z`, kind: 'ask', surface: 'web',
     question: `q${n}`, answer: `a${n}`, ...(asker ? { asker } : {}) } as BotAnswer);

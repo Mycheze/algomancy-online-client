@@ -72,7 +72,7 @@ for (const [k, changer] of CHANGERS.filter(toMe).entries()) {
 }
 
 for (const [k, changer] of CHANGERS.filter(n => !toMe(n)).entries()) {
-  test(`CT-306 ${changer} at a targetless trigger raises no payOrDecline and says there is nothing to change`, () => {
+  test(`CT-306 ${changer} at a targetless trigger raises no payOrDecline and says there is nothing to change #235 #236 #237`, () => {
     const { h, D, trig, source } = stalkerTrigger(51100 + k, changer);
     const c = getCard(changer);
     if (c.spellEffect) h.do({ type: 'playCard', seat: D, handIndex: give(h, D, changer) });

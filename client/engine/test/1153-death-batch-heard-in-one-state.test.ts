@@ -67,7 +67,7 @@ test('CT-532 control: The Everywhere naming Cerebrox mutes it for a batch The Ev
   assert.equal(kill(others), 0);
 });
 
-test('CR 713.6f / CT-532: The Everywhere dying last in the batch with three other cards — the Cerebrox it muted hears none of the four', () => {
+test('CR 713.6f / CT-532: The Everywhere dying last in the batch with three other cards — the Cerebrox it muted hears none of the four #332', () => {
   const { others, everywhere, kill } = everywhereBatch(115307);
   assert.equal(kill([...others, everywhere]), 0);
 });

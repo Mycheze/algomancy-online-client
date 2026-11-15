@@ -36,7 +36,7 @@ import { allCardNames, getCard } from '../src/cards/dsl.ts';
 import type { EventType, Seat } from '../src/types.ts';
 import { effStats, ent, finishBattle, pass, spawn, toDeployment, toNextBattle, unitsOf, withE } from './util.ts';
 
-test('CR 710.7 / report 271: the Ancient One listens on every event a triggered ability in the pool listens on from play', () => {
+test('CR 710.7 / report 271: the Ancient One listens on every event a triggered ability in the pool listens on from play #271', () => {
   const ao = getCard('Ancient One').augmentText!.find(a => a.type === 'triggered')!;
   const heard = new Set<EventType>(ao.type === 'triggered' ? ao.events : []);
   const missing: string[] = [];
@@ -50,7 +50,7 @@ test('CR 710.7 / report 271: the Ancient One listens on every event a triggered 
   assert.deepEqual(missing, [], 'an adjacent ally with one of these could not lend it');
 });
 
-test('CR 710.7 / report 271: two adjacent Ancient Ones both have the abilities of a unit adjacent to either (the designer)', () => {
+test('CR 710.7 / report 271: two adjacent Ancient Ones both have the abilities of a unit adjacent to either (the designer) #271', () => {
   const h = new Harness(58900);
   toDeployment(h);
   const A = h.state.initiative;
@@ -66,7 +66,7 @@ test('CR 710.7 / report 271: two adjacent Ancient Ones both have the abilities o
   void far;
 });
 
-test('CR 710.7 / report 271: a static reaches through two adjacent Ancient Ones, once each', () => {
+test('CR 710.7 / report 271: a static reaches through two adjacent Ancient Ones, once each #271 CT-355', () => {
   const h = new Harness(58901);
   toDeployment(h);
   const A = h.state.initiative;
@@ -82,7 +82,7 @@ test('CR 710.7 / report 271: a static reaches through two adjacent Ancient Ones,
   void far; void near;
 });
 
-test('CR 109.8, 710.7 / report 271: an Ancient One dying with Reforge the Dead on it and two neighbours makes three Robots (the designer)', () => {
+test('CR 109.8, 710.7 / report 271: an Ancient One dying with Reforge the Dead on it and two neighbours makes three Robots (the designer) #271', () => {
   const h = new Harness(58902);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -105,7 +105,7 @@ test('CR 109.8, 710.7 / report 271: an Ancient One dying with Reforge the Dead o
     'its own granted line and each neighbour\'s: "up to 4 tokens … it copies the ability from each adjacent unit"');
 });
 
-test('CR 714.9, 710.7 / report 271: a dying Ancient One has the when-I-die text of the allies it stood beside', () => {
+test('CR 714.9, 710.7 / report 271: a dying Ancient One has the when-I-die text of the allies it stood beside #271', () => {
   const h = new Harness(58903);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -124,7 +124,7 @@ test('CR 714.9, 710.7 / report 271: a dying Ancient One has the when-I-die text 
   assert.ok(h.state.players[A]!.hand.length >= before + 2, 'and both drew');
 });
 
-test('CR 400.5 / report 271: an Ancient One does not borrow the bin text of a neighbour in play', () => {
+test('CR 400.5 / report 271: an Ancient One does not borrow the bin text of a neighbour in play #271', () => {
   const h = new Harness(58904);
   toDeployment(h);
   const A = h.state.initiative;
@@ -137,7 +137,7 @@ test('CR 400.5 / report 271: an Ancient One does not borrow the bin text of a ne
     'the Lurking Dread is in play, so its bin text does not exist to be borrowed');
 });
 
-test('CR 712.2, 710.7 / report 271: an ally that has lost its abilities lends none — static and triggered', () => {
+test('CR 712.2, 710.7 / report 271: an ally that has lost its abilities lends none — static and triggered #271', () => {
   const h = new Harness(58905);
   toDeployment(h);
   const A = h.state.initiative;

@@ -73,20 +73,20 @@ test('docs/21 Watch / report round 2026-10-23 §1 a faithful run reads as record
   assert.equal(chip(p.html), 'as recorded');
 });
 
-test('docs/21 Watch / report round 2026-10-23 §2 a run that parted reads as a reconstruction from that action', () => {
+test('docs/21 Watch / report round 2026-10-23 §2 a run that parted reads as a reconstruction from that action CT-359', () => {
   const p = watch({ verdict: 'reconstruction', partedAt: 2, refusedAt: null });
   assert.equal(chip(p.html), 'reconstruction from action 2');
   assert.match(p.detail, /The rules have changed since this game was played\. Up to action 2/);
   assert.doesNotMatch(p.detail, /ILLEGAL/, 'nothing was refused');
 });
 
-test('docs/21 Watch / report round 2026-10-23 §3 a refused run says where this engine first refused', () => {
+test('docs/21 Watch / report round 2026-10-23 §3 a refused run says where this engine first refused CT-359', () => {
   const p = watch({ verdict: 'reconstruction', partedAt: 2, refusedAt: 5 });
   assert.equal(chip(p.html), 'reconstruction from action 2');
   assert.match(p.detail, /Nothing became ILLEGAL until action 5/);
 });
 
-test('docs/21 Watch / report round 2026-10-23 §4 a run with no verdict is unverified, never as recorded', () => {
+test('docs/21 Watch / report round 2026-10-23 §4 a run with no verdict is unverified, never as recorded CT-359', () => {
   for (const v of [{}, { verdict: 'unverified', partedAt: null, refusedAt: null }]) {
     const p = watch(v);
     assert.match(p.html, /class="replayroom">Watched</, 'non-vacuous: the replay is open');
@@ -95,7 +95,7 @@ test('docs/21 Watch / report round 2026-10-23 §4 a run with no verdict is unver
   }
 });
 
-test('docs/21 Watch / report round 2026-10-23 §5 the board marks a run played on older rules and keeps its rank', () => {
+test('docs/21 Watch / report round 2026-10-23 §5 the board marks a run played on older rules and keeps its rank CT-359', () => {
   const row = (rank: number, name: string, older: boolean): Record<string, unknown> =>
     ({ rank, name, score: { ...SCORE, skill: 300 - rank }, at: 1, runId: `run-${name}`, deck: DECK, ...(older ? { older: true } : {}) });
   const p = page(`?challenge=1&board=${DEF.id}`, {

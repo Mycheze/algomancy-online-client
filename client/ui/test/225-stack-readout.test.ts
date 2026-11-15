@@ -89,7 +89,7 @@ const screen = async (s: GameState, seat: Seat): Promise<string> => {
 
 /* ══ §1 — [131] the X a stack item is going to READ ═══════════════════════ */
 
-test('§1a Retribution Thing wears its X on the stack, and it is the number it will deal', async () => {
+test('§1a Retribution Thing wears its X on the stack, and it is the number it will deal #130 CT-122', async () => {
   const { h, D } = bledDefenderHasPriority(22501);
   giveResources(h, D, 'light', 3);
   h.do({ type: 'playCard', seat: D, handIndex: give(h, D, 'Retribution Thing') });
@@ -113,7 +113,7 @@ test('§1a Retribution Thing wears its X on the stack, and it is the number it w
   assert.equal(dealt, 7, 'the 7 the board promised is the 7 the card dealt');
 });
 
-test('§1b the declared mode narrows the forecast to the half that was chosen', async () => {
+test('§1b the declared mode narrows the forecast to the half that was chosen #130 CT-122', async () => {
   // CR 702.5 fixes the bracket at cast, so on the stack "lost 7 / gained 0" is no
   // longer a choice — one of them is what this item will do, and showing both
   // would be showing a number nobody can now cast for.
@@ -129,7 +129,7 @@ test('§1b the declared mode narrows the forecast to the half that was chosen', 
     'the bracket it did NOT declare is not a number this item can produce');
 });
 
-test('§1c a paid X still wins — the forecast never doubles it', async () => {
+test('§1c a paid X still wins — the forecast never doubles it #130 CT-122', async () => {
   // `stackItemX` answers first for anything that committed a number, and the
   // forecast declines whenever it does: two answers to one question, one of
   // them already true, is worse than the silence this replaced.
@@ -144,7 +144,7 @@ test('§1c a paid X still wins — the forecast never doubles it', async () => {
   assert.equal(/X=7/.test(html), false, 'and the forecast stands down beside it');
 });
 
-test('§1d CENSUS — every card that can forecast an X forecasts it ON THE STACK too', async () => {
+test('§1d CENSUS — every card that can forecast an X forecasts it ON THE STACK too #130 CT-122', async () => {
   /* The list is the POOL, not a list typed here: every card carrying #5's
    * `xPreview` or #85's `xPreviewRows`. The hand chip has read these since
    * #85; the stack read none of them, which is the report. A card that grows
@@ -238,7 +238,7 @@ function hasVariableCost(v: unknown, depth = 0): boolean {
   return Object.values(o).some(x => hasVariableCost(x, depth + 1));
 }
 
-test('§1e INVENTORY — every printed X is paid, worn by a token, forecast, or listed here', () => {
+test('§1e INVENTORY — every printed X is paid, worn by a token, forecast, or listed here #130 CT-122', () => {
   const unaccounted: string[] = [];
   let seen = 0;
   for (const name of allCardNames()) {
@@ -297,7 +297,7 @@ function lured(seed: number): { h: Harness; A: Seat; D: Seat; victim: number } {
   return { h, A, D, victim: vic };
 }
 
-test('§2a a lured unit wears a badge, and an unlured one does not', async () => {
+test('§2a a lured unit wears a badge, and an unlured one does not #117 CT-110', async () => {
   const { h, D, victim } = lured(22510);
   const free = spawn(h, D, 'Unit Token');
   const html = await screen(h.state, D);
@@ -311,7 +311,7 @@ test('§2a a lured unit wears a badge, and an unlured one does not', async () =>
   assert.ok(free, 'and a unit that was never lured is on the board to contrast with');
 });
 
-test('§2b the badge marks exactly the units the ENGINE would refuse to attack with', async () => {
+test('§2b the badge marks exactly the units the ENGINE would refuse to attack with #117 CT-110', async () => {
   /* The client may not hold a second opinion (CR D1.3), so the set is asked of
    * the engine and never restated here: sweep every unit the seat controls,
    * offer the engine a declaration built out of that ONE unit, and count the
@@ -369,7 +369,7 @@ test('§2b the badge marks exactly the units the ENGINE would refuse to attack w
   }
 });
 
-test('§2c the must-block half is only claimed for the round that lured it', async () => {
+test('§2c the must-block half is only claimed for the round that lured it #117 CT-110', async () => {
   const { h, D, victim } = lured(22512);
   const s = structuredClone(h.state);
   const mark = s.entities[victim]!.allured!;
@@ -413,7 +413,7 @@ function orderingQuestion(seed: number): { h: Harness; seat: Seat } {
   return { h, seat: A };
 }
 
-test('§3a the ordering bar offers auto-stack, and it sends the order the game listed', async () => {
+test('§3a the ordering bar offers auto-stack, and it sends the order the game listed #126 CT-119', async () => {
   const { h, seat } = orderingQuestion(22520);
   const dec = h.state.decision!;
   const ui = await client();
@@ -430,7 +430,7 @@ test('§3a the ordering bar offers auto-stack, and it sends the order the game l
   assert.ok(after.state, 'the engine accepted the auto order');
 });
 
-test('§3b auto-stack is opt-in — nothing goes out until it is clicked', async () => {
+test('§3b auto-stack is opt-in — nothing goes out until it is clicked #126 CT-119', async () => {
   const { h, seat } = orderingQuestion(22521);
   const ui = await client();
   ui.join(viewFor(h.state, seat), seat, legalActions(h.state, seat));
@@ -438,7 +438,7 @@ test('§3b auto-stack is opt-in — nothing goes out until it is clicked', async
     'BL-18: the client never takes a trigger order for you');
 });
 
-test('§3c the ordering options are drawn as the cards they came from', async () => {
+test('§3c the ordering options are drawn as the cards they came from #126 CT-119', async () => {
   const { h, seat } = orderingQuestion(22522);
   const mine = h.state.triggerQueue.filter(t => t.controller === seat);
   const ui = await client();
@@ -503,7 +503,7 @@ function numbered(html: string): number[] {
 
 const decides = (ui: { actions(): Action[] }): Action[] => ui.actions().filter(a => a.type === 'decide');
 
-test('§3d nothing goes out until Confirm order, and Confirm sends the order as picked', async () => {
+test('§3d nothing goes out until Confirm order, and Confirm sends the order as picked BL-47', async () => {
   const { h, seat } = threeTriggers(22530);
   const ui = await client();
   ui.join(viewFor(h.state, seat), seat, legalActions(h.state, seat));
@@ -552,7 +552,7 @@ test('§3f every pick wears its number, on its scan and on the unit it came from
   assert.match(unit, /class="badge orderno"[^>]*>#1</, 'and the unit says #1');
 });
 
-test('§3g clicking a numbered pick takes it back, and every pick after it', async () => {
+test('§3g clicking a numbered pick takes it back, and every pick after it BL-47', async () => {
   const { h, seat } = threeTriggers(22533);
   const ui = await client();
   ui.join(viewFor(h.state, seat), seat, legalActions(h.state, seat));

@@ -156,7 +156,7 @@ test('§2b known amounts are numbers, multipliers are silent, one target is not 
  * "unless … pays". And the number is the printed one.
  */
 const WORD_NUM: Record<string, string> = { one: '1', two: '2', three: '3', four: '4' };
-test('§2c a "you may pay" clause says "if you pay N" — the payment is not yet made', () => {
+test('§2c a "you may pay" clause says "if you pay N" — the payment is not yet made #319 CT-526', () => {
   const bad: string[] = [];
   let optional = 0;
   for (const [key, def] of POOL) {
@@ -301,7 +301,7 @@ const item = (parts: EffectPart[], o: Partial<StackItem> = {}): StackItem =>
   ({ id: 1, kind: 'activated', label: 'x', controller: 0, region: 0, negated: false, parts, ...o }) as StackItem;
 const name = (t: TargetRef): string => ('unit' in t ? state().entities[t.unit]!.card : '?');
 
-test('§4b2 fixed amounts are numbers, live ones "X (currently N)", and one is singular', () => {
+test('§4b2 fixed amounts are numbers, live ones "X (currently N)", and one is singular CT-473', () => {
   // the owner's two forms, word for word
   assert.equal(renderTemplate('Create a Fireball {X}', ctx({ amount: { x: 4, live: false } })), 'Create a Fireball 4');
   assert.equal(renderTemplate('Create a Fireball {X}', ctx({ amount: { x: 4, live: true } })), 'Create a Fireball X (currently 4)');

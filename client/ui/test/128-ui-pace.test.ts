@@ -44,7 +44,7 @@ function burst(n: number, now = T0): PaceQueue<string> {
 // The whole ask, stated as arithmetic: N events, an injected clock, one item
 // per interval — in a burst AND in a drip.
 
-test('CR D5.4 #94: a BURST of updates surfaces ONE per PACE_MS, on an injected clock', () => {
+test('CR D5.4 #94: a BURST of updates surfaces ONE per PACE_MS, on an injected clock CT-28', () => {
   const q = burst(4);
   // the first arrival is never delayed: the player must not wait to be told
   // about a board they can already see
@@ -63,7 +63,7 @@ test('CR D5.4 #94: a BURST of updates surfaces ONE per PACE_MS, on an injected c
   assert.equal(rest.queue.length, 0, 'the queue is spent');
 });
 
-test('CR D5.4 #94: a DRIP is throttled too — the queue emptying is not a reset', () => {
+test('CR D5.4 #94: a DRIP is throttled too — the queue emptying is not a reset CT-28', () => {
   // THE BROWSER BUG. Updates 300ms apart, each fully drained before the next
   // arrives. A queue that remembers only what is waiting sees an empty queue
   // every time and paces nothing.
@@ -135,7 +135,7 @@ test('CR D5.4 #94: timer jitter cannot make the cadence drift slower', () => {
 //
 // A player who does not want the pacing must not be held hostage by it.
 
-test('CR D5.5 #94: skip flushes the whole queue to the live state in ONE step', () => {
+test('CR D5.5 #94: skip flushes the whole queue to the live state in ONE step CT-28', () => {
   const { out, rest } = paceFlush(burst(5));
   assert.deepEqual(out, ['u0', 'u1', 'u2', 'u3', 'u4'],
     'every held update, in order, in a single drain');
@@ -167,7 +167,7 @@ test('#94: the skip chip counts what is actually still held', () => {
 
 const GATE = { mine: false, askedOfMe: false, legal: 0, autoPassArmed: false, over: false };
 
-test('CR D5.4b #94: a decision of MINE is never held', () => {
+test('CR D5.4b #94: a decision of MINE is never held CT-28', () => {
   assert.equal(holdable({ ...GATE, askedOfMe: true }), false,
     'server/view.ts nulls a decision that is not yours, so a visible decision is always mine');
 });
@@ -197,7 +197,7 @@ test('CR D5.4b #94: the ONE thing that is held is a state I cannot act on at all
     + 'their stack and I am a spectator. This is #94\'s whole scenario.');
 });
 
-test('CR D5.4c #94: an urgent arrival FLUSHES the backlog rather than jumping it', () => {
+test('CR D5.4c #94: an urgent arrival FLUSHES the backlog rather than jumping it CT-28', () => {
   const held = burst(3);                       // three spectator updates, paced out to +2s
   assert.equal(paceHeld(held, T0), 2);
   // …and now the server asks me something. It must not appear on top of a

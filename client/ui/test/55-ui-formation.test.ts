@@ -37,7 +37,7 @@ const ui = await client();
 
 // ── publishCols ───────────────────────────────────────────────────────
 
-test('publishCols: a hole keeps its lane', () => {
+test('publishCols: a hole keeps its lane #22', () => {
   // the exact shape of the reported game: eight attacking columns, blocks on
   // 1, 5 and 7 (0-indexed). Compacting these to three columns is what put the
   // blockers under columns 1, 2 and 3 on the attacker's screen.
@@ -274,7 +274,7 @@ test('rekeyBuild: it feeds publishCols without flattening the holes back out', (
 
 const cols = (d: { col: EntityId[] }): EntityId[] => d.col;
 
-test('dropIntoRow: the row you click is the row you get', () => {
+test('dropIntoRow: the row you click is the row you get #16', () => {
   assert.deepEqual(cols(dropIntoRow([], 0, 7)), [7], 'front of an empty column');
   assert.deepEqual(dropIntoRow([], 1, 7), { col: [7], backOnly: [7] },
     'the back row of an EMPTY column is the back row (2026-09-25) — the column is still [7], '
@@ -373,7 +373,7 @@ function blockStep(seed: number, attackers: string[], defenders: string[]):
   return { h, D, def };
 }
 
-test('the block builder offers BOTH rows, so there is a choice to make at all', () => {
+test('the block builder offers BOTH rows, so there is a choice to make at all #16', () => {
   const { h, D } = blockStep(5501, ['The Foretold'], ['The Foretold']);
   ui.join(h.state, D, legalActions(h.state, D));
   assert.ok(ui.has({ act: 'slot', ci: '0', row: '0' }), 'the front row is a place you can click…');
@@ -381,7 +381,7 @@ test('the block builder offers BOTH rows, so there is a choice to make at all', 
     '…and so is the back row, or the order is decided for you — which is the report');
 });
 
-test('the row you click is the row you get — the second blocker stays behind the first', () => {
+test('the row you click is the row you get — the second blocker stays behind the first #16', () => {
   // THE REPORT (DEYK): the column used to offer one slot and just push, so the
   // ORDER you clicked units in was the order they stood in.
   const { h, D, def } = blockStep(5502, ['The Foretold'], ['The Foretold', 'The Foretold']);
@@ -525,7 +525,7 @@ test('building blocks: a blocker in the back of an empty column declares as the 
 /** a build in the shape ui/main.ts keeps, so these are the real arguments */
 const build = (over: Partial<Build> = {}): Build => ({ ...clearBuild(), ...over });
 
-test('clearBuild: every kind of assignment goes at once', () => {
+test('clearBuild: every kind of assignment goes at once BL-19', () => {
   // blocks (sparse), a counterattack send, ride-along spell tokens and a unit
   // still in hand — one click, and none of them survive it
   const started = build({ send: [41, 42], spellTokens: [7], carrying: 9 });
@@ -540,7 +540,7 @@ test('clearBuild: every kind of assignment goes at once', () => {
   assert.equal(hasBuild(after), false, 'nothing is built any more');
 });
 
-test('clearBuild: the SPARSE index survives a clear — column 3 still means column 3', () => {
+test('clearBuild: the SPARSE index survives a clear — column 3 still means column 3 BL-19', () => {
   // the trap. If a clear compacted (or a re-assignment landed on a normalised
   // array), the blocker put back on attacker 3 would answer attacker 0 —
   // which is the exact bug publishCols was written to end.
@@ -556,7 +556,7 @@ test('clearBuild: the SPARSE index survives a clear — column 3 still means col
   assert.equal(again.columns.length, 4, 'the array reaches lane 3 and stops');
 });
 
-test('clearBuild: what gets republished is an EMPTY formation', () => {
+test('clearBuild: what gets republished is an EMPTY formation BL-19', () => {
   // the opponent is watching this build live. Clearing locally and NOT
   // publishing the empty result leaves a formation on their screen that has
   // already been thrown away — publishCols of a cleared build is the payload
@@ -576,7 +576,7 @@ test('clearBuild: a fresh object every call — two clears cannot alias one arra
   assert.deepEqual(c.spellTokens, []);
 });
 
-test('hasBuild: any one kind of assignment on its own counts', () => {
+test('hasBuild: any one kind of assignment on its own counts BL-19', () => {
   // each bar used to ask this question its own way and get its own answer:
   // the attack bar forgot `send`, the block bar forgot `spellTokens`, so a
   // player holding only that one thing was offered no Clear at all
@@ -599,7 +599,7 @@ test('hasBuild: empty lanes are not assignments, and a carried unit is not one e
     'a unit in hand has not been assigned to anything — Esc drops it by its own rule');
 });
 
-test('the three clear paths in ui/main.ts all go through resetFormation', () => {
+test('the three clear paths in ui/main.ts all go through resetFormation BL-19', () => {
   // main.ts takes the document at import time and cannot be loaded here, so
   // the wiring is read as text — the house pattern (74-ui-stack-mod-host, and
   // dropIntoRow above). Any one of these reverting to a hand-written copy of

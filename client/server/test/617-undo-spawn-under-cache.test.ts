@@ -92,7 +92,7 @@ function glimpseAndCache(room: Room, seat: Seat, pick: number): CardName[] {
   return top;
 }
 
-test('CR D4.1a / CT-199: undoing your spawn is allowed after the opponent cached a card off the shared deck', () => {
+test('CR D4.1a / CT-199: undoing your spawn is allowed after the opponent cached a card off the shared deck CT-365', () => {
   const { room, P, O } = deploying('R617A', 61701);
   const idsBefore = room.state.nextId;
   spawnSprite(room, P);
@@ -114,7 +114,7 @@ test('CR D4.1a / CT-199: undoing your spawn is allowed after the opponent cached
   assert.deepEqual(R.undoForSeat(room, O), { ok: false, why: SEEN_REFUSAL }, 'while they stay locked by their own peek');
 });
 
-test('CT-199: only the uids the splice moved are forgiven — a card the taken-back move cached still differs', () => {
+test('CT-199: only the uids the splice moved are forgiven — a card the taken-back move cached still differs CT-365', () => {
   // ids [40, 43) were the spliced action's: a uid above the block moves down
   // by three, exactly as an entity id does; one inside it names a card that
   // no longer exists and is left as it was, so the compare still refuses

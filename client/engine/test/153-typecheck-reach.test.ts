@@ -145,7 +145,7 @@ function resolveConfig(config: string): Resolved {
 
 // ─────────────── §0 · the corpus every section below is quantified over ────
 
-test('§0 (see 147-comment-conformance): every SKIP_DIRS name still hides no source we own', () => {
+test('§0 (see 147-comment-conformance): every SKIP_DIRS name still hides no source we own CT-83', () => {
   // The staleness assertion CT-83 asked for, in the only form that means
   // anything for a corpus definition: ask GIT what source the repo tracks, and
   // require that none of it is behind a name this walk refuses to enter.
@@ -184,7 +184,7 @@ test('§0 (see 147-comment-conformance): every SKIP_DIRS name still hides no sou
 
 // ────────────────────────── §1 · nothing outside a project ──────────────────
 
-test('§1 every .ts file in the client is covered by some tsconfig project', () => {
+test('§1 every .ts file in the client is covered by some tsconfig project CT-59', () => {
   const { files, dirs } = sourceInventory();
   const cfgs = configs().map(resolveConfig);
 
@@ -258,7 +258,7 @@ const RUNS_TSC = /(?:^|[\/\s])tsc(?:\s|$)/;
  */
 const CHAIN = 'check:serial';
 
-test('§2 the root `check` script invokes every tsconfig project', () => {
+test('§2 the root `check` script invokes every tsconfig project CT-59 CT-365', () => {
   const cfgs = configs().map(c => path.dirname(c));
   assert.ok(cfgs.length >= 3, `only ${cfgs.length} tsconfig.json found — the config walk has gone blind`);
 
@@ -341,7 +341,7 @@ const REQUIRED_FLAGS: { flag: string; why: string }[] = [
   },
 ];
 
-test('§3 every tsconfig has the load-bearing compiler flags on', () => {
+test('§3 every tsconfig has the load-bearing compiler flags on CT-59 CT-60', () => {
   const cfgs = configs().map(resolveConfig);
   assert.ok(cfgs.length >= 3, `only ${cfgs.length} tsconfig.json found — the config walk has gone blind`);
   assert.ok(REQUIRED_FLAGS.length >= 3, 'REQUIRED_FLAGS has been emptied — §3 would assert nothing');

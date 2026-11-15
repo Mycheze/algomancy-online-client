@@ -54,7 +54,7 @@ test('Arbiter of Armistice: registers and plays as its printed 2/2 haste body', 
 // ⚠ Still flagged: the type line prints a bare {Switch} with no matching
 // marker in the rules text — the only such card in the pool.
 
-test('Arbiter of Armistice: cards played during battle cost 2 life — everyone\'s', () => {
+test('Arbiter of Armistice: cards played during battle cost 2 life — everyone\'s #21', () => {
   // The Arbiter taxes the battle it is STANDING IN (CR 111.10 region scoping), so
   // these all put it in the defending seat's home region — the battle region.
   const h = new Harness(3830);
@@ -530,7 +530,7 @@ test('Penance: with no targets declared (min 0) the draw still happens', () => {
 
 // ── Prismatic Observer ───────────────────────────────────────────────────
 
-test('Prismatic Observer: sacrifice to recall a cached card (either cache, in battle) and gain 3 life', () => {
+test('Prismatic Observer: sacrifice to recall a cached card (either cache, in battle) and gain 3 life #162', () => {
   const h = new Harness(3818);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;

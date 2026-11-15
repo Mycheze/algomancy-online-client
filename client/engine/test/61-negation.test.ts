@@ -33,7 +33,7 @@ const count = (xs: string[], n: string): number => xs.filter(c => c === n).lengt
 
 // ── the UZRG position ───────────────────────────────────────────────────
 
-test('CR 704.4: a mass negate empties the stack of its victims AT ONCE — no extra priority rounds', () => {
+test('CR 704.4: a mass negate empties the stack of its victims AT ONCE — no extra priority rounds #41', () => {
   // the UZRG shape: four triggered abilities and one spell on the stack, and a
   // Containment Protocol that answers the four. Before negation became removal (CR 704.4) the four stayed on
   // the stack greyed out and cost eight further passPriority actions.

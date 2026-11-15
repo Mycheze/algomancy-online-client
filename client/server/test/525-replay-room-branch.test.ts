@@ -119,7 +119,7 @@ const raw = JSON.parse(readFileSync(FILE, 'utf8')) as RoomFile;
 
 /* ── §1 ─────────────────────────────────────────────────────────────── */
 
-test('§1 the log each fix was proposed on is the log the room had then', () => {
+test('§1 the log each fix was proposed on is the log the room had then CT-326', () => {
   assert.equal(raw.amendments!.length, 3, 'fixture: three rewinds on file');
   const pre = preFixLogs(raw);
   for (let k = 0; k < 3; k++) assert.deepEqual(pre[k], logs[k], `fix ${k}: the log rebuilt from the file is the log it was proposed on`);
@@ -166,7 +166,7 @@ test('§2 each cut is named and re-applies, and the triage flags read the run', 
 
 /* ── §3 ─────────────────────────────────────────────────────────────── */
 
-test('§3 --report rebuilds the board a fix row was filed on, with its run', () => {
+test('§3 --report rebuilds the board a fix row was filed on, with its run CT-326', () => {
   const am = raw.amendments!;
   const at1 = logs[1]!.length;
   // a row filed by this round's code: the fix index and the run length
@@ -215,7 +215,7 @@ test('§4 flag (a) reads a fizzle off the engine events', () => {
 
 /* ── §5 ─────────────────────────────────────────────────────────────── */
 
-test('§5 the CLI: --branch and --report', () => {
+test('§5 the CLI: --branch and --report CT-326', () => {
   const tool = fileURLToPath(new URL('../replay-room.ts', import.meta.url));
   const issues = join(DIR, 'issues.jsonl');
   writeFileSync(issues, '');

@@ -337,7 +337,7 @@ function expectNoPlacement(h: Harness, A: Seat, src: EntityId, before: number, w
 // the RAQ now. The ALIVE-but-unslotted grade (CR 711.3) is untouched: a unit that
 // is in play and out of the line names no formation, alive or remembered.
 
-test('CR 714.4 Hooba-Lin: killed under its own attack trigger, it remembers its formation → the 1/1 joins it', () => {
+test('CR 714.4 Hooba-Lin: killed under its own attack trigger, it remembers its formation → the 1/1 joins it CT-98 CT-209', () => {
   const { h, A, src, whale } = twoColumnAttack(10520, 'Hooba-Lin');
   killSource(h, src);
   pass(h); pass(h);                                   // the attack trigger resolves
@@ -363,7 +363,7 @@ test('CR 602.6e Hooba-Lin: alive but out of the formation (CR 711.3) → no toke
 
 // ── Hooba-Bot — "create a Robot 2 in my formation" ──────────────────────────
 
-test('CR 714.4 Hooba-Bot: killed under its own attack trigger, it remembers its formation → the Robot joins it', () => {
+test('CR 714.4 Hooba-Bot: killed under its own attack trigger, it remembers its formation → the Robot joins it CT-98 CT-209', () => {
   const { h, A, src, whale } = twoColumnAttack(10522, 'Hooba-Bot');
   killSource(h, src);
   pass(h); pass(h);
@@ -403,7 +403,7 @@ test('Hooba-God: killed under its own attack trigger → a copy of what it was j
   finishBattle(h);
 });
 
-test('CR 602.6e Hooba-God: alive but out of the formation (CR 711.3) → no copy — IN PLAY was the wrong predicate', () => {
+test('CR 602.6e Hooba-God: alive but out of the formation (CR 711.3) → no copy — IN PLAY was the wrong predicate CT-98', () => {
   const { h, A, D, src, whale } = twoColumnAttack(10525, 'Hooba-God');
   unslotSource(h, src, D, A);
   const before = unitsOf(h, A).length;
@@ -432,7 +432,7 @@ test('CR 714.4 Hooba-Pon: killed under its own attack trigger, it remembers its 
   finishBattle(h);
 });
 
-test('CR 602.6e Hooba-Pon: alive but out of the formation (CR 711.3) → the PAY QUESTION is never asked', () => {
+test('CR 602.6e Hooba-Pon: alive but out of the formation (CR 711.3) → the PAY QUESTION is never asked CT-98', () => {
   const { h, A, D, src, whale } = twoColumnAttack(10527, 'Hooba-Pon');
   giveResources(h, A, 'water', 4);
   give(h, A, 'Hooba-Pon');
@@ -475,7 +475,7 @@ async function cardSources(): Promise<{ file: string; text: string }[]> {
   return Promise.all(names.map(async f => ({ file: f, text: await readFile(new URL(f, dir), 'utf8') })));
 }
 
-test('CR 602.6e conformance: EVERY card call site of placeInFormation names its source ENTITY', async () => {
+test('CR 602.6e conformance: EVERY card call site of placeInFormation names its source ENTITY CT-98', async () => {
   // DERIVED, never typed. The repo's signature failure is a one-card fix for a
   // whole class (report #46, closed single-card and re-filed twice), so the
   // guard's membership is computed from the tree: a FIFTH card that calls
@@ -491,7 +491,7 @@ test('CR 602.6e conformance: EVERY card call site of placeInFormation names its 
     + 'pass `sourceId: <the source entity id>`, and guard the effect on it BEFORE anything is minted or paid');
 });
 
-test('CR 602.6e conformance: every "in my formation" placer guards on the SOURCE before it spawns', async () => {
+test('CR 602.6e conformance: every "in my formation" placer guards on the SOURCE before it spawns CT-98', async () => {
   // The second half of the same class: a guard that runs AFTER the spawn
   // leaves a token stranded in the region, which is a different wrong answer
   // rather than a safe one. Every effect body that calls placeInFormation must
@@ -561,7 +561,7 @@ test('#107: all three formationSlot ask sites are accounted for', async () => {
     'a new formationSlot ask must carry `spot` on every option (#107) and be covered here');
 });
 
-test('CR 602.6e the primitive itself: placeInFormation given a sourceId that is in NO formation refuses', () => {
+test('CR 602.6e the primitive itself: placeInFormation given a sourceId that is in NO formation refuses CT-98', () => {
   // The engine half, tested where the card guards cannot reach it. Both are
   // wanted: the card guard stops the token being minted at all, and this stops
   // a future caller that forgets one from placing into the SEAT's grid — the

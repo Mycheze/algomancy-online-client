@@ -89,7 +89,7 @@ test('CR D8.1 / report 271 §1 the sanitizer keeps a real run and refuses junk w
   }
 });
 
-test('CR D8.1 / report 271 §2-§4 over the wire: the run beside the journal, a pointer on the row', async () => {
+test('CR D8.1 / report 271 §2-§4 over the wire: the run beside the journal, a pointer on the row #271', async () => {
   const server = await spawnServer({ ALGO_ISSUES_FILE: ISSUES, ALGO_GAMES_DIR: join(DIR, 'games'), ALGO_ACCOUNTS_FILE: join(DIR, 'accounts.json') });
   const post = async (body: unknown): Promise<number> => {
     const res = await fetch(`http://localhost:${server.port}/api/report`, {

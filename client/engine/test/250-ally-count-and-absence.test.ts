@@ -69,7 +69,7 @@ function intoRound2(h: Harness): void {
 // action 149 sent 35 and 31. Nothing has touched the Protector: no damage, no
 // second counter, no spell. It is declared as a counterattacker and dies.
 
-test('Prickly Protector survives being declared as a counterattacker (CR 610.2e, report 144)', () => {
+test('Prickly Protector survives being declared as a counterattacker (CR 610.2e, report 144) #144 CT-157', () => {
   const h = new Harness(25000);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -115,7 +115,7 @@ test('Prickly Protector survives being declared as a counterattacker (CR 610.2e,
 // the donated text the moment it is sent — the identical failure, one channel
 // over, and it is the shape the report was actually filed against.
 
-test('a host wearing a donated Prickly Protector survives being sent out (CR 610.2e)', () => {
+test('a host wearing a donated Prickly Protector survives being sent out (CR 610.2e) #144 CT-157', () => {
   const h = new Harness(25001);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -148,7 +148,7 @@ test('a host wearing a donated Prickly Protector survives being sent out (CR 610
 // dead on the arrival (which is what stops the fix from being "counter-
 // attackers cannot die").
 
-test('a counterattacker sent out alone survives the send and dies on arrival (CR 610.2e)', () => {
+test('a counterattacker sent out alone survives the send and dies on arrival (CR 610.2e) #144 CT-157', () => {
   const h = new Harness(25002);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -180,7 +180,7 @@ test('a counterattacker sent out alone survives the send and dies on arrival (CR
 // rules change and not a bug fix. This pins the current answer so the fix
 // cannot quietly grow into it. It is the question put to the owner.
 
-test('scope: a unit left at home still loses the ally that counterattacked away', () => {
+test('scope: a unit left at home still loses the ally that counterattacked away #144 CT-157', () => {
   const h = new Harness(25003);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;

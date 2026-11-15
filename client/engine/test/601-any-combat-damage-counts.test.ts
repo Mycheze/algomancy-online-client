@@ -69,7 +69,7 @@ const vrootGain = (evs: EngineEvent[]): number => evs
   .filter(e => /gains \d+ life \(Vroot\)/.test(e.msg))
   .reduce((n, e) => n + Number(/gains (\d+) life/.exec(e.msg)![1]), 0);
 
-test('CR 608.9a: the any-combat-damage class is derived from the printed pool, and it is Vroot, Flowstone Arcanite and Blightmound', () => {
+test('CR 608.9a: the any-combat-damage class is derived from the printed pool, and it is Vroot, Flowstone Arcanite and Blightmound CT-357', () => {
   assert.deepEqual([...ANY_COMBAT_DAMAGE].sort(), ['Blightmound', 'Flowstone Arcanite', 'Vroot'],
     'a new card printing an unqualified "deals combat damage" trigger joins this list and must pass the tests below');
   // and the "to a player" family is NOT in it — 581 holds those to CT-296
@@ -80,7 +80,7 @@ test('CR 608.9a: the any-combat-damage class is derived from the printed pool, a
 });
 
 for (const [i, name] of ANY_COMBAT_DAMAGE.entries()) {
-  test(`CR 608.8c, 608.9a: ${name} hears its column dealing combat damage to the player, to a blocker, and to Oorblak whole or in part`, () => {
+  test(`CR 608.8c, 608.9a: ${name} hears its column dealing combat damage to the player, to a blocker, and to Oorblak whole or in part CT-357`, () => {
     for (const [k, shape] of (['none', 'blocked', 'whole', 'partial'] as const).entries()) {
       assert.ok(fired(strike(60110 + 4 * i + k, name, shape).evs, name) >= 1,
         `${name}, ${shape}: "Any combat damage" (owner, 2026-10-23)`);
@@ -88,7 +88,7 @@ for (const [i, name] of ANY_COMBAT_DAMAGE.entries()) {
   });
 }
 
-test('CR 608.8c, 608.9a: Vroot whose column is wholly redirected into Oorblak gives each opponent the 4 its column dealt', () => {
+test('CR 608.8c, 608.9a: Vroot whose column is wholly redirected into Oorblak gives each opponent the 4 its column dealt CT-357', () => {
   const { evs, h, D } = strike(60101, 'Vroot', 'whole');
   assert.equal(evs.filter(e => e.type === 'combatFaceDamage').length, 0, 'PREMISE: the player was dealt nothing (CT-296)');
   assert.ok(evs.some(e => /^Oorblak takes 4/.test(e.msg)), 'PREMISE: Oorblak took the 4');
@@ -96,19 +96,19 @@ test('CR 608.8c, 608.9a: Vroot whose column is wholly redirected into Oorblak gi
   assert.equal(h.state.players[D]!.life, 34);
 });
 
-test('CR 608.8c, 608.9a: Vroot whose 10-power Piercing column puts 4 into Oorblak and 6 past it gives 10, all its column dealt', () => {
+test('CR 608.8c, 608.9a: Vroot whose 10-power Piercing column puts 4 into Oorblak and 6 past it gives 10, all its column dealt CT-357', () => {
   const { evs, h, D } = strike(60102, 'Vroot', 'partial');
   assert.ok(evs.some(e => /^Oorblak takes 4/.test(e.msg)), 'PREMISE: Oorblak took 4 of the 10');
   assert.equal(vrootGain(evs), 10, '4 to Oorblak and 6 to the player');
   assert.equal(h.state.players[D]!.life, 30 - 6 + 10);
 });
 
-test('CR 608.9a: Vroot blocked by a 0/20 gives each opponent the 4 its column dealt the blocker', () => {
+test('CR 608.9a: Vroot blocked by a 0/20 gives each opponent the 4 its column dealt the blocker CT-357', () => {
   const { evs } = strike(60103, 'Vroot', 'blocked');
   assert.equal(vrootGain(evs), 4);
 });
 
-test('CR 608.8c / CT-296: the "to a player" family still hears nothing from a wholly redirected hit', () => {
+test('CR 608.8c / CT-296: the "to a player" family still hears nothing from a wholly redirected hit CT-357', () => {
   // Rippleback Skulker: "Whenever my column deals combat damage to a player" — the same
   // board as Vroot above, so the redirect tag does not leak into the face family
   const { evs } = strike(60104, 'Rippleback Skulker', 'whole');

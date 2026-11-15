@@ -186,7 +186,7 @@ test('[CT-55] the premise: a round-2 defender really is holding castable tokens 
 
 /* ── §2. the gap ──────────────────────────────────────────────────────── */
 
-test('[CT-55] a round-2 attacker who declines no longer erases the defenders spell tokens in silence', () => {
+test('[CT-55] a round-2 attacker who declines no longer erases the defenders spell tokens in silence #66', () => {
   const { h, A, D, atk, def, toks } = tokensAtHome(1651, [['Fireball', 2], ['Poison', 1]]);
   h.do({ type: 'declareAttack', seat: A, columns: [[atk]] });
   let guard = 40;
@@ -216,7 +216,7 @@ test('[CT-55] a round-2 attacker who declines no longer erases the defenders spe
   assert.equal(h.state.entities[toks[1]!], undefined);
 });
 
-test('[CT-55] a battle both players decline opens no priority window at all, and the loss is still announced', () => {
+test('[CT-55] a battle both players decline opens no priority window at all, and the loss is still announced #66', () => {
   const { h, A, D, toks } = tokensAtHome(1652);
   const at = h.log.length;
 

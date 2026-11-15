@@ -32,7 +32,7 @@ function zOf(body: string): number | undefined {
   return m ? Number(m[1]) : undefined;
 }
 
-test('the damage marker is drawn above the mod strips of a modded unit', () => {
+test('the damage marker is drawn above the mod strips of a modded unit #359 CT-548', () => {
   const css = readStyles();
   const dmg = bodies(css, '.card .dmg');
   assert.ok(dmg.length >= 1, '.card .dmg is in the stylesheet');

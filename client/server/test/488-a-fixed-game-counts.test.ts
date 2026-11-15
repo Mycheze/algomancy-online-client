@@ -70,7 +70,7 @@ test('§1 the history row of a fixed game carries the tag, and an unfixed one no
   assert.equal(plain.amended, undefined, 'no field on a game nobody fixed');
 });
 
-test('§2 a fixed game counts: the profile, the rating gate, the card-stats gate', () => {
+test('§2 a fixed game counts: the profile, the rating gate, the card-stats gate BL-46', () => {
   const fixed = record('FXD3', 48802, [FIX, { ...FIX, at: 5 }]);
   assert.equal(fixed.amended, 2);
   rebuildProfiles();

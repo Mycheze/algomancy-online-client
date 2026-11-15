@@ -34,7 +34,7 @@ test('1160 §1 each swapped icon has its recoloured copy, at the URL the client 
   assert.ok(src.endsWith('/icons/fire.webp'), 'elIcon\'s src ends the way the selector expects');
 });
 
-test('1160 §2 the icon swap and the colour tokens key on the attribute prefs.ts sets', () => {
+test('1160 §2 the icon swap and the colour tokens key on the attribute prefs.ts sets BL-51', () => {
   const prefs = readFileSync(new URL('../prefs.ts', import.meta.url), 'utf8');
   assert.match(prefs, /ds\['colors'\] = 'accessible'/);
   assert.match(css, /:root\[data-colors="accessible"\] \{/, 'the token block');

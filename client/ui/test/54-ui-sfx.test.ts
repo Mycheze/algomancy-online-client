@@ -302,7 +302,7 @@ test('a real game moves life, and the channel sees every move of it', () => {
   }
 });
 
-test('online, you hear your own life change first, and otherwise the opponent life change', () => {
+test('online, you hear your own life change first, and otherwise the opponent life change #383 CT-559', () => {
   // report #383 (owner, 2026-11-11): "The life gain/loss sound effect should
   // also sound when your opponent loses/gains life". Until then the opponent's
   // total moved in silence online. Still ONE sound per render: when both moved,

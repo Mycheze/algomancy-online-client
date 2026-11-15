@@ -72,7 +72,7 @@ test('§1 rooms.ts passes rules at every fresh() and rebuild(); dealScenario han
   assert.ok(passesRules(sc[0]!), 'dealScenario passes rules to createGame');
 });
 
-test('§2-§3 every deal site in server/ and ui/ is classified, and the pending list is honest', () => {
+test('§2-§3 every deal site in server/ and ui/ is classified, and the pending list is honest CT-508', () => {
   const found = new Set<string>();
   for (const dir of ['server', 'ui']) {
     for (const f of readdirSync(join(CLIENT, dir)).filter(x => x.endsWith('.ts') && !x.endsWith('.test.ts'))) {
@@ -100,7 +100,7 @@ test('§2-§3 every deal site in server/ and ui/ is classified, and the pending 
   for (const f of [...ROOM_DEALERS, ...Object.keys(NEVER_CC)]) assert.ok(found.has(f), `${f} is listed but deals nothing — take it off`);
 });
 
-test('§4 a restore re-deals with the saved rules, and refuses rules it cannot read', async () => {
+test('§4 a restore re-deals with the saved rules, and refuses rules it cannot read CT-508', async () => {
   const F = await ccFixture('t822');
   const { R, M } = F;
   const { room, m } = F.start(3);

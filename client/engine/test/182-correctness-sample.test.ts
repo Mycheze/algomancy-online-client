@@ -272,7 +272,7 @@ function intoBattle(h: Harness, A: Seat, cols: EntityId[][], who: Seat = A): voi
 //   "I deal 6 damage to target unit."
 // ════════════════════════════════════════════════════════════════════════
 
-test('Luminous Arc: exactly 6 damage, to the ONE unit chosen, and any unit is choosable', () => {
+test('Luminous Arc: exactly 6 damage, to the ONE unit chosen, and any unit is choosable CT-394', () => {
   const { h, A, D } = open(18201);
   const attacker = spawn(h, A, ANVIL);        // 0/13 — survives 6, so `damage` reads the AMOUNT
   const victim = spawn(h, D, ANVIL);
@@ -701,7 +701,7 @@ test('Torrential Reclamation: the targets are X NONTOKEN ALLIES, recalled to my 
   finishBattle(h);
 });
 
-test('Torrential Reclamation: "each player sacrifices a unit" happens ONCE PER RECALLED ALLY (owner ruling, 2026-08-28)', () => {
+test('Torrential Reclamation: "each player sacrifices a unit" happens ONCE PER RECALLED ALLY (owner ruling, 2026-08-28) CT-91 CT-356 CT-374', () => {
   // PRINTED, before the designer's 2024-03-29 reword: "Recall X target
   // nontoken allies. Then each player sacrifices a unit and you lose 1 life
   // for each ally recalled this way." Now: "For each ally recalled this way,
@@ -1100,7 +1100,7 @@ test('Stoneborn Progenitor: my unit SURVIVING damage makes one 2/2 — a death m
   finishBattle(h);
 });
 
-test('Torrential Reclamation: with X = 0 nothing is recalled, so nobody sacrifices and no life is lost (CT-375)', () => {
+test('Torrential Reclamation: with X = 0 nothing is recalled, so nobody sacrifices and no life is lost (CT-375) CT-91', () => {
   // The same sentence, the other end of it. "… For each ally recalled this
   // way, each player sacrifices a unit and you lose 1 life."
   //
@@ -2038,7 +2038,7 @@ test('THE NUMBER — clauses asserted vs clauses correct, printed for the next r
     + 'when you find a new one, delete a row when you FIX one');
 });
 
-test('OPEN_QUESTIONS quote only words the named cards print today', () => {
+test('OPEN_QUESTIONS quote only words the named cards print today CT-432', () => {
   // A question that quotes a sentence the card no longer prints has been
   // overtaken — reworded, and usually answered by the reword (CT-432:
   // Torrential Reclamation's sat here for two months after both).

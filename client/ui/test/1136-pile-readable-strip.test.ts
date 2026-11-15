@@ -25,7 +25,7 @@ import { readStyles } from './read-styles.ts';
 /** the scan's name bar ends 100px down its 1000px height */
 const BAR = 100 / 1000;
 
-test('§1 a pile too tall for its pane fans at the readable step, at every card size', () => {
+test('§1 a pile too tall for its pane fans at the readable step, at every card size BL-65', () => {
   for (const cw of [132, 108, 88]) {
     const ch = cardHeight(cw);
     const S = stripOf(40, 300, ch);

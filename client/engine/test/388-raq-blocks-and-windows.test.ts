@@ -35,7 +35,7 @@ const blockIssue = (h: Harness, seat: Seat, blocks: Record<number, EntityId[]>):
 
 // ── [Solved] What is blocked? <Bubby don't hurt me> ──
 
-test('RAQ Blocked: a unit played in as a blocker after blocks blocks that column, and it stays blocked when removed', () => {
+test('RAQ Blocked: a unit played in as a blocker after blocks blocks that column, and it stays blocked when removed CT-203', () => {
   // Caleb: "3.) I think it would be considered blocked … 4.) … the column should still be blocked in that case"
   // The defending grid is only the columns it already blocks (E.formationGrid),
   // so Tiderunner Initiate is offered no spot opposite an unblocked attacker.
@@ -64,7 +64,7 @@ test('RAQ Blocked: a unit played in as a blocker after blocks blocks that column
   assert.equal(h.state.players[D]!.life, 30, 'the column stayed blocked after its blocker was removed: no damage through');
 });
 
-test('RAQ Blocked: a defender may block where no attacker is — a side-block — and Roving Quillback counts it', () => {
+test('RAQ Blocked: a defender may block where no attacker is — a side-block — and Roving Quillback counts it CT-203', () => {
   // The Manual: "Units may even be placed blocking in slots where attackers
   // aren't". Caleb: "So Roving Quillback will consider side-blocking columns
   // as 'blocked'?" — "yeah it should!"; and blocking eight units to the side
@@ -154,7 +154,7 @@ function toBoundary(h: Harness): void {
   assert.equal(h.state.battle?.step, 'damageWindow', 'a boundary window between damage sub-steps is open');
 }
 
-test('RAQ Swift: a column that dealt Swift damage deals no normal damage, even once its Swift unit is gone', () => {
+test('RAQ Swift: a column that dealt Swift damage deals no normal damage, even once its Swift unit is gone CT-202', () => {
   // "If column with Swift dealt damage, it's marked with 'I did Swift damage', which
   // means it won't be able to deal regular-combat-damage; even if original Swift unit
   // is removed from that column."
@@ -179,7 +179,7 @@ test('RAQ Swift: a column that dealt Swift damage deals no normal damage, even o
     'only the plain column strikes in the normal sub-step; the 3/3 already struck with its column');
 });
 
-test('RAQ Swift: a column that dealt normal damage deals no Sluggish damage, even if it gains Sluggish', () => {
+test('RAQ Swift: a column that dealt normal damage deals no Sluggish damage, even if it gains Sluggish CT-202', () => {
   // "If column dealt regular-combat-damage, it's marked with 'I did Regular damage'
   // which means it won't be able to deal sluggish-combat-damage; even if it were to gain Sluggish."
   const h = new Harness(38808);
@@ -199,7 +199,7 @@ test('RAQ Swift: a column that dealt normal damage deals no Sluggish damage, eve
   assert.equal(h.state.players[D]!.life, 30 - 3 - 4, 'only the Ambling Mountaintop strikes in the Sluggish sub-step');
 });
 
-test('RAQ Swift: a Swift column that gains Sluggish strikes again in the Sluggish sub-step', () => {
+test('RAQ Swift: a Swift column that gains Sluggish strikes again in the Sluggish sub-step CT-236', () => {
   // "It's still possible to give this column Sluggish attribute and it will deal
   // damage during sluggish-combat-damage (for effective doublestrike)"
   const h = new Harness(38809);
@@ -219,7 +219,7 @@ test('RAQ Swift: a Swift column that gains Sluggish strikes again in the Sluggis
   assert.equal(h.state.players[D]!.life, 30 - 2 - 2 - 4, 'Sluggish sub-step: the Dune Drifter column again, and the Mountaintop');
 });
 
-test('RAQ Swift: a Tiderunner played into an emptied Swift column deals no normal damage', () => {
+test('RAQ Swift: a Tiderunner played into an emptied Swift column deals no normal damage CT-202', () => {
   // "if original Swift unit was removed and you played Tiderunner Innitiate in
   // it's place, then this Tiderunner won't deal regular-combat-damage."
   const h = new Harness(38810);
@@ -272,7 +272,7 @@ test('RAQ Squish: the unit is the source — a Powerful ally deals double its de
   finishBattle(h);
 });
 
-test('RAQ Squish: a Powerful Squish does not double — the spell is not the source', () => {
+test('RAQ Squish: a Powerful Squish does not double — the spell is not the source CT-205', () => {
   // "It doesn't matter if Squish is Powerful". Chitin Shredder is a {Powerful}
   // Virus, and CR 723.4 lets a Virus go onto a spell on the stack.
   const h = new Harness(38817);
@@ -347,7 +347,7 @@ test('RAQ Squish: Unaware Bubb squishing a Robot 10 kills it — the Robot is re
   finishBattle(h);
 });
 
-test('RAQ Squish: a Robot 10 squishing Unaware Bubb deals its printed defense, 0', () => {
+test('RAQ Squish: a Robot 10 squishing Unaware Bubb deals its printed defense, 0 CT-206', () => {
   const { h, victim } = squishBoard(38814, robot(10), (h, D) => spawn(h, D, 'Bubb'));
   assert.ok(ent(h, victim), 'Bubb survives — today the Robot deals its live 10 and kills it');
   assert.equal(ent(h, victim)!.damage, 0, '"Squish to make Robot 10 deal its defense as damage to Bubb will cause no harm to Bubb"');

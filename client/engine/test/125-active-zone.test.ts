@@ -125,7 +125,7 @@ function negateWithHushMush(h: Harness, A: Seat, itemId: number): void {
 
 // ══ POSITIVE: leaving an ACTIVE zone (the stack) erases ═══════════════════
 
-test('CR 803.8k: Aberrant Statweaver negated off the stack is ERASED, not binned', () => {
+test('CR 803.8k: Aberrant Statweaver negated off the stack is ERASED, not binned #89 CT-42', () => {
   // The owner's own worked example. Caleb rules the general shape directly,
   // rules-questions 2025-09-13, answering "negated spells go to the bin, even
   // if they were played from the bin?" — "Yes, although most ways to play
@@ -141,7 +141,7 @@ test('CR 803.8k: Aberrant Statweaver negated off the stack is ERASED, not binned
     'CR 801.2b: it came from the stack, so it was never trashed either');
 });
 
-test('CR 803.8k: Oorblak — the other printed {Unstable} card — is erased the same way', () => {
+test('CR 803.8k: Oorblak — the other printed {Unstable} card — is erased the same way CT-42', () => {
   // Two cards print it; a fix that only reached one of them is a fix that
   // special-cased a name instead of reading the face.
   const { h, A, D, item } = virusOnStack(7451, 'Oorblak', 'earth');
@@ -149,7 +149,7 @@ test('CR 803.8k: Oorblak — the other printed {Unstable} card — is erased the
   nowhereBut(h, 'Oorblak', 'erased', D);
 });
 
-test('CR 803.8k: a printed-Unstable virus whose HOST DIES fizzles to the erased pile', () => {
+test('CR 803.8k: a printed-Unstable virus whose HOST DIES fizzles to the erased pile CT-42', () => {
   // The second bypass, and the nastier one: `resolveItem`'s two virus-fizzle
   // branches called `toBin(item.controller, item.card!, 'stack')` RAW, so they
   // skipped `dischargeItem` — and therefore the Unstable check — entirely.
@@ -189,7 +189,7 @@ test('CR 803.8k keeps CR 723.4b: a MODDED ordinary spell negated off the stack i
 
 // ══ NEGATIVE: the guards against over-reach ══════════════════════════════
 
-test('CR 406.4 negative control: a NON-Unstable virus negated off the stack still BINS', () => {
+test('CR 406.4 negative control: a NON-Unstable virus negated off the stack still BINS CT-42', () => {
   // Caleb, rules-questions 2025-03-31: Q "Negating an augment puts it in the
   // bin or erase?" → A "Into the bin". This is the case that makes the printed
   // check a CHECK: if leaving the stack erased everything, this answer would
@@ -202,7 +202,7 @@ test('CR 406.4 negative control: a NON-Unstable virus negated off the stack stil
     'CR 406.4: still not a trash — the bin entry came from the stack');
 });
 
-test('CR 803.8a: a printed-Unstable card DISCARDED FROM HAND bins and TRASHES — hand is inactive', () => {
+test('CR 803.8a: a printed-Unstable card DISCARDED FROM HAND bins and TRASHES — hand is inactive #89 CT-42', () => {
   // The question playtest-ledger #89 left explicitly open ("whether a
   // printed-Unstable card discarded from hand is also erased is unsourced and
   // deliberately unchanged"). "From an active zone" is the source, and it

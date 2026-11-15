@@ -125,7 +125,7 @@ function seat(state: GameState, s: Seat): string {
 
 /* ── §1. the premise, checked before anything is claimed ──────────────── */
 
-test('[CR D7.1c] the pass route was never log-only: report 66 warning is already a promptbar confirm', () => {
+test('[CR D7.1c] the pass route was never log-only: report 66 warning is already a promptbar confirm CT-134', () => {
   const src = read('../ui/main.ts');
   // the bar itself, with the owner's own copy in it
   assert.match(src, /confirmBarHtml\('pass',[\s\S]{0,120}move to Regroup, which will remove your spell tokens/,
@@ -138,7 +138,7 @@ test('[CR D7.1c] the pass route was never log-only: report 66 warning is already
     'the confirm is gated on a pass being pending — which is what the decline route does not have');
 });
 
-test('[CR D7.4a] the decline route really did announce the loss to the log and to nothing else', () => {
+test('[CR D7.4a] the decline route really did announce the loss to the log and to nothing else CT-134 CT-140', () => {
   const { h, loser, decliner, toks } = declinedOnTokens(2440);
   const at = h.log.length;
   const evs = h.do({ type: 'declareAttack', seat: decliner, columns: [] });
@@ -178,7 +178,7 @@ test('[CR D7.4a] exactly one announcement in the engine has the erased-with-ids-
   assert.match(shaped[0]!.msg, /unused spell token/, 'and it is the token-loss announcement (CR D2.6a)');
 });
 
-test('[CR D7.4a] the loss is put in front of the player who lost it, in the promptbar area', () => {
+test('[CR D7.4a] the loss is put in front of the player who lost it, in the promptbar area CT-134 CT-140', () => {
   const { h, loser, decliner } = declinedOnTokens(2441);
   const evs = h.do({ type: 'declareAttack', seat: decliner, columns: [] });
 
@@ -813,7 +813,7 @@ test('[CR D7.4] the ranked half: the announcements where the absence cost the pl
   }
 });
 
-test('[CR D7.4] one of the thirty-eight now has a surface, and the client really draws it', () => {
+test('[CR D7.4] one of the thirty-eight now has a surface, and the client really draws it CT-140', () => {
   // The measurement above counts the SOURCE, which still has 37 announcements
   // that would be log-only if nobody had built anything. This is the one that
   // no longer is — asserted against the client, not against the count, so the

@@ -76,7 +76,7 @@ test('Bioremediation: target player reveals their hand; you take a chosen card',
   finishBattle(h);
 });
 
-test('Boon of Protection: negates an effect aimed at something allied; an unallied one is not offered', () => {
+test('Boon of Protection: negates an effect aimed at something allied; an unallied one is not offered #134 CT-127', () => {
   const h = new Harness(2302);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -126,7 +126,7 @@ test('Boon of Protection: negates an effect aimed at something allied; an unalli
   finishBattle(h);
 });
 
-test('Burgeon: doubles the chosen stat of target unit until regroup', () => {
+test('Burgeon: doubles the chosen stat of target unit until regroup #7', () => {
   const h = new Harness(2303);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -160,7 +160,7 @@ test('Burgeon: doubles the chosen stat of target unit until regroup', () => {
   assert.equal(getCard('Burgeon').graftEffect?.bounded, true, '[Switch1]: bounded graftable effect');
 });
 
-test('Burgeon: doubling a 0 says so instead of resolving into silence', () => {
+test('Burgeon: doubling a 0 says so instead of resolving into silence #7', () => {
   // The second half of the MNWK fix: doubling a 0-power unit is an invisible
   // no-op — addTemp(+0/+0) logs a line that reads like nothing happened,
   // because nothing did. Say so, and say it about the right stat.
@@ -326,7 +326,7 @@ test('Hexbane Shiitake: exchanges the carrier for an enemy spell and retargets i
   finishBattle(h);
 });
 
-test('Hooba-Nan alone: behind it AND a new column past each end (CR 603.3)', () => {
+test('Hooba-Nan alone: behind it AND a new column past each end (CR 603.3) #169', () => {
   // Bena 2026-09-25, report YUZY (CR 603.3): "The columns to the left and right,
   // even when empty, DO technically exist." A lone column's empty adjacent
   // slots are the one behind it and the front of a new column on each side.
@@ -350,7 +350,7 @@ test('Hooba-Nan alone: behind it AND a new column past each end (CR 603.3)', () 
   finishBattle(h);
 });
 
-test('Hooba-Nan on the edge of the line: the open side and behind — two 1/1s (CR 603.3)', () => {
+test('Hooba-Nan on the edge of the line: the open side and behind — two 1/1s (CR 603.3) #169', () => {
   // the owner's "most frequent use of the card": put it on the edge
   const h = new Harness(2313);
   toDeployment(h);
@@ -414,7 +414,7 @@ test('Hooba-Nan in the middle: both sides and below, and nothing diagonal (CR 60
   finishBattle(h);
 });
 
-test('Hush Mush: negates target effect; that controller gains control of the spawned unit', () => {
+test('Hush Mush: negates target effect; that controller gains control of the spawned unit #23', () => {
   const h = new Harness(2311);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -479,7 +479,7 @@ function drain(h: Harness, guard = 60): void {
   }
 }
 
-test('CR 303.10 #95: Hush Mush ENTERS under the negated effect\'s controller — no trigger, no handover', () => {
+test('CR 303.10 #95: Hush Mush ENTERS under the negated effect\'s controller — no trigger, no handover #96 CT-29 CT-30', () => {
   const h = new Harness(2331);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -512,7 +512,7 @@ test('CR 303.10 #95: Hush Mush ENTERS under the negated effect\'s controller —
   finishBattle(h);
 });
 
-test('CR 303.10 #96: the CASTER\'s Flourishing Flora takes NO counter off Hush Mush', () => {
+test('CR 303.10 #96: the CASTER\'s Flourishing Flora takes NO counter off Hush Mush #95 CT-29 CT-30', () => {
   const h = new Harness(2332);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -555,7 +555,7 @@ test('CR 303.10 #96: the CASTER\'s Flourishing Flora takes NO counter off Hush M
   finishBattle(h);
 });
 
-test('CR 303.10: TWO Hush Mushes in one battle keep separate answers (the old ledger\'s worry)', () => {
+test('CR 303.10: TWO Hush Mushes in one battle keep separate answers (the old ledger\'s worry) #95 #96 CT-29 CT-30', () => {
   // The ⚠ header used to warn that the per-REGION `hushMushGiveTo` slot was
   // last-write-wins, so two copies resolving in one region could read each
   // other's seat. The answer now rides on each spell's OWN stack item, so the
@@ -601,7 +601,7 @@ test('CR 303.10: TWO Hush Mushes in one battle keep separate answers (the old le
   finishBattle(h);
 });
 
-test('CR 303.10: a Hush Mush whose target has already left the stack fizzles and hands nobody a body', () => {
+test('CR 303.10: a Hush Mush whose target has already left the stack fizzles and hands nobody a body #95 #96 CT-29 CT-30', () => {
   // Two Hush Mushes aimed at the SAME effect: the first negates it, the second
   // finds nothing there. CR 704.6 gets there first — the item fizzles before its run
   // is entered, so the card's own "the targeted effect has already left the
@@ -647,7 +647,7 @@ test('CR 303.10: a Hush Mush whose target has already left the stack fizzles and
   finishBattle(h);
 });
 
-test('Hush Mush: "target effect" reaches a TRIGGERED ability, "target SPELL effect" does not', () => {
+test('Hush Mush: "target effect" reaches a TRIGGERED ability, "target SPELL effect" does not #6', () => {
   // Playtest DEYK (CR 700.1): "I'm not able to cast Hush Mush for some reason right
   // now. Tho I have priority and there's an effect I want to negate." The
   // effect was an attack trigger, and the engine had mapped every "target
@@ -774,7 +774,7 @@ test('Luminary Leader: draws when attacking in a formation of 4+ units; silent b
  * made that gap permanent — the card would not even be OFFERED — so the arm
  * the Virus-targets-its-host ruling (CR 110.10a) gave Graxxlid is in `aimsAtAlly` too. Same shape as
  * 16-earth-a::Graxxlid: a Virus being applied to me. */
-test('Boon of Protection: a Virus being applied to an allied unit IS an allied target', () => {
+test('Boon of Protection: a Virus being applied to an allied unit IS an allied target #134 CT-127', () => {
   const h = new Harness(2324);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;

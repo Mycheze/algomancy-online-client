@@ -401,7 +401,7 @@ test('CR 304.14: a Robot 2 and a Robot 5 in one batch yield TWO extras, one of e
     'one of each, not two of the first');
 });
 
-test('CR 304.14: three IDENTICAL Robot 2s are one unique token and still yield ONE extra', () => {
+test('CR 304.14: three IDENTICAL Robot 2s are one unique token and still yield ONE extra CT-294', () => {
   const h = new Harness(13641);
   toDeployment(h);
   const A = h.state.deployPlayer!;

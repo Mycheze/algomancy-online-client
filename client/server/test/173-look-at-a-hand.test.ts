@@ -558,7 +558,7 @@ const seen = (h: Harness, viewer: Seat): string[] => h.state.seenHand[viewer]?.c
 const provisional = (h: Harness, viewer: Seat): boolean =>
   h.state.seenHand[viewer]?.pending !== undefined;
 
-test('§4a CT-174(b) Eldritch Dreamtender: the card they are MADE to discard is not in the list — the reported case', () => {
+test('§4a CT-174(b) Eldritch Dreamtender: the card they are MADE to discard is not in the list — the reported case #156', () => {
   const h = new Harness(17310);
   toDeployment(h);
   const A = h.state.deployPlayer! as Seat, D = (1 - A) as Seat;
@@ -591,7 +591,7 @@ test('§4a CT-174(b) Eldritch Dreamtender: the card they are MADE to discard is 
   finishBattle(h);
 });
 
-test('§4b CT-174(b) Bripp: the recycled card goes, and the card they DRAW never appears — the owner\'s own control', () => {
+test('§4b CT-174(b) Bripp: the recycled card goes, and the card they DRAW never appears — the owner\'s own control #156', () => {
   const h = new Harness(17311);
   toDeployment(h);
   const A = h.state.deployPlayer! as Seat, D = (1 - A) as Seat;
@@ -618,7 +618,7 @@ test('§4b CT-174(b) Bripp: the recycled card goes, and the card they DRAW never
   finishBattle(h);
 });
 
-test('§4c CT-174(b) Thought Extraction: the same rule on a spell that discards, and the list is FROZEN afterwards', () => {
+test('§4c CT-174(b) Thought Extraction: the same rule on a spell that discards, and the list is FROZEN afterwards #156', () => {
   const h = new Harness(17312);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -645,7 +645,7 @@ test('§4c CT-174(b) Thought Extraction: the same rule on a spell that discards,
     + 'it was seen in is over');
 });
 
-test('§4d CT-174(b) the other two shapes — a card TAKEN out of the hand (Bioremediation) and one CACHED (Divine Foresight)', () => {
+test('§4d CT-174(b) the other two shapes — a card TAKEN out of the hand (Bioremediation) and one CACHED (Divine Foresight) #156', () => {
   // a TAKE: the card leaves their hand for the looker's own, so it must drop
   // out of the list — the looker is holding it and needs no reminder.
   const h = new Harness(17313);
@@ -685,7 +685,7 @@ test('§4d CT-174(b) the other two shapes — a card TAKEN out of the hand (Bior
   finishBattle(g2);
 });
 
-test('§4e CT-174(b) census: every look-at-a-hand site in the pool is drilled above, or says why it needs no fix', () => {
+test('§4e CT-174(b) census: every look-at-a-hand site in the pool is drilled above, or says why it needs no fix #156', () => {
   // Derived from SOURCE, not from a list: every `g.revealHandTo(` call in
   // src/cards/sets, attributed to the nearest enclosing `card('…')` or
   // `const <effect>` above it. Adding an eighth site and forgetting the

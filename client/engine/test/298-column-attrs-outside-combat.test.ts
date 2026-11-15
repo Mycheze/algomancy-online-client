@@ -92,7 +92,7 @@ function columnBoard(seed: number, front: string, back: string, victim: string) 
 
 /* ══ §1 — THE REPORT ═════════════════════════════════════════════════ */
 
-test('CR 802.22e the report: an ability fired by a unit in a {Blessed} column gains its controller life', () => {
+test('CR 802.22e the report: an ability fired by a unit in a {Blessed} column gains its controller life #166', () => {
   // Lithoghul stands where Refuse Reclaimer stood; Flzzz is the column-mate
   // that prints {Blessed}; the damage is an effect, not combat.
   const { h, A, f, v } = columnBoard(29801, 'Lithoghul', 'Flzzz', 'Good Whale');
@@ -107,7 +107,7 @@ test('CR 802.22e the report: an ability fired by a unit in a {Blessed} column ga
   finishBattle(h);
 });
 
-test('CR 802.22e the control: the same board with no {Blessed} in the column gains nothing', () => {
+test('CR 802.22e the control: the same board with no {Blessed} in the column gains nothing #166', () => {
   const { h, A, f, v } = columnBoard(29802, 'Lithoghul', 'Geode', 'Good Whale');
   const life0 = h.state.players[A]!.life;
   dealFrom(h, A, f, v, 3);
@@ -118,7 +118,7 @@ test('CR 802.22e the control: the same board with no {Blessed} in the column gai
 
 /* ══ §2 — IT IS THE LAYER, NOT THE CARD ═════════════════════════════ */
 
-test('CR 712.8a every source-side attribute rides the same line: {Powerful} from a column doubles too', () => {
+test('CR 712.8a every source-side attribute rides the same line: {Powerful} from a column doubles too #166', () => {
   const { h, A, f, v } = columnBoard(29803, 'Lithoghul', 'Chitin Shredder', 'Good Whale');
   assert.ok(!new E(h.state).ownAttrs(ent(h, f)!).has('Powerful'), 'the source card is not Powerful');
   dealFrom(h, A, f, v, 2);
@@ -129,7 +129,7 @@ test('CR 712.8a every source-side attribute rides the same line: {Powerful} from
 
 /* ══ §3 — OUTSIDE BATTLE THERE IS NO COLUMN, SO NOTHING CHANGES ═════ */
 
-test('CR 712.8b outside battle there are no columns at all, so effAttrs IS ownAttrs', () => {
+test('CR 712.8b outside battle there are no columns at all, so effAttrs IS ownAttrs #166', () => {
   const h = new Harness(29804);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -196,7 +196,7 @@ test('CR 802.15d {Alluring} still originates from the unit that prints it', () =
  * column-sharing rule (CR 712.8a) is what would tempt someone to "fix" that
  * exception away; these are the guards that stop them.
  */
-test('CR 712.8e Unstable and Burst are not in the attribute set, so a column cannot share them', () => {
+test('CR 712.8e Unstable and Burst are not in the attribute set, so a column cannot share them #166', () => {
   for (const name of allCardNames()) {
     const c = getCard(name) as { attrs?: string[]; augmentAttrs?: string[] };
     for (const a of [...(c.attrs ?? []), ...(c.augmentAttrs ?? [])]) {

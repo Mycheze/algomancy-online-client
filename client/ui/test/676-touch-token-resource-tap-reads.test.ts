@@ -119,7 +119,7 @@ test('CR 502.2b / CT-408: the control, a mouse click on a dormant resource still
   assert.deepEqual(ui.actions(), legal, 'one click, activated: the desktop is unchanged');
 });
 
-test('CR 502.2b / CT-555: in the resource step a finger tap on a dormant resource activates it at once, with no button', () => {
+test('CR 502.2b / CT-555: in the resource step a finger tap on a dormant resource activates it at once, with no button #376', () => {
   const { state, i, legal } = withADormantResource(67610);
   assert.equal(state.phase, 'planning', 'the fixture is the resource step');
   assert.ok(!state.hasteDone && !state.draftDone, 'not the haste step, not a draft');

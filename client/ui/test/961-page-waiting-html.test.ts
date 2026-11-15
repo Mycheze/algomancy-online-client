@@ -83,7 +83,7 @@ test('961 §3 a constructed league match: nothing to share, any deck', () => {
   assert.match(html, /Bo — <span class="dim">not here yet/, 'the seat row says they are not here');
 });
 
-test('961 §3b the owner removed the waiting room explanatory lines (report #329): no League-page sentence, no deck hint, no deal footnote', () => {
+test('961 §3b the owner removed the waiting room explanatory lines (report #329): no League-page sentence, no deck hint, no deal footnote CT-531', () => {
   for (const v of [cview({ league: true }), cview({ league: true, oppHere: true }), cview(), cview({ oppHere: true })]) {
     const html = constructedWaitingHtml(v);
     assert.doesNotMatch(html, /own League page|tell them on Discord|lobbywait/);

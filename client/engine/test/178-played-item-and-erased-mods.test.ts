@@ -55,7 +55,7 @@ function midBattleMandible(h: Harness, seat: Seat): EntityId {
 
 // ── (a) two identical plays: the NEWER is the one the event names ─────────
 
-test('Void Mandible: with two same-card same-seat spells up, it negates THE ONE THE EVENT NAMES', () => {
+test('Void Mandible: with two same-card same-seat spells up, it negates THE ONE THE EVENT NAMES CT-79', () => {
   const h = new Harness(17800);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -93,7 +93,7 @@ test('Void Mandible: with two same-card same-seat spells up, it negates THE ONE 
 
 // ── (b) CR 706.13: a COPY was never played, so it is never "that effect" ───────
 
-test('Void Mandible: a COPY on the stack is never negated — CR 706.13, a copy was not played', () => {
+test('Void Mandible: a COPY on the stack is never negated — CR 706.13, a copy was not played CT-79', () => {
   const h = new Harness(17801);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -155,7 +155,7 @@ test('Void Mandible: a COPY on the stack is never negated — CR 706.13, a copy 
 // and the Mandible's "negate that effect" now has an item to name — the RAISED
 // one, by id (CR 706.13), never the same-named unit already standing there.
 
-test('Void Mandible: a unit Wake the Dead plays (once an asPlay spawn) is negated by id (CR 706.13) — not a same-named bystander', () => {
+test('Void Mandible: a unit Wake the Dead plays (once an asPlay spawn) is negated by id (CR 706.13) — not a same-named bystander CT-79', () => {
   const h = new Harness(17802);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -201,7 +201,7 @@ test('Void Mandible: a unit Wake the Dead plays (once an asPlay spawn) is negate
 
 // ── the ordinary case, unchanged ─────────────────────────────────────────
 
-test('Void Mandible: the ordinary case still works — one play, sacrificed, negated', () => {
+test('Void Mandible: the ordinary case still works — one play, sacrificed, negated CT-79', () => {
   const h = new Harness(17803);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -317,7 +317,7 @@ test('CR 720.9 Suppression Field: mods leave host and game, the host lives, and 
   finishBattle(h);
 });
 
-test('CR 720.9 Return to Nature: the site that already got CR 407.2 right still files the public pile', () => {
+test('CR 720.9 Return to Nature: the site that already got CR 407.2 right still files the public pile CT-86 CT-258', () => {
   const { h, A, D, atk } = spellBattle(17806);
   const host = spawn(h, D, 'Unit Token');
   giveResources(h, D, 'water', 3); giveResources(h, D, 'earth', 3);

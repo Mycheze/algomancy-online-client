@@ -44,7 +44,7 @@ function twoCaches(seed: number): { h: Harness; uid: [number, number] } {
   return { h, uid };
 }
 
-test('CR 110.5b in deployment a home region reaches only its own seat\'s cache; in battle both', () => {
+test('CR 110.5b in deployment a home region reaches only its own seat\'s cache; in battle both #162', () => {
   const { h, uid } = twoCaches(2930);
   for (const seat of [0, 1] as Seat[]) {
     const region = h.q.homeRegion(seat);
@@ -69,7 +69,7 @@ test('CR 110.5b in deployment a home region reaches only its own seat\'s cache; 
   ].sort(), 'in battle the opponent\'s cache is on the menu too (CR 403.6)');
 });
 
-test('CR 403.6 the report: Prismatic Observer sacrificed in deployment cannot reach the opponent\'s cache', () => {
+test('CR 403.6 the report: Prismatic Observer sacrificed in deployment cannot reach the opponent\'s cache #162', () => {
   const { h, uid } = twoCaches(2931);
   const A = h.state.deployPlayer!, B = (1 - A) as Seat;
   const obs = spawn(h, A, 'Prismatic Observer');
@@ -81,7 +81,7 @@ test('CR 403.6 the report: Prismatic Observer sacrificed in deployment cannot re
     'my own cache entry is still offered');
 });
 
-test('CR 403.6 the control: in battle the Observer reaches the opponent\'s cache, as printed', () => {
+test('CR 403.6 the control: in battle the Observer reaches the opponent\'s cache, as printed #162', () => {
   const { h, uid } = twoCaches(2932);
   // the battle is fought in the DEFENDER's home region, so the defender's
   // Observer is the one standing where both seats are

@@ -76,7 +76,7 @@ test('CR 708.4a: Proliferating Slime applies after a Counter Thief moves the cou
   assert.equal(counters(r.h, r.d[0]!), 3, 'two, plus one: once on the thief they are on an enemy unit');
 });
 
-test('CR 708.7: Proliferating Slime and a Counter Thief of one player, the default is the amounts first and says it gives the higher number', () => {
+test('CR 708.7: Proliferating Slime and a Counter Thief of one player, the default is the amounts first and says it gives the higher number CT-422', () => {
   const r = growth(69802, ['Proliferating Slime', 'Counter Thief'], [], 'enemy');
   const dec = r.h.state.decision;
   assert.ok(dec, 'the order changes the result: asked');

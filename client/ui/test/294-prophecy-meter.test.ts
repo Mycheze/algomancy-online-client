@@ -36,7 +36,7 @@ function cached(seed = 2940): Harness {
   return h;
 }
 
-test('§1 the engine meters a counting prophecy off the same delta the fulfilment test reads', () => {
+test('§1 the engine meters a counting prophecy off the same delta the fulfilment test reads #160', () => {
   const h = cached();
   const p = h.state.players[0]!.cache![0]!.prophecy!;
   assert.deepEqual(h.q.prophecyProgress(0, p), { done: 0, need: 4, unit: 'turn' }, 'just prophesied: 0 of 4');
@@ -56,7 +56,7 @@ test('§1 the engine meters a counting prophecy off the same delta the fulfilmen
   assert.deepEqual(h2.q.prophecyProgress(1, b), { done: 0, need: 2, unit: 'battle' }, 'battles count too');
 });
 
-test('§2 the cache dialog shows how far along it is, and drops the meter once fulfilled', () => {
+test('§2 the cache dialog shows how far along it is, and drops the meter once fulfilled #160 #185 #186', () => {
   const h = cached(2942);
   toNextBattle(h);                                           // 1 of 4
   ui.join(h.state, 0, []);
@@ -74,7 +74,7 @@ test('§2 the cache dialog shows how far along it is, and drops the meter once f
   assert.doesNotMatch(dialog, /turns to go/, 'and no meter beside a fulfilled card');
 });
 
-test('§3 the control: a state condition reads "waiting" with no meter', () => {
+test('§3 the control: a state condition reads "waiting" with no meter #160', () => {
   const h = cached(2943);
   ui.join(h.state, 0, []);
   const html = ui.click({ btn: 'cacheopen', p: 0 });
@@ -91,7 +91,7 @@ test('§3 the control: a state condition reads "waiting" with no meter', () => {
 // you do not — and because the cache is public (CR D6.6), it renders for the
 // opponent's cache on the same terms as your own.
 
-test('§4 the cache zone line meters a counting prophecy without opening anything', () => {
+test('§4 the cache zone line meters a counting prophecy without opening anything #185 #186', () => {
   const h = cached(2944);
   toNextBattle(h);                                           // 1 of 4
   ui.join(h.state, 0, []);

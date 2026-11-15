@@ -55,7 +55,7 @@ const baseOf = (h: Harness, id: EntityId): [number, number] =>
 
 /* ── the continuous half: Aberrant Statweaver ──────────────────────────── */
 
-test('Statweaver REPLACES the base — a 7/5 and a 1/1 both land on exactly 3/3', () => {
+test('Statweaver REPLACES the base — a 7/5 and a 1/1 both land on exactly 3/3 #13', () => {
   const h = new Harness(5900);
   toDeployment(h);
   const A = h.state.deployPlayer!;
@@ -311,7 +311,7 @@ test('Leave None Pure: a rewritten base counts as a stat change', () => {
 
 /* ── what the player is told ───────────────────────────────────────────── */
 
-test('the text box says "is base 3/3", not a +0/+0 projection', () => {
+test('the text box says "is base 3/3", not a +0/+0 projection #12', () => {
   const h = new Harness(5914);
   toDeployment(h);
   const A = h.state.deployPlayer!;

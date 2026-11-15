@@ -57,7 +57,7 @@ function piercingBoard(seed: number, power: number, blockers: (h: Harness, D: Se
 
 // ── CR 802.16c {Piercing} is elective ──────────────────────────────────────────
 
-test('CR 802.16c: a Piercing attacker may put all 10 into a lone Vulnerable 3/8 and none reaches the player', () => {
+test('CR 802.16c: a Piercing attacker may put all 10 into a lone Vulnerable 3/8 and none reaches the player CT-223', () => {
   // RAQ "[Solved] Vulnerable + Piercing / Electric": the attacker "can also put
   // all 10 dmg into Crumbling (which will receive 20 damage)".
   const { h, D, blk, life } = piercingBoard(39901, 10, (h, D) => [spawn(h, D, 'Crumbling Ancient')]);
@@ -67,7 +67,7 @@ test('CR 802.16c: a Piercing attacker may put all 10 into a lone Vulnerable 3/8 
   assert.equal(h.state.players[D]!.life, life, 'and nothing pierced through');
 });
 
-test('CR 802.16c: with Piercing the attacker may overkill the front unit and keep the excess off the player', () => {
+test('CR 802.16c: with Piercing the attacker may overkill the front unit and keep the excess off the player CT-223', () => {
   // RAQ "[Solved] Excessive Combat Damage & interaction with Piercing, Deadly
   // and Phytochemical Protection": the attacker may "overkill the front or back
   // unit, keeping that excess off the player".
@@ -108,7 +108,7 @@ test('CR 802.16c: a Piercing strike with nothing past its lone blocker\'s lethal
 
 // ── CR 802.19a {Resonant} is a trigger ─────────────────────────────────────────
 
-test('the Resonant rider waits on the stack after combat, as its source, and can be negated', () => {
+test('the Resonant rider waits on the stack after combat, as its source, and can be negated CT-236', () => {
   const h = new Harness(39906);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;

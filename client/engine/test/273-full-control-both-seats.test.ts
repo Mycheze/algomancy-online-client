@@ -108,7 +108,7 @@ test('BL-18 §1 with full control OFF an empty board still steps itself along', 
 
 /* ══ §2 — with it on, the window is handed over ════════════════════════ */
 
-test('BL-18 §2 with full control ON the drain stops and the player is left the window', () => {
+test('BL-18 §2 with full control ON the drain stops and the player is left the window CT-183', () => {
   setFull(true);
   const { s, seat } = emptyBattle(27301);
   ui.show(s);

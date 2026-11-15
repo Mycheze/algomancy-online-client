@@ -49,7 +49,7 @@ function playTiderunner(h: Harness, seat: Seat): void {
 
 // ── the report ─────────────────────────────────────────────────────────
 
-test('CR 602.7 THE REPORT: Tiderunner is never in the invader’s zone, and never stacks a trigger', () => {
+test('CR 602.7 THE REPORT: Tiderunner is never in the invader’s zone, and never stacks a trigger #54', () => {
   const h = new Harness(7301, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -80,7 +80,7 @@ test('CR 602.7 THE REPORT: Tiderunner is never in the invader’s zone, and neve
   finishBattle(h);
 });
 
-test('CR 602.7 THE REPORTED SHAPE: no state between the play and the line shows an invader', () => {
+test('CR 602.7 THE REPORTED SHAPE: no state between the play and the line shows an invader #54', () => {
   // Driven blind, the way a client would: answer whatever is asked, pass when
   // nothing is, and check the reported symptom after EVERY single step. The
   // old modelling failed here and not at some timing assertion — there really
@@ -115,7 +115,7 @@ test('CR 602.7 THE REPORTED SHAPE: no state between the play and the line shows 
   finishBattle(h);
 });
 
-test('CR 602.7 the spawn event itself already sees it in the formation', () => {
+test('CR 602.7 the spawn event itself already sees it in the formation #54', () => {
   const h = new Harness(7302, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.initiative;

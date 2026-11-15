@@ -60,7 +60,7 @@ function midGlimpse(seed: number): {
   return { h, A, D, slime, purge, mem };
 }
 
-test('a resolving Celestial Purge mid-Glimpse reports no lost target, a waiting item aimed at the same unit does', () => {
+test('a resolving Celestial Purge mid-Glimpse reports no lost target, a waiting item aimed at the same unit does #189', () => {
   const { h, A, slime, purge } = midGlimpse(36400);
   // a second spell, still WAITING below, aimed at the same unit (QJAF had a
   // Capture there): for it the target really has gone
@@ -78,7 +78,7 @@ test('a resolving Celestial Purge mid-Glimpse reports no lost target, a waiting 
     'the waiting item whose target left still says so');
 });
 
-test('the resolving Celestial Purge caption still says who Glimpses, naming the erased unit', () => {
+test('the resolving Celestial Purge caption still says who Glimpses, naming the erased unit #189', () => {
   const { h, purge, mem, slime } = midGlimpse(36401);
   const names = h.state.players.map(p => p.name);
   const label = (t: TargetRef): string =>

@@ -106,7 +106,7 @@ test('§2 Your matches: a row, and one button into the room', () => {
   assert.equal(location.search, '?ws=1&room=PAUS&seat=1&mode=constructed&cc=1');
 });
 
-test('§3 the bell lists the match, with the same button', () => {
+test('§3 the bell lists the match, with the same button CT-517', () => {
   const html = ui.click({ inbox: 'bell' });
   assert.match(html, /Competitive match vs <b>Rashi<\/b>/);
   assert.match(html, /<b>Cy<\/b> wants to resume your match<\/div>\s*<div class="invbtns"><button class="primary" data-inbox="match-open" data-room="PAU2" data-seat="0">Resume</,
@@ -142,7 +142,7 @@ test('§5 a watch says who is watching', () => {
   assert.match(body, /const token = acct\.token\(\);\s*this\.sendMsg\(\{ t: 'watch', room: this\.room, \.\.\.\(token \? \{ token \} : \{\}\) \}\)/);
 });
 
-test('§6 the match history says Game 2 of 3', async () => {
+test('§6 the match history says Game 2 of 3 CT-514', async () => {
   const { historyRowsHtml } = await import('../account.ts');
   const row = {
     code: 'G2CC', playedAt: '2026-11-02T10:00:00Z', mode: 'constructed', els: [], turns: 9, deckId: null,
@@ -154,7 +154,7 @@ test('§6 the match history says Game 2 of 3', async () => {
   assert.match(historyRowsHtml([row]), /<td>constructed<\/td>/, 'any other game reads as before');
 });
 
-test('§7 the League Play for a Competitive match opens the match room', async () => {
+test('§7 the League Play for a Competitive match opens the match room CT-514', async () => {
   const lg = await import('../league.ts');
   lg.playMatch('2026-12', '2026-12-w1-1');
   await flush();

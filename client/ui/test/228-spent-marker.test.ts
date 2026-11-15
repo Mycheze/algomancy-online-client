@@ -100,7 +100,7 @@ function boundedPool(): { name: CardName; ability: number[]; augment: number[] }
 // failure mode being guarded is a display that does not read the card, and a
 // test that stamps its own key would be free to be wrong about the key too.
 
-test('CR D6.10b: a spent bounded GRAFT ability wears the [Switch1] its own card prints', () => {
+test('CR D6.10b: a spent bounded GRAFT ability wears the [Switch1] its own card prints #120 CT-113', () => {
   const { e, h, A } = board(22800);
   // "After combat, [Switch1] Put a +1/+1 counter on each of your units."
   const se = spawn(h, A, 'Synaptic Energizer');
@@ -115,7 +115,7 @@ test('CR D6.10b: a spent bounded GRAFT ability wears the [Switch1] its own card 
     'so the player sees the bounded-graft symbol, which is what the ability is');
 });
 
-test('CR D6.10b: a spent [once] ability wears [Once] — the same code, the other card', () => {
+test('CR D6.10b: a spent [once] ability wears [Once] — the same code, the other card #120 CT-113', () => {
   const { e, h, A } = board(22801);
   // "[once] When another ally with greater defense than power spawns, draw a
   // card." — fired for real by spawning a 2/3 next to it, so the budget below
@@ -186,7 +186,7 @@ test('CR D6.10b: a card whose OWN augment box is spent reads that box, not its t
 
 // ── 3. the whole pool, spent for real, one card at a time ────────────
 
-test('CR D6.10b: every card in the pool with a bounded ability gets the marker it prints', () => {
+test('CR D6.10b: every card in the pool with a bounded ability gets the marker it prints #120 CT-113', () => {
   // 87 cards, each spawned and each budget reserved through E.composeParts —
   // the engine's own reservation, so the budget KEY is never something this
   // test knows how to spell. The expectation comes back through iconizeText,
@@ -236,7 +236,7 @@ test('CR D6.10b: every card in the pool with a bounded ability gets the marker i
 
 // ── 4. the invariants that make a per-CLAUSE read exact ──────────────
 
-test('CR D6.10b: no card prints both markers, and none has two bounded abilities', () => {
+test('CR D6.10b: no card prints both markers, and none has two bounded abilities #120 CT-113', () => {
   // Both of these are what let one clause answer for one budget. If a future
   // card breaks either, the marker becomes a guess again — and the box has now
   // been wrong in both directions once each, so a guess is not acceptable.

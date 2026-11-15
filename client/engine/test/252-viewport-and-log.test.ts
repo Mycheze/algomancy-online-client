@@ -148,7 +148,7 @@ function seated(seed: number): { h: Harness; seat: Seat } {
   return { h, seat: h.state.initiative as Seat };
 }
 
-test('CR D6.15a a log longer than the old 80-line window is shown WHOLE', async () => {
+test('CR D6.15a a log longer than the old 80-line window is shown WHOLE #145 CT-158', async () => {
   const { h, seat } = seated(25201);
   /* A full resync — `log:` on an update, the shape a net client gets on join
    * and after an undo. Every line arrives with NO type, which is the case the
@@ -180,7 +180,7 @@ test('CR D6.15a a log longer than the old 80-line window is shown WHOLE', async 
   closeLog(ui);
 });
 
-test('CR D6.15a lifting the window does not lift the story curtain with it', async () => {
+test('CR D6.15a lifting the window does not lift the story curtain with it #145 CT-158', async () => {
   /* The trap the brief names: there are THREE curtains over this one
    * observable and only one of them is the report. If removing the 80-line
    * window quietly took the #125 fold with it, §1a would go green and the
@@ -213,7 +213,7 @@ test('CR D6.15a lifting the window does not lift the story curtain with it', asy
   closeLog(ui);
 });
 
-test('CR D6.15a the pacing curtain still holds the tail it has not told yet', async () => {
+test('CR D6.15a the pacing curtain still holds the tail it has not told yet #145 CT-158', async () => {
   /* CR D5.4's `untold`/`heldLines` is the second curtain, and it is the one that
    * makes the log arrive at reading speed instead of all at once. It is
    * expressed as `logEnd`, one line above the window §1a removed, so a careless
@@ -296,7 +296,7 @@ const RATIO_EXEMPT: Record<string, string> = {
     + 'scroll is snapshotted like the board\'s; nothing has been measured to be lost there.',
 };
 
-test('a card image reserves its height, so a repaint cannot clamp the scroll', () => {
+test('a card image reserves its height, so a repaint cannot clamp the scroll #142 CT-155', () => {
   /* ⚠ THE NON-VACUITY ASSERTIONS COME FIRST. This guard is worth nothing
    * unless the boxes really are content-sized (nothing else gives a card a
    * height) and the ratio they reserve really is the ratio the scans have. */
@@ -357,14 +357,14 @@ test('a card image reserves its height, so a repaint cannot clamp the scroll', (
 
 const AT = { key: 'e17', present: true, moved: false };
 
-test('a repaint that leaves the hovered card where it was keeps the tip', () => {
+test('a repaint that leaves the hovered card where it was keeps the tip #142 CT-155', () => {
   assert.equal(hoverSurvivesPaint(AT), true);
   // and the same for a card hovered by NAME (a log line, a decision menu) —
   // those carry data-prev and no entity id
   assert.equal(hoverSurvivesPaint({ ...AT, key: 'cGood Whale' }), true);
 });
 
-test('a card that is gone from the new board takes its tip with it', () => {
+test('a card that is gone from the new board takes its tip with it #142 CT-155', () => {
   /* This is the reason the unconditional hide was written in the first place,
    * and it has to survive the fix: the unit died, or the card was played, and a
    * box still floating over the board would be describing something that is not
@@ -409,7 +409,7 @@ test('the rule is total and keeps exactly one of its eight inputs', () => {
 
 /* ══ §4 — [142] "WHEN THE OTHER PLAYER IS DOING THINGS IN A HIDDEN ZONE" ══ */
 
-test('an update this seat cannot see costs exactly one paint', async () => {
+test('an update this seat cannot see costs exactly one paint #142 CT-155', async () => {
   /* The third reading of [142], and the one the brief expected to be the
    * loudest: that the client repaints wholesale on updates that change nothing
    * this seat can see, and that the waste is the "clunky".

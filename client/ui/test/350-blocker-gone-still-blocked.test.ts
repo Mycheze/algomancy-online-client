@@ -67,7 +67,7 @@ function blockerGone(seed: number): { state: GameState; A: Seat; D: Seat; blocke
 
 const view = (seat: Seat, s: GameState): string => ui.join(s, seat, legalActions(s, seat));
 
-test('§1 regions board: an emptied block reads blocked, not unblocked', () => {
+test('§1 regions board: an emptied block reads blocked, not unblocked #176 CT-190', () => {
   const { state, D } = blockerGone(35001);
   const html = view(D, state);
   assert.match(html, /class="lboard/, 'the premise: the regions board is drawn');
@@ -77,7 +77,7 @@ test('§1 regions board: an emptied block reads blocked, not unblocked', () => {
   assert.match(c2, /class="slot ghost through"[^>]*aria-label="unblocked/, 'column 2 nobody blocked, and it still says so');
 });
 
-test('§3 the attacker is told the same thing', () => {
+test('§3 the attacker is told the same thing CT-190', () => {
   const { state, A } = blockerGone(35003);
   const html = view(A, state);
   assert.match(colChunk(html, 0), /class="slot ghost blockgone"[^>]*aria-label="blocker gone/);

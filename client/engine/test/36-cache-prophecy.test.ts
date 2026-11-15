@@ -284,7 +284,7 @@ test('the banner is priced on its own pips, not the card\'s', () => {
   assert.ok(h.events.some(ev => ev.type === 'cached'), 'and so is the zone change');
 });
 
-test('CR 803.7d: with less than the banner mana the prophecy is refused and never offered', () => {
+test('CR 803.7d: with less than the banner mana the prophecy is refused and never offered #8', () => {
   const h = sterile(3602);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -1040,7 +1040,7 @@ test('CR 803.7j: a fulfilled prophecy releases an X spell for X = 0 — no X ask
 // "As if it was in your hand" — and from the hand it could be prophesied.
 // Report on room FXAE (2026-10-01): a glimpsed Vengeance offered no prophecy.
 
-test('CR 403.8: a GLIMPSED card with a banner may be prophesied where it stands in the cache', () => {
+test('CR 403.8: a GLIMPSED card with a banner may be prophesied where it stands in the cache #184', () => {
   const h = sterile(3694);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -1082,7 +1082,7 @@ test('only a LIVE glimpse opens the cache to prophesying — not bare caching, n
   assert.ok(!h.legal(P).some(x => x.type === 'prophesy' && x.from === 'cache'), 'the stamp expired: no');
 });
 
-test('CR 801.9h: the real card — a glimpsed Vengeance is offered its prophecy in deployment', () => {
+test('CR 801.9h: the real card — a glimpsed Vengeance is offered its prophecy in deployment #184', () => {
   const h = sterile(3696);
   toDeployment(h);
   const P = h.state.deployPlayer!;

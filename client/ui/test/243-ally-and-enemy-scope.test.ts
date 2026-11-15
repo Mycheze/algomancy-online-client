@@ -471,7 +471,7 @@ test('CR 601.4e every ally and enemy list a card builds for itself names a regio
 // §4 — the seams have to keep agreeing
 // ══════════════════════════════════════════════════════════════════════
 
-test('CR 110.4 the ambush legality gate asks for the same ally the ambush effect will', () => {
+test('CR 110.4 the ambush legality gate asks for the same ally the ambush effect will CT-139', () => {
   // WAS A TRIPWIRE, IS NOW AN AGREEMENT CHECK, and the difference matters.
   //
   // `apply.ts` used to gate "may I play this as an Ambush?" with a spec it
@@ -590,7 +590,7 @@ test('CR 110.4a no activated ability needs both an irreversible cost and a sourc
     + 'ui/inspect.ts:162 asks without it and will disagree with apply.ts:1135');
 });
 
-test('CR 110.4a the irreversible-cost warning reads the source the real gate reads', () => {
+test('CR 110.4a the irreversible-cost warning reads the source the real gate reads CT-139', () => {
   // §4b above is a TRIPWIRE over the pool: it says no card is currently on both
   // sides of the seam, and it passes identically whether inspect.ts threads
   // `sourceId` or not. That makes it useless as a guard for the fix — which is

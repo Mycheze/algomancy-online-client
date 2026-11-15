@@ -665,7 +665,7 @@ test('CR 721.1a: an augmented Wraith donates BOTH lines to its host', () => {
 // a token is never trashed, Unstable or not — and since 2026-10-31 neither is an Unstable
 // CARD (CR 801.2h; 224-mod-trash). Here both objects are tokens, so ZERO trashes. The
 // branch order is proved by the Unstable log line and the two death triggers.
-test('CR 803.8e: a MODDED token is Unstable — erased with its mods; CR 801.2d: neither the token body nor the token mod trashes', () => {
+test('CR 803.8e: a MODDED token is Unstable — erased with its mods; CR 801.2d: neither the token body nor the token mod trashes #39 #40', () => {
   const h = sterile(3738);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -1064,7 +1064,7 @@ registerSynthetic(unit('T144 Watcher', 1, 1), {
 // behind it. That is what "simultaneously" means mechanically. (Half (b) used
 // to rest on it to aim a pile at one unit; since 2026-10-16 each trigger
 // chooses as it resolves instead, and this half is unchanged.)
-test('CR 507.4a: every start-of-deployment trigger is on the stack before any of them resolves', () => {
+test('CR 507.4a: every start-of-deployment trigger is on the stack before any of them resolves #101 CT-35', () => {
   const h = sterile(3790);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -1102,7 +1102,7 @@ test('CR 706.3c: deployment triggers announce themselves onto the stack, all of 
 // CR 101.6: the batch is shared but the AIM is not. Both seats' Wraiths fire into
 // one queue and one stack, and each seat may still only shrink its own units in
 // its own region — deployment puts each player alone in their home region.
-test('CR 706.3c, 601.1b: a shared deployment stack does not let a Wraith reach across regions', () => {
+test('CR 706.3c, 601.1b: a shared deployment stack does not let a Wraith reach across regions #101 CT-35', () => {
   const h = sterile(3792);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -1263,7 +1263,7 @@ test('CR 706.12: a lone Wraith is its own only ally — it shrinks itself withou
 // The expensive one: Mohruung prints "when I become targeted, create a
 // Crystal", and a pool where this fired would hand its controller a free
 // Crystal per Wraith per deployment.
-test('CR 706.12a: a subject is not a target — no "targeted" event is ever fired for it', () => {
+test('CR 706.12a: a subject is not a target — no "targeted" event is ever fired for it #101 CT-35', () => {
   const h = sterile(3797);
   toDeployment(h);
   const P = h.state.deployPlayer!;

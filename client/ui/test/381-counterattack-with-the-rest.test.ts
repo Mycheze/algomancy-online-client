@@ -72,7 +72,7 @@ function confirmAndApply(h: Harness): Extract<Action, { type: 'declareBlocks' }>
   return sent[0]!;
 }
 
-test('§1 "Counterattack with the rest" sends every unit not blocking or already sent', () => {
+test('§1 "Counterattack with the rest" sends every unit not blocking or already sent #196', () => {
   const { h, D, mine } = blockStep(38101, 16);
   ui.join(h.state, D, legalActions(h.state, D));
   assert.ok(ui.has({ btn: 'sendrest' }), 'the bar offers it in the block step');
@@ -89,7 +89,7 @@ test('§1 "Counterattack with the rest" sends every unit not blocking or already
     'every other unit is sent — the hand-sent one once, not twice');
 });
 
-test('§2 with nothing left to send, the button is gone', () => {
+test('§2 with nothing left to send, the button is gone #196', () => {
   const { h, D } = blockStep(38102, 12);
   ui.join(h.state, D, legalActions(h.state, D));
   const html = ui.click({ btn: 'sendrest' });
@@ -98,7 +98,7 @@ test('§2 with nothing left to send, the button is gone', () => {
   assert.ok(ui.has({ btn: 'sendrest' }), 'cleared, it is back');
 });
 
-test('§3 a lured unit is left to its duty — the engine, not the client, says so', () => {
+test('§3 a lured unit is left to its duty — the engine, not the client, says so #196', () => {
   const { h, D, mine } = blockStep(38103, 5, { lure: true });
   const [lured] = mine;
   assert.deepEqual(new E(h.state).entity(lured!)!.allured, { round: 1, columns: [0] }, 'the premise: lured');
@@ -150,7 +150,7 @@ function rowsTaken(p: FitPlan, cards: number, w: number): number {
   return rows;
 }
 
-test('§5 every sent card and the slot fit inside the block, for any number sent', () => {
+test('§5 every sent card and the slot fit inside the block, for any number sent #196', () => {
   // the two windows measured in the browser: the send box's content box in
   // the attacker's battle block, 1440×900 and 1280×720
   for (const box of [{ w: 559, h: 260 }, { w: 479, h: 177 }]) {
@@ -171,7 +171,7 @@ test('§5 every sent card and the slot fit inside the block, for any number sent
   assert.equal(SEND_SLOT_SPAN, 2, 'the slot is counted at its two-card width');
 });
 
-test('§6 the stylesheet wraps the box, and breaks the slot on its two-card width', () => {
+test('§6 the stylesheet wraps the box, and breaks the slot on its two-card width #196', () => {
   const rule = (sel: string): string => {
     const at = CSS.indexOf(`${sel} {`);
     assert.ok(at >= 0, `no ${sel} rule`);

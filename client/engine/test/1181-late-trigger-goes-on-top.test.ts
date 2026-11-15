@@ -90,7 +90,7 @@ function play(h: Harness, P: Seat, beforeDiscard?: () => void): string[][] {
   return asked;
 }
 
-test('CT-535: a trigger set off by a batch member\'s cost goes on top of the whole batch, unasked', () => {
+test('CT-535: a trigger set off by a batch member\'s cost goes on top of the whole batch, unasked #339', () => {
   const { h, P } = board(11810);
   const asked = play(h, P);
   assert.equal(asked.length, 1, `one ordering question, the batch's own: ${JSON.stringify(asked)}`);

@@ -53,7 +53,7 @@ test('CC undo: sequentialStep names the open step and the seat taking it', () =>
   assert.equal(sequentialStep(house.state), null, 'a house-rules game has no sequential step');
 });
 
-test('CC undo: the resource step is undoable back to its start, and only by the seat taking it', () => {
+test('CC undo: the resource step is undoable back to its start, and only by the seat taking it CT-500', () => {
   const m = new Marked(ccGame(0));
   m.do({ type: 'bottomCards', seat: 1, handIndices: [0, 1] });
   m.do({ type: 'bottomCards', seat: 0, handIndices: [0, 1] });

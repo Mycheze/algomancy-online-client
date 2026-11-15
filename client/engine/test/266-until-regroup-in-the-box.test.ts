@@ -99,7 +99,7 @@ const SWEPT: string[] = [...new Set([
   ...[...BLOCK.matchAll(/\bdelete\s+e\.(\w+)/g)].map(m => m[1]!),
 ])].sort();
 
-test('CT-175 §1 the until-regroup fields are read out of the CR 506.2 sweep, and the read is complete', () => {
+test('CT-175 §1 the until-regroup fields are read out of the CR 506.2 sweep, and the read is complete #157', () => {
   assert.ok(SWEPT.length > 0,
     'the derived field list is EMPTY — a guard over an empty derived set passes forever '
     + '(docs/13-assessment.md §5). The parse above has stopped reading the sweep.');
@@ -200,7 +200,7 @@ test('CT-175 §2 the fixture table covers the derived field list exactly', () =>
   }
 });
 
-test('CT-175 §2 every until-regroup field changes the box, in a part the hover tip keeps', () => {
+test('CT-175 §2 every until-regroup field changes the box, in a part the hover tip keeps #157', () => {
   const missing: string[] = [];
   for (const field of SWEPT) {
     if (field in NO_REPRESENTATION) continue;
@@ -318,7 +318,7 @@ test('CT-175 §4 the hover tip drops the state row, which is why none of this is
  * The route is the player's: right-click the card, take the details entry.
  * That is the same box the hover tip builds, minus `compact`.
  */
-test('CT-175 §5 the until-regroup line renders on the real client, tagged with its duration', () => {
+test('CT-175 §5 the until-regroup line renders on the real client, tagged with its duration #157', () => {
   const h = new Harness(26604);
   toDeployment(h);
   const seat = h.state.deployPlayer!;

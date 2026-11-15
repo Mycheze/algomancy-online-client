@@ -76,7 +76,7 @@ test('control: in planning, a hand card with no legal click does nothing, and no
   assert.deepEqual(ui.actions(), [], 'the click did nothing');
 });
 
-test('the draw step: a bottom pick is still a pick', () => {
+test('the draw step: a bottom pick is still a pick #223', () => {
   const h = new Harness(49702);
   const s = h.state;
   // the constructed draw step, as test/269 raises it: a seat that still owes cards back
@@ -89,7 +89,7 @@ test('the draw step: a bottom pick is still a pick', () => {
   assert.ok(ui.has({ act: 'bottomcard', i }), 'the pick dialog is still up after one pick');
 });
 
-test('the resource step: the click still opens the recycle menu', () => {
+test('the resource step: the click still opens the recycle menu #223', () => {
   const h = new Harness(49703);
   const s = h.state;
   const p = primed(s);
@@ -99,7 +99,7 @@ test('the resource step: the click still opens the recycle menu', () => {
   noRail(html);
 });
 
-test('the draft step: a pick off the dock is still a pick', () => {
+test('the draft step: a pick off the dock is still a pick #223', () => {
   const h = new Harness(49704, undefined, 'draft');
   const s = h.state;
   assert.deepEqual(s.draftDone, [false, false]);
@@ -110,7 +110,7 @@ test('the draft step: a pick off the dock is still a pick', () => {
   noRail(click({ act: 'draftcard', i }));
 });
 
-test('deployment: a click that PLAYS a card plays it', () => {
+test('deployment: a click that PLAYS a card plays it #223', () => {
   const h = new Harness(49705);
   toDeployment(h);
   for (const el of ['fire', 'water', 'earth', 'wood', 'metal'] as const) giveResources(h, me, el, 3);

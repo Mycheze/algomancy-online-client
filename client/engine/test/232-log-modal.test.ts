@@ -145,7 +145,7 @@ function classes(html: string): Set<string> {
 
 /* ── §1 the log is off the board ────────────────────────────────────────── */
 
-test('§1 the board no longer carries the log, and the toolbar is still drawn', async () => {
+test('§1 the board no longer carries the log, and the toolbar is still drawn #131 CT-124', async () => {
   const ui = await shown(23200);
   const board = ui.html();
   assert.equal(board.includes('class="logpanel"'), false,
@@ -163,7 +163,7 @@ test('§1 the board no longer carries the log, and the toolbar is still drawn', 
 
 /* ── §2 the way in ──────────────────────────────────────────────────────── */
 
-test('§2 the generic right-click menu opens it, and the menu decides that', async () => {
+test('§2 the generic right-click menu opens it, and the menu decides that #131 CT-124', async () => {
   const { h, seat } = played(23201);
   const ui = await client();
   ui.join(viewFor(h.state, seat), seat, legalActions(h.state, seat) as Action[]);
@@ -189,7 +189,7 @@ test('§2 the generic right-click menu opens it, and the menu decides that', asy
   closeLog(ui);
 });
 
-test('§2b Escape and Close both put it away', async () => {
+test('§2b Escape and Close both put it away CT-124', async () => {
   const ui = await shown(23202);
   assert.ok(openLog(ui).includes('overlaybox logbox'));
   assert.equal(ui.click({ btn: 'logclose' }).includes('overlaybox logbox'), false,
@@ -215,7 +215,7 @@ test('§2b Escape and Close both put it away', async () => {
 
 /* ── §3 THE SWEEP: everything the panel carried is live in the modal ────── */
 
-test('§3 every affordance the modal emits is a live one', async () => {
+test('§3 every affordance the modal emits is a live one #131 CT-124', async () => {
   const ui = await shown(23203);
   const html = openLog(ui);
   const modal = modalOf(html);
@@ -264,7 +264,7 @@ test('§3 every affordance the modal emits is a live one', async () => {
   closeLog(ui);
 });
 
-test('§3b a card named only in the log is still right-clickable from inside the modal', async () => {
+test('§3b a card named only in the log is still right-clickable from inside the modal CT-124', async () => {
   /* The end-to-end half of §3. Built so the name exists NOWHERE else on
    * screen: the unit is gone from the view by the time the log talks about it,
    * so the only `data-prev` carrying it is the one in the modal — and the menu
@@ -294,7 +294,7 @@ test('§3b a card named only in the log is still right-clickable from inside the
 
 /* ── §4 the #125 curtain came with it ───────────────────────────────────── */
 
-test('§4 the story toggle and its footer moved into the modal, both working', async () => {
+test('§4 the story toggle and its footer moved into the modal, both working #131 CT-124', async () => {
   const ui = await shown(23205);
   const story = openLog(ui);
   // rows of LOG, not divs: the curtain footer is chrome ABOUT the log and is
@@ -322,7 +322,7 @@ test('§4 the story toggle and its footer moved into the modal, both working', a
 
 /* ── §5 what still paints it ─────────────────────────────────────────── */
 
-test('§5 the modal is still painted', async () => {
+test('§5 the modal is still painted #131 CT-124', async () => {
   // (the half of this that asked which child of the side rail absorbs its
   // slack went with the rail — board round 8 made it a toolbar)
   // every class the modal emits still has a rule somewhere — DERIVED from the

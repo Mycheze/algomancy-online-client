@@ -124,7 +124,7 @@ test('§0 the snapshot is really read, and this guard really has something to ch
 
 // ── §1 a verdict names a real card ──────────────────────────────────────
 
-test('§1a a later verdict on the same scenario AND room retires the earlier one', () => {
+test('§1a a later verdict on the same scenario AND room retires the earlier one CT-177', () => {
   // NON-VACUITY FIRST. A supersession rule with nothing to supersede is dead
   // code that silently stops meaning anything, and this one had a job on the
   // day it was written: without it, `OPEN_VERDICTS` carries a `broken` row the

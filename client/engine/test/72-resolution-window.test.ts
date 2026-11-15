@@ -35,7 +35,7 @@ const lines = (h: Harness, needle: string): number =>
 
 // ── the report ─────────────────────────────────────────────────────────
 
-test('CR D6.3b Insidious Invitation: at the OPPONENT’s prompt, the caster’s play is already on the table', () => {
+test('CR D6.3b Insidious Invitation: at the OPPONENT’s prompt, the caster’s play is already on the table #52', () => {
   const h = new Harness(7201, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -87,7 +87,7 @@ test('CR D6.3b Insidious Invitation: at the OPPONENT’s prompt, the caster’s 
   finishBattle(h);
 });
 
-test('CR D6.3b Insidious Invitation: the replay narrates nothing twice', () => {
+test('CR D6.3b Insidious Invitation: the replay narrates nothing twice #52', () => {
   const h = new Harness(7202, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -148,7 +148,7 @@ registerSynthetic(stepper, {
   },
 });
 
-test('CR D6.3b a multi-step resolution shows each step as it is reached, and each step once', () => {
+test('CR D6.3b a multi-step resolution shows each step as it is reached, and each step once #52', () => {
   const h = new Harness(7203, ['Ben', 'Rashi']);
   toDeployment(h);
   const A = h.state.deployPlayer!;

@@ -66,7 +66,7 @@ const outerShadow = (): [number, number, number] => {
   return [dx, dy, blur];
 };
 
-test('the dice box still clips and the dice still sit where they did', () => {
+test('the dice box still clips and the dice still sit where they did #202', () => {
   assert.equal(prop(dice, 'overflow'), 'hidden', 'the cap above the type line is the design');
   const [pt, pr, pb, pl] = box4(prop(dice, 'padding'));
   // the CONTENT box — where the chips lay out — is the one the owner signed off
@@ -78,7 +78,7 @@ test('the dice box still clips and the dice still sit where they did', () => {
   assert.ok(Math.abs(cqw(prop(dice, 'max-height')) - pt - pb - 60) < 1e-9, 'content 60cqw tall');
 });
 
-test('a tilted die and its shadow fit inside the clip on every side', () => {
+test('a tilted die and its shadow fit inside the clip on every side #202', () => {
   const [pt, pr, pb, pl] = box4(prop(dice, 'padding'));
   const angles = tilts();
   assert.ok(angles.length >= 3, `found the tumble rules (${angles})`);

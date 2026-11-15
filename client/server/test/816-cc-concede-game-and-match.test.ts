@@ -31,7 +31,7 @@ test('§1 conceding a game in an undecided Bo3 goes on to the next game', () => 
   assert.ok(R.roomWaiting(F.current(m)), 'game 2 is waiting');
 });
 
-test('§2 conceding the match in a game: a real concede in that game, then the match ends', () => {
+test('§2 conceding the match in a game: a real concede in that game, then the match ends CT-501', () => {
   const { room, m } = F.start(3);
   const n = room.actions.length;
   assert.deepEqual(M.concedeMatch(room, 1), { ok: true });

@@ -133,7 +133,7 @@ function assertSpoke(evs: EngineEvent[], card: string, clause: string): void {
 // ── 1. Bloated Manablub ────────────────────────────────────────────────
 // "When I despawn, [Switch1] Each opponent loses 3 life."
 
-test('Bloated Manablub — "Each opponent loses 3 life" in a region holding no opponent says so and takes no life', () => {
+test('Bloated Manablub — "Each opponent loses 3 life" in a region holding no opponent says so and takes no life CT-70', () => {
   const b = board(8710);
   assertNoOpponentPresent(b, 'Bloated Manablub');
   const life = b.g.s.players.map(p => p.life);
@@ -151,7 +151,7 @@ test('Bloated Manablub — "Each opponent loses 3 life" in a region holding no o
 // ── 2. Blightmound ─────────────────────────────────────────────────────
 // "When I deal combat damage or die, [Switch1] Each opponent gains 1 rot."
 
-test('Blightmound — "Each opponent gains 1 rot" in a region holding no opponent says so and gives no rot', () => {
+test('Blightmound — "Each opponent gains 1 rot" in a region holding no opponent says so and gives no rot CT-70', () => {
   const b = board(8711);
   assertNoOpponentPresent(b, 'Blightmound');
   const rot = b.g.s.players.map(p => p.rot ?? 0);
@@ -171,7 +171,7 @@ test('Blightmound — "Each opponent gains 1 rot" in a region holding no opponen
 // below it did not. So the cost is PAID here on purpose — a test that let the
 // cost lapse would be re-testing the branch that was never broken.
 
-test('Linked Extinction — "Each opponent sacrifices a unit" with the cost PAID and no opponent in the region says so and destroys nothing', () => {
+test('Linked Extinction — "Each opponent sacrifices a unit" with the cost PAID and no opponent in the region says so and destroys nothing CT-70', () => {
   const b = board(8712);
   assertNoOpponentPresent(b, 'Linked Extinction');
   const theirs = b.g.unitsOf(b.D, b.g.homeRegion(b.D));
@@ -195,7 +195,7 @@ test('Linked Extinction — "Each opponent sacrifices a unit" with the cost PAID
 // ⚠ Its own comment CITED CR 601.4d for this exact case and it still said nothing
 // when the case arrived.
 
-test('Void Memory — "Each opponent discards a unit or spell" in a region holding no opponent says so and touches no hand', () => {
+test('Void Memory — "Each opponent discards a unit or spell" in a region holding no opponent says so and touches no hand CT-70', () => {
   const b = board(8713);
   assertNoOpponentPresent(b, 'Void Memory');
   const hands = b.g.s.players.map(p => p.hand.length);
@@ -212,7 +212,7 @@ test('Void Memory — "Each opponent discards a unit or spell" in a region holdi
 // ── 5. Growing Plague ──────────────────────────────────────────────────
 // "[Augment] When I despawn, each other player draws two cards."
 
-test('Growing Plague — "each other player draws two cards" in a region holding no other player says so and draws nothing', () => {
+test('Growing Plague — "each other player draws two cards" in a region holding no other player says so and draws nothing CT-70', () => {
   const b = board(8714);
   assertNoOpponentPresent(b, 'Growing Plague');
   const hands = b.g.s.players.map(p => p.hand.length);
@@ -233,7 +233,7 @@ test('Growing Plague — "each other player draws two cards" in a region holding
 // ── 6. Malicious Hardware ──────────────────────────────────────────────
 // "[Augment] Whenever one of your units dies, each opponent sacrifices a unit."
 
-test('Malicious Hardware — "each opponent sacrifices a unit" in a region holding no opponent says so and destroys nothing', () => {
+test('Malicious Hardware — "each opponent sacrifices a unit" in a region holding no opponent says so and destroys nothing CT-70', () => {
   const b = board(8715);
   assertNoOpponentPresent(b, 'Malicious Hardware');
   const before = Object.keys(b.g.s.entities).length;
@@ -251,7 +251,7 @@ test('Malicious Hardware — "each opponent sacrifices a unit" in a region holdi
 // "[Augment] Whenever one or more -1/-1 counters land on a unit, each
 // opponent loses 1 life."
 
-test('Pestilent Mycelion — "each opponent loses 1 life" in a region holding no opponent says so and takes no life', () => {
+test('Pestilent Mycelion — "each opponent loses 1 life" in a region holding no opponent says so and takes no life CT-70', () => {
   const b = board(8716);
   assertNoOpponentPresent(b, 'Pestilent Mycelion');
   const life = b.g.s.players.map(p => p.life);
@@ -267,7 +267,7 @@ test('Pestilent Mycelion — "each opponent loses 1 life" in a region holding no
 // ── 8. Rotwall ─────────────────────────────────────────────────────────
 // "[Augment] Whenever I am dealt damage, each opponent gains a rot."
 
-test('Rotwall — "each opponent gains a rot" in a region holding no opponent says so and gives no rot', () => {
+test('Rotwall — "each opponent gains a rot" in a region holding no opponent says so and gives no rot CT-70', () => {
   const b = board(8717);
   assertNoOpponentPresent(b, 'Rotwall');
   const rot = b.g.s.players.map(p => p.rot ?? 0);
@@ -287,7 +287,7 @@ test('Rotwall — "each opponent gains a rot" in a region holding no opponent sa
 // did not announce having nobody to walk. So the opponent's bin is stocked
 // here on purpose, to keep the two apart.
 
-test('Verdant Necrophage — "each opponent recalls a unit from their bin" in a region holding no opponent says so and moves no card', () => {
+test('Verdant Necrophage — "each opponent recalls a unit from their bin" in a region holding no opponent says so and moves no card CT-70', () => {
   const b = board(8718);
   assertNoOpponentPresent(b, 'Verdant Necrophage');
   b.g.player(b.D).bin.push('Tidal Menace');
@@ -316,7 +316,7 @@ test('Verdant Necrophage — "each opponent recalls a unit from their bin" in a 
 // RESOLUTION (CR 107.8) and may be none, and none used to be silent.
 // It travelled off `SILENT_KNOWN` with the family, so it is watched with them.
 
-test('Stellarspore Harvester — "each of your units with a -1/-1 counter" counting zero says so and hands over nothing', () => {
+test('Stellarspore Harvester — "each of your units with a -1/-1 counter" counting zero says so and hands over nothing CT-70', () => {
   const b = board(8719);
   const mine = b.g.unitsOf(b.A, b.region);
   assert.ok(mine.length > 0 && mine.every(u => u.counters >= 0),
@@ -372,7 +372,7 @@ for (const [card, def, clause, extra] of MOVED_FROM_85) {
 
 // ── 12. THE GRAFT RIDER IS THE SAME OBJECT ──────────────────────────────
 
-test('the four grafted CR 601.4d riders are the same EffectDef object the tests above drove', () => {
+test('the four grafted CR 601.4d riders are the same EffectDef object the tests above drove CT-70', () => {
   // 65-effect-conformance labels a card's spell/ability and its graft rider
   // SEPARATELY, so the family was thirteen labels over nine effects. Four of
   // those thirteen are the second sighting of an object already covered above
@@ -396,7 +396,7 @@ test('the four grafted CR 601.4d riders are the same EffectDef object the tests 
 
 // ── 13. THE CLASS ITSELF ────────────────────────────────────────────────
 
-test('every card repaired for CARD-TODO #70 is one the whole-pool sweeps also watch', () => {
+test('every card repaired for CARD-TODO #70 is one the whole-pool sweeps also watch CT-74', () => {
   // 65-effect-conformance drives every EffectDef in the registry and 81-card-drill
   // drives the real action path; both fail on a run that completes without
   // emitting. This file reaches the ONE situation neither of their board states

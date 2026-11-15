@@ -133,7 +133,7 @@ function scanTag(chunk: string, name: string): string {
 
 /* ══ §1 THE DRIVER HAS ANCESTORS ═══════════════════════════════════════ */
 
-test('§1: the driver resolves closest() through REAL ancestors, nearest first', () => {
+test('§1: the driver resolves closest() through REAL ancestors, nearest first CT-75', () => {
   const h = loaded(17601);
   const html = ui.show(structuredClone(h.state));
 
@@ -172,7 +172,7 @@ test('§1: the driver resolves closest() through REAL ancestors, nearest first',
     'contains() includes the node itself, as the DOM\'s does');
 });
 
-test('§1: closest() prefers the element itself, then the nearest ancestor', () => {
+test('§1: closest() prefers the element itself, then the nearest ancestor CT-75', () => {
   const h = loaded(17602);
   const html = ui.show(structuredClone(h.state));
   const all = affordances(html);
@@ -229,7 +229,7 @@ const swallowed = (html: string): string[] =>
     .filter(a => a.act !== null && a.enclosingBtn !== null)
     .map(a => `data-act="${a.act}" is inside data-btn="${a.enclosingBtn}" — ${a.tag.slice(0, 90)}`);
 
-test('§2: no data-act in the rendered board sits inside a data-btn container', () => {
+test('§2: no data-act in the rendered board sits inside a data-btn container CT-75', () => {
   const seen = corpus();
   assert.ok(seen.length >= 8, 'the corpus is the coverage — it must not quietly shrink');
   let containers = 0;
@@ -251,7 +251,7 @@ test('§2: no data-act in the rendered board sits inside a data-btn container', 
 
 /* ══ §3 THE POSITIVE CONTROL ═══════════════════════════════════════════ */
 
-test('§3: shown the swallowed shape, the detector says so — verbatim', () => {
+test('§3: shown the swallowed shape, the detector says so — verbatim CT-75', () => {
   // CARD-TODO #64's prescribed fix, written out. It is not reachable from
   // main.ts any more (both later fixes wrote data-btn instead), so it is
   // planted here: §2 without this is a checker with no proof it can go red.
@@ -279,7 +279,7 @@ test('§3: shown the swallowed shape, the detector says so — verbatim', () => 
 
 /* ══ §4 CT-82(b): THE BIN PANEL ════════════════════════════════════════ */
 
-test('CR D6.16: a bin card usable RIGHT NOW is one click from the region panel', () => {
+test('CR D6.16: a bin card usable RIGHT NOW is one click from the region panel CT-82', () => {
   const h = loaded(17620);
 
   // disbelieve the ticket first: the engine has to actually be offering this,
@@ -307,7 +307,7 @@ test('CR D6.16: a bin card usable RIGHT NOW is one click from the region panel',
     'and the mod flow is live: the click reached handleBinClick, not binopen');
 });
 
-test('CR D6.16: an unusable bin thumb keeps the old route — the click opens the zone', () => {
+test('CR D6.16: an unusable bin thumb keeps the old route — the click opens the zone CT-82', () => {
   const h = deployment(17621);
   h.state.players[SEAT]!.bin.push(HOST, HOST);
   assert.deepEqual(
@@ -338,7 +338,7 @@ const looseClasses = (html: string): string[] =>
 const looseGaps = (html: string): string[] =>
   [...html.matchAll(/"[ \t][ \t]+[a-zA-Z-]+="/g)].map(m => m[0]!);
 
-test('§5: nothing the client writes has a doubled or trailing space in a class', () => {
+test('§5: nothing the client writes has a doubled or trailing space in a class CT-82', () => {
   for (const { where, html } of corpus()) {
     assert.deepEqual([...new Set(looseClasses(html))], [],
       `${where}: a class attribute with a stray space. CSS does not care and a regex does — `
@@ -365,7 +365,7 @@ test('§5: …and the check can go red — it is not matching nothing', () => {
 const mv = (from: string | null, to: string | null): { fromAnchor: string | null; toAnchor: string | null } =>
   ({ fromAnchor: from, toAnchor: to });
 
-test('CR D6.7b: flights that made the same journey in one render share a beat', () => {
+test('CR D6.7b: flights that made the same journey in one render share a beat CT-82', () => {
   // CR D6.7's own moment, one layer down: four units die in a seat's field and
   // four triggers land on the stack in ONE update. That is one thing happening
   // and was drawn as four, 45ms apart, because the delay was the array index.
@@ -388,7 +388,7 @@ test('CR D6.7b: a sequence still looks sequential — different journeys are spa
     'the second and later members of a journey rejoin its beat wherever they sit in the list');
 });
 
-test('CR D6.7b: POSITIVE EVIDENCE ONLY — a flight with an unnamed end keeps its own step', () => {
+test('CR D6.7b: POSITIVE EVIDENCE ONLY — a flight with an unnamed end keeps its own step CT-82', () => {
   // The pacing ruling's third consequence (now CR D6.7b), held to literally: "a batch the client can read
   // nothing about behaves exactly as it did before". A `leave` (erased,
   // trashed) has no destination and an `enter` (a token out of nowhere) has no

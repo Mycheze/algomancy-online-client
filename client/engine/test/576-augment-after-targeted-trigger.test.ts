@@ -95,7 +95,7 @@ test('CR 110.11 / D-U03-14: every targeted listener modded in deployment resolve
     `positive control: Mohruung heard both (${fired.join(', ')})`);
 });
 
-test('CR 110.11 / D-U03-14: an augment onto Mohruung in deployment — the Crystal first, then the augment', () => {
+test('CR 110.11 / D-U03-14: an augment onto Mohruung in deployment — the Crystal first, then the augment CT-242', () => {
   const { h, A, u } = board(5770, 'Mohruung');
   const from = h.events.length;
   h.do({ type: 'augment', seat: A, from: 'hand', index: give(h, A, 'Reality Bender'), hostId: u });

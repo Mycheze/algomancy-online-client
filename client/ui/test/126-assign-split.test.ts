@@ -88,7 +88,7 @@ function overkillBoard(seed: number) {
 
 // ───────────────────────────────────────────────────────────────────────────
 
-test('CR D7.2e (1): the total is forced — under and over allocations are refused, with the remainder said out loud', () => {
+test('CR D7.2e (1): the total is forced — under and over allocations are refused, with the remainder said out loud #100 CT-34', () => {
   const dec = menu('Ox', 2, 4);   // 4 damage left; the front unit is owed 2
 
   // UNDER: less than the unit in front is owed. CR 608.6b's one rule — a unit in
@@ -127,7 +127,7 @@ test('CR D7.2e (1): the total is forced — under and over allocations are refus
     'total / assigned / remaining are the running sum the bar shows');
 });
 
-test('CR D7.2e (2): the ticker clamps to what THIS victim can take — the BL-25 carry-over trap', () => {
+test('CR D7.2e (2): the ticker clamps to what THIS victim can take — the BL-25 carry-over trap #100 CT-34', () => {
   const dec = menu('Ox', 2, 4);
   assert.equal(assignSplitStepper(dec, null, 9).count, 4, 'above the ceiling lands on the ceiling');
   assert.equal(assignSplitStepper(dec, null, 4).count, 4, 'the ceiling itself is reachable');
@@ -172,7 +172,7 @@ test('CR D7.2e (2): the ticker clamps to what THIS victim can take — the BL-25
     { label: 'no', value: 'default' }] }, null, 1).mode, 'none', 'and a menu with no amounts is not a ticker');
 });
 
-test('CR D7.2e (3): "All" jumps to everything-left and does NOT submit', () => {
+test('CR D7.2e (3): "All" jumps to everything-left and does NOT submit #100 CT-34', () => {
   const dec = menu('Ox', 2, 4);
   const all = assignSplitStep(dec, null, 2, 'all');
   assert.equal(all.count, 4, 'All sets the dial to everything the strike has left');
@@ -282,7 +282,7 @@ test('CR D7.2e (4b): a strike whose earlier victims are already answered shows t
     'no combatAssign suspension, no victims');
 });
 
-test('CR D7.2e (5): NEGATIVE CONTROL — BL-25/CR D7.2\'s counter stepper is unchanged on the shared core', () => {
+test('CR D7.2e (5): NEGATIVE CONTROL — BL-25/CR D7.2\'s counter stepper is unchanged on the shared core #100 CT-34', () => {
   // counterStepper now builds its view from quantityStepper/stepQuantity
   // instead of its own clamp and its own arrow gates. These are the BL-25
   // assertions verbatim: if the generalisation moved anything, they go red.

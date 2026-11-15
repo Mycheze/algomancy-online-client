@@ -118,7 +118,7 @@ function castWildfireForX(seed: number, x: number, sentry: boolean): number {
   return spent;
 }
 
-test('CR 107.5 (Caleb, 2026-11-01) — under a Stasis Sentry the X menu starts at 0, and X = 1 pays [3] and deals 1', () => {
+test('CR 107.5 (Caleb, 2026-11-01) — under a Stasis Sentry the X menu starts at 0, and X = 1 pays [3] and deals 1 CT-224', () => {
   // _passer: "No, you paid 2 +1 extra, but X=2"; Caleb: "you set targets before paying the cost"
   const h = new Harness(13303);
   const { A, D, atk } = battleWithDefenderOnPriority(h);
@@ -237,7 +237,7 @@ function apparitionAt(seed: number, x: number): { fireballs: number[]; log: stri
   return { fireballs, log };
 }
 
-test('CR 111.11 — Unstable Apparition makes a Fireball X off the paid X of an X spell (was 0, no Fireball)', () => {
+test('CR 111.11 — Unstable Apparition makes a Fireball X off the paid X of an X spell (was 0, no Fireball) #187', () => {
   const { fireballs, log } = apparitionAt(13314, 4);
   assert.deepEqual(fireballs, [4], `a Wildfire cast for 4 costs 4, so one Fireball 4 (log: ${log.join(' / ')})`);
   assert.ok(!log.some(l => /costs 0/.test(l)), 'the X spell is not read as costing 0');

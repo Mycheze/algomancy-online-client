@@ -288,7 +288,7 @@ test('not one test in test/ is `{ todo: true }` — a todo can never fail (the H
     + 'suite, so its zero means nothing (measured 2026-08-25: comfortably above this).');
 });
 
-test('every excluded sweep file still exists — an exclusion cannot outlive its cause', () => {
+test('every excluded sweep file still exists — an exclusion cannot outlive its cause CT-9', () => {
   const present = new Set(testFiles().map(f => path.basename(f).slice(0, 2)));
   const gone = Object.keys(SWEEPS).filter(p => !present.has(p));
   assert.deepEqual(gone, [],
@@ -296,7 +296,7 @@ test('every excluded sweep file still exists — an exclusion cannot outlive its
     + 'Excluding a file that is not there inflates the "named by a human" band for free.');
 });
 
-test('the pool coverage census — printed on every run so CARD-TODO #9 cannot rot', () => {
+test('the pool coverage census — printed on every run so CARD-TODO #9 cannot rot CT-9', () => {
   const counts = namedCounts();
   const total = counts.size;
   const never = [...counts].filter(([, n]) => n === 0).map(([c]) => c).sort();
@@ -352,7 +352,7 @@ test('the pool coverage census — printed on every run so CARD-TODO #9 cannot r
 // printed text — so a new bounded+zone ability must arrive HERE, be checked
 // against that rationale, and be added deliberately rather than slipping in
 // because the combination stopped failing.
-test('no ability is both bounded and zone-dispatched without a real budget holder — the population is enumerated (CARD-TODO #21/CR 109.9m)', () => {
+test('no ability is both bounded and zone-dispatched without a real budget holder — the population is enumerated (CARD-TODO #21/CR 109.9m) CT-21', () => {
   const found: string[] = [];
   for (const name of allCardNames()) {
     const def = getCard(name);
@@ -386,7 +386,7 @@ test('no ability is both bounded and zone-dispatched without a real budget holde
 // `E.removeFromBin(seat, index, reason)` instead — that is what fires
 // 'leftBin' — and announce the removal in your own words at the call site
 // (the choke point is deliberately signal-only).
-test('CR 405.7 stays solved: the only direct bin splice in src is inside removeFromBin', () => {
+test('CR 405.7 stays solved: the only direct bin splice in src is inside removeFromBin CT-26', () => {
   const SRC = path.resolve(HERE, '..', 'src');
   const files: string[] = [];
   const walk = (dir: string): void => {
@@ -497,7 +497,7 @@ function fnSource(v: unknown, depth = 0): string {
   return '';
 }
 
-test('CR 405.6: no card responding to a bin-index event re-finds its card by lastIndexOf', () => {
+test('CR 405.6: no card responding to a bin-index event re-finds its card by lastIndexOf CT-27', () => {
   const offenders: string[] = [];
   for (const name of allCardNames()) {
     const def = getCard(name);
@@ -740,7 +740,7 @@ function controllerAssignments(file: string, src: string): string[] {
   return hits;
 }
 
-test('stays solved: no card in src/cards/ assigns a unit\'s .controller — E.giveControl is the only way', () => {
+test('stays solved: no card in src/cards/ assigns a unit\'s .controller — E.giveControl is the only way CT-38', () => {
   const unexplained: string[] = [];
   for (const { file, src } of cardSources()) {
     for (const hit of controllerAssignments(file, src)) {

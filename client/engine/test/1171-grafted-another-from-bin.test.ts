@@ -34,7 +34,7 @@ function blightwalkerMenu(h: Harness): string[] | null {
   throw new Error('no Blightwalker target menu');
 }
 
-test('CT-534: Splort with Blightwalker grafted offers the discarded Dropslime to recall', () => {
+test('CT-534: Splort with Blightwalker grafted offers the discarded Dropslime to recall #338', () => {
   const h = new Harness(11710);
   toDeployment(h);
   const P = h.state.deployPlayer!;

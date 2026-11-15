@@ -71,7 +71,7 @@ for (const [step, build, btn, confirm, cancel, done] of [
   ['deployment', deploy, 'donedeploy', 'deployconfirm', 'deploycancel', 'doneDeploying'],
   ['the haste step', haste, 'donehaste', 'hasteconfirm', 'hastecancel', 'doneHaste'],
 ] as const) {
-  test(`${step}: Done with a play on offer and none made sends nothing and asks`, () => {
+  test(`${step}: Done with a play on offer and none made sends nothing and asks #225 #246 #250 #256 CT-319 CT-324`, () => {
     const h = build([HASTE_CARD, HASTE_CARD]);
     assert.ok(plays(h).length, `the premise: the engine offers a play in ${step}`);
     show(h);
@@ -83,7 +83,7 @@ for (const [step, build, btn, confirm, cancel, done] of [
     assert.equal(ui.has({ btn, p: A }), false, 'and it stands in place of the Done button');
   });
 
-  test(`${step}: confirming sends the Done, and going back sends nothing`, () => {
+  test(`${step}: confirming sends the Done, and going back sends nothing CT-324`, () => {
     const h = build([HASTE_CARD]);
     show(h);
     ui.click({ btn, p: A });
@@ -95,7 +95,7 @@ for (const [step, build, btn, confirm, cancel, done] of [
     assert.deepEqual(ui.actions(), [{ type: done, seat: A }], 'the second click is the Done');
   });
 
-  test(`${step}: Enter on Done asks too, and a second Enter does not get through`, () => {
+  test(`${step}: Enter on Done asks too, and a second Enter does not get through #246 #250 #256 CT-324`, () => {
     const h = build([HASTE_CARD]);
     show(h);
     ui.sent();
@@ -139,7 +139,7 @@ for (const [step, build, btn, confirm, cancel, done] of [
   });
 }
 
-test('deployment: a play that was refused or undone does not count as acting', () => {
+test('deployment: a play that was refused or undone does not count as acting #225 CT-319', () => {
   const h = deploy([HASTE_CARD]);
   show(h);
   ui.sent();
@@ -166,7 +166,7 @@ test('deployment: a play that was refused or undone does not count as acting', (
   assert.ok(ui.has({ btn: 'deployconfirm' }), 'with the confirm, not a swallowed click');
 });
 
-test('deployment: the cache question and the idle one are one bar, and the cache one wins', () => {
+test('deployment: the cache question and the idle one are one bar, and the cache one wins #225 CT-319', () => {
   const h = deploy([HASTE_CARD]);
   h.state.players[A]!.cache = [{ card: HASTE_CARD, uid: 91900, playableUntilTurn: h.state.turn }];
   assert.ok(legal(h, A).some(a => a.type === 'playCached'), 'the premise: the cached card is playable');

@@ -60,7 +60,7 @@ const kinds = (h: Harness, A: Seat): string[] => [
   ...tokensOf(h, A).filter(t => t.kind === 'spellToken').map(t => `${t.card} ${t.x}`),
 ].sort();
 
-test('CR 708.4a: Automaton of Abundance and Cosmic Conspirator, the creator is asked which applies first', () => {
+test('CR 708.4a: Automaton of Abundance and Cosmic Conspirator, the creator is asked which applies first #289 CT-422', () => {
   const { h, A, ids: [aoa, cc] } = cast(69711, ['Automaton of Abundance', 'Cosmic Conspirator'], 'Self-Assembly', ['metal', 2]);
   const dec = h.state.decision;
   assert.ok(dec, 'a question is open');
@@ -71,7 +71,7 @@ test('CR 708.4a: Automaton of Abundance and Cosmic Conspirator, the creator is a
     'each choice names its unit on the board');
 });
 
-test('CR 708.4a: Automaton first, both Robots are offered to Cosmic Conspirator', () => {
+test('CR 708.4a: Automaton first, both Robots are offered to Cosmic Conspirator #289 CT-422', () => {
   const { h, A, ids: [aoa], at } = cast(69712, ['Automaton of Abundance', 'Cosmic Conspirator'], 'Self-Assembly', ['metal', 2]);
   first(h, aoa!);
   assert.equal(h.state.decision?.prompt, 'Cosmic Conspirator: create a token of another type instead of the Robot 2?');
@@ -86,7 +86,7 @@ test('CR 708.4a: Automaton first, both Robots are offered to Cosmic Conspirator'
   assert.ok(log.some(m => /Automaton of Abundance: the creation is replaced — 1 more token\(s\) \(Robot\)/.test(m)));
 });
 
-test('CR 708.4a: Conspirator first and a Fireball chosen, Automaton no longer applies', () => {
+test('CR 708.4a: Conspirator first and a Fireball chosen, Automaton no longer applies CT-422', () => {
   const { h, A, ids: [, cc], at } = cast(69713, ['Automaton of Abundance', 'Cosmic Conspirator'], 'Self-Assembly', ['metal', 2]);
   first(h, cc!);
   pick(h, 'Fireball');
@@ -173,7 +173,7 @@ function nyar(): { h: Harness } {
   return { h };
 }
 
-test('CR 708.4a: Nyar run, Automaton first and every Robot a Fireball, Manufacture gives six Fireballs', () => {
+test('CR 708.4a: Nyar run, Automaton first and every Robot a Fireball, Manufacture gives six Fireballs #289 CT-422', () => {
   const { h } = nyar();
   const at = h.events.length;
   const dec = h.state.decision!;

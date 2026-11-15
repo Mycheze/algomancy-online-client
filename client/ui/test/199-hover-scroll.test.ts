@@ -82,7 +82,7 @@ const OTHER = { what: 'a different card' };
 
 /* ═══ §1 THE CLIENT SCROLLING ITS OWN RAIL ════════════════════════════ */
 
-test('CR D6.17: the focus rail scrolling does NOT hide the tip — this is #110', () => {
+test('CR D6.17: the focus rail scrolling does NOT hide the tip — this is #110 CT-97', () => {
   // #preview is a sibling panel: it does not contain the card the cursor is
   // on, so it cannot have moved it. This is the exact call the client makes
   // three milliseconds after arming the dwell.
@@ -136,7 +136,7 @@ test('CR D6.17: a scroller holding some OTHER card does not hide this one', () =
 
 /* ═══ §5 THE DRIVER TELLS THE TRUTH ABOUT CANCELLED TIMERS ════════════ */
 
-test('§5: test/ui-driver.ts really cancels a cleared timeout', () => {
+test('§5: test/ui-driver.ts really cancels a cleared timeout #110 CT-97', () => {
   /* This is the guard on the fidelity repair, not on the client. The driver's
    * `clearTimeout` was `() => {}`, so `tick()` ran callbacks the client had
    * explicitly called off — which is precisely the shape of #110 (arm, cancel,

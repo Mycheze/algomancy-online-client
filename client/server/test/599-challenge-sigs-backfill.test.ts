@@ -84,7 +84,7 @@ const ELSEWHERE = row(Y);
 const FORGED = row(X, { ...verified.score, raw: verified.score.raw + 1 });
 const OUT = join(DIR, 'sigs.jsonl');
 
-test('docs/21 Watch / report round 2026-10-23 §1 the backfill writes what the verifier stores, with or without the step hook', () => {
+test('docs/21 Watch / report round 2026-10-23 §1 the backfill writes what the verifier stores, with or without the step hook CT-359', () => {
   assert.equal(verified.sigs.length, verified.actions.length, 'non-vacuous: the verifier fingerprinted every action');
   const r = backfill(OUT);
   assert.equal(r.code, 1, `one run is not reproduced, so it says so in its exit code\n${r.text}`);
@@ -103,7 +103,7 @@ test('docs/21 Watch / report round 2026-10-23 §1 the backfill writes what the v
   assert.equal(existsSync(join(root, 'scp-called')) || existsSync(join(root, 'ssh-called')), false, 'and it never reached for the box');
 });
 
-test('docs/21 Watch / report round 2026-10-23 §2 only runs of its own engine, only runs it reproduces, and never twice', () => {
+test('docs/21 Watch / report round 2026-10-23 §2 only runs of its own engine, only runs it reproduces, and never twice CT-359', () => {
   const first = readFileSync(OUT, 'utf8');
   const r = backfill(OUT);
   assert.match(r.text, /0 fingerprinted, 1 already, 1 recorded on another engine, 1 failed/);

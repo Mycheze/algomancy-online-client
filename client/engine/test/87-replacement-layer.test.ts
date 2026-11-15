@@ -46,7 +46,7 @@ const typesIn = (evs: EngineEvent[], t: string): EngineEvent[] => evs.filter(e =
 // takes what would be 1 and makes it 2". So two DIFFERENT modifiers both
 // apply, and none applies to its own contribution.
 
-test('two different AmountMods both apply to one counter placement', () => {
+test('two different AmountMods both apply to one counter placement CT-10', () => {
   // Flux Resonator ("counters put on an allied unit, plus one") and
   // Proliferating Slime ("counters put on an ENEMY unit or player, plus one")
   // are two different cards reading the same quantity from opposite sides. Put
@@ -74,7 +74,7 @@ test('two different AmountMods both apply to one counter placement', () => {
   finishBattle(h);
 });
 
-test('an AmountMod does not apply to its own contribution', () => {
+test('an AmountMod does not apply to its own contribution CT-10', () => {
   // The whole reason the two families are separate. The trigger
   // implementations these replace RE-ENTERED addCounters, so each needed a
   // module-level `let` to stop itself looping — report #60 counted five of
@@ -137,7 +137,7 @@ test('Proliferating Slime reads rot and debt as the player counters they are', (
 
 // ══ 2. THE REPLACEMENT FAMILY CONSUMES ═════════════════════════════════
 
-test('a replacement fires once, not once per source that could have fired it', () => {
+test('a replacement fires once, not once per source that could have fired it CT-10', () => {
   // First-true-consumes, and the structural version of what the old
   // Nullbringer needed a WeakSet keyed on the event object to fake. Three
   // Nullbringers still turn +N into −N.
@@ -240,7 +240,7 @@ function battleWith(seed: number, mine: string): {
   return { h, A, D, me };
 }
 
-test('Containment Protocol on the stack cannot negate a life-gain replacement', () => {
+test('Containment Protocol on the stack cannot negate a life-gain replacement CT-10', () => {
   const { h, A, D } = battleWith(8710, 'Nullbringer');
   const atk = unitsOf(h, A).find(u => u.card === 'Nullbringer')!;
   h.do({ type: 'declareAttack', seat: A, columns: [[atk.id]] });
@@ -256,7 +256,7 @@ test('Containment Protocol on the stack cannot negate a life-gain replacement', 
   finishBattle(h);
 });
 
-test('Containment Protocol RESOLVING negates nothing a replacement did', () => {
+test('Containment Protocol RESOLVING negates nothing a replacement did #60 CT-10', () => {
   // The other half: resolve the Protocol with every one of the seven cards on
   // the board and confirm it finds nothing to negate. It is the sweep's
   // behavioural twin — the sweep proves no such card DECLARES a trigger, this
@@ -283,7 +283,7 @@ test('Containment Protocol RESOLVING negates nothing a replacement did', () => {
   finishBattle(h);
 });
 
-test('Nothyr finds no nonspell effect to target while only replacements are in play', () => {
+test('Nothyr finds no nonspell effect to target while only replacements are in play #60 CT-10', () => {
   // "When I am trashed, negate up to one target nonspell effect." Its target
   // list is built from the stack, so with nothing but replacements in play
   // there is nothing on it. The assertion is that the seven cards contribute
@@ -315,7 +315,7 @@ test('Nothyr finds no nonspell effect to target while only replacements are in p
 // happened; Cosmic Conspirator really creates then erases, firing a spurious
 // spawned event."
 
-test('a replaced life gain fires no lifeGained, and leaves no per-battle gain ledger entry', () => {
+test('a replaced life gain fires no lifeGained, and leaves no per-battle gain ledger entry #60 CT-10', () => {
   const h = new Harness(8720);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -332,7 +332,7 @@ test('a replaced life gain fires no lifeGained, and leaves no per-battle gain le
   finishBattle(h);
 });
 
-test('a replaced token creation fires no spawned for the token that was never created', () => {
+test('a replaced token creation fires no spawned for the token that was never created #60 #64 CT-10', () => {
   // Cosmic Conspirator's old shape created the Robot, fired a `spawned`, asked,
   // and erased it. Every spawn listener in the region heard about a token the
   // card says was never created.
@@ -353,7 +353,7 @@ test('a replaced token creation fires no spawned for the token that was never cr
 
 // ══ 5. THE BATCH ═══════════════════════════════════════════════════════
 
-test('one resolving part is one creation batch, so unique is counted across the whole creation', () => {
+test('one resolving part is one creation batch, so unique is counted across the whole creation #60 CT-12', () => {
   // Report #60: "Automaton of Abundance fires per spawn so N identical tokens
   // yield N copies instead of one per unique." Manufacture creates three Robots
   // in one resolution.

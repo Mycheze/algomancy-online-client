@@ -126,7 +126,7 @@ const sigLines = (): { runId: string; engine: string; sigs: string[] }[] => {
 const ALICE = (() => { const r = register('Alice', 'correct horse battery'); assert.ok(r.ok); return { id: r.account.id, token: r.token }; })();
 let aliceRun = '';
 
-test('docs/21 Watch / report round 2026-10-23 §1 a submitted run keeps the fingerprint of every action it was verified on', async () => {
+test('docs/21 Watch / report round 2026-10-23 §1 a submitted run keeps the fingerprint of every action it was verified on CT-359', async () => {
   const r = await call('POST', '/api/challenge/run', ALICE.token, { challengeId: W.id, deck: RUN.deck, actions: RUN.actions });
   assert.equal(r.status, 200, JSON.stringify(r.body));
   aliceRun = String(r.body['runId']);
@@ -141,7 +141,7 @@ test('docs/21 Watch / report round 2026-10-23 §1 a submitted run keeps the fing
   assert.equal(sigLines().filter(l => l.runId === aliceRun).length, 1);
 });
 
-test('docs/21 Watch / report round 2026-10-23 §2 a run fingerprinted by this very engine is watched as recorded', async () => {
+test('docs/21 Watch / report round 2026-10-23 §2 a run fingerprinted by this very engine is watched as recorded CT-359', async () => {
   const r = await call('GET', `/api/challenge/run/${aliceRun}`, ALICE.token);
   assert.equal(r.status, 200);
   assert.equal(r.body['verdict'], 'as-recorded');
@@ -176,7 +176,7 @@ const REFUSED = forge({ actions: tampered });
 const BETTER = forge({ score: { ...SCORE, cards: SCORE.cards - 1, unique: SCORE.unique - 1, raw: SCORE.raw - 1 } });
 const BARE = forge({ sigs: null });
 
-test('docs/21 Watch / report round 2026-10-23 §3 a run from another engine is checked against its own fingerprints', async () => {
+test('docs/21 Watch / report round 2026-10-23 §3 a run from another engine is checked against its own fingerprints CT-359', async () => {
   const get = async (id: string): Promise<Record<string, unknown>> => {
     const r = await call('GET', `/api/challenge/run/${id}`, null);
     assert.equal(r.status, 200);
@@ -200,7 +200,7 @@ test('docs/21 Watch / report round 2026-10-23 §3 a run from another engine is c
     'no fingerprints: unverified — never "as recorded" on the strength of nothing');
 });
 
-test('docs/21 Watch / report round 2026-10-23 §4 the board marks a run the rules moved under, and keeps its rank', async () => {
+test('docs/21 Watch / report round 2026-10-23 §4 the board marks a run the rules moved under, and keeps its rank CT-359', async () => {
   resetResimCache();
   const first = await call('GET', `/api/challenge/${W.id}/board`);
   assert.equal(first.status, 200);

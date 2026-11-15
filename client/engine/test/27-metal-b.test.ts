@@ -156,7 +156,7 @@ test('Flux Resonator: the donated [Augment] text boosts allied counters via the 
 // them directly, past the amount layer. Caleb, 2025-03-21: tokens created
 // while a Resonator is out "enter play with a +1/+1 counter on them" — "Yep."
 
-test('Flux Resonator: an allied Robot spawns with one more counter (report #88)', () => {
+test('Flux Resonator: an allied Robot spawns with one more counter (report #88) CT-25', () => {
   const h = new Harness(2727);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -170,7 +170,7 @@ test('Flux Resonator: an allied Robot spawns with one more counter (report #88)'
   assert.deepEqual(effStats(h, small.id), [2, 2], 'the Robot 1 entered as a 2/2');
 });
 
-test('Flux Resonator: a Robot 2 enters as a 3/3, not a 4/4', () => {
+test('Flux Resonator: a Robot 2 enters as a 3/3, not a 4/4 #88 CT-25', () => {
   // Caleb, 2025-05-30: "Not exactly double — it's just X+1, so it happens to
   // double a 1/1 but a 2/2 robot would spawn as a 3/3, not a 4/4."
   const h = new Harness(2728);
@@ -185,7 +185,7 @@ test('Flux Resonator: a Robot 2 enters as a 3/3, not a 4/4', () => {
   assert.deepEqual(effStats(h, robot.id), [3, 3]);
 });
 
-test('Flux Resonator: two allied Resonators give a spawn X plus TWO (summed)', () => {
+test('Flux Resonator: two allied Resonators give a spawn X plus TWO (summed) #88 CT-25', () => {
   const h = new Harness(2729);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -198,7 +198,7 @@ test('Flux Resonator: two allied Resonators give a spawn X plus TWO (summed)', (
   assert.equal(robot.counters, 4, '2 + 1 + 1 — the amount family is SUMMED');
 });
 
-test('Flux Resonator: an ENEMY Resonator adds nothing to a spawned Robot', () => {
+test('Flux Resonator: an ENEMY Resonator adds nothing to a spawned Robot #88 CT-25', () => {
   const h = new Harness(2730);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -211,7 +211,7 @@ test('Flux Resonator: an ENEMY Resonator adds nothing to a spawned Robot', () =>
   assert.equal(robot.counters, 2, 'not an allied source — the Robot keeps X');
 });
 
-test('Flux Resonator: a token that spawns with NO counters gets none', () => {
+test('Flux Resonator: a token that spawns with NO counters gets none #88 CT-25', () => {
   // "If ONE OR MORE counters would be put" — zero counters is no placement,
   // so a counterless spawn (a Wisp) never becomes a countered one.
   const h = new Harness(2731);
@@ -307,7 +307,7 @@ test('Formless: CR 712.1 — "and loses all attributes", abilities untouched', (
  * So this pins both halves — the declaration and the live menu — and the
  * whole point is that Formless is a 2/2 {Flying} choosing to become a 4/4
  * that has lost Flying, which is a real play and not a misclick. */
-test('Formless: BRDM — "target unit" includes ME, and self-targeting really works', () => {
+test('Formless: BRDM — "target unit" includes ME, and self-targeting really works #17', () => {
   const spec = getCard('Formless').abilities![0]!.effect.targets!;
   assert.equal(spec.what, 'unit', 'the printed text says "target unit", not "another target unit"');
   assert.equal(spec.restrict, undefined, 'and nothing excludes the source (dsl.ts notSelf)');
@@ -386,7 +386,7 @@ test('Instrument of Reassignment: [x] + sacrifice another nontoken unit → a Ro
 
 // ── Interdiction Rift ────────────────────────────────────────────────────
 
-test('Interdiction Rift: target opponent negates an effect they control', () => {
+test('Interdiction Rift: target opponent negates an effect they control #180', () => {
   const h = new Harness(2708);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;

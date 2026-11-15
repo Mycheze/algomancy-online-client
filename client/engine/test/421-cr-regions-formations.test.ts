@@ -606,7 +606,7 @@ test('cr:combat.formations.placement.defending — after blocks the defender is 
 // once no blocker is left standing). The designer, rules-questions 2024-05-07
 // (RQ 1237434283786768415): "You could play it directly into a blocking
 // formation even if you had no units".
-test('cr:combat.formations.placement.defending-emptied-block — with no blocker left standing the emptied blocking column is still offered, beside the front of the unblocked column', () => {
+test('cr:combat.formations.placement.defending-emptied-block — with no blocker left standing the emptied blocking column is still offered, beside the front of the unblocked column CT-428', () => {
   const h = new Harness(73104);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -623,7 +623,7 @@ test('cr:combat.formations.placement.defending-emptied-block — with no blocker
   finishBattle(h);
 });
 
-test('cr:combat.formations.placement.defending-emptied-block — every blocker dies after blocks, and the defender plays Tiderunner Initiate into the emptied blocking column, where it fights that attacker', () => {
+test('cr:combat.formations.placement.defending-emptied-block — every blocker dies after blocks, and the defender plays Tiderunner Initiate into the emptied blocking column, where it fights that attacker CT-428', () => {
   const h = new Harness(73107);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -656,7 +656,7 @@ test('cr:combat.formations.placement.defending-emptied-block — every blocker d
 // CT-428, the owner on Discord 2026-11-04: "if there is still an attacking
 // formation, then there's still technically an empty blocking formation. But if
 // ALL the units on both side are suddenly gone, then there is no formation at all."
-test('cr:combat.formations.placement.defending-emptied-block — once every blocker and every attacker has left, the defender is offered no position and Tiderunner Initiate enters play outside any formation', () => {
+test('cr:combat.formations.placement.defending-emptied-block — once every blocker and every attacker has left, the defender is offered no position and Tiderunner Initiate enters play outside any formation CT-428', () => {
   const h = new Harness(73108);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;

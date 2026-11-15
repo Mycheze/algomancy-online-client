@@ -34,7 +34,7 @@ function bonesculptorWithTransmogrifant(h: Harness, seat: Seat): [EntityId, Enti
   return [host, mod];
 }
 
-test('§1 report #231: Rebalance gives away the host of Transmogrifant; the earlier strip takes the printed attributes and the later Piercing stays', () => {
+test('§1 report #231: Rebalance gives away the host of Transmogrifant; the earlier strip takes the printed attributes and the later Piercing stays CT-313', () => {
   const h = new Harness(53101);
   const A = h.state.initiative, B = (1 - A) as Seat;           // A casts Pernicious Photosynthesis, B owns Transmogrifant
   // Transmogrifant is on the board a step BEFORE the deployment the Piercing is
@@ -87,7 +87,7 @@ test('§1 report #231: Rebalance gives away the host of Transmogrifant; the earl
   finishBattle(h);
 });
 
-test('§2 the timestamp of the strip is the same before and after the control change, and older than the later grant', () => {
+test('§2 the timestamp of the strip is the same before and after the control change, and older than the later grant CT-313', () => {
   const h = new Harness(53102);
   const A = h.state.initiative, B = (1 - A) as Seat;
   const [bones, mod] = bonesculptorWithTransmogrifant(h, B);   // a step before the Piercing, as in §1

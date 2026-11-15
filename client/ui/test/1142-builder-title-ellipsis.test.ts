@@ -43,14 +43,14 @@ const V: BuilderView = {
   chrome: { signedIn: true, alerts: 0 },
 };
 
-test('§1 the name is its own span inside the Deck info button, then the ✎, then the pill', () => {
+test('§1 the name is its own span inside the Deck info button, then the ✎, then the pill CT-520', () => {
   const html = builderHtml(V);
   assert.match(html,
     /<button class="[^"]*tttitlebtn"[^>]*data-btn="deck-settings"[^>]*><span class="tttitlename">Single-Box Battle Deck - Fire v1\.1\.0<\/span><svg[\s\S]*?<\/button><button[^>]*ttpill/,
     'button > span.tttitlename + svg, the pill right after');
 });
 
-test('§2 the button clips and shrinks, the name ellipsizes, the ✎ and the pill hold', () => {
+test('§2 the button clips and shrinks, the name ellipsizes, the ✎ and the pill hold CT-520', () => {
   const btn = decls('.ttpage .tttitlebtn');
   assert.match(btn, /display:\s*inline-flex/, 'a flex row, so its name can shrink inside it');
   assert.match(btn, /overflow:\s*hidden/, 'nothing of the name paints past the button');

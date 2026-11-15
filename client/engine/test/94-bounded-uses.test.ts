@@ -140,7 +140,7 @@ test('Hexbane Shiitake declined on one spell is still offered on the NEXT spell 
 // spent-on-use ruling landed, and its header says so). The other way an item on the stack fails to
 // resolve is NEGATION, and nothing guarded that at all.
 
-test('a bounded trigger that is NEGATED on the stack has still spent its use (CR 109.9a)', () => {
+test('a bounded trigger that is NEGATED on the stack has still spent its use (CR 109.9a) CT-20', () => {
   const KEY = 'ability:Minor Kraken#0';
   const { g, h, A, D } = board(9401);
   const kraken = g.entity(spawn(h, A, 'Minor Kraken'))!;

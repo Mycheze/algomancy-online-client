@@ -74,7 +74,7 @@ function tableMenu(): string[] {
   return labels;
 }
 
-test('§1 lost on time, board viewed: the bar says who won and offers the way back to the summary', () => {
+test('§1 lost on time, board viewed: the bar says who won and offers the way back to the summary #324 CT-524', () => {
   const { s, html } = lostOnTime(114401);
   assert.ok(ui.has({ btn: 'pg-close' }), 'the post-game screen is up');
   assert.ok(html.includes('class="pg'), 'the post-game screen is drawn');
@@ -94,7 +94,7 @@ test('§2 …and the way back works', () => {
   assert.ok(ui.has({ btn: 'pg-close' }), 'Post-game summary brought the screen back');
 });
 
-test('§3 the table menu of a game lost on time goes home and does not offer a concede', () => {
+test('§3 the table menu of a game lost on time goes home and does not offer a concede CT-524', () => {
   lostOnTime(114403);
   ui.click({ btn: 'pg-close' });
   const labels = tableMenu();

@@ -104,7 +104,7 @@ function sterile(seed: number): Harness {
 
 // ── CT-166: the release obeys the PRINTED timing ──────────────────────
 
-test('CR 504.9a: the marker does not move a fulfilled release out of battle and into the haste step', () => {
+test('CR 504.9a: the marker does not move a fulfilled release out of battle and into the haste step #152 CT-166', () => {
   const h = sterile(425701);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -134,7 +134,7 @@ test('CR 504.9a: the marker does not move a fulfilled release out of battle and 
   assert.throws(() => h.do({ type: 'playCached', seat: P, index: 0 }), IllegalAction);
 });
 
-test('CR 803.7i: a fulfilled prophecy on a battle card is offered at a BATTLE window', () => {
+test('CR 803.7i: a fulfilled prophecy on a battle card is offered at a BATTLE window #152 CT-166', () => {
   const h = sterile(425702);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -164,7 +164,7 @@ test('CR 803.7i: a fulfilled prophecy on a battle card is offered at a BATTLE wi
 
 // ── CT-166, the report: the owner's actual loss, with the actual card ──
 
-test('CR 203.5b: Divine Intervention can be released from cache in the battle it was prophesied for', () => {
+test('CR 203.5b: Divine Intervention can be released from cache in the battle it was prophesied for #152 CT-166', () => {
   const h = new Harness(425703);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -213,7 +213,7 @@ test('CR 203.5b: Divine Intervention can be released from cache in the battle it
 
 // ── CT-167: the marker widens the PROPHESY window ─────────────────────
 
-test('CR 504.9: a banner marked [Haste] may be prophesied during the haste step', () => {
+test('CR 504.9: a banner marked [Haste] may be prophesied during the haste step #151 CT-167', () => {
   const marked = markedBannerCards();
   assert.ok(marked.length > 0, 'the pool prints at least one marked banner');
 
@@ -243,7 +243,7 @@ test('CR 504.9: a banner marked [Haste] may be prophesied during the haste step'
   }
 });
 
-test('CR 504.9: an UNMARKED banner is still deployment-only — the haste step refuses it', () => {
+test('CR 504.9: an UNMARKED banner is still deployment-only — the haste step refuses it #151 CT-167', () => {
   const unmarked = unmarkedBannerCards();
   assert.ok(unmarked.length > 0, 'the pool prints unmarked banners too');
 
@@ -274,7 +274,7 @@ test('CR 504.9: an UNMARKED banner is still deployment-only — the haste step r
   }
 });
 
-test('CR 803.7b: the marker never widens the window outside the haste step', () => {
+test('CR 803.7b: the marker never widens the window outside the haste step #151 CT-167', () => {
   const marked = markedBannerCards();
   assert.ok(marked.length > 0, 'the pool prints at least one marked banner');
   const name = marked[0]!;

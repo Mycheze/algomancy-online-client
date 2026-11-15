@@ -183,7 +183,7 @@ test('Meteor Shower: a copy is not played, so it never copies itself again (CR 7
   finishBattle(h);
 });
 
-test('Mirage Scuttler: surviving damage grows it by that much; lethal damage does not', () => {
+test('Mirage Scuttler: surviving damage grows it by that much; lethal damage does not CT-395', () => {
   const h = new Harness(1704);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -236,7 +236,7 @@ test('Mirage Scuttler: an overkill combat hit marks the WHOLE amount, not the le
   finishBattle(h);
 });
 
-test('Mohruung: augment-targeting triggers a Crystal 2, once per turn ([Switch1])', () => {
+test('Mohruung: augment-targeting triggers a Crystal 2, once per turn ([Switch1]) #1', () => {
   const h = new Harness(1705);
   toDeployment(h);
   const p = h.state.deployPlayer!;

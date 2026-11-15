@@ -148,7 +148,7 @@ const dialogOpen = (html: string): boolean => html.includes('cachebox');
 
 /* ═══ §1 THE FIRST CLICK IS THE LAST ONE ══════════════════════════════ */
 
-test('CR D6.16: a playable cached card plays on the FIRST click of its region-cache thumb', () => {
+test('CR D6.16: a playable cached card plays on the FIRST click of its region-cache thumb CT-64', () => {
   const h = deployment();
   const i = glimpse(h, SEAT, NOW);
 
@@ -174,7 +174,7 @@ test('CR D6.16: a playable cached card plays on the FIRST click of its region-ca
 
 /* ═══ §2 THE TRADE-OFF, KEPT ══════════════════════════════════════════ */
 
-test('CR D6.16: an unplayable cache thumb carries no affordance, so the click still opens the zone', () => {
+test('CR D6.16: an unplayable cache thumb carries no affordance, so the click still opens the zone CT-64', () => {
   const h = deployment(16301);
   const i = glimpse(h, SEAT, LATER);           // {Battle} timing, live stamp, wrong step
 
@@ -206,7 +206,7 @@ test('CR D6.16: an unplayable cache thumb carries no affordance, so the click st
 
 /* ═══ §3 THE THUMB PLAYS ITS OWN ENTRY ════════════════════════════════ */
 
-test('CR D6.16: with two live entries the thumb plays the one it was drawn for', () => {
+test('CR D6.16: with two live entries the thumb plays the one it was drawn for CT-64', () => {
   // LATER first, so a client that reached for "the first live entry" — or for
   // the first thumb — would play the wrong card, or nothing at all.
   const h = deployment(16302);

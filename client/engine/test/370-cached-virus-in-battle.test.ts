@@ -80,7 +80,7 @@ test('CR 723.2a: a glimpsed Virus in the cache goes onto an ENEMY unit in battle
   assert.equal(host.controller, A, 'still the enemy unit — a Virus goes onto anyone');
 });
 
-test('CR 723.2a: a glimpsed Virus in the cache goes onto a spell on the stack', () => {
+test('CR 723.2a: a glimpsed Virus in the cache goes onto a spell on the stack #195', () => {
   const { h, D, spell } = kemxWindow(3701);
   glimpse(h, D, VIRUS);
   const opt = cacheVirus(h, D).find(a => a.type === 'augment' && a.hostStack === spell.id);
@@ -115,7 +115,7 @@ test('CR 723.2a: an EXPIRED glimpse is still nothing in battle', () => {
   assert.throws(() => h.do({ type: 'augment', seat: D, from: 'cache', index: 0, hostId: atk }), /no permission/);
 });
 
-test('CR 803.6i: a glimpsed Ambush card ambushes out of the cache, paying the ambush mana ignoring affinity', () => {
+test('CR 803.6i: a glimpsed Ambush card ambushes out of the cache, paying the ambush mana ignoring affinity #195', () => {
   const { h, D, ally } = kemxWindow(3704);
   glimpse(h, D, 'Lurking Slimebeast');              // Ambush [3 b] — D has no water
   const opt = h.legal(D).find(a => a.type === 'playCached' && a.mode === 'ambush');

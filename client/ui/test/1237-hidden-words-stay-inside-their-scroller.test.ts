@@ -37,7 +37,7 @@ const decl = (body: string, prop: string): string | null => {
   return m ? (m[1] ?? "").trim() : null;
 };
 
-test('§1 .srname is absolute and pinned to its containing block\'s corner, so a row scrolled out of sight cannot stretch the page', () => {
+test('§1 .srname is absolute and pinned to its containing block\'s corner, so a row scrolled out of sight cannot stretch the page #387 CT-562', () => {
   const rules = srnameRules();
   assert.equal(rules.length, 1, `one .srname rule in the stylesheet, found ${rules.length}`);
   const body = rules[0] ?? "";

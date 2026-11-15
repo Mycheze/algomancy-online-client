@@ -165,7 +165,7 @@ test('below 3 affinity no shard; shards give mana but never affinity', () => {
   assert.ok(h.q.openMana(0) >= 5, 'shards are mana like any resource');
 });
 
-test('CR 106.8: spending a Prismite into your 3rd element copy DOES grant the shard — "then activate it"', () => {
+test('CR 106.8: spending a Prismite into your 3rd element copy DOES grant the shard — "then activate it" #92', () => {
   // ⚠ THIS TEST HAS NOW BEEN INVERTED TWICE, which is worth reading before
   // touching it a third time.
   //
@@ -206,7 +206,7 @@ test('CR 106.8: spending a Prismite into your 3rd element copy DOES grant the sh
   assert.equal(h.q.affinity(0, 'water'), 3, 'and it counts for affinity like any water');
 });
 
-test('CR 106.8: a Prismite spent into your SECOND copy pays nothing — the p.18 bar is three', () => {
+test('CR 106.8: a Prismite spent into your SECOND copy pays nothing — the p.18 bar is three #92', () => {
   const h = new Harness(2107);
   giveResources(h, 0, 'water', 1, 'open');
   giveResources(h, 0, 'prismite', 1, 'open');
@@ -217,7 +217,7 @@ test('CR 106.8: a Prismite spent into your SECOND copy pays nothing — the p.18
   assert.equal(h.q.affinity(0, 'water'), 2);
 });
 
-test('CR 106.8: the ANBB position — a third element reached BY PRISMITE pays, exactly as a plain activation does', () => {
+test('CR 106.8: the ANBB position — a third element reached BY PRISMITE pays, exactly as a plain activation does #92', () => {
   // The reported game (playtest #92, room ANBB, 2026-08-24). Ben built his
   // third dark affinity out of prismites and was paid nothing, while the
   // opponent's third fire came from an ordinary activation and paid. Two
@@ -337,7 +337,7 @@ test('both seats deploy at once: NIT may act and finish before IT', () => {
  * `strikesInCurrentSubStep` is asked from `when()`, at event time, while
  * `b.damageStep` still reads 'Swift'. Three rulings have now moved when it
  * RESOLVES and none has moved when it FIRES. */
-test('Flowstone Arcanite (CR 802.4e): the Swift-step counters land at the boundary, in time to save the ally', () => {
+test('Flowstone Arcanite (CR 802.4e): the Swift-step counters land at the boundary, in time to save the ally #165', () => {
   const h = new Harness(2110);
   const A: Seat = 0, D: Seat = 1;
   h.state.initiative = A;

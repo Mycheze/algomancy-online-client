@@ -60,7 +60,7 @@ function growth(seed: number, aThieves: number, dThieves: number) {
 
 const counters = (h: Harness, id: EntityId): number => ent(h, id)?.counters ?? 0;
 
-test('CR 708.4a: Counter Thieves of different players — nothing is asked, the initiative player applies first and the other keeps them', () => {
+test('CR 708.4a: Counter Thieves of different players — nothing is asked, the initiative player applies first and the other keeps them CT-422', () => {
   const r = growth(69601, 1, 1);
   assert.equal(ent(r.h, r.at[0]!)!.region, ent(r.h, r.dt[0]!)!.region, 'both thieves stand in the battle region');
   assert.equal(r.h.state.decision, null, 'each player had one replacement to order: no question');

@@ -35,7 +35,7 @@ function augment(h: Harness, seat: Seat, card: string, hostId: number): void {
   h.do({ type: 'augment', seat, from: 'hand', index: give(h, seat, card), hostId });
 }
 
-test('CR 802.7 / report 279: Crumbling Ancient augmented with Child of Aether and then Rampart Guardian is a 16/16', () => {
+test('CR 802.7 / report 279: Crumbling Ancient augmented with Child of Aether and then Rampart Guardian is a 16/16 #279', () => {
   const h = new Harness(60301);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -49,7 +49,7 @@ test('CR 802.7 / report 279: Crumbling Ancient augmented with Child of Aether an
     '3/8, doubled to 3/16, then balanced: Balanced applies after Tough whatever the attach order');
 });
 
-test('CR 802.7 / report 279: Balanced augmented onto a Tough unit still applies last: Rampart Guardian with Child of Aether is an 8/8', () => {
+test('CR 802.7 / report 279: Balanced augmented onto a Tough unit still applies last: Rampart Guardian with Child of Aether is an 8/8 #279', () => {
   const h = new Harness(60302);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -59,7 +59,7 @@ test('CR 802.7 / report 279: Balanced augmented onto a Tough unit still applies 
   assert.deepEqual(effStats(h, g), [8, 8], '0/4, doubled to 0/8, then balanced');
 });
 
-test('CR 802.7 / report 279: Tough granted by an effect to a Balanced unit doubles first: Child of Aether stays a 2/2', () => {
+test('CR 802.7 / report 279: Tough granted by an effect to a Balanced unit doubles first: Child of Aether stays a 2/2 #279', () => {
   const h = new Harness(60303);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -68,7 +68,7 @@ test('CR 802.7 / report 279: Tough granted by an effect to a Balanced unit doubl
   assert.deepEqual(effStats(h, child), [2, 2], '2/0 doubled is 2/0, then balanced: a Balanced unit always has equal stats');
 });
 
-test('CR 802.7 / report 279: a column of Child of Aether and Rampart Guardian is 2/2 and 8/8, the designer worked example', () => {
+test('CR 802.7 / report 279: a column of Child of Aether and Rampart Guardian is 2/2 and 8/8, the designer worked example #279', () => {
   const h = new Harness(60304);
   toDeployment(h);
   const A = h.state.initiative as Seat;

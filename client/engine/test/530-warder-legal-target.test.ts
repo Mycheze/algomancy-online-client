@@ -109,7 +109,7 @@ function spellOffers(h: Harness, D: Seat, name: string, id: number): boolean {
 
 /* ══ §1 ═══════════════════════════════════════════════════════════════ */
 
-test('F-U03-6 Enigmatic Warder is not offered against a targetless trigger', () => {
+test('F-U03-6 Enigmatic Warder is not offered against a targetless trigger CT-338', () => {
   const { h, D, warder } = board(53000);
   assert.equal(offeredWarder(h, D, warder), false,
     'with only Surly Stalkers trigger on the stack, Warder has no effect it could be a target of');
@@ -136,7 +136,7 @@ function unfillable(h: Harness, A: Seat, D: Seat, region: number, stalker: Entit
   ];
 }
 
-test('F-U03-6 Enigmatic Warder is not offered against effects whose every target it cannot legally be', () => {
+test('F-U03-6 Enigmatic Warder is not offered against effects whose every target it cannot legally be CT-338', () => {
   const { h, A, D, stalker, whale, warder, region } = board(53020);
   const ids = unfillable(h, A, D, region, stalker, whale);
   const g = new E(structuredClone(h.state));

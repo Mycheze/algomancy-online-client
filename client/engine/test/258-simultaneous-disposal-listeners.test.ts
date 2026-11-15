@@ -100,7 +100,7 @@ function muckBoard(seed: number): {
   return { h, A, D, mr, ally, w1, w2 };
 }
 
-test('CONTROL: Muck Rummager hears an ally trashed by combat damage it survives', () => {
+test('CONTROL: Muck Rummager hears an ally trashed by combat damage it survives #155 CT-170', () => {
   const { h, A, D, mr, ally, w1 } = muckBoard(27801);
   assert.equal(h.state.phase, 'battle', 'NON-VACUITY: the trash has to happen during battle');
   // only the ally is blocked, so only the ally dies
@@ -115,7 +115,7 @@ test('CONTROL: Muck Rummager hears an ally trashed by combat damage it survives'
     + 'so the report premise as worded does not hold');
 });
 
-test('CR 706.8c: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in', () => {
+test('CR 706.8c: Muck Rummager hears an ally trashed in the same combat-damage batch it dies in #155 CT-170', () => {
   const { h, A, D, mr, ally, w1, w2 } = muckBoard(27802);
   assert.equal(h.state.phase, 'battle', 'NON-VACUITY: phase is battle, so the when clause can pass');
   assert.equal(ent(h, mr)!.controller, A, 'NON-VACUITY: Muck Rummager is in play and A controls it');
@@ -186,7 +186,7 @@ function batchFirings(name: string, label: string, killWatcher: boolean): number
   return firings(h, name, label, from).length;
 }
 
-test('CR 706.8c the class: no disposal listener in the pool goes deaf by dying in the same batch', () => {
+test('CR 706.8c the class: no disposal listener in the pool goes deaf by dying in the same batch #155 CT-170', () => {
   const pop = disposalListeners();
   assert.ok(pop.length >= 10,
     `NON-VACUITY: the derivation found ${pop.length} board-scan disposal listeners; `

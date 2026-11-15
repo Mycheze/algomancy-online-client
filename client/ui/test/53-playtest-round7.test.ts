@@ -31,7 +31,7 @@ import type { Action, Attr, EntityId, GameState, Seat } from '../../engine/src/t
 
 /* ── layer 2: stats that are SET, not adjusted ─────────────────────────── */
 
-test('Formless SETS the base — a second base-setter replaces, never compounds', () => {
+test('Formless SETS the base — a second base-setter replaces, never compounds #13', () => {
   const h = new Harness(5200);
   toDeployment(h);
   const seat: Seat = 0;
@@ -78,7 +78,7 @@ test('a rewritten base is an until-regroup change and regroup clears it', () => 
   assert.deepEqual(effStats(h, u), [7, 5], 'back to printed');
 });
 
-test('Body Swap exchanges bases, and says so in the log', () => {
+test('Body Swap exchanges bases, and says so in the log #12', () => {
   const h = new Harness(5203);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -199,7 +199,7 @@ const refusedForAllure = (err: unknown) =>
 
 /* ── the UFAB regression, and its minimal form ─────────────────────────── */
 
-test('CR 606.2b UFAB: an Alluring column may not be side-stepped by blocking the OTHERS', () => {
+test('CR 606.2b UFAB: an Alluring column may not be side-stepped by blocking the OTHERS #10 #57', () => {
   // THE REPORTED POSITION. Three attack columns, one Alluring; the defender
   // holds exactly two units able to block and puts both on the plain columns.
   const h = new Harness(5250);
@@ -221,7 +221,7 @@ test('CR 606.2b UFAB: an Alluring column may not be side-stepped by blocking the
   assert.deepEqual(h.state.battle!.blocks[0], [d1!]);
 });
 
-test('CR 802.15a: the minimal form — two columns, one Alluring, one blocker', () => {
+test('CR 802.15a: the minimal form — two columns, one Alluring, one blocker #10', () => {
   const h = new Harness(5251);
   toDeployment(h);
   const A = h.state.initiative, D = (1 - A) as Seat;
@@ -334,7 +334,7 @@ test('CR 802.15h RAQ 2/3: two units — block with both, or forgo the column; no
   offersAreHonest(h, D);
 });
 
-test('CR 802.15h RAQ 3/3: three units — forgo, or A+B, or A+C; B+C is illegal', () => {
+test('CR 802.15h RAQ 3/3: three units — forgo, or A+B, or A+C; B+C is illegal #57', () => {
   const { h, D, ds } = evasiveLure(5256, 3);
   const [a, b, c] = ds as [EntityId, EntityId, EntityId];
   const ok = (blocks: Record<number, EntityId[]>) =>
@@ -805,7 +805,7 @@ test('auto-yield does not skip a negated trigger (CR 704.4: unreachable, kept as
 
 /* ── nothing to do while the opponent decides ──────────────────────────── */
 
-test('a seat with a decision pending against the OTHER seat has no legal action', () => {
+test('a seat with a decision pending against the OTHER seat has no legal action #18', () => {
   // Playtest: "when a decision is pending for the other player I get the window
   // for priority and it asks me to pass, but I can't." The server redacts the
   // opponent's decision to null, so the client cannot see it — but it does not

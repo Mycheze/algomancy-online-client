@@ -147,7 +147,7 @@ test('CR 801.2h (owner 2026-10-31): the per-battle trashed ledger does NOT count
 
 // ── half 2: the erase is not a trash ────────────────────────────────────
 
-test('CR 720.8a: a nontoken mod erased with its Unstable host is not trashed at all', () => {
+test('CR 720.8a: a nontoken mod erased with its Unstable host is not trashed at all #129 CT-121', () => {
   const { h, A, D, hostId, mark } = moddedEnemyUnit(9202);
   withE(h, e => { e.destroy(e.entity(hostId)!, 'dies'); });
 
@@ -191,7 +191,7 @@ test('CR 405.4: Pull Under still trashes the mods it deliberately keeps binned',
 
 // ── half 1: attribution follows the host ────────────────────────────────
 
-test('CR 720.8: a mod trashed on a recall is trashed by the host controller, not by its owner', () => {
+test('CR 720.8: a mod trashed on a recall is trashed by the host controller, not by its owner #129 CT-121', () => {
   // The route where a mod IS genuinely trashed: the host leaves for a hand, the
   // mod is left behind in a bin and STAYS there (CR 801.2f, Caleb 2024-09-15). Before
   // the mod-trash ruling this said "Player 2 trashes Ignis Sprite" — the mod owner. It is part
@@ -280,7 +280,7 @@ test('the bin ref names the copy just trashed, not the innocent older one', () =
 
 // ── the whole-pool sweep ────────────────────────────────────────────────
 
-test('CR 801.2g whole pool: no nontoken mod is trashed by its host death — and the body never is (CR 801.2h)', () => {
+test('CR 801.2g whole pool: no nontoken mod is trashed by its host death — and the body never is (CR 801.2h) #129 CT-121 CT-354', () => {
   // Derived over every card that can BE a nontoken mod (203 of them today),
   // not over the one card the report named. Three of them — the [Augment] "I
   // gain -X/-X" viruses, Malformed Monstrosity among them — shrink the host to

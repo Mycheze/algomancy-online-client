@@ -103,7 +103,7 @@ test('right-click and the ☰ table button both offer it, with the count', () =>
   ui.click({ btn: 'menuclose' });
 });
 
-test('it opens every reveal, newest first: who, from what, and exactly the cards shown', () => {
+test('it opens every reveal, newest first: who, from what, and exactly the cards shown #224', () => {
   const { A, theirs, mine } = twoReveals(49603);
   const d = dialog(openIt());
   assert.ok(d, 'the dialog is up');

@@ -80,7 +80,7 @@ const kill = (h: Harness, id: EntityId): void => {
 
 const onStack = (h: Harness, card: string): boolean => h.state.stack.some(i => i.card === card);
 
-test('CR 714.4 Embermaw Fledgling gone before its after-combat trigger resolves still counts the attackers it stood with', () => {
+test('CR 714.4 Embermaw Fledgling gone before its after-combat trigger resolves still counts the attackers it stood with CT-209', () => {
   // _passer names Embermaw Fledgling among the effects that "remember they were
   // in formation and will work fine"
   const h = new Harness(4020);
@@ -146,7 +146,7 @@ test('CR 714.6 Echo of Despair gone before its after-combat trigger resolves sti
   finishBattle(h);
 });
 
-test('CR 714.4 Lumengrove Lurker gone before its trigger resolves counts the formation it remembers', () => {
+test('CR 714.4 Lumengrove Lurker gone before its trigger resolves counts the formation it remembers CT-209', () => {
   // _passer names Lumengrove Lurker too. Its target was chosen against a
   // formation of 3 (it and two Whales); gone, it counts the two Whales left — a
   // cost-2 target is still within reach, and CR 704.5 re-checks the restriction

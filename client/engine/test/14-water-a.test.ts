@@ -61,7 +61,7 @@ test('Amphivore: combat damage to an opponent triggers grafts thrice (one trigge
 
 // ── Bripp ────────────────────────────────────────────────────────────────
 
-test('Bripp: look at target player\'s hand, recycle a card, they draw; 4/2 Feeble spawns', () => {
+test('Bripp: look at target player\'s hand, recycle a card, they draw; 4/2 Feeble spawns #56', () => {
   const h = new Harness(1402);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = 1 - A;
@@ -454,7 +454,7 @@ test('Lurking Slimebeast: plays as an 8/3', () => {
 // UNPARKED (round 15). The oracle file once spelled this cost as the word
 // "[three_blue]"; it is "[3b]" at source now, so printed.ambush is real and
 // the CR 803.6 mode is offered like any other ambusher's.
-test('Lurking Slimebeast: [Battle] Ambush [3b] = 3 mana at one water pip (CR 803.6a, 107.10a)', () => {
+test('Lurking Slimebeast: [Battle] Ambush [3b] = 3 mana at one water pip (CR 803.6a, 107.10a) #58', () => {
   const h = new Harness(1417);
   toDeployment(h);
   const A = h.state.initiative, D = 1 - A;
@@ -546,7 +546,7 @@ const mw33 = (h: Harness, seat: Seat) =>
 
 for (const mwSeat of [0, 1] as Seat[]) {
   for (const init of [0, 1] as Seat[]) {
-    test(`Mirage Walker #86: acting suppresses, idling triggers (mwSeat=${mwSeat}, deployPlayer=${init})`, () => {
+    test(`Mirage Walker #86: acting suppresses, idling triggers (mwSeat=${mwSeat}, deployPlayer=${init}) CT-22`, () => {
       const h = new Harness(1480 + mwSeat * 2 + init);
       h.state.initiative = init;                  // deployPlayer derives from initiative
       toDeployment(h);
@@ -571,7 +571,7 @@ for (const mwSeat of [0, 1] as Seat[]) {
   }
 }
 
-test('Mirage Walker #86: the OPPONENT acting during deployment does not suppress the trigger', () => {
+test('Mirage Walker #86: the OPPONENT acting during deployment does not suppress the trigger CT-22', () => {
   const h = new Harness(1484);
   toDeployment(h);
   const mwSeat = h.state.deployPlayer!;           // the seat the old false positive hit
@@ -586,7 +586,7 @@ test('Mirage Walker #86: the OPPONENT acting during deployment does not suppress
   assert.equal(mw33(h, mwSeat).length, 1, "the opponent's mod is not YOUR action → the 3/3 is created");
 });
 
-test('Mirage Walker #86: activating an ability during deployment counts as acting', () => {
+test('Mirage Walker #86: activating an ability during deployment counts as acting CT-22', () => {
   const h = new Harness(1485);
   toDeployment(h);
   const mwSeat = (1 - h.state.deployPlayer!) as Seat;   // the seat the old code never counted

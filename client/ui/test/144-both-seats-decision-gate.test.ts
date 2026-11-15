@@ -169,7 +169,7 @@ function askedSeat0(): { state: GameState; hand1: number; hand0: number } {
 
 /* ═══ §0 THE RULES LAYER FIRST ════════════════════════════════════════ */
 
-test('CR D2.1: the rules layer really does offer AND accept what the client is about to draw', () => {
+test('CR D2.1: the rules layer really does offer AND accept what the client is about to draw CT-46', () => {
   const { state, hand1 } = askedSeat0();
 
   // OFFERED. If this were empty the ticket would be mis-filed and the fix
@@ -192,7 +192,7 @@ test('CR D2.1: the rules layer really does offer AND accept what the client is a
 
 /* ═══ §1 THE BUG, ON SCREEN ═══════════════════════════════════════════ */
 
-test('CR D2.1: with both seats on screen the seat NOT being asked is offered its deployment affordances', () => {
+test('CR D2.1: with both seats on screen the seat NOT being asked is offered its deployment affordances CT-46', () => {
   const { state, hand1 } = askedSeat0();
   const html = ui.show(structuredClone(state));
 
@@ -262,7 +262,7 @@ test('CR D2.1: the free seat\'s other two deployment inputs work too — its boa
 
 /* ═══ §2 THE ASKER ════════════════════════════════════════════════════ */
 
-test('CR D2.1: the seat being asked still gets its own decision bar, and no way around it', () => {
+test('CR D2.1: the seat being asked still gets its own decision bar, and no way around it CT-46', () => {
   const { state, hand0 } = askedSeat0();
   const html = ui.show(structuredClone(state));
 
@@ -331,7 +331,7 @@ test('CR D2.1: a BATTLE question still freezes the whole screen', () => {
 
 /* ═══ §4 BOTH SEATS AT ONCE ═══════════════════════════════════════════ */
 
-test('CR D2.1: both seats can never have a question open — the slot is single, and the second is refused', () => {
+test('CR D2.1: both seats can never have a question open — the slot is single, and the second is refused CT-46', () => {
   // The brief asked what happens if both seats have a decision open. Nothing
   // does: `GameState.decision` is ONE SLOT and `E.suspend` writes it
   // unconditionally, which is precisely why the engine pairs its permissive gate
@@ -361,7 +361,7 @@ test('CR D2.1: both seats can never have a question open — the slot is single,
 
 /* ═══ §5 ONLINE, NOTHING CHANGES ══════════════════════════════════════ */
 
-test('CR D2.1: ONLINE the state that drives this branch cannot even reach the client', () => {
+test('CR D2.1: ONLINE the state that drives this branch cannot even reach the client CT-46', () => {
   // THE REASON the whole change is a no-op online, and the reason the online
   // client never had to make this distinction: server/view.ts nulls a decision
   // that is not yours before it goes on the wire. HOTSEAT is the only caller

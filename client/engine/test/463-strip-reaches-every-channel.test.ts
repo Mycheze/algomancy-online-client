@@ -142,7 +142,7 @@ test('463 statics: no holder under Transmogrifant projects onto anyone', () => {
   assert.deepEqual(fails, []);
 });
 
-test('463 every anchored walk in the engine applies a strip filter', () => {
+test('463 every anchored walk in the engine applies a strip filter #214 CT-256', () => {
   const src = readFileSync(new URL('../src/engine.ts', import.meta.url), 'utf8');
   const sites = [...src.matchAll(/this\.anchored\(/g)].map(m => m.index!);
   assert.ok(sites.length >= 12, `found ${sites.length} walks`);

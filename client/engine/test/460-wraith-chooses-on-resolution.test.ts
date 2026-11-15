@@ -69,7 +69,7 @@ function answerAll(h: Harness, from: { events: number; log: number }, prefer: En
   return asks;
 }
 
-test('report 2026-10-16: three Wraith triggers and a 1/1 ask nothing before the first resolves', () => {
+test('report 2026-10-16: three Wraith triggers and a 1/1 ask nothing before the first resolves CT-282', () => {
   const h = sterile(46000);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -89,7 +89,7 @@ test('report 2026-10-16: three Wraith triggers and a 1/1 ask nothing before the 
 // Playtest #98 and CR 507.5a still hold: the Wraith question is raised before
 // anything of the resolution happens, so answering it rewinds nothing and the
 // OTHER player deploys straight through it.
-test('report 2026-10-16: a Wraith question at resolution does not freeze the other player in deployment', () => {
+test('report 2026-10-16: a Wraith question at resolution does not freeze the other player in deployment CT-282', () => {
   const h = sterile(46003);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -110,7 +110,7 @@ test('report 2026-10-16: a Wraith question at resolution does not freeze the oth
   assert.equal(h.state.decision?.seat, P, 'and the Wraith question is still open, undisturbed');
 });
 
-test('report 2026-10-16: the second Wraith trigger is asked after the first has fully resolved, without the dead 1/1 on its menu', () => {
+test('report 2026-10-16: the second Wraith trigger is asked after the first has fully resolved, without the dead 1/1 on its menu CT-282', () => {
   const h = sterile(46001);
   toDeployment(h);
   const P = h.state.deployPlayer!;

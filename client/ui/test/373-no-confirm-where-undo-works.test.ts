@@ -49,7 +49,7 @@ function show(s: GameState, seat: Seat): void {
   ui.sent();   // forget the join's own traffic
 }
 
-test('in deployment, an irreversible ability activates on the click — undo is the safety net, not a bar', () => {
+test('in deployment, an irreversible ability activates on the click — undo is the safety net, not a bar #194', () => {
   const h = new Harness(37301, ['Ann', 'Bo']);
   toDeployment(h);
   const me = h.state.deployPlayer!;
@@ -63,7 +63,7 @@ test('in deployment, an irreversible ability activates on the click — undo is 
   assert.deepEqual(ui.actions(), [a], 'the click sends the activation itself');
 });
 
-test('in battle, the same ability still asks "Yes, activate" — nothing there is undone', () => {
+test('in battle, the same ability still asks "Yes, activate" — nothing there is undone #194', () => {
   const h = new Harness(37302, ['Ann', 'Bo']);
   toDeployment(h);
   const obsBySeat = ([0, 1] as const).map(seat => spawn(h, seat, CARD));
@@ -93,7 +93,7 @@ test('in battle, the same ability still asks "Yes, activate" — nothing there i
   assert.deepEqual(ui.actions(), [a], 'and "Yes, activate" sends it');
 });
 
-test('one answer for the undo button and the bar: ui/undo.ts', () => {
+test('one answer for the undo button and the bar: ui/undo.ts #194', () => {
   const src = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
   assert.match(src, /const canUndo = undoAvailable\(h\.state, NET\);/, 'the ↶ button asks ui/undo.ts');
   assert.match(src, /function needsConfirm\([^)]*\): boolean \{\n(?:\s*\/\/.*\n)*\s*if \(undoAvailable\(h\.state, NET\)\) return false;/,

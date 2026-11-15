@@ -65,7 +65,7 @@ function over(seed: number, payload: Record<string, unknown>): string {
   return ui.push({ t: 'gameover', ...payload });
 }
 
-test('§1 the button sits beside Rematch where the game can be disputed, and nowhere else', () => {
+test('§1 the button sits beside Rematch where the game can be disputed, and nowhere else #231 BL-48', () => {
   const html = over(52100, DISPUTABLE);
   assert.deepEqual(buttons(html).slice(0, 2), ['pg-rematch', 'pg-dispute'], 'Dispute game is right after Rematch');
   assert.match(html, /data-btn="pg-dispute"[^>]*>Dispute game<\/button>/);   // a button() since 2026-11-03: type="button" follows data-btn
@@ -96,7 +96,7 @@ test('§2 it opens the report form as a dispute: one required note, no kinds to 
   assert.ok(ui.has({ btn: 'pg-dispute' }), 'and the button is still there');
 });
 
-test('§3 Send puts the note on the socket; the answer closes the form and the button says Disputed', () => {
+test('§3 Send puts the note on the socket; the answer closes the form and the button says Disputed BL-48', () => {
   over(52103, DISPUTABLE);
   ui.click({ btn: 'pg-dispute' });
   ui.type('report-note', 'I won because Bo\'s blocker vanished');

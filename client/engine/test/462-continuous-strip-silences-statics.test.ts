@@ -61,7 +61,7 @@ const stripped = (h: Harness, id: EntityId): boolean => {
   return g.abilitiesSuppressed(g.entity(id)!);
 };
 
-test('462 Mirage Walker with Aberrant Statweaver and Transmogrifant reads 4/6, the stripped Statweaver sets no base', () => {
+test('462 Mirage Walker with Aberrant Statweaver and Transmogrifant reads 4/6, the stripped Statweaver sets no base #214', () => {
   const h = new Harness(46201);
   toDeployment(h);
   const p = h.state.deployPlayer!;
@@ -74,7 +74,7 @@ test('462 Mirage Walker with Aberrant Statweaver and Transmogrifant reads 4/6, t
   assert.deepEqual(effStats(h, sw), [5, 5], 'the Statweaver itself: printed 3/3 plus +2/+2');
 });
 
-test('462 the report shape: Transmogrifant augmented onto an enemy host silences that player Statweaver', () => {
+test('462 the report shape: Transmogrifant augmented onto an enemy host silences that player Statweaver #214 CT-256', () => {
   const h = new Harness(46202);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = other(A);
@@ -114,7 +114,7 @@ test('462 Gatekeeper of Souls under Transmogrifant need not be targeted', () => 
   assert.ok(!mustIn(h, region).has(gk), 'a stripped Gatekeeper no longer must be targeted');
 });
 
-test('462 two Transmogrifants in play: only the newer applies, a token gets +2/+2 once', () => {
+test('462 two Transmogrifants in play: only the newer applies, a token gets +2/+2 once CT-256', () => {
   const h = new Harness(46205);
   toDeployment(h);
   const p = h.state.deployPlayer!;

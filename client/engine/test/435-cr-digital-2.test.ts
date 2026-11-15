@@ -220,7 +220,7 @@ function drive(h: Harness, until: () => boolean, cap = 400): void {
   }
 }
 
-test('cr:annexd.modes.single-card-duel — a deck of 30 copies of one card is a single-card deck, 29 is not, and two such decks make a duel', () => {
+test('cr:annexd.modes.single-card-duel — a deck of 30 copies of one card is a single-card deck, 29 is not, and two such decks make a duel CT-389', () => {
   const a = unitCards[0]!, b = unitCards[1]!;
   assert.equal(checkSingleDeck(Array(30).fill(a)).ok, true, '30 copies is a single-card deck');
   assert.equal(checkSingleDeck(Array(29).fill(a)).ok, false, '29 copies is not');
@@ -631,7 +631,7 @@ const waitingInfo = mainFn<(room: Room, seat: Seat) => Waiting>(['waitingInfo'],
 });
 const thirty = (n: CardName): CardName[] => Array(30).fill(n);
 
-test('cr:annexd.modes.single-card-duel.blind — before the game the other player is told only that a card is picked, never which', () => {
+test('cr:annexd.modes.single-card-duel.blind — before the game the other player is told only that a card is picked, never which CT-513', () => {
   const X = DECK_LIST.find(n => getCard(n).kind === 'unit')!;
   const room = createRoom('U24W', 24420, ['Ann', 'Bob'], 'constructed', undefined, thirty(X), undefined, null, undefined, true);
   assert.equal(room.single, true);

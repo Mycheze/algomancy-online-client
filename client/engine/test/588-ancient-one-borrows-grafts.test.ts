@@ -50,7 +50,7 @@ function driveRecording(h: Harness): { label: string; sourceId?: number; parts: 
   return [...stacked.values()];
 }
 
-test('CR 722.4 / report 271: an Ancient One borrowing a grafted triggered cause runs the graft too, with its own use', () => {
+test('CR 722.4 / report 271: an Ancient One borrowing a grafted triggered cause runs the graft too, with its own use #271', () => {
   const h = new Harness(58800);
   toDeployment(h);
   const A = h.state.initiative;
@@ -71,7 +71,7 @@ test('CR 722.4 / report 271: an Ancient One borrowing a grafted triggered cause 
     'and the Ancient One spent its own — "it triggers on each creature"');
 });
 
-test('CR 722.4 / report 271: an Ancient One activating a borrowed grafted cause runs the graft too', () => {
+test('CR 722.4 / report 271: an Ancient One activating a borrowed grafted cause runs the graft too #271', () => {
   const h = new Harness(58801);
   toDeployment(h);
   const A = h.state.initiative;
@@ -94,7 +94,7 @@ test('CR 722.4 / report 271: an Ancient One activating a borrowed grafted cause 
   finishBattle(h);
 });
 
-test('CR 710.7, 722.7 / report 271: the designer board — Amphivore with Astral Painseeker, Ancient One behind it, Bloodwind Revenant beside', () => {
+test('CR 710.7, 722.7 / report 271: the designer board — Amphivore with Astral Painseeker, Ancient One behind it, Bloodwind Revenant beside #271', () => {
   const h = new Harness(58802);
   toDeployment(h);
   const A = h.state.initiative;
@@ -119,7 +119,7 @@ test('CR 710.7, 722.7 / report 271: the designer board — Amphivore with Astral
     'the attack trigger is only on Astral Tidewraith — it is not adjacent to the Ancient One');
 });
 
-test('CR 722.2 / report 271: no graft is ever offered onto an Ancient One — it has no graft cause of its own', () => {
+test('CR 722.2 / report 271: no graft is ever offered onto an Ancient One — it has no graft cause of its own #271', () => {
   const h = new Harness(58803);
   toDeployment(h);
   const A = h.state.deployPlayer!;

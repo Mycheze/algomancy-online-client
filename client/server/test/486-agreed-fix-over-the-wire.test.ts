@@ -164,7 +164,7 @@ test.after(async () => {
   await server?.stop();
 });
 
-test('§1 an amend sent as an action is refused, whoever it names as agreeing', async () => {
+test('§1 an amend sent as an action is refused, whoever it names as agreeing BL-46', async () => {
   await quiesce(a, b);
   const count = a.view.actionCount;
   for (const action of [
@@ -179,7 +179,7 @@ test('§1 an amend sent as an action is refused, whoever it names as agreeing', 
   assert.ok(!a.log.some(l => /Agreed fix/.test(l)));
 });
 
-test('§2 propose then accept: the edit lands for both, the clocks stop meanwhile, a report is filed', async () => {
+test('§2 propose then accept: the edit lands for both, the clocks stop meanwhile, a report is filed BL-46', async () => {
   await driveToBattle(a, b);
   const P = a.view.priority as Seat;
   const O = (P === 0 ? 1 : 0) as Seat;
@@ -318,7 +318,7 @@ test('§5 the fixed game survives a restart of the server and replays FAITHFUL',
   assert.match(reportLines(`${ROOM}.json`, raw, an).lines.join('\n'), /FAITHFUL/);
 });
 
-test('§6 two fixes in a row file one report, and a restart in between does not lose it', async () => {
+test('§6 two fixes in a row file one report, and a restart in between does not lose it CT-340', async () => {
   await driveToBattle(a, b);
   await quiesce(a, b);
   const filed = fixRows().length;

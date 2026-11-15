@@ -109,7 +109,7 @@ function assertOpponentSeesReveal(
 
 // ── Oracle of Foretelling — Glimpse 5, and the glimpse-timing question ─────────────
 
-test('Oracle of Foretelling: the Glimpse 5 reveal is public to the opponent (CR D6.2c, 801.9)', () => {
+test('Oracle of Foretelling: the Glimpse 5 reveal is public to the opponent (CR D6.2c, 801.9) #104 CT-71', () => {
   const h = new Harness(15901);
   toDeployment(h);
   const A = h.state.deployPlayer! as Seat, D = (1 - A) as Seat;
@@ -120,7 +120,7 @@ test('Oracle of Foretelling: the Glimpse 5 reveal is public to the opponent (CR 
   assertOpponentSeesReveal(h, D, since(h, mark), revealed, 'Oracle of Foretelling');
 });
 
-test('Oracle of Foretelling: its reveal is inside the hidden deployment segment, and waits for the barrier (CR D6.2)', () => {
+test('Oracle of Foretelling: its reveal is inside the hidden deployment segment, and waits for the barrier (CR D6.2) #104 CT-71 CT-77', () => {
   // Its printed timing is `deploy`, so EVERY Oracle reveal is inside a hidden
   // simultaneous segment — this card is never in the easy case. The glimpse investigation found the
   // opponent's copy held (rooms.ts heldEvents) until the barrier; a later ruling, since reversed, let it
@@ -148,7 +148,7 @@ test('Oracle of Foretelling: its reveal is inside the hidden deployment segment,
 
 // ── Premonition — Glimpse X ({Battle}) ──────────────────────────────────
 
-test('Premonition: the Glimpse X reveal is public to the opponent (CR D6.2c, 801.9)', () => {
+test('Premonition: the Glimpse X reveal is public to the opponent (CR D6.2c, 801.9) CT-71', () => {
   const h = new Harness(15903);
   toDeployment(h);
   const A = h.state.deployPlayer! as Seat, D = (1 - A) as Seat;
@@ -227,7 +227,7 @@ test('Dematerialize: the negated controller\'s Glimpse 3 reveal is public to the
 
 // ── Foretell — Glimpse 1 (no decision to raise) ─────────────────────────
 
-test('Foretell: the Glimpse 1 reveal is public to the opponent (CR D6.2c, 801.9)', () => {
+test('Foretell: the Glimpse 1 reveal is public to the opponent (CR D6.2c, 801.9) #104 CT-71', () => {
   const h = new Harness(15906);
   toDeployment(h);
   const A = h.state.deployPlayer! as Seat, D = (1 - A) as Seat;

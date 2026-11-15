@@ -105,7 +105,7 @@ function confirmAndApply(s: GameState): Action {
   return sent[0]!;
 }
 
-test('§1 regions board: the sent units wait full-size in the fight, every slot is drawn, the bar names the step', () => {
+test('§1 regions board: the sent units wait full-size in the fight, every slot is drawn, the bar names the step #179 CT-192', () => {
   const s = counterBoard();
   const pool = s.battle!.attackerPool!;
   const html = join(s, 0);
@@ -138,7 +138,7 @@ test('§2 a placed unit leaves the tray for the column clicked, and comes back',
   assert.equal(slots(html).length, 8);
 });
 
-test('§3 Pairs builds front-and-back pairs the engine accepts', () => {
+test('§3 Pairs builds front-and-back pairs the engine accepts #179 CT-192', () => {
   const s = counterBoard();
   const pool = s.battle!.attackerPool!;
   join(s, 0);
@@ -150,7 +150,7 @@ test('§3 Pairs builds front-and-back pairs the engine accepts', () => {
   assert.deepEqual((a as { columns: EntityId[][] }).columns, [pool.slice(0, 2), pool.slice(2, 4)]);
 });
 
-test('§4 a pool of two offers One column, and the engine takes it', () => {
+test('§4 a pool of two offers One column, and the engine takes it CT-192', () => {
   const { s, D, sent } = sentPool(35104, 2);
   assert.deepEqual(counterShapes(sent).map(sh => sh.key), ['onecol']);
   const html = join(s, D);

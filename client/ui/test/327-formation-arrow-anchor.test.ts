@@ -28,7 +28,7 @@ import { client } from './ui-driver.ts';
 const ui = await client();
 const MAIN = readFileSync(fileURLToPath(new URL('../main.ts', import.meta.url)), 'utf8');
 
-test('§1 each half of each battle column says whose formation it is', () => {
+test('§1 each half of each battle column says whose formation it is #170', () => {
   const h = new Harness(32701);
   toDeployment(h);
   const A = h.state.initiative as Seat, D = (1 - A) as Seat;
@@ -50,7 +50,7 @@ test('§1 each half of each battle column says whose formation it is', () => {
   }
 });
 
-test('§2 a formation target is every half of that seat, then the In Play zone', () => {
+test('§2 a formation target is every half of that seat, then the In Play zone #170', () => {
   const at = MAIN.indexOf("if ('formation' in t) {");
   assert.ok(at >= 0, 'the formation branch of targetSelectors');
   const ret = MAIN.slice(at, MAIN.indexOf('\n  }', at));

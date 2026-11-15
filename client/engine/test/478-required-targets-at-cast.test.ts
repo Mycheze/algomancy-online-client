@@ -66,7 +66,7 @@ for (const [label, bin] of [
   });
 }
 
-test('Tilling the Graves with two units in the bin may stop at none, at one, or take both', () => {
+test('Tilling the Graves with two units in the bin may stop at none, at one, or take both CT-299', () => {
   const { h, D } = battle(47802, dark());
   h.state.players[D]!.bin = ['Cinder Scuttler', 'Arc Lightning', 'Cinder Scuttler'] as CardName[];
   give(h, D, 'Arc Lightning');
@@ -110,7 +110,7 @@ function xMenu(h: Harness): number[] {
   return dec.options.map(o => o.value as number);
 }
 
-test('Blight End with one unit in the battle offers X up to 1 only, and X = 1 needs its target', () => {
+test('Blight End with one unit in the battle offers X up to 1 only, and X = 1 needs its target CT-303', () => {
   const mana = [open('wood'), open('dark'), open('wood'), open('dark'), open('wood')];
   const { h, D, ids } = battle(47803, mana);
   const hi = give(h, D, "Blight's End");
@@ -149,7 +149,7 @@ test('Torrential Reclamation with no ally in the fight is castable at X = 0 only
   assert.deepEqual(xMenu(h), [0], 'no nontoken ally: X = 0 is the only declarable X');
 });
 
-test('Torrential Reclamation offers X only up to the nontoken allies, and X = 0 always', () => {
+test('Torrential Reclamation offers X only up to the nontoken allies, and X = 0 always CT-303', () => {
   // the caster is the ATTACKER here: its allies are in the fight
   const h = new Harness(47806);
   toDeployment(h);

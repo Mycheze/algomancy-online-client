@@ -102,7 +102,7 @@ test('RAQ Tides 7: a free play is a play — Bloomcaster hears a unit Tides play
   finishBattle(h);
 });
 
-test('RAQ Tides 5: an additional cost is still paid, and a unit from the same Tides is not in play to pay it', () => {
+test('RAQ Tides 5: an additional cost is still paid, and a unit from the same Tides is not in play to pay it CT-221', () => {
   // "Any additional [cost] of the card must be paid. That means you CANNOT use
   // Volatile Toxicity on Towering Colossus from same Tides of the Cosmos (he
   // cannot be sacrificed, since he is not yet in play)."
@@ -159,7 +159,7 @@ test('RAQ Tides 4: Tides plays a card, never a graft or a plain augment', () => 
   finishBattle(h);
 });
 
-test('RAQ Tides 6: Frosted Denial (X cannot be zero) is not a card Tides can play', () => {
+test('RAQ Tides 6: Frosted Denial (X cannot be zero) is not a card Tides can play CT-222', () => {
   // "Any spells with X cost can only be played with X=0 … it also means that
   // you CANNOT play Frosted Denial from Tides of Cosmos." Frosted Denial
   // prints "X can't be zero".
@@ -167,7 +167,7 @@ test('RAQ Tides 6: Frosted Denial (X cannot be zero) is not a card Tides can pla
   assert.ok(!labels(h).some(l => l.startsWith('Frosted Denial')), 'Frosted Denial is not offered');
 });
 
-test('RAQ Tides 3: a Virus card can be played from Tides as a Virus', () => {
+test('RAQ Tides 3: a Virus card can be played from Tides as a Virus CT-220', () => {
   // "Tides allows you to play Viruses/Ambushes/Prophecy (you still look at
   // 'main' cost of the card, even if you used it as Ambush/Prophecy)."
   const { h } = tides(39607, ['Molten Riftbreaker'], (g, A) => { spawn(g, A, 'Dune Drifter'); });
@@ -657,7 +657,7 @@ test('RAQ Mana question: affinity counts resources already spent — two wood pa
 
 /* ═══ rules-questions: "Another set of questions, this time on" ══════════ */
 
-test('RAQ Another set: Rebalance is playable with no unit of your own — it targets nothing', () => {
+test('RAQ Another set: Rebalance is playable with no unit of your own — it targets nothing CT-402', () => {
   // calebgannon: "Yes you can still play it without a unit (it doesn't target
   // anything so there are no requirements for you having a unit)"
   const h = new Harness(39660);
@@ -696,7 +696,7 @@ test('RAQ Another set: a Ghord sacrifice reaches only the opponent units in its 
   assert.ok(ent(h, theirs), 'the opponent unit in another region is not sacrificed');
 });
 
-test('RAQ Another set: Organic Exchange may target two of your own units, and a spell aimed at one still resolves', () => {
+test('RAQ Another set: Organic Exchange may target two of your own units, and a spell aimed at one still resolves CT-394', () => {
   // calebgannon: "You can target your own 2 units, but another effect targeting
   // them would still resolve (they're still the same units). Things only
   // wouldn't resolve if a unit changed to a different location"

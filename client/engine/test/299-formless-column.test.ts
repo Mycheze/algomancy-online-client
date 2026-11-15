@@ -74,7 +74,7 @@ function btux(seed: number) {
 
 /* ══ §1 — THE REPORT ═════════════════════════════════════════════════ */
 
-test('CR 712.3 the report: Formless takes {Blessed} off the whole column, not just its target', () => {
+test('CR 712.3 the report: Formless takes {Blessed} off the whole column, not just its target #167', () => {
   const { h, front, mate } = btux(29901);
   const g = new E(h.state);
   assert.ok(!g.ownAttrs(g.entity(front)!).size, 'the target lost its own layer (this always worked)');
@@ -84,7 +84,7 @@ test('CR 712.3 the report: Formless takes {Blessed} off the whole column, not ju
     'so the column is not Blessed any more, which is what the printed reminder promises');
 });
 
-test('CR 712.3 and therefore nobody gains life when the column connects', () => {
+test('CR 712.3 and therefore nobody gains life when the column connects #167', () => {
   // ⚠ THIS ASSERTION WAS VACUOUS ONCE, and the mutation found it. `btux()`
   // stops with the Formless trigger resolved and the block window reopened —
   // no combat damage has happened yet. Reading the life total there compares
@@ -102,7 +102,7 @@ test('CR 712.3 and therefore nobody gains life when the column connects', () => 
   finishBattle(h);
 });
 
-test('CR 712.3 the control: without Formless the same column DOES gain', () => {
+test('CR 712.3 the control: without Formless the same column DOES gain #167', () => {
   const h = new Harness(29903);
   toDeployment(h);
   const A = h.state.deployPlayer!, D = (1 - A) as Seat;
@@ -126,7 +126,7 @@ test('CR 712.3 the control: without Formless the same column DOES gain', () => {
 
 /* ══ §2 — ONLY THE ATTRIBUTE HALF IS COLUMN-WIDE ════════════════════ */
 
-test('CR 712.3 the base rewrite still hits the TARGET alone', () => {
+test('CR 712.3 the base rewrite still hits the TARGET alone #167', () => {
   const { h, front, mate } = btux(29904);
   assert.deepEqual(effStats(h, front), [4, 4], 'the target became a base 4/4');
   assert.deepEqual(effStats(h, mate), [1, 3],
@@ -171,7 +171,7 @@ test('CR 712.3b the stamp outlives the column, and expires exactly where the car
 
 /* ══ §4 — AND A LATER ARRIVAL WAS NEVER STAMPED ═════════════════════ */
 
-test('CR 712.3b a unit that joins the column afterwards keeps its own attributes', () => {
+test('CR 712.3b a unit that joins the column afterwards keeps its own attributes #167', () => {
   // The stamp is applied at RESOLUTION, to the units standing there. It is not
   // a continuous column effect, because nothing in the engine models one and
   // the printed text is a one-shot event ("When I attack or block…").

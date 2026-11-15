@@ -99,7 +99,7 @@ async function rig() {
 }
 const settle = (): Promise<void> => new Promise(r => setTimeout(r, 15));
 
-test('1241 §2 ⭐ the moved wiring writes the state the controller saves and draws', async () => {
+test('1241 §2 ⭐ the moved wiring writes the state the controller saves and draws BL-63', async () => {
   const r = await rig();
   assert.match(r.app['innerHTML'] as string, /id="lg-grid"/, 'positive control: the availability tab is drawn');
   assert.equal(typeof r.tz.onchange, 'function', 'the time zone box is wired');

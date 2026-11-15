@@ -69,7 +69,7 @@ function pinned(name: string, actual: number, pin: number, list: string): void {
   assert.equal(actual, pin, `${name}: ${actual}, below the pin of ${pin} — lower EXPECTED_ in this file to ${actual}`);
 }
 
-test('(1) re-rendering gives the committed document files, byte for byte, and no number is born', () => {
+test('(1) re-rendering gives the committed document files, byte for byte, and no number is born CT-502', () => {
   assert.ok(INPUTS && OUT, `the committed state does not render: ${LOAD_ERROR}`);
   assert.deepEqual(OUT.born, [], `the committed ledger lacks ${OUT.born.length} number(s) (first: ${JSON.stringify(OUT.born[0])}) — run npm --prefix client run cr:render`);
   assert.equal(readFileSync(CR_LEDGER, 'utf8'), formatLedger(OUT.ledger), 'ledger.json is not in canonical form — run cr:render');
@@ -101,7 +101,7 @@ test('(2) the ledger is append-only against the last commit', (t) => {
   assert.deepEqual(problems, [], `a published number moved, was dropped or was reused:\n${problems.join('\n')}`);
 });
 
-test('(3) check.mjs finds no problems in the committed records', () => {
+test('(3) check.mjs finds no problems in the committed records CT-231 CT-388 CT-502', () => {
   const lines = result().problems.map((p) => `${p.code}  ${p.where}: ${p.msg}`);
   assert.deepEqual(lines, [], `${lines.length} problem(s):\n${lines.slice(0, 40).join('\n')}`);
 });
@@ -131,7 +131,7 @@ test('(5) the reviewed source state is mechanically sound', () => {
   assert.deepEqual(bad, [], `${bad.length} problem(s) in the reviewed state:\n${bad.slice(0, 30).join('\n')}`);
 });
 
-test('(6) the stale count is pinned', (t) => {
+test('(6) the stale count is pinned CT-231', (t) => {
   const r = result();
   // a verified span that quotes only a COMMENT demonstrated no code; its words moving is
   // listed, not pinned (the 2026-10 migration reworded comments that cited the retired register)
