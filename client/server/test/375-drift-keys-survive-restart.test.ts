@@ -104,6 +104,9 @@ async function written(seed: number): Promise<{ dir: string; game: Played }> {
   play(A, 'QQQ0', seed + 50);              // an earlier game in the same process…
   unlinkSync(join(dir, 'QQQ0.json'));      // …that is over and gone by the restart
   const game = play(A, 'ZZZ1', seed);
+  // a file from before resume points: only such a file's restore replays its log
+  const { live: _live, ...old } = readGame(dir, 'ZZZ1') as SavedFile & { live?: unknown };
+  writeFileSync(join(dir, 'ZZZ1.json'), JSON.stringify(old));
   const file = readGame(dir, 'ZZZ1');
   assert.equal(file.posRefs?.length, file.actions.length, 'the file records one position key per action');
   assert.match(file.posRefs![game.activation]!, /^activateAbility\|\d+#0\|/,

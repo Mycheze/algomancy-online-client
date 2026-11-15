@@ -972,8 +972,8 @@ test('cr:annexd.undo.seen-cards.restart — the lock survives a server restart a
   const back = R2.getRoom('U23S6')!;
   assert.ok(back, 'the room came back off disk');
   assert.equal(back.actions.length, n);
-  assert.deepEqual(R2.undoForSeat(back, P), { ok: true }, 'the move after the glimpse is still undoable');
-  assert.deepEqual(R2.undoForSeat(back, P), { ok: false, why: SEEN_REFUSAL }, 'and the glimpse is still locked after the restart');
+  assert.deepEqual(R2.undoForSeat(back, P), { ok: false, why: 'nothing to undo — nothing of yours this step' },
+    'a restart seals the step: the glimpse, and the move after it, stand');
 });
 
 test('cr:annexd.undo.learn-to-play — in Learn to Play a turn draw ends the undo of what came before, later moves undo in any phase, and a rewind to a turn start is not refused', async () => {

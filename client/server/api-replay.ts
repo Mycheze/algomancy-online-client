@@ -232,9 +232,11 @@ export async function replayRoutes(
   // is decided. Same exception as above.
   if (opts.playing(code) && !(admin && seat === null)) return notFound(res);
 
+  // the stored state of a game in play holds both hands: never sent
+  const { live: _live, ...file } = raw as RoomFile & { live?: unknown };
   json(res, {
     ok: true,
-    file: raw,
+    file,
     ...verdictFor(code, raw, opts.liveRoom(code)),
     mySeat: seat,
     asAdmin: admin && seat === null,

@@ -13,7 +13,7 @@
  *   §1  the glimpse itself cannot be undone, with words a player understands
  *   §2  an undo made BEFORE the glimpse happened still works
  *   §3  a plain spawn after the glimpse is undoable back to — not past — it
- *   §4  the lock survives a restart (the measurement is re-taken on restore)
+ *   §4  a restart seals the step: nothing played before it is taken back
  *   §5  your opponent's glimpse of the SHARED deck does not lock YOUR undo
  *   §6  measured, not listed: a spawn trigger's Glimpse 1 in the haste step
  *       locks the same way, and the plain plays around it do not
@@ -22,7 +22,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { forcedAction } from '../../engine/src/apply.ts';
@@ -159,13 +159,17 @@ test('CR D4.3e: held until an undo asks, and then the same answer a restored roo
   assert.equal(room.seenPending.length, 0);
   assert.ok(room.segSeen.some(s => typeof s[P] === 'string'), 'the glimpse is on the record');
 
+  // a file from before resume points: its restore replays, and measures
+  const path = join(DIR, 'R312G.json');
+  const { live: _live, ...old } = JSON.parse(readFileSync(path, 'utf8')) as { live?: unknown };
+  writeFileSync(path, JSON.stringify(old));
   const R2 = await fresh();
   R2.restoreRooms();
   assert.equal(JSON.stringify(R2.getRoom('R312G')!.segSeen), JSON.stringify(room.segSeen),
     'measuring later gives the very record a rebuild measures');
 });
 
-test('CR D4.3f: the lock survives a restart — a restored room measures it again', async () => {
+test('CR D4.3f: the lock survives a restart, which seals the step — nothing played before it is taken back', async () => {
   const { room, P } = deploying(R, 'R312D', 37404);
   glimpse(R, room, P);
   tick(R, room, { type: 'decide', seat: P, choice: 0 });
@@ -178,10 +182,10 @@ test('CR D4.3f: the lock survives a restart — a restored room measures it agai
   assert.ok(back, 'the room came back off disk');
   assert.equal(back.actions.length, n, 'with the whole log');
   assert.equal(back.segKey, 'deploy', 'still inside the deployment step');
-  assert.equal(back.lost.length, 0, 'replayed without refusing anything');
-  assert.deepEqual(R2.undoForSeat(back, P), { ok: true }, 'the spawn after the glimpse is still undoable');
-  assert.deepEqual(R2.undoForSeat(back, P), { ok: false, why: SEEN_REFUSAL },
-    'and the glimpse is still locked — the floor was rebuilt, not forgotten');
+  assert.deepEqual(R2.undoForSeat(back, P), { ok: false, why: 'nothing to undo — nothing of yours this step' },
+    'the spawn after the glimpse stood at the restart, so it stands');
+  spawnSprite(R2, back, P);
+  assert.deepEqual(R2.undoForSeat(back, P), { ok: true }, 'a play after the restart is undoable');
 });
 
 test("CR D4.3c: the opponent's glimpse of the SHARED deck does not lock your undo", () => {

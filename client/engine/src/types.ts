@@ -2231,6 +2231,11 @@ export const AMEND_UNIT_DESTS = ['hand', 'bin', 'deckBottom'] as const satisfies
 
 // ── the whole game ────────────────────────────────────────────────────
 
+/** The shape of a stored GameState: a live room resumes from one (server/rooms.ts).
+ * Bump it when a field is renamed, changes meaning, or a required one is added —
+ * not for an optional field whose absence reads as the old behaviour. */
+export const STATE_SCHEMA = 1;
+
 export interface GameState {
   /**
    * BL-06 — this game was dealt as a TEST-MODE SANDBOX, and the four

@@ -280,7 +280,9 @@ test('§6 a game saved under the alias restores with no drift, replays as record
   const path = join(dir, 'CTRN.json');
   const nowText = readFileSync(path, 'utf8');
   assert.ok(nowText.includes(NOW), 'premise: the game names the card');
-  writeFileSync(path, respell(nowText));
+  // …and from before resume points, so the restore replays its log
+  const { live: _live, ...old } = JSON.parse(respell(nowText)) as SavedFile & { live?: unknown };
+  writeFileSync(path, JSON.stringify(old));
   const file = JSON.parse(readFileSync(path, 'utf8')) as SavedFile;
   assert.match(file.posRefs![recycle]!, new RegExp(`0:"${OLD}"`), 'premise: the recycle names the alias');
 

@@ -241,7 +241,8 @@ async function main(): Promise<void> {
   ok(saved.actions.length >= 6, `and every cheat is IN the log (${saved.actions.length} actions)`);
   ok(saved.actions.some(a => a.type === 'sandboxSpawn'),
     'including the spawns — the cheats are actions, not out-of-band mutation');
-  ok(!JSON.stringify(saved).includes('"entities"'),
+  // (the resume point, `live`, is the one stored state: a restart reads it, nothing replays it)
+  ok(!JSON.stringify({ ...saved, live: undefined }).includes('"entities"'),
     'and NO hand-built GameState was written — the file is still a seed and a log');
 
   you.ws.close();

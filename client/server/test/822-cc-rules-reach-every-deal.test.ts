@@ -64,7 +64,7 @@ const NEVER_CC: Record<string, string> = {
 test('§1 rooms.ts passes rules at every fresh() and rebuild(); dealScenario hands it on', () => {
   const rooms = SRC('server/rooms.ts');
   const calls = [...callsOf(rooms, 'fresh'), ...callsOf(rooms, 'rebuild')];
-  assert.ok(calls.length >= 10, `non-vacuous: ${calls.length} calls`);
+  assert.ok(calls.length >= 9, `non-vacuous: ${calls.length} calls`);
   for (const call of calls) assert.ok(passesRules(call), `rooms.ts forgets rules: ${call.replace(/\s+/g, ' ').slice(0, 120)}`);
   const sc = callsOf(SRC('server/scenarios.ts'), 'createGame');
   assert.equal(sc.length, 1);

@@ -114,9 +114,10 @@ const cleanTurn = room.state.turn, cleanLen = room.actions.length;
 console.log('\n[a rules change under a live room]');
 // simulate one action becoming illegal — which is all an engine change looks
 // like from rebuild()'s side: apply() throws IllegalAction at some index
-const raw = JSON.parse(readFileSync(FILE, 'utf8')) as { actions: Action[] };
+const raw = JSON.parse(readFileSync(FILE, 'utf8')) as { actions: Action[]; live?: unknown };
 const victim = raw.actions.findIndex(a => a.type === 'donePlanning');
 raw.actions[victim] = { type: 'activateResource', seat: raw.actions[victim]!.seat, index: 99 };
+delete raw.live;   // a file from before resume points: only its restore replays the log
 writeFileSync(FILE, JSON.stringify(raw));
 const cascade = replay(raw.actions).skips.length;
 ok(cascade > 1, `ONE action becoming illegal cascades into ${cascade} of ${cleanLen} rejections`);
@@ -432,6 +433,7 @@ ok(drift.drifted.length === 0 && drift.forks.length === 0, 'nothing has drifted 
   ok(Array.isArray(rawD.posRefs) && rawD.posRefs.length === drift.actions.length,
     '…and the position-keyed copy a restart compares (posRefs), one per action too');
   rawD.seed = SEED + 1;                       // the same log, a different board
+  delete (rawD as { live?: unknown }).live;   // …in a file from before resume points
   writeFileSync(DRIFT_FILE, JSON.stringify(rawD));
 }
 restoreRooms();
@@ -561,6 +563,7 @@ console.log('\n[a FORK names the engine that refused, so the fork record reads s
   const fRaw = JSON.parse(readFileSync(join(DIR, 'VFORK.json'), 'utf8')) as { actions: Action[] };
   const vict = fRaw.actions.findIndex(a => a.type === 'donePlanning');
   fRaw.actions[vict] = { type: 'activateResource', seat: fRaw.actions[vict]!.seat, index: 99 };
+  delete (fRaw as { live?: unknown }).live;   // a file from before resume points
   writeFileSync(join(DIR, 'VFORK.json'), JSON.stringify(fRaw));
 
   runningAt(ENGINE_2);

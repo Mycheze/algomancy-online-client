@@ -17,7 +17,7 @@ import type { Action, ActivateVia, AmendDest, AmendEdit, AmendSource, AmendUnitD
 // CR D4.6 — CC undo until Done: the engine's half (which step is open, whose,
 // and what each action means to a take-back)
 import { ccUndoFloor, ccUndoMark, type CcUndoMark } from '../engine/src/ccundo.ts';
-import { AMEND_DESTS, AMEND_SOURCES, AMEND_UNIT_DESTS } from '../engine/src/types.ts';
+import { AMEND_DESTS, AMEND_SOURCES, AMEND_UNIT_DESTS, STATE_SCHEMA } from '../engine/src/types.ts';
 import { amendProblem, amendText } from '../engine/src/amend.ts';
 import { singleCardsOf } from './cardladder.ts';
 import { DECK_LIST } from '../engine/src/cards/registry.ts';
@@ -992,6 +992,11 @@ export interface Room {
    * each held action, slotted like `heldEvents` — `heldFrames[s]` is the OTHER
    * seat's actions, held from `s`. DERIVED, never persisted; rebuild() redoes it. */
   heldFrames: [HeldFrame[], HeldFrame[]];
+  /** where a rebuild starts (pushBase): the latest of these at or before the
+   * change. Nothing before `bases[0].at` is replayed, undone or rewound. In
+   * memory only; a restore starts from the file's `live` block alone, so a
+   * restart seals the open step. */
+  bases: Resume[];
   /** the action that closed the open segment, set by applyToRoom at the moment
    * it does and read by main.ts before openSegment() clears it */
   closing: SegmentClose | null;
@@ -2257,7 +2262,44 @@ function ccMeasure(before: GameState, a: Action, after: GameState, events: reado
 /** the mark of an action no CC walk can cross: no step key ends the trailing run */
 const blankMark = (seat: Seat): CcUndoMark => ({ key: null, seat, barrier: null, leftDecision: false, decide: false });
 
+/** A point a room can be rebuilt from: the board after `at` actions, the
+ * length of the event history then, and the hidden step as it stood. */
+export interface Resume {
+  at: number; ev: number; state: GameState;
+  seg: { start: number; snapshot: GameState | null; held: [EngineEvent[], EngineEvent[]]; frames: [HeldFrame[], HeldFrame[]] };
+}
+
+/** copies of the held arrays: the room goes on pushing into its own */
+const point = (at: number, ev: number, state: GameState, start: number, snapshot: GameState | null,
+  held: [EngineEvent[], EngineEvent[]], frames: [HeldFrame[], HeldFrame[]]): Resume =>
+  ({ at, ev, state, seg: { start, snapshot, held: [[...held[0]], [...held[1]]], frames: [[...frames[0]], [...frames[1]]] } });
+
+/** the room's current point. `persist` runs mid-tick, before main.ts opens the
+ * next segment, so a changed key is written as the segment openSegment will open. */
+function resumePoint(room: Room): Resume {
+  const { state } = room, key = segmentKey(state), n = room.actions.length;
+  return key === room.segKey
+    ? point(n, room.events.length, state, room.segStartIndex, room.segSnapshot, room.heldEvents, room.heldFrames)
+    : point(n, room.events.length, state, key ? n : -1, key ? structuredClone(state) : null, [[], []], [[], []]);
+}
+
+/** A new step's start joins the bases. Kept: the starts of the previous and the
+ * current step (what an undo rebuilds from), and at most two older ones at least
+ * FIX_REWIND_WINDOW apart (so the oldest lies at or past a rewind's reach) —
+ * never a chain of states. */
+function pushBase(bases: Resume[], p: Resume): Resume[] {
+  const all = [...bases, p], older: Resume[] = [];
+  for (const b of all.slice(0, -2)) if (!older.length || b.at - older.at(-1)!.at >= FIX_REWIND_WINDOW) older.push(b);
+  return [...older.slice(-2), ...all.slice(-2)];
+}
+
+/** `s` carrying the room's seat names, which renameSeat writes outside the log */
+const named = (s: GameState, names: readonly string[]): GameState =>
+  s.players.every((p, i) => p.name === names[i]) ? s
+    : { ...s, players: s.players.map((p, i) => ({ ...p, name: names[i] ?? p.name })) };
+
 interface Rebuilt {
+  bases: Resume[];
   ccMarks: CcUndoMark[];
   state: GameState;
   events: EngineEvent[];
@@ -2281,11 +2323,10 @@ interface Rebuilt {
    * tail, which is new history and has no record yet. Nothing else may.
    */
   sigs: string[];
-  /** CARD STATS — this engine's card facts per action (null where refused)
-   * and the opening it dealt. Same ⚠ as `sigs`: an answer, not the record;
-   * only the spliced tail of an undo may adopt it. */
+  /** CARD STATS — this engine's card facts per action (null where refused).
+   * Same ⚠ as `sigs`: an answer, not the record; only the spliced tail of an
+   * undo may adopt it. */
   cardLog: (CardFact | null)[];
-  cardOpen: CardOpen;
   /** logged actions this rebuild could not apply (see LostAction) */
   skipped: LostAction[];
 }
@@ -2294,32 +2335,39 @@ interface Rebuilt {
  * own replay() returns only the creation events, so we accumulate here) and the
  * hidden-segment bookkeeping. Tolerant: an action the (possibly newer) engine
  * now rejects is skipped with a warning instead of killing the whole room — a
- * personal server should never eat a live game over a rules tweak. */
-function rebuild(seed: number, names: [string, string], actions: Action[], mode: GameMode, els: Element[], decks?: [CardName[], CardName[]], scenario?: string, deal?: DraftDeal, rules?: GameRules): Rebuilt {
-  let { state, events } = fresh(seed, names, mode, els, decks, scenario, deal, rules);
+ * personal server should never eat a live game over a rules tweak.
+ *
+ * `from`: start at a base of `prior` (the same room) instead of the deal, and
+ * carry its bookkeeping for the actions before the base unchanged. */
+function rebuild(seed: number, names: [string, string], actions: Action[], mode: GameMode, els: Element[], decks?: [CardName[], CardName[]], scenario?: string, deal?: DraftDeal, rules?: GameRules,
+  from?: { base: Resume; prior: Room }): Rebuilt {
+  const b = from?.base, p = from?.prior, at = b?.at ?? 0;
+  let { state, events } = b && p ? { state: named(b.state, names), events: p.events.slice(0, b.ev) }
+    : fresh(seed, names, mode, els, decks, scenario, deal, rules);
   const all = [...events];
   // SEED THE SEGMENT FROM THE INITIAL STATE: createGame already ends inside
   // turn 1's planning, and turn-1 planning has no preceding action — a
   // "snapshot after an action" pattern would miss the very first segment of
   // every game (and serve a stale, placeholder-named opponent all through it).
   let segKey = segmentKey(state);
-  let segSnapshot: GameState | null = segKey ? structuredClone(state) : null;
-  let segStartIndex = segKey ? 0 : -1;
-  let heldEvents: [EngineEvent[], EngineEvent[]] = [[], []];
-  let heldFrames: [HeldFrame[], HeldFrame[]] = [[], []];
-  const segSeen: Seen[] = [];
-  const segIdFloor: number[] = [];
-  const segRefs: string[] = [];
-  const segPosRefs: string[] = [];
-  const ccMarks: CcUndoMark[] = [];
-  const sigs: string[] = [];
-  const cardLog: (CardFact | null)[] = [];
-  const opened = cardOpen(state);
-  const skipped: LostAction[] = [];
+  let bases = b && p ? p.bases.filter(x => x.at <= b.at)
+    : [point(0, all.length, state, segKey ? 0 : -1, segKey ? structuredClone(state) : null, [[], []], [[], []])];
+  const seg0 = bases.at(-1)!.seg;
+  let { start: segStartIndex, snapshot: segSnapshot } = seg0;
+  let heldEvents: [EngineEvent[], EngineEvent[]] = [[...seg0.held[0]], [...seg0.held[1]]];
+  let heldFrames: [HeldFrame[], HeldFrame[]] = [[...seg0.frames[0]], [...seg0.frames[1]]];
+  const segSeen: Seen[] = p ? p.segSeen.slice(0, at) : [];
+  const segIdFloor: number[] = p ? p.segIdFloor.slice(0, at) : [];
+  const segRefs: string[] = p ? p.segRefs.slice(0, at) : [];
+  const segPosRefs: string[] = p ? p.segPosRefs.slice(0, at) : [];
+  const ccMarks: CcUndoMark[] = p ? p.ccMarks.slice(0, at) : [];
+  const sigs: string[] = p ? p.sigs.slice(0, at) : [];
+  const cardLog: (CardFact | null)[] = p ? p.cardLog.slice(0, at) : [];
+  const skipped: LostAction[] = p ? p.lost.filter(l => l.i < at) : [];
   // CR D4.3e: the OPEN segment's applied actions, measured once the loop knows
   // which segment that is (it is the only one an undo can walk)
   let inSegment: { i: number; before: GameState; a: Action; after: GameState; events: EngineEvent[] }[] = [];
-  for (let i = 0; i < actions.length; i++) {
+  for (let i = at; i < actions.length; i++) {
     const a = actions[i]!;
     const before = state;
     // recorded BEFORE the action runs, and before its own floor is pushed:
@@ -2385,6 +2433,8 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
       heldFrames = [[], []];
       inSegment = [];
     }
+    // a new step starts: a base, as applyToRoom takes one
+    if (stepKey(before) !== stepKey(state)) bases = pushBase(bases, point(i + 1, all.length, state, segStartIndex, segSnapshot, heldEvents, heldFrames));
   }
   // CR D4.3f: the same measurement applyToRoom takes as each action lands, against
   // the same frozen board — so a restart, or the rebuild an undo does, keeps
@@ -2394,7 +2444,7 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
       segSeen[x.i] = seenBy(x.before, x.a, x.after, x.events, { frozen: segSnapshot, holding: true, names });
     }
   }
-  return { state, events: all, segKey, segSnapshot, heldEvents, heldFrames, segStartIndex, segSeen, segIdFloor, segRefs, segPosRefs, ccMarks, sigs, cardLog, cardOpen: opened, skipped };
+  return { bases, state, events: all, segKey, segSnapshot, heldEvents, heldFrames, segStartIndex, segSeen, segIdFloor, segRefs, segPosRefs, ccMarks, sigs, cardLog, skipped };
 }
 
 /**
@@ -2667,6 +2717,7 @@ export function closedNotice(code: string): string | null {
     }
     if (raw.closed?.reason === 'void') return `Game ${code} closed: its match was called off with no result.`;
     if (raw.closed?.reason === 'match') return `Game ${code} closed: its match is over.`;
+    if (raw.closed?.reason === 'update') return `Game ${code} closed: a server update could not carry it over.`;
     if (raw.closed?.reason !== 'idle') return null;
     const h = Math.max(1, Math.round((Number(raw.closed.afterMs) || IDLE_SHORT_MS) / 3600_000));
     return `Game ${code} closed after ${h} hour${h === 1 ? '' : 's'} without a move.`;
@@ -2753,7 +2804,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     // Setting it here as well would be dead code the moment resetSegment runs,
     // and dead code is exactly what a red-check cannot see through.
     versions: [],
-    segKey: null, segSnapshot: null, heldEvents: [[], []], heldFrames: [[], []], closing: null, segStartIndex: -1, segSeen: [], seenPending: [],
+    segKey: null, segSnapshot: null, heldEvents: [[], []], heldFrames: [[], []], bases: [], closing: null, segStartIndex: -1, segSeen: [], seenPending: [],
     segIdFloor: [], segRefs: [], segPosRefs: [], sigs: [], cardLog: [], cardOpen: null, deferred: [[], []], ccMarks: [],
     // BL-26: both banks START at the room's own setting — the ONE site that is
     // allowed to read the constant, and it reads it through the argument
@@ -3060,6 +3111,7 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   if (action.type === 'concede' && before.winner === null && room.state.winner !== null) {
     room.concession = { seat: action.seat, turn: before.turn };
   }
+  if (stepKey(before) !== stepKey(r.state)) room.bases = pushBase(room.bases, resumePoint(room));
   settleClock(room);   // recompute who is on the clock under the NEW state
   persist(room);
   return r.events;
@@ -3122,6 +3174,7 @@ function resetSegment(room: Room): void {
   // 2026-10-04: a fresh log is a fresh start for the idle sweep
   room.lastActionAt = Date.now();
   openSegment(room);
+  room.bases = [resumePoint(room)];
 }
 
 /** Undo the most recent action (single-step, docs/07 §15): pop it and rebuild
@@ -3352,6 +3405,9 @@ function asLost(l: LostAction[], kind: 'lost' | 'changed'): LostAction[] {
  * other movement shows up as `changed` and is rolled back.
  */
 export function undoActionAt(room: Room, index: number): LostAction[] {
+  // the rebuild starts at bases[0], so nothing before it can be spliced out
+  const old = room.actions[index];
+  if (old && index < room.bases[0]!.at) return [{ i: index, type: old.type, seat: old.seat, why: 'it is before the earliest step the game can go back to', kind: 'lost' }];
   settleSeen(room);
   settleClock(room);   // bill up to the undo; the rebuild changes who runs
   room.proposal = null;   // BL-46: the board a proposed fix was about is moving
@@ -3373,7 +3429,7 @@ export function undoActionAt(room: Room, index: number): LostAction[] {
     lo !== undefined && hi !== undefined && hi > lo
       ? tail.map(a => renumberAction(a, lo, hi))
       : tail);
-  const rb = rebuildRoom(room);
+  const rb = rebuildRoom(room, index);
   const lost = rb.skipped.length > room.lost.length ? rb.skipped : [];
   // …and the actions that survive but no longer mean what they meant. Compared
   // by ACTION OBJECT position: original j > index sits at j-1 in the splice.
@@ -3398,7 +3454,7 @@ export function undoActionAt(room: Room, index: number): LostAction[] {
   }
   if (lost.length || changed.length) {
     room.actions = restore;
-    assignRebuild(room, rebuildRoom(room));   // deterministic: exact prior state
+    assignRebuild(room, rebuildRoom(room, index));   // deterministic: exact prior state
     settleClock(room);
     return lost.length ? asLost(lost, 'lost') : asLost(changed, 'changed');
   }
@@ -3498,7 +3554,7 @@ export function ccFloor(room: Room, seat: Seat): number {
   settleSeen(room);
   let floor = ccUndoFloor(room.ccMarks, seat, room.state);
   if (floor >= len) return len;
-  floor = Math.max(floor, lastSeen(room.segSeen, 0, floor) + 1, lastSeen(room.segSeen, 1, floor) + 1, amendFloor(room));
+  floor = Math.max(floor, lastSeen(room.segSeen, 0, floor) + 1, lastSeen(room.segSeen, 1, floor) + 1, amendFloor(room), room.bases[0]!.at);
   return Math.min(floor, len);
 }
 
@@ -3592,6 +3648,7 @@ export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
         ? { ok: false, why: 'that is the start of the phase — its triggers cannot be taken back' }
         : { ok: false, why: 'nothing to undo — nothing of yours this step' };
     }
+    if (i < room.bases[0]!.at) return { ok: false, why: 'nothing to undo — nothing of yours this step' };
     // CR D4.3 — NOR PAST WHAT YOU HAVE SEEN. The owner, 2026-10-04: an action
     // that showed you hidden cards cannot be taken back, nor anything before
     // it — "once you've seen the cards, it stands". Without this, Lilbot's
@@ -3618,7 +3675,7 @@ export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
     return { ok: true };
   }
   const last = room.actions[room.actions.length - 1];
-  if (!last) return { ok: false, why: 'nothing to undo' };
+  if (!last || room.actions.length - 1 < room.bases[0]!.at) return { ok: false, why: 'nothing to undo' };
   if (room.actions.length - 1 < fixFloor || last.type === 'amend') return { ok: false, why: FIX_UNDO_REFUSAL };
   if (last.seat !== seat) return { ok: false, why: 'your opponent acted since — nothing of yours to undo' };
   const refused = undoLastAction(room);
@@ -3791,17 +3848,16 @@ function stepLabel(s: GameState): string {
 }
 
 /**
- * The boards before each of the last `FIX_REWIND_WINDOW` actions: `states[k]`
- * is the board action `lo + k` was applied to, and the last entry is the board
- * now. One replay of the log, which a proposal is rare enough to afford.
+ * The boards before each of the last `FIX_REWIND_WINDOW` actions, no further
+ * back than the window's base: `states[k]` is the board action `lo + k` was
+ * applied to, and the last entry is the board now.
  */
 function tailStates(room: Room): { lo: number; states: GameState[] } {
-  const actions = room.actions;
-  const lo = Math.max(0, actions.length - FIX_REWIND_WINDOW);
-  let { state } = fresh(room.seed, room.names, room.mode, room.els,
-    room.mode === 'constructed' ? decksFor(room) : undefined, room.scenario, room.custom?.deal, room.rules);
+  const actions = room.actions, base = room.bases[0]!;
+  const lo = Math.max(base.at, actions.length - FIX_REWIND_WINDOW);
+  let state = base.state;
   const states: GameState[] = [];
-  for (let i = 0; i < actions.length; i++) {
+  for (let i = base.at; i < actions.length; i++) {
     if (i >= lo) states.push(state);
     try { state = apply(state, actions[i]!).state; } catch (err) {
       if (!(err instanceof IllegalAction)) throw err;
@@ -3909,7 +3965,8 @@ export function rewindPlans(room: Room, seat: Seat): CutPlan[] {
     return j;
   };
   const here = segNow !== null ? openStart : startOf(len);
-  offer({ to: here, kind: 'start', step: stepLabel(at(len)), items: items(here), hiddenStep: segNow !== null, seat });
+  // (the window's edge mid-step — a restart, or a step longer than the window — is not its start)
+  if (here > lo || lo === 0) offer({ to: here, kind: 'start', step: stepLabel(at(len)), items: items(here), hiddenStep: segNow !== null, seat });
   // CT-376 — "the start of the step before" gets the before-cuts' forced-action
   // skip. A cut just before a forced action lands and takes it again at once
   // (main.ts drainForced), so the step's first board a player can STAND on is
@@ -4176,13 +4233,13 @@ function sanitizeFixRun(raw: unknown, amendments: unknown): FixRun | null {
  */
 export function rewindRoom(room: Room, p: Proposal, by: Seat): { ok: true; amendment: Amendment } | { ok: false; why: string } {
   const to = p.to;
-  if (p.kind !== 'rewind' || to === undefined || to < 0 || to >= room.actions.length) {
+  if (p.kind !== 'rewind' || to === undefined || to < room.bases[0]!.at || to >= room.actions.length) {
     return { ok: false, why: 'that rewind is not on offer any more' };
   }
   settleClock(room);
   const restore = room.actions;
   room.actions = restore.slice(0, to);
-  const rb = rebuildRoom(room);
+  const rb = rebuildRoom(room, to);
   if (rb.skipped.length) {
     // a prefix of a clean log always replays; if this one does not, the room
     // was never clean, and cutting it would hide that
@@ -4424,15 +4481,18 @@ function recordFork(room: Room): boolean {
   return true;
 }
 
-/** rebuild() for a room that already knows its own seed/mode/els/decks. */
-function rebuildRoom(room: Room): Rebuilt {
+/** rebuild() for a room that already knows its own seed/mode/els/decks, from
+ * its latest base at or before `from` — the first action that changes. */
+function rebuildRoom(room: Room, from: number): Rebuilt {
   return rebuild(room.seed, room.names, room.actions, room.mode, room.els,
-    room.mode === 'constructed' ? decksFor(room) : undefined, room.scenario, room.custom?.deal, room.rules);
+    room.mode === 'constructed' ? decksFor(room) : undefined, room.scenario, room.custom?.deal, room.rules,
+    { base: room.bases.filter(b => b.at <= from).at(-1) ?? room.bases[0]!, prior: room });
 }
 
 /** Adopt a rebuild's results wholesale (state + event history + the derived
  * segment and integrity bookkeeping). */
 function assignRebuild(room: Room, rb: Rebuilt): void {
+  room.bases = rb.bases;
   room.state = rb.state;
   room.events = rb.events;
   room.segKey = rb.segKey;
@@ -4496,7 +4556,7 @@ export function createRematch(old: Room, code: string): Room {
   // carry the seat↔account binding over, so the rematch is already countable
   // even before either client has re-joined
   room.users = [...old.users];
-  for (const seat of [0, 1] as Seat[]) room.state.players[seat]!.name = room.names[seat]!;
+  room.state = named(room.state, room.names);
   resetSegment(room);   // the constructed branch above replaced the state
   old.rematchRoom = code;
   persist(room);
@@ -4550,7 +4610,7 @@ export function createMatch(
     room.events = events;
     room.users = [a.userId, b.userId];
     room.rated = true;
-    for (const seat of [0, 1] as Seat[]) room.state.players[seat]!.name = names[seat]!;
+    room.state = named(room.state, names);
     resetSegment(room);   // the deal above replaced the state
     persist(room);
     return room;
@@ -4561,7 +4621,7 @@ export function createMatch(
   const room = createRoom(code, seed, names, mode, undefined, undefined, undefined, MATCH_CLOCK_MS.draft);
   room.users = [a.userId, b.userId];
   room.rated = true;
-  for (const seat of [0, 1] as Seat[]) room.state.players[seat]!.name = names[seat]!;
+  room.state = named(room.state, names);
   persist(room);
   return room;
 }
@@ -4603,7 +4663,7 @@ export function createLeagueRoom(
   room.users = [a.userId, b.userId];
   room.league = { ...league };
   if (rated) room.rated = true;
-  for (const seat of [0, 1] as Seat[]) room.state.players[seat]!.name = names[seat]!;
+  room.state = named(room.state, names);
   persist(room);
   return room;
 }
@@ -4614,10 +4674,11 @@ export function createLeagueRoom(
  * NOTE this happens OUTSIDE the action log, so it does not reach the open
  * segment's frozen snapshot — and turn 1's 'plan' segment is snapshotted at
  * room creation, before anybody has typed a name. viewFor() therefore carries
- * the LIVE name over the frozen player slot; a name is never hidden. */
+ * the LIVE name over the frozen player slot; a name is never hidden.
+ * The state is replaced, never edited: a rebuild base may be holding it. */
 export function renameSeat(room: Room, seat: 0 | 1, name: string): void {
   room.names[seat] = name;
-  room.state.players[seat]!.name = name;
+  room.state = named(room.state, room.names);
   persist(room);
 }
 
@@ -4787,12 +4848,43 @@ function persist(room: Room, keepDate = false): void {
       ...(room.versions.length ? { versions: room.versions } : {}),
       // constructed: decks are part of the replay config (additive field)
       ...(room.mode === 'constructed' ? { decks: room.decks, deckIds: room.deckIds } : {}),
+      // where a restart resumes this game: the log is never replayed to load it.
+      // Only while it is being played — and never for a frozen one, whose state
+      // is not the game's
+      ...(room.closed || room.frozen || decidedWinner(room) !== null ? {} : { live: liveBlock(room) }),
     }));
     renameSync(tmp, path);
     if (was !== null) pinMtime(path, was);
   } catch (err) {
     console.error(`[rooms] could not persist ${room.code}:`, err);
   }
+}
+
+/** The room's resume point as the file holds it: held events by their index
+ * in `events`, so a load hands back the very objects the history holds. */
+function liveBlock(room: Room): object {
+  const p = resumePoint(room);
+  const held = p.seg.held.map(h => h.map(e => room.events.lastIndexOf(e)));
+  return { schema: STATE_SCHEMA, at: p.at, state: p.state, events: room.events, seg: { start: p.seg.start, snapshot: p.seg.snapshot, held } };
+}
+
+/** A file's `live` block back as a resume point and its event history: null
+ * when there is none for this log (the old replay loads it), 'update' when
+ * this engine cannot take the state it holds. */
+function resumeOf(raw: unknown, actions: number): { base: Resume; events: EngineEvent[] } | 'update' | null {
+  const l = raw as { schema?: unknown; at?: unknown; state?: GameState; events?: unknown; seg?: { start?: unknown; snapshot?: GameState | null; held?: unknown } } | null;
+  if (!l || typeof l !== 'object') return null;
+  if (l.schema !== STATE_SCHEMA) return 'update';
+  const seg = l.seg, events = l.events as EngineEvent[];
+  if (l.at !== actions || !l.state || !Array.isArray(events) || !seg || !Number.isInteger(seg.start) || !Array.isArray(seg.held)) return null;
+  const state = l.state;
+  try { legalActions(state, 0); legalActions(state, 1); } catch { return 'update'; }
+  const idx = seg.held as unknown[];
+  const held = [idx[0], idx[1]].map(h => (Array.isArray(h) ? h : [])
+    .map(i => events[i as number]).filter((e): e is EngineEvent => !!e)) as [EngineEvent[], EngineEvent[]];
+  // the playback of what was held before the restart: one frame, the board now
+  const frames = held.map(h => h.length ? [{ state, events: h }] : []) as [HeldFrame[], HeldFrame[]];
+  return { base: point(actions, events.length, state, seg.start as number, seg.snapshot ?? null, held, frames), events };
 }
 
 /**
@@ -4898,6 +4990,8 @@ export function restoreRooms(now = Date.now()): void {
         disputes?: unknown;
         /** BL-46: the run of them not yet filed */
         fixRun?: unknown;
+        /** where a live game resumes (liveBlock) */
+        live?: unknown;
       };
       // CT-335: a file this loop does not load still files its run of fixes
       const strayRun = raw.fixRun === undefined ? null : staleFixRunOf(code, raw);
@@ -4919,29 +5013,32 @@ export function restoreRooms(now = Date.now()): void {
       // only be replayed here to be forgotten again: restart time is for the
       // games being played
       const stampedOver = raw.winner === 0 || raw.winner === 1;
-      if (now - lastActionAt > RESTORE_WINDOW_MS || (stampedOver && now - lastActionAt > FORGET_AFTER_MS)) {
+      // closed in its file on the way past (no result — `winner` untouched), so
+      // its link says what happened instead of "no game with that code"
+      const closeFile = (closed: RoomClosed): void => {
         if (strayRun) staleFixRuns.push(strayRun);
-        const { fixRun: _filed, ...kept } = raw;
-        // a week without a move. An UNFINISHED one is closed in its file on
-        // the way past (no result — `winner` untouched), so its link says what
-        // happened instead of "no game with that code"; a finished one keeps
-        // its result and is simply not loaded.
-        if (raw.winner !== 0 && raw.winner !== 1) {
-          const n = Array.isArray(raw.actions) ? raw.actions.length : 0;
-          const closed: RoomClosed = { reason: 'idle', at: now, afterMs: idleWindowMs(n) };
+        const { fixRun: _filed, live: _live, ...kept } = raw;
+        const tmp = `${path}.tmp`;
+        writeFileSync(tmp, JSON.stringify({ ...kept, lastActionAt, closed }));
+        renameSync(tmp, path);
+        pinMtime(path, lastActionAt);
+        closedCount++;
+      };
+      if (now - lastActionAt > RESTORE_WINDOW_MS || (stampedOver && now - lastActionAt > FORGET_AFTER_MS)) {
+        // a week without a move. An UNFINISHED one is closed; a finished one
+        // keeps its result and is simply not loaded.
+        if (!stampedOver) {
+          closeFile({ reason: 'idle', at: now, afterMs: idleWindowMs(Array.isArray(raw.actions) ? raw.actions.length : 0) });
+          continue;
+        }
+        stale++;
+        if (strayRun) {
+          staleFixRuns.push(strayRun);
+          const { fixRun: _filed, ...kept } = raw;
           const tmp = `${path}.tmp`;
-          writeFileSync(tmp, JSON.stringify({ ...kept, lastActionAt, closed }));
+          writeFileSync(tmp, JSON.stringify(kept));
           renameSync(tmp, path);
-          pinMtime(path, lastActionAt);
-          closedCount++;
-        } else {
-          stale++;
-          if (strayRun) {
-            const tmp = `${path}.tmp`;
-            writeFileSync(tmp, JSON.stringify(kept));
-            renameSync(tmp, path);
-            pinMtime(path, mtimeMs);   // CT-196: filing a run is not a move
-          }
+          pinMtime(path, mtimeMs);   // CT-196: filing a run is not a move
         }
         continue;
       }
@@ -5002,8 +5099,22 @@ export function restoreRooms(now = Date.now()): void {
       const unresolved = (mode === 'constructed' && (!decks[0] || !decks[1]))
         || (!!lobby && !lobby.result);
       const actions = unresolved ? [] : raw.actions;
-      const { state, events, segKey, segSnapshot, heldEvents, heldFrames, segStartIndex, segSeen,
-        segIdFloor, segRefs, segPosRefs, ccMarks, skipped } = rebuild(
+      // a live game resumes where it stood; only a file without a resume point
+      // is replayed. The actions before it are sealed, so their bookkeeping is padding
+      const resumed = raw.live === undefined ? null : resumeOf(raw.live, actions.length);
+      if (resumed === 'update') {
+        closeFile({ reason: 'update', at: now, afterMs: 0 });
+        console.warn(`[rooms] ${code} closed: its stored state does not load on this engine`);
+        continue;
+      }
+      const b = resumed?.base;
+      const { bases, state, events, segKey, segSnapshot, heldEvents, heldFrames, segStartIndex, segSeen,
+        segIdFloor, segRefs, segPosRefs, ccMarks, skipped }: Rebuilt = b ? {
+        bases: [b], state: b.state, events: resumed!.events, segKey: segmentKey(b.state), segSnapshot: b.seg.snapshot,
+        segStartIndex: b.seg.start, heldEvents: [[...b.seg.held[0]], [...b.seg.held[1]]], heldFrames: [[...b.seg.frames[0]], [...b.seg.frames[1]]],
+        segSeen: actions.map(() => NOTHING_SEEN), segIdFloor: actions.map(() => 0), ccMarks: actions.map(a => blankMark(a.seat)),
+        segRefs: sanitizeSigs(raw.refs, actions.length), segPosRefs: sanitizeSigs(raw.posRefs, actions.length), sigs: [], cardLog: [], skipped: [],
+      } : rebuild(
         raw.seed, names, actions, mode, els,
         mode === 'constructed' ? decksFor({ decks, league, match }) : undefined, scenario, custom?.deal, rules);
       // BL-26 — THE ADDITIVE CASE, and the only place CLOCK_START_MS is still
@@ -5044,7 +5155,7 @@ export function restoreRooms(now = Date.now()): void {
         // CR D8.5: the concession stamp survives the restart with the result
         ...(concession ? { concession } : {}),
         state, actions, events,
-        sockets: [null, null], watchers: new Set(), segKey, segSnapshot, heldEvents, heldFrames, closing: null, segStartIndex, segSeen, seenPending: [],
+        sockets: [null, null], watchers: new Set(), segKey, segSnapshot, heldEvents, heldFrames, bases, closing: null, segStartIndex, segSeen, seenPending: [],
         segIdFloor, segRefs, segPosRefs, ccMarks, deferred: [[], []],
         // BL-38: the file's own record, kept verbatim, and an empty slot for
         // every action it has none for. The rebuild above computed its own
@@ -5060,7 +5171,7 @@ export function restoreRooms(now = Date.now()): void {
         frozen: null,
         // and what this rebuild changed WITHOUT refusing anything
         // (position keys on both sides: `raw.refs` is another process's tags)
-        drifted: driftedAgainst(raw.posRefs, segPosRefs, actions, skipped),
+        drifted: b ? [] : driftedAgainst(raw.posRefs, segPosRefs, actions, skipped),
         versions: sanitizeVersions(raw.versions),
         clockStart,
         // Nobody is connected right after a restart, so no clock runs yet —
@@ -5109,7 +5220,8 @@ export function restoreRooms(now = Date.now()): void {
       // what the actions after it mean, so the boundary is stamped on any
       // engine change — the loss-free case is the one that used to leave no
       // trace at all.
-      if (decidedWinner(restored) === null && stampVersion(restored)) dirty = true;
+      // …and a replayed one is written with its resume point, so it is never replayed again
+      if (decidedWinner(restored) === null && (stampVersion(restored) || (!b && !restored.frozen))) dirty = true;
       // CT-196: a restart is not a move — the stamp is written, the date kept
       if (dirty) persist(restored, true);
       console.log(`[rooms] restored ${code} (${raw.actions.length} actions`
