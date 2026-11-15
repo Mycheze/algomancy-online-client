@@ -89,11 +89,10 @@
 /* CT-50 (#63), owner: cached cards you can play "should appear on the right
    hand side of the hand area … is clearly different from cards in hand
    (they're on the left) and are harder to just forget about". `margin-left:
-   auto` is the right-hand side; the rule and the label are what make it a
-   different place rather than more hand. */
+   auto` is the right-hand side; the dashed rule and each card's "Cache" chip
+   are what make it a different place rather than more hand. */
 .handcached { margin-left: auto; display: flex; flex-direction: column; gap: 3px;
   padding-left: 10px; border-left: 2px dashed #b48ce0; }
-.handcachedlabel { font-size: 9px; color: #b48ce0; text-transform: uppercase; letter-spacing: .06em; }
 .handcachedcards { display: flex; gap: 6px; align-items: flex-start; }
 
 .card { position: relative; width: var(--cw); border-radius: 5px; cursor: default; flex-shrink: 0; }

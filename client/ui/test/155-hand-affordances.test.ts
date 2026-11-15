@@ -297,8 +297,8 @@ test('CR D6.14: a playable cached card is drawn at the right of the hand AND lef
   const tag = hand.slice(hand.lastIndexOf('<div', cacheAt), hand.indexOf('>', cacheAt) + 1);
   assert.match(classOf(tag), /\bplayable\b.*\bcached\b/,
     'it is playable AND it is a cached card — two facts, two words');
-  assert.match(hand, /⚡ turn/,
-    'the chip is the EXPIRY, because forgetting it is the loss the ticket is about');
+  assert.match(hand, /title="Glimpsed: play it this turn[^"]*">Cache</,
+    'the chip says Cache, and its title is the EXPIRY, because forgetting it is the loss the ticket is about');
 });
 
 test('CR D6.14: clicking the copy beside the hand plays the cached card, exactly as the cache row does #103 CT-63', () => {
@@ -326,6 +326,33 @@ test('CR D6.14: clicking the copy beside the hand plays the cached card, exactly
     'and the cache row still plays it too — this is additive, not a move');
 });
 
+test('CR D6.14: a cached card beside the hand wears one "Cache" chip and no label; the cache row keeps ⚡ turn #407 CT-567', () => {
+  // Owner, #407: "let's remove the \"Turn\" chip and make it a \"Cache\" chip
+  // instead. It would take up less space and get the same idea across"
+  const h = deployment();
+  give(h, SEAT, PLAIN);
+  glimpse(h, SEAT, CACHED_NOW);
+  const pl = h.state.players[SEAT]!;
+  pl.cache!.push({ card: CACHED_LATER, uid: 9050,
+    prophecy: { condition: 'One Turn Passes', norm: 'turns:1', turn: h.state.turn - 1, battles: 0, regroups: 0, fulfilled: true } });
+
+  const html = ui.show(structuredClone(h.state));
+  const hand = zone(html, `hand:${SEAT}`);
+  const strip = hand.slice(hand.indexOf('class="handcached"'));
+  assert.match(strip, new RegExp(CACHED_NOW), 'the glimpsed card is beside the hand');
+  assert.match(strip, new RegExp(CACHED_LATER), 'and so is the fulfilled prophecy');
+  const chips = [...strip.matchAll(/<span class="badge([^"]*)"(?: title="([^"]*)")?>([^<]*)<\/span>/g)];
+  assert.deepEqual(chips.map(m => m[3]), ['Cache', 'Cache'], 'one chip per card, and it says Cache');
+  assert.match(chips[0]![1]!, /\bglimpse on\b/, 'the glimpse keeps its colour');
+  assert.match(chips[0]![2]!, /this turn/, 'and its title still says the window');
+  assert.match(chips[1]![1]!, /\bproph on\b/, 'the prophecy keeps its colour');
+  assert.match(chips[1]![2]!, /free/, 'and its title still says it is free');
+  assert.doesNotMatch(strip, /⚡ turn|✓ free/, 'no window chip beside the hand');
+  assert.doesNotMatch(strip, /handcachedlabel|cached · playable now/, 'and no floating label over the group');
+
+  assert.match(zone(html, 'cache:0'), /⚡ turn/, 'the cache row still wears the window chip');
+});
+
 /* ═══ §5 PERMITTED BUT NOT NOW — DARK, NOT GONE (report #358) ═══════════ */
 
 test('CR D6.14: a cached card you may play this turn but not this step stays beside the hand, dark (report #358) #382 CT-547 CT-557', () => {
@@ -346,11 +373,10 @@ test('CR D6.14: a cached card you may play this turn but not this step stays bes
   const hand = zone(html, `hand:${SEAT}`);
   assert.match(hand, /class="handcached"/, 'the cached group is still beside the hand');
   assert.match(hand, new RegExp(CACHED_LATER), 'and the entry is in it');
-  assert.match(hand, /⚡ turn/, 'wearing its expiry chip');
+  assert.match(hand, />Cache</, 'wearing its Cache chip');
   // Owner, #382: "I don't like how the cached cards say \"NOT THIS STEP\".
   // That's not really needed and is annoying" — the dark card already says it.
-  const label = /<div class="handcachedlabel">([^<]*)<\/div>/.exec(hand)?.[1];
-  assert.equal(label, 'cached', 'the label is just "cached": it does not claim it can be played now');
+  assert.doesNotMatch(hand, /playable now/i, 'nothing claims it can be played now');
   assert.doesNotMatch(hand, /not this step/i, 'and it does not say "not this step" either (report #382)');
   const at = hand.indexOf(`data-prev="${CACHED_LATER}"`);
   const tag = hand.slice(hand.lastIndexOf('<div', at), hand.indexOf('>', at) + 1);

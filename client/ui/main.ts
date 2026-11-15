@@ -3656,9 +3656,9 @@ function handZoneHtml(p: Seat): string {
  * has no permission and stays in the cache row only. Only the seat that may
  * play from this cache sees the strip (one seat per screen online).
  *
- * The forgetting is a REAL loss: a glimpse stamp carries `playableUntilTurn`
- * and expires silently at end of turn, so the one chip these wear is the
- * window, not the price.
+ * Each wears one chip, "Cache", and there is no label over the group: the
+ * chip says where the card is, and its colour and title say the window (a
+ * glimpse expires silently at end of turn), as the cache row's chip does.
  *
  * ⚠ NO `anim` key. The cache row already draws these entries under `c<uid>`,
  * and a second element wearing the same motion key would give ui/anim.ts two
@@ -3679,8 +3679,10 @@ function handCachedHtml(p: Seat): string {
     const cc = cache[i]!;
     const lit = live.has(i);
     const candidate = cc.uid !== undefined && pickable(`cache:${p}:${cc.uid}`);
-    // ONE chip — the same one the cache row and the dialog wear (cacheChip)
-    const badge: Badge = cacheChip(p, i);
+    // ONE chip, "Cache": the cache row's chip (cacheChip) keeps its colour
+    // and its title, which says the window; the row itself keeps the word
+    const chip = cacheChip(p, i);
+    const badge: Badge = { t: 'Cache', cls: chip.cls, title: chip.title };
     return cardHtml(cc.card, {
       playable: lit, cached: true, badges: [badge], candidate,
       // a target pick goes through handleCacheClick too, lit or not
@@ -3688,7 +3690,6 @@ function handCachedHtml(p: Seat): string {
     });
   }).join('');
   return `<div class="handcached" title="in your cache, not your hand — also shown in the cache row">
-    <div class="handcachedlabel">${live.size ? 'cached · playable now' : 'cached'}</div>
     <div class="handcachedcards">${cards}</div>
   </div>`;
 }
