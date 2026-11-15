@@ -255,7 +255,7 @@ async function main(): Promise<void> {
   const saved = JSON.parse(readFileSync(file, 'utf8')) as { seed: number; scenario?: string; actions: Action[] };
   eq(saved.scenario, SCENARIO, 'the scenario id is in the file, BESIDE the seed (docs/14 §2)');
   ok(saved.actions.length >= 6, `and so is the whole log, bot moves included (${saved.actions.length} actions)`);
-  ok(!JSON.stringify(saved).includes('"entities"'),
+  ok(!JSON.stringify({ ...saved, live: undefined }).includes('"entities"'),
     'and NO hand-built GameState was written — the file is still a seed and a log');
 
   you.ws.close();

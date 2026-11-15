@@ -817,7 +817,8 @@ const SCAN_DIRS = ['src', 'test', 'scripts', path.join('..', 'ui')];
  * as an exemption outliving its reason, and it was sitting in the file whose
  * entire subject is that lie. The test now exists, below.
  */
-const NOT_SCANNED: string[] = [];
+// the server calls engine exports too; it is searched for call sites, not for declarations
+const NOT_SCANNED: string[] = [path.join('..', 'server')];
 
 /**
  * Counting is done over the USE VIEW of every .ts/.mjs in src/, test/, scripts/

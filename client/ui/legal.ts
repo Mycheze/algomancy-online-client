@@ -101,7 +101,6 @@ export const STORED_ACCOUNT: readonly StoredLine[] = [
   { covers: ['profile'], what: 'Your stat sheet: games, wins, losses, what you played, what you killed, what you lost, your streaks, and your record against each opponent. Every number of it is a sum over your saved games, so it can be recomputed and never has to be trusted on its own.' },
   { covers: ['achievements'], what: 'Which achievements you have, and the moment each one unlocked.' },
   { covers: ['friends', 'incoming', 'outgoing'], what: 'Your friends list, and any friend request you have sent or been sent.' },
-  { covers: ['recorded'], what: 'The room codes already folded into your stats — bookkeeping, so a game cannot be counted twice.' },
   { covers: ['decks'], what: 'The decks you have built: their names, their card lists and sideboards, their descriptions and whether you published them. A published deck shows its sideboard.' },
   { covers: ['provisional'], what: 'A flag saying this account was made by pressing play rather than by signing up — a guest. It is an ordinary account in every other way, with its own rating and history; the flag only means nobody has given it a name and a password yet. Choosing those after a game clears it, and the games you already played stay yours because it was always the same account.' },
   { covers: ['favorite'], what: 'The element you chose as your favourite on the stats tab, if you chose one — otherwise the profile shows whichever you have played most, and nothing is stored.' },

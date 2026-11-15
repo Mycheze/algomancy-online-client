@@ -2064,7 +2064,6 @@ export const CLOSED: Entry[] = [
     touches: [
       'client/server/hooks.ts',
       'client/server/main.ts',
-      'bot/pushserver.py',
       'bot/watchers.py',
       'bot/cogs/queuewatch.py',
     ],
