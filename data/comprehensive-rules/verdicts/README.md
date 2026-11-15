@@ -18,4 +18,5 @@ The one thing the migration did change is `textHash`, and only where the
 record's text and every example's words were unchanged and only an example's
 test BINDING moved because its test was retitled (`R84: …` → `CR 802.15c: …`):
 the verifier's subject did not change, so the pin was moved with it
-(`client/engine/scripts/cr/migrate/repin.mjs`).
+(`repin.mjs` in `client/engine/scripts/cr/migrate/`, deleted 2026-11-15 once
+the migration was long done; it is in git history).

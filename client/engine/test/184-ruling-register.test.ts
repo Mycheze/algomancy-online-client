@@ -17,7 +17,8 @@
  * had never been written down). The register was retired when the
  * comprehensive rules took over (its final state is archived at
  * refs/archive/r-register-final); every citation was converted to a CR number,
- * a pointer, plain words or nothing, by client/engine/scripts/cr/migrate/.
+ * a pointer, plain words or nothing, by client/engine/scripts/cr/migrate/ (deleted
+ * 2026-11-15; in git history).
  * This file now guards both halves of that: CR numbers resolve, and the old
  * numbers do not creep back.
  *
@@ -30,8 +31,7 @@
  * entry; you may ADD one only for a token that is not a citation of the retired
  * register (a fixture, a quotation of what a player once saw).
  *
- * Not scanned at all: the migration's own inputs (cr/migrate/, keyed by the old
- * ids by design) and the question sheets (client/docs/questions-round*.md, test
+ * Not scanned at all: the question sheets (client/docs/questions-round*.md, test
  * fixtures holding the owner's verbatim words). The ledgers' `evidence:`
  * strings are frozen history (the closed ones by owner decision, 2026-10-11) and skipped too.
  */
@@ -46,9 +46,8 @@ import { tokenize } from '../scripts/cr/extract-test-titles.mjs';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CLIENT = join(HERE, '..', '..');
 
-/** Directories that hold no source of ours, hold runtime data, or are the migration's own inputs. */
+/** Directories that hold no source of ours, or hold runtime data. */
 const SKIP = new Set(['node_modules', '.git', 'games', 'accounts', 'AlgomancyCards']);
-const SKIP_PATHS = ['engine/scripts/cr/migrate/'];
 const SKIP_FILE = (rel: string): boolean => /^docs\/questions-round\d+\.md$/.test(rel);
 /** a ledger's `evidence:` strings quote what a file said when the entry was filed: frozen history */
 const FROZEN_EVIDENCE = (rel: string): boolean => /^ledgers\/(?:open\/)?[\w-]+\.ts$/.test(rel);
@@ -58,7 +57,6 @@ function walk(dir: string, out: string[] = []): string[] {
     if (SKIP.has(name)) continue;
     const p = join(dir, name);
     const rel = relative(CLIENT, p).split('\\').join('/');
-    if (SKIP_PATHS.some(s => rel.startsWith(s))) continue;
     if (statSync(p).isDirectory()) walk(p, out);
     else if (/\.(ts|mts|md|mjs)$/.test(name) && !SKIP_FILE(rel)) out.push(p);
   }
