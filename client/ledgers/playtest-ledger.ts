@@ -125,6 +125,48 @@ import { CLOSED } from './playtest-ledger-closed.ts';
 /** Everything still open. The closed entries — the bulk of the file until
  *  2026-09-03 — live in playtest-ledger-closed.ts, unchanged and still run. */
 const OPEN: LedgerEntry[] = [
+  {
+    id: 399, room: "QMRP", date: "2026-11-13",
+    report: "invi, seat 0 (bug, medium): \"The everywhere should name a card when played in any way (e.g. insidious invitation)\"",
+    status: 'live',
+    note: "Real. QMRP (invi v LordZZX, constructed, competitive, played on 5e379f65) fetched and replayed 2026-11-15: 519 of 519, FAITHFUL. Played from hand, The Everywhere names (\"invi names Bloated Manablub as The Everywhere is played.\"); played off LordZZX's Insidious Invitation it arrives with no naming line at all, so its \"As I am played or modded, name a card\" never happened. Cause: a card played by another card's effect is declared by declareInlinePlay (batch-water-a.ts), which never runs the played card's own cast-window stages (namesAsPlayed, playsIntoFormation). Nothing on master since has touched it. CT-564 filed, with #405 (the same gap, Tiderunner Initiate; CT-568).",
+  },
+  {
+    id: 401, room: "ENUC", date: "2026-11-14",
+    report: "mycheze, seat 0 (ux, minor): \"The Cache zone is much larger than the Bin, which doesn't make sense. Usually, the cache has like 1 or two cards in it, if any and the bin has many. Just swap their sizes on screen, I think\"",
+    status: 'live',
+    note: "The owner's layout change. ENUC (mycheze v Gember) fetched and replayed 2026-11-15: 183 of 183, FAITHFUL; nothing wrong in the game. The two piles sit side by side on each player's info line (ui/main.ts info builder, .lbin / .lcache). CT-566 filed: swap their sizes.",
+  },
+  {
+    id: 403, room: "AUUJ", date: "2026-11-14",
+    report: "Nyar, seat 0 (bug, medium): \"The game is considered a loss for INT even if it should be a draw because both players are at 0. If they are both at 0 or lower the one with the lower value loses. If both are at the same value it is a draw\"",
+    status: 'live',
+    note: "Owner's call. AUUJ (Nyar v StubTailDstroyer, constructed, played on 940595b3) fetched and replayed 2026-11-15: 161 of 161, FAITHFUL. One combat damage sub-step took Nyar 5 → 0 and StubTailDstroyer 6 → 0; the engine ended it \"StubTailDstroyer wins the tie at 0: it goes against the initiative player\" — what CR 104.1b says. The higher-total rule is the designer's (calebgannon 2024-10-11, 2025-03-11, 2025-04-28: \"right now the higher life total wins draws\"); the equal-totals rule is the owner's alone (\"Highest total, tie: INT loses\", 2026-10-25, CT-409), and no designer source speaks to an exact tie. A judge says the engine breaks a rule, so it is not closed by the steward: CT-565 filed asking the owner to confirm or change his call.",
+  },
+  {
+    id: 404, room: "", date: "2026-11-14",
+    report: "mycheze, page metadeck (ux, medium): \"The \\\"middle click to zoom in\\\" on a card should work in ALL pages that have cards! Including the card search, viewing other decks, the card metagame list, everything. We should make it a codified action to \\\"zoom in\\\" on a card.\"",
+    status: 'live',
+    note: "The owner's feature request, filed from the meta deck page, no room. ui/zoom.ts serves the board and a few opted-in tables (the sideboard table, the draft pick and pool pages), not the other card-showing pages. BL-77 filed with his words: one zoom action, on every page that draws a card (CT-569).",
+  },
+  {
+    id: 405, room: "KNQX", date: "2026-11-14",
+    report: "StubTailDstroyer, seat 1 (bug, minor): \"When playing out Tiderunner Initiate with Insidious Invitation, you should be able to play Tiderunner into an open slot in formation\"",
+    status: 'live',
+    note: "Real. KNQX (Yagamino v StubTailDstroyer, constructed, played on 940595b3) fetched and replayed 2026-11-15: 211 of 211, FAITHFUL. Twice from hand: \"Tiderunner Initiate is played straight into the formation (a new column on the right).\"; off StubTailDstroyer's Insidious Invitation it is put on the stack and spawns with no spot asked. Printed: \"You may play me into an open spot in your formation.\" (CR 602.7). Same cause as #399: declareInlinePlay (batch-water-a.ts) asks for a formation spot only when the caller passes intoFormation (Hooba-Pon), never from the played card's own playsIntoFormation (Tiderunner Initiate, Trench Stalker). CT-568, carried by CT-564.",
+  },
+  {
+    id: 406, room: "XUKH", date: "2026-11-15",
+    report: "mycheze, seat 0 (ux, medium): \"We should improve the \\\"Do you want to bring spell tokens with you into this battle?\\\" UI. Rather than just being a small, boring list that you click, we should make it a modal of some kind that brings up all the spell tokens you control in a nice interface where you just click all the ones you want to bring with you, as well as buttons that clearly say \\\"Bring all\\\" or \\\"Bring none\\\"\"",
+    status: 'live',
+    note: "The owner's UX request. XUKH (mycheze v Gember) fetched and replayed 2026-11-15: 252 of 252, FAITHFUL. Today the question is a line in the prompt bar after Attack! with small token chips (ui/main.ts, ui.confirmRide; report [69]). BL-78 filed with his words: a dialog of the ridable tokens as tiles, with Bring all and Bring none (CT-570).",
+  },
+  {
+    id: 407, room: "XUKH", date: "2026-11-15",
+    report: "mycheze, seat 0 (ux, minor): \"When a cached card is in your hand, rather than having the \\\"Cache\\\" title float above the card and a \\\"Turn\\\" chip be on the card, let's remove the \\\"Turn\\\" chip and make it a \\\"Cache\\\" chip instead. It would take up less space and get the same idea across\"",
+    status: 'live',
+    note: "The owner's UX change. XUKH fetched and replayed 2026-11-15: 252 of 252, FAITHFUL. The hand strip draws cached cards under a .handcachedlabel (\"cached · playable now\") with the cache row's chip (cacheChip: \"⚡ turn\" for a glimpse). CT-567 filed: in the hand, one \"Cache\" chip and no floating label.",
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader

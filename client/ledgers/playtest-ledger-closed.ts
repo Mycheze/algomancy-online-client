@@ -5744,4 +5744,41 @@ export const CLOSED: LedgerEntry[] = [
     status: 'agreed-fix',
     note: "A judge trying the take-back tool, reason \"test\", agreed by proud, straight after #393. Took back proud's Mirage Walker (Ambush) [444] and its target, Lonely Forager [445]; proud replayed the same two actions and Nyar answered with Celestial Purge at the Forager [446]-[447]. --report triage flags (b), the redo repeats every cut choice (2/2): expected for a test. NJJR replays FAITHFUL (476 of 476). No defect.",
   },
+  {
+    id: 395, room: "URSV", date: "2026-11-13",
+    report: "Nyar, seat 0, agreed fix: back to before proud's Might of the Grove — takes back proud's Might of the Grove, proud's choice: Warbloom Herald (proud's), Nyar's pass, Nyar's pass and 1 more. \"test\"",
+    status: 'agreed-fix',
+    note: "A judge trying the take-back tool, reason \"test\", agreed by proud. Turn 4 battle, block window, Crystal on the stack: took back proud's Might of the Grove at Warbloom Herald [108]-[109], the two passes that resolved it [110]-[111] and proud's pass that resolved Crystal [112]; proud then played Glowhaven Elder as an augment instead [108] (undone in turn by #396). URSV (Nyar v proud, constructed) replays FAITHFUL (307 of 307); --branch triage none of (a)-(d). A legal play taken back by agreement; no defect.",
+  },
+  {
+    id: 396, room: "URSV", date: "2026-11-13",
+    report: "Nyar, seat 0, agreed fix: back to before proud's augment — takes back proud's augment and Nyar's pass. \"reading is difficult\"",
+    status: 'agreed-fix',
+    note: "A misread taken back, right after #395. Took back proud's Glowhaven Elder put on his own Mycelial Mentor as a Virus augment [108] and Nyar's pass that applied it [109]; proud then played Might of the Grove at Mycelial Mentor [108]-[111]. Glowhaven Elder prints {Virus} (\"Mystic Tree {Virus} Unit — [Augment] Your other units gain +1/+1.\"), so the augment was legal; \"reading is difficult\" is the player's misread, not the engine's. URSV replays FAITHFUL (307 of 307); --branch triage flags only (c), the reason says something. No defect.",
+  },
+  {
+    id: 397, room: "URSV", date: "2026-11-13",
+    report: "Nyar, seat 0, agreed fix: back to before Nyar's attack (Nyar's last action; the start of turn 6, battle (declare)) — takes back Nyar's attack. \"test\"",
+    status: 'agreed-fix',
+    note: "A judge trying the take-back tool, reason \"test\", agreed by proud. Took back Nyar's turn-6 attack with six columns [155]; Nyar declared again [155] and played Torrential Reclamation (X = 3) at Tempest Oracle [156]-[158]. URSV replays FAITHFUL (307 of 307); --branch triage none of (a)-(d). A legal declaration taken back by agreement; no defect.",
+  },
+  {
+    id: 398, room: "URSV", date: "2026-11-13",
+    report: "Nyar, seat 0, agreed fix: back to before proud's attack — takes back proud's attack, proud's pass, Nyar's pass and Nyar's blocks. \"test\"",
+    status: 'agreed-fix',
+    note: "A judge trying the take-back tool, reason \"test\", agreed by proud. Turn 7 declare: took back proud's attack with Bloomcaster, Mycelial Mentor and Sandstone Defender [212], the passes [213]-[214] and Nyar's blocks [215]; proud attacked again [212], Nyar attacked [213] and played Pull Under at Bloomcaster [215]-[216]. URSV replays FAITHFUL (307 of 307); --branch triage none of (a)-(d). Legal plays taken back by agreement; no defect.",
+  },
+  {
+    id: 400, room: "XQXV", date: "2026-11-14",
+    report: "Nyar, seat 0, agreed fix: back to the start of this step (turn 6, battle (afterWindow, counterattack)), then back to the start of the step before (turn 6, battle (blockWindow, counterattack)). \"test\"",
+    status: 'agreed-fix',
+    note: "A judge trying the take-back tool, reason \"test\", two agreed steps in one run, agreed by invi. Fix 0 cut 80 actions back to [191] (the after-window's long drain of invi's Wisp, Spirit of Vengeance, Soul Swallower and Flourishing Flora triggers); fix 1 cut on to [170], the counterattack's block window, before combat damage and invi's Ghord sacrifices. The redo made the same first six choices and then Nyar played Umbral Decay at Spirit of Vengeance [176]-[177]. --branch triage: fix 0 flags (a), Umbral Decay fizzling inside the cut ([267], its target already gone — an ordinary fizzle); fix 1 notes the redo repeats the first 6 of 21. XQXV (Nyar v invi, constructed) replays FAITHFUL (288 of 288). No defect.",
+  },
+  {
+    id: 402, room: "HECZ", date: "2026-11-14",
+    report: "Nyar, seat 0, agreed fix: back to before Nyar's Soul Tithe — takes back Nyar's Soul Tithe and Nyar's choice: Morphic Mentor: I gain +2/+2 un…. \"test\"",
+    status: 'agreed-fix',
+    note: "A judge trying the take-back tool, reason \"test\", agreed by StubTailDstroyer. Turn 5 block window, two Morphic Mentor triggers on the stack: took back Nyar's Soul Tithe at a Morphic Mentor trigger [171]-[172] (Origon had already triggered to negate it); Nyar played Protective Adaptations on Oracle of Foretelling first [171]-[172], then the same Soul Tithe [173]-[174]. HECZ (Nyar v StubTailDstroyer, constructed) replays FAITHFUL (185 of 185); --branch triage none of (a)-(d). A sequencing take-back by agreement; no defect.",
+  },
 ];
+

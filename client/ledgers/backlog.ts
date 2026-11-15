@@ -1219,6 +1219,70 @@ const OPEN: Entry[] = [
       + 'interface guide (ui/tutorial.ts, "A room link with &watch=1 on the end") still tells players '
       + 'to type it, so neither doneWhen line is met.',
   },
+  {
+    id: 'BL-77',
+    slug: 'card-zoom-on-every-page',
+    title: 'The card zoom (middle click, hover, press-and-hold) on every page that shows a card',
+    area: 'client',
+    size: 'M',
+    status: 'open',
+    track: 'qol',
+    said:
+      'The "middle click to zoom in" on a card should work in ALL pages that have cards! Including the card search, '
+      + 'viewing other decks, the card metagame list, everything. We should make it a codified action to "zoom in" on '
+      + 'a card. (owner, report #404, 2026-11-14, filed from the meta deck page)',
+    means:
+      'ui/zoom.ts is the board\'s magnifier: a mouse hover, a middle click and a finger\'s press-and-hold raise a '
+      + 'floating copy of the card. Its targets are the board\'s cards, plus a few tables that opted in (the sideboard '
+      + 'table, BL-11\'s doneWhen; the draft pick and pool pages import it). The other pages that draw cards (the card '
+      + 'search, a deck someone shared, the metagame deck list he filed from, deck stats, the builder, the profile\'s '
+      + 'decks…) do not. Make "zoom in on a card" ONE action with one way in, that any page\'s card markup gets by '
+      + 'wearing the same attribute, and put every card-showing page on it. Find every page that draws a card first '
+      + '(ui/pages/*.ts, the components) and list which have it.',
+    doneWhen: [
+      'On every page that shows a card, a middle click on it (and a press-and-hold on a touch screen) shows the big zoom',
+      'A card on a new page gets the zoom by wearing one shared attribute or helper, and a test fails on a card-drawing page without it',
+    ],
+    decided: [],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/ui/zoom.ts',
+      'client/ui/pages/',
+    ],
+  },
+  {
+    id: 'BL-78',
+    slug: 'spell-token-ride-picker',
+    title: 'Bringing spell tokens into a battle: a proper picker with "Bring all" and "Bring none"',
+    area: 'client',
+    size: 'S',
+    status: 'open',
+    track: 'qol',
+    said:
+      'We should improve the "Do you want to bring spell tokens with you into this battle?" UI. Rather than just being '
+      + 'a small, boring list that you click, we should make it a modal of some kind that brings up all the spell '
+      + 'tokens you control in a nice interface where you just click all the ones you want to bring with you, as well '
+      + 'as buttons that clearly say "Bring all" or "Bring none" (owner, report #406, room XUKH, 2026-11-15)',
+    means:
+      'After Attack! the prompt bar asks the ride-along question (ui/main.ts, the battle `declare` step with '
+      + '`ui.confirmRide`, report [69]): "Select the spell tokens you wish to bring into the attacked region, or select '
+      + 'Bring none.", the ridable tokens (ui/battle.ts ridableTokens) as small chips in the bar, then Go back, Bring '
+      + 'none and "Attack — n tokens riding". Replace it with a dialog over the table showing every ridable spell token '
+      + 'as a card tile you click to pick, with Bring all, Bring none and the confirm. A new dialog in the attack flow, '
+      + 'so it ships as `stage` for the owner to try.',
+    doneWhen: [
+      'After Attack!, a player with spell tokens that may ride gets a dialog of them as tiles, with Bring all and Bring none buttons beside the confirm',
+      'Esc and Go back still return to the attack being built, and the keyboard shortcuts still work',
+    ],
+    decided: [],
+    asks: [],
+    deps: [],
+    touches: [
+      'client/ui/main.ts',
+      'client/ui/battle.ts',
+    ],
+  },
 ];
 
 /** The whole ledger, open and closed, in id order — the export every reader
