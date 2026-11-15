@@ -5786,5 +5786,11 @@ export const CLOSED: LedgerEntry[] = [
     status: 'agreed-fix',
     note: "A judge trying the take-back tool, reason \"test\", three agreed steps in one run, agreed by Yagamino. Turn 5 planning: fix 0 took back the done-planning and both done-with-haste [171]-[173]; fix 1 Yagamino's done planning, Nyar's recycle of Celestial Purge and two resource activations [167]-[170]; fix 2 Nyar's cards to the bottom [166]. The redo put the cards on the bottom again [166] and both players finished planning and haste [167]-[169]. MNNC (Nyar v Yagamino, constructed) fetched 2026-11-15 and replays FAITHFUL (221 of 221); --branch triage none of (a)-(d) for all three. Legal plays taken back by agreement; no defect.",
   },
+  {
+    id: 409, room: "MNNC", date: "2026-11-15",
+    report: "Yagamino, seat 1, take-back (Not a bug!): back to before Yagamino's pass, twice, then back to before Yagamino's pass and the choice Pay [1] — create a copy (Swarmling). No reason.",
+    status: 'agreed-fix',
+    note: "A take-back, ticked \"Not a bug\", three steps in one run, agreed by Nyar. Turn 5 battle, Yagamino's discard triggers on the stack (Pallid Gorger, two Swarmlings, Dropslime): fix 3 took back two passes [236]-[237] while Pallid Gorger resolved; fix 4 two passes [234]-[235] while a Swarmling found its [1] unpayable; fix 5 back to Dropslime's resolution [229]-[233], taking back Pay [1] for a Swarmling copy [232]. The redo resolved Dropslime the same way (3 to Nyar) and declined both remaining Swarmling copies [232], [235]. MNNC (Nyar v Yagamino, constructed) fetched 2026-11-15 and replays FAITHFUL (358 of 358, determinism OK); --branch triage none of (a)-(d) for all three. A spending choice changed by agreement; no defect.",
+  },
 ];
 
