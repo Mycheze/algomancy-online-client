@@ -795,7 +795,15 @@ const OPEN: Entry[] = [
       + 'in a sentence (.ui-button--link, .linkbtn), the rules reader\'s exemption for its rule links. Guarded by the census '
       + '1246-every-box-gets-the-touch-floor.test.ts (the scrims read off the stylesheet with 1209\'s detector; §2 no floor '
       + 'outranks a rule that makes a button bigger). Left: §L.11\'s other lines (tab roles, the hover-only lesson '
-      + 'previews, the native confirms). Reasoned, not looked at (no browser): worth a tap through on an iPad.',
+      + 'previews, the native confirms). Reasoned, not looked at (no browser): worth a tap through on an iPad.\n\n'
+      + '2026-11-15 (steward): a judge that did not answer is drawn as an error, not as a ruling (docs/23-ui-inventory/04 '
+      + '§L.7: "judge failures and lesson-judge failures look exactly like answers"). The class was the two judge boxes: '
+      + 'the table\'s (main.ts judgeOverlayHtml), whose log already carried `failed` for CT-470\'s history but drew it in '
+      + 'the grey answer box, and the lesson\'s (lessonlayer.ts windowHtml), whose log did not know: its host now returns '
+      + '`failed` on the guest sign-in miss and on a reply that is not ok, and its catch marks an unreachable judge. A '
+      + 'failed turn is statusMessage tone error, boxed (red on the danger tint, role="alert", class judgefail). Left: '
+      + '§L.7\'s other line, the rules review\'s document load error in the dim .crnote while its comment errors are red. '
+      + 'Guarded by 1382-judge-failure-is-an-error.test.ts. Reasoned, not looked at (no browser).',
   },
   // ── the leftovers of the 2026-11-02/03 rounds (Competitive Constructed, the design
   //    system, the new home, board-r1), filed 2026-11-03. Owner, that night: "put all

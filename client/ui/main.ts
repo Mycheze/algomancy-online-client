@@ -196,6 +196,7 @@ import './pages/clockpick.ts';   // boot order, as before BL-63 (pages/home.ts u
 import { CONNECTING, connectingHtml, kickedHtml } from './pages/connecting.ts';
 import { seatBadgeHtml, seatBadgeTipHtml, type SeatBadge } from './pages/profile.ts';
 import { icon } from './components/icon.ts';
+import { statusMessage } from './components/status.ts';
 import './pages/deckpicker.ts';   // boot order, as before BL-63 (pages/home.ts uses it now)
 import { handleHomeButton, homePick, paintHome, type HomeButtonHost } from './pages/home.ts';
 import { paintWaiting } from './pages/waiting.ts';
@@ -5338,7 +5339,11 @@ function judgeSourcesHtml(sources: JudgeSource[] | undefined): string {
 }
 
 function judgeOverlayHtml(): string {
-  const rows = judgeLog.map(e => `
+  // a refusal or an unreachable judge is drawn as an error, not in an
+  // answer's box (BL-10, inventory 04 §L.7: "judge failures … look exactly like answers")
+  const rows = judgeLog.map(e => e.failed ? `
+    <div class="judgeq">Q: ${esc(e.q)}</div>
+    ${statusMessage({ tone: 'error', boxed: true, className: 'judgefail', text: e.a })}` : `
     <div class="judgeq">Q: ${esc(e.q)}</div>
     <div class="judgea">${mdToHtml(e.a, { inline: iconizeText })}${judgeSourcesHtml(e.sources)}${e.cards.length
       ? `<div class="hint">cards: ${e.cards.map(c => `<span data-prev="${esc(c.title)}">${esc(c.title)}</span>`).join(' · ')}</div>` : ''}</div>`).join('');
@@ -12453,9 +12458,9 @@ installLessonLayer({
         if (out.ok && out.token) acct.adoptToken(out.token);
       } catch { /* answered below */ }
     }
-    if (!acct.token()) return { answer: 'The judge is not available right now — try again in a moment.', cards: [] };
+    if (!acct.token()) return { answer: 'The judge is not available right now — try again in a moment.', cards: [], failed: true };
     const r = await judgeRequest(q, context);
-    return { answer: r.answer, cards: r.cards.map(c => c.title) };
+    return { answer: r.answer, cards: r.cards.map(c => c.title), ...(r.ok ? {} : { failed: true }) };
   },
   endActions: c => [
     ...(c.state.winner !== c.seat ? [{ btn: 'learn-rewind', label: '↺ Rewind this turn' }] : []),

@@ -26,6 +26,7 @@ import { iconizeText } from './cardtext.ts';
 import { rowFor } from './cardindex.ts';
 import { artHtml } from './cardpanel.ts';
 import { setHoverArrows } from './anim.ts';
+import { statusMessage } from './components/status.ts';
 import {
   dueLesson, lessonContext, pageBody, pageCallout, pageFigures,
   type FigCard, type Figure, type Lesson, type LessonCtx, type LessonPage,
@@ -170,7 +171,9 @@ export function pageHtml(p: LessonPage, c: LessonCtx | null): string {
     ${figs.filter(f => f.kind !== 'anatomy').map(figureHtml).join('')}${cites}`;
 }
 
-export interface JudgeTurn { q: string; a: string; cards: string[] }
+/** `failed`: the judge did not answer (unreachable, busy, the daily limit) —
+ * drawn as an error, not in an answer's box (BL-10, inventory 04 §L.7) */
+export interface JudgeTurn { q: string; a: string; cards: string[]; failed?: boolean }
 
 export interface WindowModel {
   lesson: Lesson;
@@ -189,7 +192,10 @@ export function windowHtml(m: WindowModel): string {
   const compact = !!l.compact;
   const dots = l.pages.length > 1
     ? `<span class="ldots">${l.pages.map((_, i) => `<i class="${i === page ? 'on' : ''}"></i>`).join('')}</span>` : '';
-  const judge = m.judge.map(t => `<div class="ljq">${esc(t.q)}</div>
+  const judge = m.judge.map(t => t.failed
+    ? `<div class="ljq">${esc(t.q)}</div>
+    ${statusMessage({ tone: 'error', boxed: true, className: 'judgefail', text: t.a })}`
+    : `<div class="ljq">${esc(t.q)}</div>
     <div class="lja">${mdToHtml(t.a, { inline: lessonInline })}${t.cards.length
       ? `<div class="ljcards">${t.cards.map(n => `[[${n}]]`).map(lessonInline).join(' · ')}</div>` : ''}</div>`).join('');
   const extra = (m.actions ?? []).map(a =>
@@ -232,7 +238,7 @@ export interface LessonHost {
   seen: () => readonly string[];
   markSeen: (id: string) => void;
   /** POST the question to the judge with the lesson as context */
-  judge: (question: string, context: string) => Promise<{ answer: string; cards: string[] }>;
+  judge: (question: string, context: string) => Promise<{ answer: string; cards: string[]; failed?: boolean }>;
   /** the end-of-game footer, on the last page of the 'end' lesson */
   endActions?: (ctx: LessonCtx) => { btn: string; label: string; primary?: boolean }[];
   onAction?: (btn: string) => void;
@@ -321,8 +327,8 @@ function ask(): void {
   judgeDraft = '';
   paint();
   host.judge(q, lessonContext(l, host.ctx()))
-    .then(r => { const log = judgeLogs.get(l.id) ?? []; log.push({ q, a: r.answer, cards: r.cards }); judgeLogs.set(l.id, log); })
-    .catch(err => { const log = judgeLogs.get(l.id) ?? []; log.push({ q, a: `could not reach the judge: ${err}`, cards: [] }); judgeLogs.set(l.id, log); })
+    .then(r => { const log = judgeLogs.get(l.id) ?? []; log.push({ q, a: r.answer, cards: r.cards, ...(r.failed ? { failed: true } : {}) }); judgeLogs.set(l.id, log); })
+    .catch(err => { const log = judgeLogs.get(l.id) ?? []; log.push({ q, a: `could not reach the judge: ${err}`, cards: [], failed: true }); judgeLogs.set(l.id, log); })
     .finally(() => { judgeBusy = false; paint(); });
 }
 
