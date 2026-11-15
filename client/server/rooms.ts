@@ -1,51 +1,32 @@
-/* In-memory room store + JSON persistence.
- *
- * A room is one game: an authoritative GameState, the seed + action log (the
- * whole game — docs/04 §1), the full event history (for redacted log resync),
- * and up to two connected sockets (seat 0 and seat 1).
- *
- * Persistence is a plain JSON file per room under server/games/<code>.json
- * holding { seed, names, actions }. On startup rooms are restored by replaying
- * the action log through the engine (replay = seed + actions).
- */
+/* In-memory room store and its JSON persistence. A room is one game: the authoritative
+ * GameState, the seed and action log, the event history (for redacted resync) and up to
+ * two sockets. A saved room is restored by replaying its log through the engine. */
 import { existsSync, readdirSync, readFileSync, mkdirSync, renameSync, statSync, unlinkSync, utimesSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-// type-only, so rooms.ts gains no runtime dependency on ws — the sockets are
-// the real WebSockets main.ts plugs in; this module only checks presence
+// type-only: rooms.ts takes no runtime dependency on ws
 import type { WebSocket } from 'ws';
 import type { Action, ActivateVia, AmendDest, AmendEdit, AmendSource, AmendUnitDest, CardName, Element, EngineEvent, EntityId, GameMode, GameRules, GameState, Phase, Seat } from '../engine/src/types.ts';
-// CR D4.6 — CC undo until Done: the engine's half (which step is open, whose,
-// and what each action means to a take-back)
+// CR D4.6: CC undo until Done — the engine's half (which step is open, whose, and what each action means to a take-back)
 import { ccUndoFloor, ccUndoMark, type CcUndoMark } from '../engine/src/ccundo.ts';
 import { AMEND_DESTS, AMEND_SOURCES, AMEND_UNIT_DESTS, STATE_SCHEMA } from '../engine/src/types.ts';
 import { amendProblem, amendText } from '../engine/src/amend.ts';
 import { singleCardsOf } from './cardladder.ts';
 import { DECK_LIST } from '../engine/src/cards/registry.ts';
 import { amendFrozen, apply, checkDeck, checkSingleCard, checkSingleDeck, makesUnits, decisionBlocks, forcedAction, hiddenSegment, legalActions as engineLegalActions, planningStep, sanitizeTrio, IllegalAction } from '../engine/src/apply.ts';
-// CR D8.4 — the scenario tester. `dealScenario` IS `createGame` when no scenario
-// id is passed, byte for byte, so every ordinary room is unaffected; when one
-// is passed it applies the scenario's deterministic board mutation. It is
-// imported instead of `createGame` rather than beside it, deliberately: a
-// second `createGame` call site in this file would be a deal that forgets the
-// scenario, which is exactly the bug docs/14 §2 is written to prevent.
-// BL-06: `isDealId`, not `isScenarioId` — the sandbox is a second kind of
-// deal (see scenarios.ts's SANDBOX_ID), and a saved sandbox room must restore.
+// CR D8.4: `dealScenario` is `createGame` when no scenario id is passed. It is imported
+// instead of `createGame` so no deal in this file can forget the scenario. `isDealId`, not
+// `isScenarioId`: a saved sandbox room is a deal too, and must restore.
 import { dealScenario, isDealId, isSandboxId, savedRules } from './scenarios.ts';
 import { legalForSeat, other } from './view.ts';
 import type { HeldFrame, SegmentClose } from './view.ts';
-// The on-disk shapes moved to types.ts so replay-room.ts can name them
-// without importing this module (and `ws` with it). Re-exported here because
-// this is still where they are WRITTEN, and the old import path is the one
-// every reader knows.
+// The on-disk shapes live in types.ts so replay-room.ts can name them without importing ws;
+// re-exported because this module writes them.
 import type { Amendment, Dispute, Fork, LostAction, RoomClosed, VersionStamp } from './types.ts';
 export type { Amendment, Fork, LostAction, VersionStamp } from './types.ts';
 import { engineVersion } from './engine-version.ts';
-// BL-38 — the per-action board fingerprint written into every saved game.
-// `signature` is a SEMANTIC projection (card names and counts, sorted, never
-// entity ids), which is what lets a fingerprint taken by one engine be compared
-// against a replay by another. The import is one-directional on purpose:
-// replay-probe.ts may import nothing but the engine, because it is executed
-// inside checkouts of arbitrary past commits. Importing FROM it is free.
+// The per-action board fingerprint. `signature` is semantic (card names and counts, never
+// entity ids), so fingerprints compare across engines. Import only FROM replay-probe.ts: it
+// runs inside checkouts of past commits and may import nothing but the engine.
 import { digest, signature } from './replay-probe.ts';
 import { capital, cutParts, cutText, describe, type CutItem, type CutPlan } from './rewind-cuts.ts';
 import { zoneDelta } from './zonedelta.ts';
@@ -54,32 +35,24 @@ import { lastSeen, NOTHING_SEEN, SEEN_REFUSAL, seenBy, type Seen } from './seen.
 import { cardFact, cardOpen, sanitizeFact, sanitizeOpen, type CardFact, type CardOpen } from './cardledger.ts';
 import { gamesDir } from './statepaths.ts';
 import { sanitizeMatchLink } from './match-store.ts';
-// CR D8.5: a conceded game weighs by the turn it was conceded on — stamped here,
-// read by the folds. The type and the sanitizer only; the thresholds stay in
-// concession.ts, which is the one place they are named.
+// CR D8.5: a conceded game weighs by the turn it was conceded on — stamped here, read by the
+// folds. Only the type and the sanitizer: the thresholds live in concession.ts alone.
 import { sanitizeConcession, type Concession } from './concession.ts';
 import {
   resolveTrio, sanitizeMethod, sanitizeSubmission, submissionReady,
   type TrioHistoryRow, type TrioMethod, type TrioResult, type TrioSubmission,
 } from './trio.ts';
-// BL-43: custom rules on a live draft — the deal the engine takes, and what the creator chose
+// custom rules on a live draft: the deal the engine takes, and what the creator chose
 import { sanitizeDraftDeal, type DraftDeal } from '../engine/src/draftdeal.ts';
 import { sanitizeCustomRules, STANDARD_RULES, type CustomRules } from '../ui/customrules.ts';
-// the standing pass: the client's own release list, asked of the server's state.
-// ui/passrelease.ts and not ui/battle.ts: its import chain is engine types
-// only, which is what BL-41 (engine/test/282) lets the server compile.
+// the standing pass. ui/passrelease.ts, not ui/battle.ts: its imports are engine types only,
+// which is all the server may compile from ui/ (engine/test/282).
 import { autoPassPlan, inPassWindow, passAllRelease, type PassMode } from '../ui/passrelease.ts';
 
 /**
- * BL-43 — a live draft's custom rules, as the room keeps them.
- *
- * RESOLVED ONCE, when the room was created (main.ts /api/new, through
- * ui/customrules.ts checkCustomRules). `rules` is what the creator chose, kept
- * for the lobby panel, the history tag and a rematch; `deal` is what it
- * resolved to, and it is the ONLY half any re-deal reads — fresh(), rebuild(),
- * the restore, the stats fold and the forensic replay all pass `deal` and none
- * of them re-resolve `rules`. A later classifier run or search-grammar change
- * therefore cannot rewrite a game already in progress or already played.
+ * A live draft's custom rules, resolved once when the room is created. `rules` is what the
+ * creator chose (lobby, history, rematch); `deal` is what it resolved to, and the only half
+ * any re-deal reads, so a later classifier or grammar change cannot rewrite a game.
  */
 export interface RoomCustom { rules: CustomRules; deal: DraftDeal }
 
@@ -88,10 +61,8 @@ export function roomElementCount(room: { custom?: RoomCustom }): number {
   return room.custom?.deal.elements ?? 3;
 }
 
-/** A saved room's custom rules. A file that names custom rules this build
- * cannot read is REFUSED, never restored as a standard game: its log was
- * recorded against a custom deal, and replaying it onto a standard one would
- * produce a plausible room describing a game nobody played (the scenario tester's argument). */
+/** A saved room's custom rules. Rules this build cannot read refuse the restore: replaying
+ * the log onto a standard deal would describe a game nobody played. */
 function restoreCustom(raw: { rules?: unknown; deal?: unknown } | undefined | null, mode: GameMode): RoomCustom | undefined {
   if (raw === undefined || raw === null) return undefined;
   const deal = sanitizeDraftDeal(raw.deal);
@@ -105,202 +76,63 @@ function restoreCustom(raw: { rules?: unknown; deal?: unknown } | undefined | nu
 const GAMES_DIR = gamesDir();
 
 /**
- * The HIDDEN SIMULTANEOUS SEGMENTS — the one place that knows which steps are
- * played behind a screen.
+ * The hidden simultaneous segments: the steps played behind a screen.
  *
- * Playtest UZRG (2026-08-21): "Planning should be like deployment, entirely
- * divorced from what your opponent is doing. But right now, you can't take
- * back making the wrong resource or recycling the wrong card if your opponent
- * does something (which shouldn't matter) and you can see what your opponent
- * is doing live, so there's technically a reason to wait to see what they do
- * (which there shouldn't be)."
+ *   'plan'   the resource step. Its actions touch only the actor's own hand and resources,
+ *            fire no triggers, touch no stack, draw no RNG and allocate no entity ids, so
+ *            the two seats' actions commute (test-hidden.ts) — which makes an undo here safe.
+ *   'haste'  the haste step: plays resolve immediately, no priority, no responses (CR 504.3).
+ *   'deploy' simultaneous deployment.
  *
- * So a turn has THREE hidden segments, not one:
- *
- *   'plan'   the resource step  — recycle / activate / exchange / draft /
- *            bottom, ending when both players have hit done planning. Every
- *            one of those actions is confined to the actor's own hand and
- *            resources, fires no triggers, touches no stack, draws no RNG and
- *            allocates no entity ids, so the two seats' actions COMMUTE
- *            (test-hidden.ts asserts it directly) — which is exactly what
- *            makes an undo here always safe.
- *   'haste'  the haste step — plays resolve immediately, no priority, no
- *            responses (CR 504.3). Deployment's hazards, and no more.
- *   'deploy' simultaneous deployment, as before.
- *
- * Everything downstream is ONE rule: **the key changed → flush the old
- * segment's reveal, snapshot the new one.** Nothing else in the server knows
- * which phase it is looking at.
+ * When the key changes, the old segment's reveal is flushed and the new one snapshotted.
+ * Nothing else in the server knows which phase it is looking at.
  */
 export type SegKey = 'plan' | 'haste' | 'deploy';
 
-/** Which hidden segment is this state in, if any?
- *
- * The seat-aware gate fix (CT-44) moved the predicate itself into the engine (`hiddenSegment` in
- * apply.ts) because the engine's own decision gate now turns on it, and two
- * copies of one rule is the drift BL-19 is this repo's standing example of.
- * The doc block above stays here, where the segments are actually about the
- * server's reveal machinery; this is the same function under the name the
- * server has always called it by.
- *
- * (hasteEnding: the haste step's end-of-step triggers may suspend on a
- * decision with hasteDone already conceptually spent — the resource step is
- * definitively over, so this is never 'plan' again.) */
+/** Which hidden segment this state is in, if any — the engine's `hiddenSegment`, which its
+ * decision gate also reads. */
 export function segmentKey(s: GameState): SegKey | null {
   return hiddenSegment(s);
 }
 
-/* ── CR D6.2 (owner, 2026-10-04, report #192) — A GLIMPSE INSIDE A HIDDEN STEP
- *    WAITS FOR THE REVEAL. The earlier live-reveal ruling is reversed. ──────────────────────────────
- *
- * The owner: "Glimpse cards shouldn't be shown to an opponent *during*
- * Deployment. They should be a part of the recap only."
- *
- * HISTORY, because the code used to say the opposite. The hold below
- * (`heldEvents`) parks, for the other seat, every event an action produces
- * inside a hidden simultaneous step (resource, haste, deployment) and flushes
- * them at the barrier. The glimpse investigation found that this kept `Oracle of Foretelling`'s
- * Glimpse 5 silent until deployment closed (Glook, Lilbot, Visionary
- * Construct, Maw of Despair and Seer of Empty Spaces reach the same state;
- * the {Battle} Glimpse cards and Lifebound Seer only ever glimpse in battle,
- * where nothing is held). An earlier ruling then made `glimpsed` a one-entry exemption —
- * "the card says REVEAL" — so it went out live, popped the opponent's notice
- * mid-step, and was for that very reason MISSING from the recap.
- *
- * CR D6.2 leaves no exemption: it is removed outright (`escapesHold` and its set are gone, from
- * view.ts and from all three hidden-step runners: this file, ui/solo.ts and
- * ui/replayserver.ts). A glimpse is now held like every other event: flushed
- * exactly once at the barrier, inside the playback frame of the action that
- * made it (view.ts playbackFrames), where the client pops its card notice
- * (ui/main.ts applyUpdate's playback branch). The glimpser still sees their
- * own reveal live — it is their own action. Battle is unchanged: nothing is
- * held there, so a battle glimpse is as instant as ever.
- *
- * ⚠ An exemption from the hold is a RULES change, not a refactor: anything
- * that escaped would be public mid-step for every card that can emit it.
- * server/test/203-reveal-waits-for-the-barrier.test.ts measures that NOTHING a
- * hidden step emits reaches the other seat before the barrier.
- */
+/* CR D6.2: every event an action produces inside a hidden step is held from the other seat
+ * and flushed once at the barrier, inside that action's playback frame — a glimpse included.
+ * No event type is exempt: an exemption would make that event public mid-step (test 203). */
 
-/** The events of `evs` that `seat` may see RIGHT NOW: the ones this room has
- * not parked for them. Asked of the queue itself, so main.ts never needs a rule
- * of its own about which events those are. Inside a step that is only the
- * events of `seat`'s OWN actions (a forced step of theirs drained on the other
- * seat's tick, say) — since nothing of the other seat's escapes the hold (CR D6.1a).
- *
- * Outside a hidden segment nothing is held and this is the identity. */
+/** The events of `evs` that `seat` may see now: those this room has not held from them.
+ * Inside a step that is only the events of `seat`'s own actions (CR D6.1a); outside, all. */
 export function unheldFor(room: Room, seat: Seat, evs: EngineEvent[]): EngineEvent[] {
   const held = new Set(room.heldEvents[seatSlot(seat)]);
   return evs.filter(e => !held.has(e));
 }
 
-/* ── CR D2.1b / CT-32: ONE SEAT'S TRIGGERS MUST NOT FREEZE THE OTHER SEAT ──────
- *
- * Playtest #98 (SMVJ, action 238): *"Rashi's start of combat (doing all her
- * Wraith triggers) doesn't need to take away from what I'm doing in
- * Deployment."*
- *
- * WHAT ACTUALLY BLOCKS — and it is NOT the presentation layer.
- *
- * The engine is a single pure reducer over ONE state, and `apply()` opens with
- * a global gate:
- *
- *     if (e.s.decision && action.type !== 'decide' && action.type !== 'concede')
- *       e.illegal(`a decision is pending for ${...}`);
- *
- * and `legalActions()` opens with the matching one — `if (s.decision) return
- * legalDecisionActions(...)`, which returns [] for the seat that does not own
- * it. So while the OPPONENT is mid-answer, this seat is handed an EMPTY legal
- * list and every action it sends is refused by name. The client's "Waiting for
- * X…" bar (ui/main.ts) is a faithful drawing of that — un-gating the UI alone
- * would just turn a frozen screen into a screen full of refusals.
- *
- * That gate is right in BATTLE, where priority is sequential and an opponent
- * mid-resolution genuinely does hold the game. It is wrong in a HIDDEN
- * SIMULTANEOUS SEGMENT, where by construction both seats are acting at once
- * and neither can see the other — deployment triggers use the stack (CR 703.7),
- * so a pile of start-of-deployment Wraith triggers
- * sits there suspended on its controller's decision while the other player is
- * simply trying to deploy.
- *
- * THE FIX, IN TWO HALVES, BOTH HERE (the engine stays untouched and pure):
- *
- *   legalForSeat   what the server PUBLISHES to a seat. Inside a segment, a
- *                  decision belonging to the other seat is answered against a
- *                  shadow state with `decision` cleared, so this seat's own
- *                  deployment options are offered as normal.
- *   arrivalVerdict what the server DOES with an action that arrives while such
- *                  a decision is open: it is DEFERRED, not refused, and
- *                  applied the moment the decision closes. Serialising two
- *                  concurrent seats by arrival order is what the room already
- *                  does with every other simultaneous action; this only widens
- *                  it across a decision boundary.
- *
- * Nothing about redaction changes. `viewFor` still nulls a decision that is
- * not yours, still serves the opponent's half of a segment from the freeze,
- * and `E.beginResolving` still publishes `s.resolving` in the battle phase
- * only — a segment must not leak that you are mid-something.
- */
+/* CR D2.1b: inside a hidden segment one seat's open decision — deployment triggers use the
+ * stack (CR 703.7), so a pile of them suspends on it — must not freeze the other seat.
+ * `legalForSeat` still offers the other seat its options, and `arrivalVerdict` parks what
+ * the engine cannot take yet instead of refusing it, applying it when the decision closes. */
 
-/** How many actions one seat may have parked behind an opponent's decision.
- * A human deploying while a trigger pile resolves sends a handful; anything
- * past this is a client fault or a firehose, and is refused rather than
- * queued. */
+/** How many actions one seat may park behind an opponent's decision; more is a client fault,
+ * refused rather than queued. */
 export const MAX_DEFERRED = 8;
 
 /**
- * The legal actions the server publishes to `seat`.
- *
- * ⚠ The seat-aware gate (CR D2.1b) shrank this, and the sliver that is left is the interesting part.
- *
- * The first version wrote this as a shadow state with `decision`/`suspension` nulled,
- * because `legalActions` opened with a global `if (s.decision) return
- * legalDecisionActions(...)` and there was no other way past it. That made the
- * server the second place the "who may act while a question is open" rule was
- * written, and the FIRST place — the engine — went on freezing hotseat and
- * the whole test suite (CARD-TODO #44). The seat-aware gate moved the rule into the engine,
- * so for almost everything this is now `legalActions`, once, with no shadow.
- *
- * THE EXCEPTION, and why deleting this function outright was wrong: the
- * snapshot-carrying mid-resolution suspension (apply.ts `decisionBlocks`,
- * case 3). There the engine must keep REFUSING the other seat — answering
- * rewinds the whole GameState past anything they did — but the server can
- * still OFFER them their options and park what arrives, because parking is
- * not applying. The two layers disagree ON PURPOSE:
- *
- *      engine   "not yet"          (and it means it — the rollback would erase you)
- *      server   "go ahead, I'll hold it"   (arrivalVerdict → 'defer')
- *
- * `legalActions` must NOT be widened to match, whatever the symmetry argues:
- * its contract is "every action returned is legal", the fuzzer checks it, and
- * an engine that offers what it refuses is the exact half-fix the first version's notes
- * warn about. An offer the SERVER makes good on with a queue is a different
- * thing from an offer the engine breaks.
- *
- * The `segKey` argument is now ignored — the engine derives the segment from
- * the state, which beats trusting the room's cached copy — and is kept only so
- * this stays a drop-in for every existing call site.
+ * The legal actions the server publishes to `seat` (view.ts: Learn to Play offers the same).
+ * In a snapshot-carrying suspension (apply.ts `decisionBlocks`, case 3) it offers the other
+ * seat options the engine still refuses, and the room parks them (CR D2.1b). The engine's
+ * `legalActions` must not be widened to match: every action it returns must be legal.
  */
-// (moved to view.ts — the browser's solo game, Learn to Play, offers the same list)
 export { legalForSeat };
 
-/** What the server OFFERS a seat, asked of the ROOM rather than of the state:
- * every site that publishes a legal list to a client (or drives the scripted
- * opponent off one) asks here. */
+/** What the server offers a seat, asked of the room: every site that publishes a legal list
+ * (or drives the scripted opponent off one) asks here. */
 export function legalInRoom(room: Room, seat: Seat): Action[] {
-  // BL-27: and a game decided by something the board cannot show — a loss on
-  // time, or a stamped result the replay never reached. The state still offers
-  // a full hand of moves; the game is over anyway.
+  // a game decided off the board (a loss on time, a stamped result) offers nothing
   if (decidedOutsideState(room)) return [];
   return legalForSeat(room.state, seat, room.segKey, legalActions);
 }
 
-/* ONE BOARD, ONE LIST PER SEAT. One move used to build each seat's whole list
- * up to three times — the clock before the move, the clock after it, and the
- * update — and the clock only asks whether it is empty. `legalActions` is a
- * pure function of the state, and a room's state is replaced by each action,
- * never edited, so the object itself is the key. The list is shared: read it,
- * never change it. */
+/* One legal list per seat per board. A room's state is replaced by each action, never
+ * edited, so the state object is the key. The list is shared: never change it. */
 const legalLists = new WeakMap<GameState, [Action[]?, Action[]?]>();
 export function legalActions(state: GameState, seat: Seat): Action[] {
   let lists = legalLists.get(state);
@@ -329,35 +161,17 @@ export type ArrivalVerdict =
   /** park it: an opponent's decision is open inside a simultaneous segment,
    * and it lands as soon as that decision closes */
   | 'defer'
-  /** hand it to the engine and let it refuse by name (or accept it) — the
-   * the pre-deferral path, kept for every case deferral must not cover */
+  /** hand it to the engine to refuse by name (or accept) */
   | 'refuse';
 
 /**
  * Should this action be applied, parked, or left to the engine's refusal?
- *
- * The negative cases are the load-bearing ones:
- *  - a `decide`/`concede` is never parked: `decide` is the very thing that
- *    closes the decision, and a concede must always be reachable (CR 104.4a).
- *  - a decision belonging to the ACTING seat is never parked. It is their own
- *    question, they must answer it, and the engine's refusal is the right
- *    answer — this is the negative control the tests assert.
- *  - outside a hidden segment there is no concurrency to protect: battle is
- *    sequential and the block is correct.
- *
- * The seat-aware gate narrowed it. Before, every action arriving while the opponent held a
- * question was parked, because the engine refused all of them — which meant a
- * player deploying against a twelve-trigger pile watched their own clicks
- * queue up and land in a burst thirty seconds later. That is still #98's
- * complaint, one layer along. Now the engine takes the action outright
- * wherever it can prove the question is undisturbed, so the room only parks
- * what the engine will still refuse: `decisionBlocks` is the same predicate on
- * both sides of the wire, asked once.
- *
- * What is left to park is exactly the snapshot-carrying mid-resolution
- * suspension (apply.ts `decisionBlocks`, case 3): answering it rewinds the
- * whole GameState to the part boundary, so anything the other seat landed in
- * the meantime would be erased. THAT is why this queue is not redundant.
+ *  - `decide`/`concede` is never parked: a decide closes the decision, and a concede must
+ *    always be reachable (CR 104.4a).
+ *  - the acting seat's own decision is never parked: they must answer it.
+ *  - outside a hidden segment battle is sequential, and the block is correct.
+ * Only what the engine will still refuse (`decisionBlocks`) is parked: answering a
+ * snapshot-carrying suspension rewinds the state, erasing anything landed meanwhile.
  */
 export function arrivalVerdict(
   state: GameState, action: Action, segKey: SegKey | null, parked: number,
@@ -372,16 +186,10 @@ export function arrivalVerdict(
 }
 
 /**
- * The second door onto the same queue (CR D2.1d): the engine ACCEPTED the action into
- * a draft, discovered on the way out that it had disturbed the other seat's
- * open question, and threw the draft away whole (`IllegalAction.disturbs`).
- *
- * Whether an action suspends cannot be known before it runs — it depends on
- * the card, its targets and the board — so `arrivalVerdict` cannot predict
- * this case and must not try. Park it here instead, where it is now a fact
- * rather than a forecast: the player gets the same "lands when they answer"
- * they would have got from a prediction, and CR D2.1c's promise that nothing goes
- * back on the wire as a refusal survives the seat-aware narrowing.
+ * The second way into the queue (CR D2.1d): the engine accepted the action into a draft,
+ * found it disturbed the other seat's open question, and discarded it (`IllegalAction.disturbs`).
+ * Whether an action suspends is known only once it runs, so it is parked here, keeping
+ * CR D2.1c's promise that nothing goes back on the wire as a refusal.
  */
 export function deferrableRefusal(room: Room, action: Action, err: unknown): boolean {
   return err instanceof IllegalAction && err.disturbs === true
@@ -394,15 +202,8 @@ export function deferAction(room: Room, action: Action): void {
   room.deferred[action.seat]!.push(action);
 }
 
-/**
- * The parked actions that are now free to run, oldest first, cleared off the
- * room. Empty while any decision is still open — a queue drained halfway
- * would just hit the same gate.
- *
- * Both seats' queues drain together, each seat in its own arrival order. The
- * interleaving BETWEEN seats is arbitrary, which is exactly what it already
- * is for two people deploying at the same time.
- */
+/** The parked actions now free to run, cleared off the room; empty while any decision is
+ * open. Each seat's queue keeps its arrival order; the order between seats is arbitrary. */
 export function takeDeferred(room: Room): Action[] {
   if (room.state.decision) return [];
   const out = [...room.deferred[0]!, ...room.deferred[1]!];
@@ -410,59 +211,14 @@ export function takeDeferred(room: Room): Action[] {
   return out;
 }
 
-/* ── WHAT A SPLICE CAN QUIETLY CHANGE, AND HOW WE MEASURE IT ──────────────
- *
- * Undo is a SPLICE: the action leaves the log and seed + the remaining
- * actions is replayed. Everything after the hole therefore re-runs from a
- * different prior state, and the log is replayed VERBATIM — nobody rewrites
- * anyone's payload. So a later action can come out of the rebuild meaning
- * something other than what its author meant, by three routes:
- *
- *   ids     `nextId` is one global clock. Splicing an action that allocated
- *           ids shifts every id after it down. `augment { hostId: 21 }` then
- *           names entity 21, which is now a different unit — or nobody.
- *   zones   the spliced action's EFFECT is gone too. If it made the opponent
- *           draw or discard, their later `playCard { handIndex: 3 }` names a
- *           different card, and stays perfectly legal while doing it.
- *   rng     an action that drew from the stream draws a different number when
- *           the stream is at a different position. The opponent already SAW
- *           that outcome.
- *
- * The old gate predicted all three at once with a blunt proxy — "did the
- * spliced action touch the id clock or the RNG stream, and has the opponent
- * done anything with a payload since" — and the honest cost of that proxy is
- * the report it produced (ledger #76, WEHH 2026-08-22): *"Despite Deployment
- * being entirely separate from the opponent, I can't take back some things …
- * What they do doesn't matter during deployment, so I should always be able
- * to."* Deployment is hidden and simultaneous, so the overwhelmingly common
- * case is two seats deploying units side by side, referring to nothing of
- * each other's — and it was refused, every time, because the opponent had a
- * payload.
- *
- * "Always allow it" is not the answer either: the three routes above are
- * real, and an action that stays LEGAL while meaning something else is worse
- * than a refusal — it is silent corruption, and the rebuild cannot see it,
- * because the rebuild only notices actions that become illegal.
- *
- * So the gate is a MEASUREMENT, not a prediction (the shape RENUMBER_IMMUNE
- * already argued for barriers: a measurement beats a prediction). Every
- * action carries a REFERENCE KEY — what its payload actually pointed at in
- * the state it was applied to, written in terms that survive renumbering:
- * an entity id becomes "the k-th entity the action tagged `t7` created", a
- * hand index becomes the card name at that index, a decision becomes the
- * option's own label. The splice is rebuilt, the keys are recomputed, and the
- * undo is accepted iff every later action still refers to exactly what it
- * referred to before. Nothing else is asked, and nothing wider is refused.
- */
+/* Undo is a splice: the action leaves the log and the rest replays verbatim, so a later
+ * action can stay legal while meaning something else (ids renumber; zones and the RNG differ).
+ * So an undo is accepted iff every later action's reference key — what its payload pointed
+ * at, in terms that survive renumbering — is unchanged by the rebuild. */
 
-/** Stable per-ACTION-OBJECT label. `actions.splice()` keeps the very same
- * objects, so a tag identifies the same action across the two rebuilds an
- * undo compares — which array position it happens to sit at does not.
- *
- * ⚠ PROCESS-LOCAL. The counter starts at 1 in every server process and counts
- * in whatever order this process happens to meet actions (every room it
- * restores, in directory order). So a tag means something only between two
- * rebuilds in ONE process, which is the undo comparison and nothing else. */
+/** A stable label per action OBJECT (`splice()` keeps the objects), so a tag names the same
+ * action across the two rebuilds an undo compares. Process-local: the counter restarts with
+ * every server process, so a tag means something only within one. */
 const ACTION_TAG = new WeakMap<object, string>();
 let actionTagSeq = 0;
 function tagOf(a: Action): string {
@@ -471,58 +227,23 @@ function tagOf(a: Action): string {
   return t;
 }
 
-/**
- * The entity ids an action NAMES in its payload — the references a renumbering
- * re-points. Everything else an action carries is an index into a zone, a
- * choice, or nothing at all.
- *
- * This is the whole list, and it is the reason the old `RENUMBER_IMMUNE`
- * exception list is gone rather than tidied away: its five members
- * (`donePlanning`, `doneHaste`, `doneDeploying`, `passPriority`, `concede`)
- * were exempt precisely because their entire payload is `{ type, seat }`, and
- * that argument — "no id, no index, no choice, so no renumbering can change
- * what it means" — is now made once, generally, by returning nothing for them
- * here and by their reference key being their bare type.
- */
-/**
- * The entity id an activation's `via` names, or null when it names none.
- *
- * This was a live bug rather than a tidy-up. `ActivateVia` has THREE
- * shapes — the string `'augment'`, `{ mod }` (activate through a mod on the
- * unit), and `{ face }` (activate through a granted face's text, CR 109.8). The
- * three sites below were written when `{ mod }` was the only OBJECT shape, so
- * they tested `typeof via === 'object'` and read `.mod` — which on a `{ face }`
- * activation is `undefined`. `entityRefs` then reported `undefined` as a
- * referenced id, and `renumberAction` wrote `{ mod: NaN }` back OVER the face,
- * erasing which ability the action was even for. An undo segment containing a
- * face-granted activation could not survive its own renumbering.
- */
-/**
- * Which slot of a two-seat pair a seat is.
- *
- * The engine declares `type Seat = number` (with `// 0 | 1 in 1v1` next to it),
- * so `heldEvents[other(seat)]` on a `[T, T]` reads as `T | undefined` — that is
- * where the first typecheck's two "Object is possibly 'undefined'" errors came from, and they
- * are strictness noise, not defects: every seat reaching those lines came from
- * `pickSeat` (which returns 0 or 1 and nothing else) or from an action the
- * engine already accepted. Written as a narrowing rather than a `!` so that if
- * the game ever grows a third seat this is a visibly wrong line instead of an
- * assertion that was silently false.
- */
+/** Which slot of a two-seat pair a seat is. A narrowing rather than a `!`, so a third seat
+ * would be a visibly wrong line instead of a silently false assertion. */
 const seatSlot = (seat: Seat): 0 | 1 => seat === 0 ? 0 : 1;
 
+/** The entity id an activation's `via` names, or null. `via` has three shapes — `'augment'`,
+ * `{ mod }`, `{ face }` (CR 109.8) — and only `{ mod }` names an entity. */
 const viaMod = (via: ActivateVia | undefined): EntityId | null =>
   typeof via === 'object' && via !== null && 'mod' in via ? via.mod : null;
 
-/** how a `via` reads in a reference key: the mod's symbol when it names one,
- * otherwise the face (and which of its texts) the ability was reached through
- * — `String({face})` would flatten every face to "[object Object]" and make
- * two different faces compare equal. */
+/** how a `via` reads in a reference key: the mod's symbol, or the face and which of its
+ * texts (`String({face})` would make every face compare equal) */
 const viaKey = (via: ActivateVia | undefined, sym: (id: EntityId) => string): string =>
   typeof via !== 'object' || via === null ? String(via ?? '-')
     : 'mod' in via ? `mod:${sym(via.mod)}`
-      : `face:${via.face}:${via.text ?? '-'}${via.copy ? `:${via.copy}` : ''}`;   // CT-342: a copy's k-th box
+      : `face:${via.face}:${via.text ?? '-'}${via.copy ? `:${via.copy}` : ''}`;   // a copy's k-th box
 
+/** The entity ids an action names in its payload — the references a renumbering re-points. */
 function entityRefs(a: Action): EntityId[] {
   switch (a.type) {
     case 'castSpellToken': return [a.entityId];
@@ -535,18 +256,15 @@ function entityRefs(a: Action): EntityId[] {
     case 'declareAttack': return [...a.columns.flat(), ...(a.spellTokens ?? [])];
     case 'declareBlocks':
       return [...Object.values(a.blocks).flat(), ...(a.send ?? []), ...(a.spellTokens ?? [])];
-    // BL-46: a fix that takes a unit off the board names it
+    // a fix that takes a unit off the board names it
     case 'amend': return a.edit.kind === 'unit' ? [a.edit.id] : [];
     default: return [];
   }
 }
 
-/** id → "which action created it, and the how-many-th entity of that action" —
- * the identity that survives a renumbering. `floors[j]` is `nextId` as action
- * `j` was applied, so the creator of `id` is the last action whose floor is at
- * or below it. Ids below the first floor came out of the deal. The creating
- * action is named by its object identity (`tagOf`), which survives a SPLICE —
- * the same action object sits one index lower afterwards. */
+/** id → "which action created it, and the how-many-th entity of that action": the identity
+ * that survives a renumbering. `floors[j]` is `nextId` as action `j` was applied; ids below
+ * the first floor came out of the deal. */
 function symbolizer(
   actions: readonly Action[], floors: readonly number[], upto: number, nextId: number,
 ): (id: EntityId) => string {
@@ -562,26 +280,10 @@ function symbolizer(
 }
 
 /**
- * WHAT this action referred to, in the state it was applied to.
- *
- * Two rebuilds that produce the same key for an action agree about what that
- * action meant; anything else is a difference the author of the action never
- * asked for. Deliberately made of RESOLVED references (the card at the index,
- * the option's label, the entity's creation identity) rather than of the raw
- * payload, which is identical by construction — the payload is what gets
- * replayed verbatim.
- *
- * `drewRng` is the third route: an action that consumed the stream is a
- * function of where the stream stood, so where it stood is part of what it
- * meant. An action that drew nothing is unaffected by a re-roll and does not
- * carry it.
- *
- * And the tail: the OUTCOME the actor was shown. A reference can survive a
- * splice intact while the result does not — in 'shared' mode both seats draw
- * off one deck, so undoing a play that drew a card hands the opponent's later
- * draw a different card without touching any index they named. `zoneDelta`
- * below is the cheapest complete statement of "what this action did to my own
- * private zones", written in card names so that renumbering cannot move it.
+ * What this action referred to, in the state it was applied to — resolved references (the
+ * card at the index, the option's label, the entity's creation identity), never the raw
+ * payload. It adds the RNG position if the action drew, and what it did to the actor's own
+ * private zones: in 'shared' mode an undo can change a later draw without moving any index.
  */
 function referenceKey(s: GameState, after: GameState, a: Action, sym: (id: EntityId) => string, drewRng: boolean): string {
   const p = s.players[a.seat];
@@ -595,8 +297,7 @@ function referenceKey(s: GameState, after: GameState, a: Action, sym: (id: Entit
     case 'activateResource': parts.push(at(p?.resources, a.index)); break;
     case 'exchangePrismite': parts.push(at(p?.resources, a.index), a.element); break;
     case 'draftCommit': {
-      // the pile draftCommit indexes is hand.concat(pack) — R? the pack lives
-      // on the state, so name whatever the merged pile holds at each index
+      // draftCommit indexes hand.concat(pack): name what the merged pile holds at each index
       const pile = [...(p?.hand ?? []), ...(s.packs?.[a.seat] ?? [])];
       parts.push(a.packIndices.map(i => at(pile, i)).join(','));
       break;
@@ -632,21 +333,17 @@ function referenceKey(s: GameState, after: GameState, a: Action, sym: (id: Entit
         (a.send ?? []).map(sym).join(','), (a.spellTokens ?? []).map(sym).join(','));
       break;
     case 'decide': {
-      // NEVER the decision's id: the suspension rollback takes decision ids off `nextId`, so a
-      // renumbering moves them without anything about the decision changing.
-      // The kind, the option count and the CHOSEN options' own labels are what
-      // the answer meant.
+      // never the decision's id: the suspension rollback takes decision ids off `nextId`, so a
+      // renumbering moves them. The kind, option count and chosen labels are what it meant.
       const d = s.decision;
       const picked = (Array.isArray(a.choice) ? a.choice : [a.choice])
         .map(i => { const o = d?.options[i]; return o ? `${o.label}/${o.card ?? ''}` : '∅'; });
       parts.push(String(d?.kind ?? '-'), String(d?.options.length ?? 0), picked.join(','));
       break;
     }
-    // BL-46: what the agreed fix MEANT — the card at the index it names, the
-    // unit by its creation identity, whose draw and what it drew. An undo of
-    // an earlier action is let through an agreed fix only if every part of
-    // this is unchanged (undoActionAt measures it), so a fix keeps meaning
-    // exactly what both players agreed to.
+    // what an agreed fix meant: the card at the index, the unit by creation identity, whose
+    // draw and what it drew. An undo through a fix needs all of it unchanged (undoActionAt),
+    // so a fix keeps meaning what both players agreed to.
     case 'amend': {
       const ed = a.edit;
       if (ed.kind === 'life') parts.push(`life:${ed.target}:${ed.life}`);
@@ -655,17 +352,14 @@ function referenceKey(s: GameState, after: GameState, a: Action, sym: (id: Entit
       else parts.push(`unit:${sym(ed.id)}:${ed.card}:${ed.to}`, zoneDelta(s, after, s.entities[ed.id]?.controller ?? a.seat));
       break;
     }
-    // donePlanning / doneHaste / doneDeploying / passPriority / concede name
-    // nothing at all: their whole payload is { type, seat }, so their key is
-    // their type and no renumbering or re-roll can move it.
+    // donePlanning / doneHaste / doneDeploying / passPriority / concede name nothing: their
+    // payload is { type, seat }, so their key is their type.
     default: break;
   }
   if (drewRng) parts.push(`rng@${s.rngState}`);
   parts.push(zoneDelta(s, after, a.seat));
   return parts.join('|');
 }
-
-// zoneCards / zoneDelta moved to zonedelta.ts — the card ledger reads them too
 
 export interface Room {
   code: string;
@@ -676,167 +370,71 @@ export interface Room {
   /** constructed mode: each seat's deck list (null = not brought yet). The
    * game does not really start until both are in — see roomWaiting(). */
   decks: [CardName[] | null, CardName[] | null];
-  /**
-   * Constructed: the COLLECTION deck id (server/collection.ts) each seat's
-   * deck came from, when the seat was logged in and brought one from their
-   * saved decks. Persisted beside `decks` and carried into the game record,
-   * which is the whole reason it exists: it is what lets a deck's win/loss
-   * record be folded out of the history rather than kept as a counter that
-   * can drift. Null everywhere else — a logged-out seat, a pasted list, a
-   * game played before decks had ids.
-   */
+  /** Constructed: the collection deck id each seat's deck came from, carried into the game
+   * record so a deck's win/loss is folded from history, not kept as a counter. Null for a
+   * logged-out seat, a pasted list, or an older game. */
   deckIds: [string | null, string | null];
-  /**
-   * BL-02 — THE MATCHMAKER MADE THIS ROOM, so the game moves both players'
-   * ratings. Persisted, because "was this rated" is a fact about the game and
-   * must survive a restart and a re-import (history.ts reads it back off the
-   * file).
-   *
-   * ⚠ It is set at CREATION and never afterwards. A rated game is one two
-   * strangers were put into by the queue; a room made from a code is not one
-   * and cannot become one, which is what stops two friends trading wins up
-   * the public ladder. See rating.ts (1).
-   */
+  /** The matchmaker made this room, so the game moves both ratings. Set at creation and
+   * never after: a room made from a code cannot become rated, which stops friends trading
+   * wins up the ladder (rating.ts). Persisted: history.ts reads it back. */
   rated?: boolean;
-  /**
-   * THE LEAGUE MADE THIS ROOM (docs/20-league.md §5): which season and which
-   * match. Set at CREATION by createLeagueRoom and never afterwards; persisted
-   * beside `rated`, because "this game settles a league match" must survive a
-   * restart — main.ts recordFinishedGame reads it to report the result. A
-   * rematch does NOT copy it (createRematch builds a fresh room): the first
-   * decided game settles the match, and the next one is a friendly.
-   * Additive: absent on every other room and on every file written before it.
-   */
+  /** The league match this room settles (docs/20-league.md §5). Set at creation by
+   * createLeagueRoom and never after; persisted for main.ts recordFinishedGame. A rematch
+   * does not copy it: the first decided game settles the match. */
   league?: RoomLeague;
-  /**
-   * COMPETITIVE CONSTRUCTED (docs/22 §2.3) — PART OF THE DEAL, like `custom`.
-   * `{sequential: true}` on every game of a Competitive match, and on a
-   * Competitive draft room (report #356: Competitive is the rules SET, on
-   * draft too); games 2–3 of a match add the `initiative` the previous game's
-   * loser chose — alone, in a Casual match. Every deal site in this file
-   * passes it (fresh / rebuild), and test 822 scans for one that forgets.
-   * Absent on every other room. A saved value this build cannot read THROWS on
-   * restore (restoreRules), never deals a standard game.
-   */
+  /** Competitive's rules set (docs/22 §2.3), part of the DEAL like `custom`: `{sequential: true}`
+   * on Competitive rooms, plus the `initiative` the previous game's loser chose (alone, in a
+   * Casual match). Every fresh()/rebuild() passes it (test 822); an unreadable one throws on restore. */
   rules?: GameRules;
   /** CC: the match this room is one game of (server/match.ts), 1-based. The
    * match record holds everything that lasts between games; the room holds
    * only this link. Absent on every other room. */
   match?: RoomMatch;
-  /**
-   * CR D8.4 — the scenario this room was dealt with, if any. PERSISTED, beside
-   * `seed`, because it is part of the deal.
-   *
-   * A room's state is a function of `(seed, mode, els, decks, scenario,
-   * actions)`. Recording the id (and not a `GameState`) is the whole design:
-   * `rebuild()`, `restoreRooms()`, `undoActionAt()`, `replay-room.ts` and the
-   * divergence diff all keep working on a scenario room, because it is
-   * still a seed and a log. See scenarios.ts's header for the four deal sites
-   * this had to reach and the one it deliberately does not.
-   *
-   * Additive: a file without it restores exactly as it always did.
-   */
+  /** CR D8.4: the scenario this room was dealt with, persisted beside `seed` because it is
+   * part of the deal — a room's state is a function of (seed, mode, els, decks, scenario,
+   * actions), so every rebuild, restore and replay works on a scenario room unchanged. */
   scenario?: string;
-  /** BL-43: a live draft's custom rules and the deal they resolved to. Absent on
-   * every standard room, every non-draft room and every file from before BL-43.
-   * Part of the DEAL like `scenario`: every fresh()/rebuild() in this file
-   * passes `custom?.deal` (test-custom-rules.ts scans for it). */
+  /** A live draft's custom rules and the deal they resolved to. Part of the DEAL like
+   * `scenario`: every fresh()/rebuild() passes `custom?.deal` (test-custom-rules.ts scans for it). */
   custom?: RoomCustom;
-  /** CR D8.2: a SINGLE CARD DUEL — constructed, with each deck thirty copies of
-   * one card (checkSingleCard). A seat brings a card NAME, never a deck list,
-   * and the game is recorded, tagged and kept out of every player fold, the
-   * way a custom game is; it feeds the card ladder instead (cardladder.ts).
-   * Absent on every other room, and on every file written before Single Card Duel existed. */
+  /** CR D8.2: a Single Card Duel — each deck thirty copies of one card. A seat brings a card
+   * name, never a list; the game is kept out of every player fold and feeds the card ladder. */
   single?: true;
-  /** CR D8.2c: the last pair of cards this duel was DRAWN on before a deal — both
-   * spells that make no units (apply.ts makesUnits), so neither player could
-   * ever enter the other's region. Seat order. The room went back to waiting
-   * with both cards cleared, and both seats are shown the pair and asked to
-   * pick again. Cleared when a game is dealt. Persisted; never recorded. */
+  /** CR D8.2c: the last pair this duel was drawn on — two spells that make no units, so
+   * neither player could enter the other's region. Both seats are shown it and pick again;
+   * cleared when a game is dealt. Persisted, never recorded. */
   singleDraw?: [CardName, CardName];
   names: [string, string];
   /** ACCOUNT id per seat (null = whoever sat here was not logged in). Set on
    * join from the token, persisted with the room, and read back when the game
    * is folded into the players' stats — see history.ts. */
   users: [string | null, string | null];
-  /**
-   * Who won, RECORDED AT THE TIME and persisted — not re-derived.
-   *
-   * A saved game is replayed to restore it, and an old log replayed onto a
-   * newer engine can diverge (the change to identical simultaneous triggers, now CR D1.2d, re-ordered them; the log
-   * then describes a board that no longer exists). When that happens the
-   * replay stops short of the ending, and the game reads as if nobody won —
-   * which is how three real wins turned into "five unfinished games". A fact
-   * stamped when it happened cannot rot, so this is stickily kept: once set
-   * it is never cleared by a replay that fails to reach it.
-   */
+  /** Who won, stamped when it happened and persisted, never re-derived: an old log replayed
+   * on a newer engine can stop short of its ending (as CR D1.2d's trigger order did), and a
+   * replay never clears this. */
   winner: Seat | null;
-  /**
-   * CR D8.5 — IF a concede decided this game: who, and on which game turn.
-   * Stamped by applyToRoom the moment the concede lands (the turn is
-   * `state.turn` as the action was applied), persisted with the room, and
-   * carried onto the RecordedGame by history.ts. It is what makes a turn-1
-   * concede a walkover and a turn-2 one a half-weight game — see
-   * concession.ts for the tiers. Absent on every other game, and on every
-   * file written before 2026-09-05; absent folds as `normal`.
-   */
+  /** CR D8.5: if a concede decided this game, who and on which turn — stamped by applyToRoom
+   * as it lands, persisted, and carried onto the RecordedGame (tiers: concession.ts).
+   * Absent folds as `normal`. */
   concession?: Concession;
   state: GameState;
   actions: Action[];
-  /**
-   * Every restore that could NOT faithfully rebuild this game, from when a
-   * restore replayed the log. Persisted, carried as it stands; nothing writes
-   * a new one (a restart resumes from the file's `live` block).
-   */
+  /** Every restore that could not faithfully rebuild this game, from when restores replayed
+   * the log. Carried as it stands; nothing writes a new one (a restart resumes from `live`). */
   forks: Fork[];
-  /**
-   * which engine recorded which stretch of this log (see replay-room.ts). Persisted.
-   *
-   * One entry per engine this game has been played under, in order, each
-   * naming the action index it took over at. `versions[0]` is stamped at
-   * creation; a restore under a different commit appends another, because
-   * from that moment on play continues under different rules.
-   *
-   * This is what makes `replay-room.ts --as-recorded` possible, and it is the
-   * whole answer to the divergence problem: without a reference engine to diff
-   * against, a replay months later can report THAT a file diverges but not
-   * WHAT changed — and its "divergence point" is only ever the first REFUSAL,
-   * which is an upper bound, late by up to six actions in every case anyone
-   * has measured.
-   *
-   * Additive: a file written before replay versioning has no `versions` and restores
-   * exactly as it always did. It simply cannot be replayed --as-recorded,
-   * which is a true statement about it rather than a failure.
-   */
+  /** Which engine recorded which stretch of this log: one entry per engine, each naming the
+   * action index it took over at (`versions[0]` at creation; a restore under another commit
+   * appends one). It is what `replay-room.ts --as-recorded` diffs against. */
   versions: VersionStamp[];
   /** full authoritative event history, for per-seat redacted log resync */
   events: EngineEvent[];
   /** connected client per seat (null = nobody there) */
   sockets: [WebSocket | null, WebSocket | null];
   /**
-   * BL-29 — WHO IS WATCHING, and nothing else about them.
-   *
-   * The owner, 2026-09-01, answering the entry's one blocking question (does a
-   * spectator see the game seat-by-seat with each side's hidden information
-   * still hidden, or an omniscient broadcast?): *"Just omniscient and live is
-   * fine for now."*
-   *
-   * A watcher is NOT a seat and can never become one: `pickSeat` never sees
-   * this set, `conns` never gets an entry for one, and the action path reads
-   * `conns` — so a watching socket has no seat to act as and every message it
-   * sends about the game is dropped by construction rather than by a check
-   * somebody has to remember to write.
-   *
-   * IN MEMORY ONLY. A watcher is not part of the game, so it is not part of
-   * the record: nothing here is persisted, and a restart simply loses the
-   * audience, which is what happens when a screen goes off.
-   *
-   * ⚠ THE SEATS ARE TOLD THE COUNT. BL-29's own doneWhen asks that "whether
-   * the players can see that they are being watched is decided deliberately,
-   * and the entry records which way", and an OMNISCIENT live view forces the
-   * answer: a spectator who can see both hands and talk to a player is a
-   * cheating vector, and the one thing that makes that manageable at a
-   * friendly table is that both players can see somebody is there.
+   * Who is watching, and nothing else about them. A watcher is never a seat: `pickSeat` never
+   * sees this set and `conns` has no entry for one, so nothing it sends can act in the game.
+   * In memory only. The seats are told the count: an omniscient view is a cheating vector,
+   * and both players seeing that somebody is there is what keeps it manageable.
    */
   watchers: Set<WebSocket>;
   /** which hidden simultaneous segment is open right now (null = none) */
@@ -847,9 +445,8 @@ export interface Room {
   /** events each seat has NOT yet been shown (their opponent's hidden moves
    * this segment); flushed as the "reveal" when the segment closes */
   heldEvents: [EngineEvent[], EngineEvent[]];
-  /** 2026-10-03, the playback (server/view.ts playbackFrames): the board after
-   * each held action, slotted like `heldEvents` — `heldFrames[s]` is the OTHER
-   * seat's actions, held from `s`. DERIVED, never persisted; rebuild() redoes it. */
+  /** the board after each held action (view.ts playbackFrames), slotted like `heldEvents`:
+   * `heldFrames[s]` is the other seat's actions, held from `s`. Derived; rebuild() redoes it. */
   heldFrames: [HeldFrame[], HeldFrame[]];
   /** where a rebuild starts (pushBase): the latest of these at or before the
    * change. Nothing before `bases[0].at` is replayed, undone or rewound. In
@@ -862,142 +459,49 @@ export interface Room {
   /** index into `actions` where the open segment began (-1 outside one) —
    * undo may splice a seat's own actions at/after this point */
   segStartIndex: number;
-  /**
-   * CR D2.1c/CT-32: actions parked behind the OTHER seat's open decision inside a
-   * hidden simultaneous segment, per seat, in arrival order.
-   *
-   * DERIVED and never persisted — an action only reaches `actions` once it has
-   * actually been applied, so a saved log is still exactly the game that was
-   * played and `replay-room.ts` still replays it straight through. A queue
-   * that outlives its segment is drained or refused before then; a server
-   * restart simply drops it, which is the same as the client's action never
-   * arriving.
-   */
+  /** CR D2.1c: actions parked behind the other seat's open decision inside a hidden segment,
+   * per seat, in arrival order. Never persisted: an action reaches `actions` only once applied,
+   * so a saved log is exactly the game played; a restart drops the queue like a lost message. */
   deferred: [Action[], Action[]];
   /**
-   * CR D4.3e — per action, what it showed each seat of the HIDDEN cards
-   * (server/seen.ts `seenBy`; `[]` for nothing, which is nearly every action).
-   * DERIVED, never persisted, parallel to `actions`.
-   *
-   * Measured only inside the open hidden segment — the one place an undo can
-   * walk — and `[]` everywhere else: `applyToRoom` measures an action applied
-   * inside a step, and `rebuild()` re-measures the open segment's actions
-   * after a restart or an undo, so the floor survives both.
-   *
-   * Two readers. `undoForSeat` walks back no further than just after the
-   * requesting seat's latest revealing action (the owner: "once you've seen
-   * the cards, it stands"). `undoActionAt` refuses a splice that would change
-   * what a LATER action showed somebody — your take-back may not re-deal the
-   * cards your opponent is already looking at.
-   *
-   * (It replaced `segTouched` — "did this action move the id clock or the RNG
-   * stream" — which had stopped being read by anything once `segIdFloor` and
-   * `segRefs` began measuring the undo instead of predicting it.)
+   * CR D4.3e: per action, what it showed each seat of the hidden cards (seen.ts `seenBy`; `[]`
+   * for nothing). Derived, parallel to `actions`, measured only inside the open hidden segment
+   * (rebuild() re-measures it). `undoForSeat` walks back no further than the seat's latest
+   * revealing action; `undoActionAt` refuses a splice that changes what a later action showed.
    */
   segSeen: Seen[];
   /** the open step's actions whose `segSeen` entry is still to be measured;
    * `settleSeen` fills them in when an undo asks. DERIVED, like `segSeen`. */
   seenPending: SeenPending[];
-  /**
-   * CR D4.6 — CC UNDO UNTIL DONE: engine/src/ccundo.ts's mark for every
-   * applied action, parallel to `actions` like `segSeen`. DERIVED: pushed by
-   * applyToRoom, recomputed by rebuild(), never persisted. Empty-marked
-   * (`key: null`) outside a sequential room, where nothing reads it.
-   */
+  /** CR D4.6: ccundo.ts's mark for every applied action, parallel to `actions`. Derived: pushed
+   * by applyToRoom, recomputed by rebuild(); `key: null` outside a sequential room. */
   ccMarks: CcUndoMark[];
-  /**
-   * Per-action: `state.nextId` as that action was applied. DERIVED, never
-   * persisted, parallel to `actions`.
-   *
-   * Two jobs. It says which ids an action ALLOCATED (`segIdFloor[j]` up to
-   * `segIdFloor[j+1]`), which is what makes an entity's identity survive a
-   * renumbering; and it says which ids a splice at `j` would shift (anything
-   * at or above `segIdFloor[j]`), which is `spliceable()`'s whole test.
-   */
+  /** Per action, `state.nextId` as it was applied (derived). It says which ids an action
+   * allocated, so an entity's identity survives a renumbering, and which ids a splice at `j`
+   * would shift. */
   segIdFloor: number[];
-  /**
-   * Per-action: WHAT it referred to when it was applied (referenceKey above).
-   * DERIVED, parallel to `actions`.
-   *
-   * The undo gate's measurement: splice, rebuild, recompute, and accept only
-   * if every later action's key is byte-identical. A key that moved is an
-   * action whose author would not recognise it any more.
-   *
-   * ⚠ Its entity names are PROCESS-LOCAL tags (`tagOf`), so it is never
-   * compared across a restart. It is still written to the file as `refs`,
-   * because the card ledger (cardledger.ts) reads each key's zone-delta tail,
-   * which has no tags in it.
-   */
+  /** Per action, its reference key (referenceKey); the undo gate accepts only if every later
+   * key is byte-identical. Its entity tags are process-local, so it is never compared across a
+   * restart; it is saved as `refs` because cardledger.ts reads each key's zone-delta tail. */
   segRefs: string[];
   /**
-   * BL-38 — WHAT THE BOARD LOOKED LIKE AFTER EACH ACTION. Parallel to
-   * `actions`, PERSISTED, and the one array in this room that is a RECORD
-   * rather than a derivation.
-   *
-   * Every other per-action array here is rebuilt from the log on demand, which
-   * is exactly why none of them can answer the question a replay viewer has to
-   * ask: *is the game I am showing the game that was played?* `segRefs` comes
-   * closest and still cannot, because it is recomputed by the engine doing the
-   * asking. A rules change that adds a PRIORITY WINDOW re-aims the log's old
-   * passes instead of refusing them — room KAWJ replayed 253 of 253 actions,
-   * refused nothing, and arrived at a different life total. Nothing derived
-   * from the log can see that, because the log is not what changed.
-   *
-   * So a fingerprint of the board is taken as each action is applied, by the
-   * engine applying it, and written down. A later replay compares its own
-   * fingerprints against these and knows the exact index at which it stopped
-   * being the same game. `digest(signature(state))`, 16 hex chars per action,
-   * ~5 KB on a 300-action game, ~0.04 ms to take.
-   *
-   * ⚠ A RECORDED ENTRY IS NEVER RECOMPUTED. A restore onto a moved engine
-   * re-derives `segRefs`, `segSeen` and `segIdFloor` and must not touch
-   * this: overwriting the prefix with today's answer would destroy the only
-   * evidence the file has, and do it silently, at exactly the moment the
-   * evidence started to matter. Restore CARRIES these across and fills only
-   * the entries a pre-BL-38 file never had. The two writes that may extend it
-   * are `applyToRoom` (a new action, played here, now) and the tail of an
-   * `undoActionAt` — an undo splices the log, so everything after the splice
-   * is a genuinely new history and is recorded fresh.
+   * The board fingerprint after each action, `digest(signature(state))`, taken by the engine
+   * that applied it. PERSISTED, and a record, not a derivation: a replay compares against it to
+   * find where it stopped being the same game. A recorded entry is never recomputed; only
+   * `applyToRoom` and the spliced tail of `undoActionAt` write new ones.
    */
   sigs: string[];
   /**
-   * CARD STATS — what each action did to the CARDS, taken as it is applied,
-   * by the engine applying it (cardledger.ts cardFact): what entered and left
-   * each hand, the pack a draft pick came from, what was played, recycled,
-   * bottomed. Parallel to `actions`; `null` where the file has no record.
-   * `cardOpen` is the board before the first action — both opening hands and
-   * who had initiative — stamped as that first action is applied.
-   *
-   * ⚠ A RECORDED ENTRY IS NEVER RECOMPUTED — the rule `sigs` follows, and for
-   * a sharper reason: a DRAFT game's deal is a function of the card registry,
-   * so once any card is added, a replay of an old draft deals different packs
-   * and different hands, and a ledger "recovered" from it describes a game
-   * nobody played. Restore carries the file's entries across and pads with
-   * null; the only writers are `applyToRoom` (new history) and the spliced
-   * tail of `undoActionAt` (new history too).
+   * What each action did to the cards (cardledger.ts cardFact), taken as it is applied; `null`
+   * where the file has no record. `cardOpen` is the board before the first action. Never
+   * recomputed, like `sigs`: a draft's deal depends on the card registry, so a replay of an
+   * old draft deals different packs. Only `applyToRoom` and `undoActionAt`'s tail write it.
    */
   cardLog: (CardFact | null)[];
   cardOpen: CardOpen | null;
-  /**
-   * BL-26 — THIS ROOM'S CLOCK SETTING. Persisted, chosen at creation, never
-   * changed afterwards. `null` means **no clock at all**.
-   *
-   * `CLOCK_START_MS` used to be the rule: a module constant every room got,
-   * nobody could change, and nothing could switch off. It is now only the
-   * DEFAULT, and this is the value every other site asks — `clockRunning`
-   * (a room with no clock runs none), `clockSnapshot` (a room with no clock
-   * sends none, so the client draws none rather than a frozen 60:00) and
-   * BL-27's expiry (nothing expires in a room with no clock).
-   *
-   * Kept BESIDE `clockMs` rather than derived from it, because `clockMs` is
-   * what is LEFT and this is what there was: twenty minutes in, the two have
-   * nothing to do with each other, and a joiner still has to be able to see
-   * which game they walked into.
-   *
-   * Additive: a file written before the setting existed has no `clockStart`
-   * and restores at `CLOCK_START_MS`, which is the bank it really was played
-   * with. See restoreRooms.
-   */
+  /** This room's clock bank: persisted, chosen at creation, never changed; `null` is no clock
+   * at all. Kept beside `clockMs` because that is what is left and this is what there was. A
+   * file without it restores at `CLOCK_START_MS`, the bank it was played with. */
   clockStart: number | null;
   /** chess clock (MTGO-style): remaining ms per seat. Meaningless — and never
    * sent to a client — while `clockStart` is null. */
@@ -1008,221 +512,71 @@ export interface Room {
   /** which seats' clocks have been RUNNING since clockStamp */
   clockRun: [boolean, boolean];
   /**
-   * BL-37 — HOW LONG THE MATCH ACTUALLY TOOK. One clock for the table.
-   *
-   * The owner, 2026-09-01: *"a global wall-clock match timer — literal elapsed
-   * time, not double-counting per-player time — saved with the game to track
-   * average game length and tune the clocks."*
-   *
-   * ⚠ IT CANNOT BE DERIVED FROM `clockMs`, which is why it is a field. Two
-   * banks of 45 minutes are ninety minutes of clock and one game; adding the
-   * consumed halves together answers "how much thinking happened", not "how
-   * long were we sitting here". And a room with the clock OFF has no banks at
-   * all, which is exactly the room whose length you most want to know when you
-   * are choosing what the banks should be.
-   *
-   * Billed by `settleClock`, off the same stamp and the same interval as the
-   * two banks, so the three numbers are always measured over the same instants.
-   * It runs while `matchRunning` is true — the game is dealt, not frozen, not
-   * decided, and BOTH SEATS ARE CONNECTED. That last clause is the one worth
-   * arguing about, and the argument is the same one `clockRunning` already
-   * won: an overnight gap with a closed tab is not match length, and counting
-   * it would make the average useless for the thing it is for. `startedAt`
-   * beside it keeps the raw wall interval recoverable either way.
-   *
-   * Additive: a file written before this existed restores at 0, which reads as
-   * "unknown" and is why the post-game screen omits the line rather than
-   * printing 0:00.
+   * How long the match took: one wall clock for the table. Not derivable from `clockMs` (two
+   * banks are not one game's length, and a clockless room has none). Billed by `settleClock`
+   * over the same instants as the banks, while `matchRunning` (dealt, not frozen, not decided,
+   * both seats connected). 0, from an older file, reads as unknown.
    */
   matchMs: number;
-  /** BL-37: was the match clock running since `clockStamp` (cached, exactly
-   * like `clockRun`, so the bill uses the state at the START of the interval) */
+  /** was the match clock running since `clockStamp` (cached like `clockRun`, so the bill uses
+   * the state at the start of the interval) */
   matchRun: boolean;
-  /** BL-37: epoch ms of the first settle that found this match live — the raw
-   * wall interval, kept so `matchMs`'s "both connected" rule can be judged
-   * rather than trusted. Null until the game starts. */
+  /** epoch ms of the first settle that found this match live: the raw wall interval, so
+   * `matchMs`'s both-connected rule can be judged. Null until the game starts. */
   startedAt: number | null;
-  /**
-   * The formation a seat is CURRENTLY BUILDING, before they commit it.
-   *
-   * Not a game action and never in `actions`: it is the digital stand-in for
-   * watching someone physically slide units into columns across the table
-   * (playtest ask, 2026-08-20 — "it'd be cool to see their thought process
-   * and see where they're putting the units, live"). Purely presentational,
-   * leaks nothing (the declaration becomes public a moment later anyway), and
-   * dropped the instant any action lands, because the real declaration
-   * supersedes it. Held on the room, not just relayed, so a reconnecting or
-   * re-rendering client picks it up without waiting for the next twitch.
-   */
+  /** The formation a seat is building, before they commit it. Never an action, purely
+   * presentational (the declaration is public a moment later), and dropped when any action
+   * lands. Held on the room so a reconnecting client picks it up. */
   building: [Formation | null, Formation | null];
-  /**
-   * BL-18 — WHICH SEATS HAVE ASKED THAT NOTHING ACT FOR THEM.
-   *
-   * Full control is a per-PLAYER preference that lives in the browser
-   * (`algoFullControl` in localStorage), and the server has to know it for one
-   * reason only: `drainForced` is the fourth of the four things that act for
-   * you, and it runs here. The client half — auto-pass, the standing Pass-all,
-   * the auto-yield map, and the hotseat's own copy of this same drain — is
-   * decided in ui/main.ts. (The standing Pass-all now also reaches the wire,
-   * so the CLOCK can stop for it, with a server backstop behind the pause:
-   * see `passAll` below.)
-   *
-   * ⚠ NOT SHAPED LIKE `clockStart`, and the difference is the point. BL-26's
-   * bank is a property of the ROOM: chosen once by whoever created it, binding
-   * on both seats, persisted, and deliberately ignored on a later join so the
-   * second player cannot re-specify it. This is the opposite on every count —
-   * it is one seat's own preference, it may be turned on and off mid-game, and
-   * it binds nobody but them. So it is shaped like `building`: per-seat, soft,
-   * relayed rather than negotiated.
-   *
-   * NOT PERSISTED, for the same reason `frozen` is not: the browser is the
-   * source of truth and re-asserts it on every join (ui/main.ts sendJoin), so
-   * a restart, a reconnect or a seat takeover re-establishes it for free. A
-   * persisted copy could only ever disagree with the localStorage that is
-   * actually driving the other half of the same feature.
-   */
+  /** Which seats asked that nothing act for them. The browser owns this preference; the server
+   * needs it only because `drainForced` runs here. One seat's soft state, not persisted: the
+   * client re-asserts it on every join. */
   fullControl: [boolean, boolean];
   /**
-   * THE STANDING PASS, as the server holds it (owner, 2026-09-28: *"When a
-   * player is 'Pass all'ed, their timer should never go down."*).
-   *
-   * Pass all / Pass through stack are decided in the browser
-   * (ui/passrelease.ts `passAllRelease`), and until this field the server never heard of them. So
-   * the seat was billed for every window its own promise was answering: the
-   * pace hold, sendAutoPass's stagger and the round trip, a second or two per
-   * window, every window of the battle.
-   *
-   * Shaped like `fullControl` directly above, for the same reasons: one seat's
-   * own soft state, never an action, never logged, NOT PERSISTED. It is
-   * dropped on every join (the client's resetUi drops its own arm there) and on
-   * disconnect, and whenever `passAllRelease` says the client's arm would come
-   * off — see `settlePassAll`.
-   *
-   * ⚠ IT CARRIES THE WHOLE ARM, NOT A BOOLEAN. A bare "armed" bit could only
-   * mirror the 'phase' release, and the backstop below would then pass through
-   * windows the client's own promise hands back: an opponent's spell under
-   * "Pass through stack", or the pass that erases spell tokens at Regroup. With
-   * the arm on the wire the server asks the very function the client asks, off
-   * a state at least as new as the client's, so it releases whenever the client
-   * would, and a backstop pass is always a pass the client would have sent.
+   * The standing pass as the server holds it, so an armed seat's clock does not run. One
+   * seat's soft state: never an action, not persisted, dropped on join, on disconnect and
+   * whenever `passAllRelease` would release the client's arm (`settlePassAll`). It carries the
+   * whole arm, not a boolean, so the server releases exactly when the client would and a
+   * backstop pass is always one the client would have sent.
    */
   passAll: [PassAllArm | null, PassAllArm | null];
-  /**
-   * Report #323 — THE OTHER TWO THINGS THAT PASS FOR A SEAT: the auto-pass
-   * toggle (C4: "pass whenever passing is my only legal action") and the
-   * auto-yield (#2: the top of the stack is a trigger of a unit I yield to).
-   * The browser decides both (ui/passrelease.ts `autoPassPlan`) and, until
-   * this field, never told the server — so in exactly the windows the owner's
-   * rule names ("the stack is just ticking down … and you have no actions you
-   * can legally take") the seat was billed for its own client's pace hold,
-   * stagger and round trip, two seconds and more a window.
-   *
-   * Shaped like `passAll` beside it and handled by the same machinery: a
-   * window `autoPassPlan` answers is stamped by `settlePassAll`, unbilled by
-   * `clockRunning`, and passed by the backstop if the client's pass is late.
-   * Unlike the arm it is a PREFERENCE, not a promise about one phase, so
-   * nothing in the game releases it; the client sends it again whenever it
-   * changes. One seat's soft state, never logged, NOT PERSISTED, dropped on
-   * every join (the client re-sends it on its first paint) and on disconnect.
-   */
+  /** The auto-pass toggle and auto-yield (ui/passrelease.ts `autoPassPlan`), so a window they
+   * answer is unbilled, as with `passAll`. A preference, not a promise, so nothing in the game
+   * releases it. Soft state, not persisted, dropped on join and on disconnect. */
   autoPass: [AutoPassPref | null, AutoPassPref | null];
-  /**
-   * The window a Pass-all seat is sitting in unbilled: the `actionCount` it
-   * opened at and the wall time it was first seen. The backstop (main.ts
-   * `sweepPassAll`) passes for the seat once `since` is PASS_ALL_BACKSTOP_MS
-   * old at the same count, so a stuck or closed tab cannot freeze a clock that
-   * is no longer running. Written only by `settlePassAll`.
-   */
+  /** The window a Pass-all seat sits in unbilled: the `actionCount` it opened at and when it
+   * was first seen. The backstop (main.ts `sweepPassAll`) passes once it is PASS_ALL_BACKSTOP_MS
+   * old, so a closed tab cannot freeze a clock. Written only by `settlePassAll`. */
   passAllWait: [{ at: number; since: number } | null, { at: number; since: number } | null];
-  /**
-   * The last window the backstop passed for a seat: its `actionCount`, and
-   * the action-log length after the pass. A `passPriority` that arrives
-   * afterwards from that seat, stamped with a count at or below `at`, is the
-   * client's own late answer to a window already answered for it, and is
-   * dropped rather than landed on whatever window the game has reached since
-   * (main.ts, the `action` handler). `len` retires the entry if an undo ever
-   * rewinds the log below it.
-   */
+  /** The last window the backstop passed for a seat: its `actionCount`, and the log length
+   * after. A later `passPriority` from that seat stamped at or below `at` is its own late answer
+   * and is dropped (main.ts); `len` retires the entry if an undo rewinds below it. */
   passAllCovered: [{ at: number; len: number } | null, { at: number; len: number } | null];
   /**
-   * CT-182 — WHICH SEATS HAVE THE REPORT DIALOG OPEN (owner, 2026-09-30: a
-   * standing auto-pass HOLDS while the 📝 Report dialog is open — that dialog
-   * only, not the rules or the judge). A player opens it to report THIS
-   * moment, and a pass made for them while they type files the report
-   * against a board that has already gone.
-   *
-   * The client stops its own passes; this is the server's half, because the
-   * standing pass has a server copy that passes for the seat by itself
-   * (`sweepPassAll`). While a seat is held its arm is KEPT — releasing the
-   * hold resumes it, re-judged by `settlePassAll` against the state as it is
-   * then, never replayed — but the window is not stamped, so the backstop
-   * does not fire and the seat's clock RUNS: the table is waiting on a person
-   * reading a dialog, and that is the holder's time, not the opponent's.
-   * Running is also what bounds the hold in a clocked room (a bank that runs
-   * out loses on time); in a room with no clock there is no backstop to hold.
-   *
-   * Shaped like `fullControl`: one seat's soft state, never an action, never
-   * logged, NOT PERSISTED. Re-asserted on every join (the client sends it
-   * while its dialog is open) and cleared on disconnect, so an empty chair
-   * holds nothing.
+   * Which seats have the Report dialog open. A standing pass holds meanwhile, so the report
+   * is filed against the board it is about: the arm is kept and re-judged on release, but the
+   * window is not stamped, so the backstop does not fire and the holder's clock runs (which
+   * bounds the hold). Soft state, not persisted, cleared on disconnect.
    */
   reportHold: [boolean, boolean];
-  /**
-   * 2026-10-03 — A SEAT WATCHING A PLAYBACK IS NOT ON THE CLOCK.
-   *
-   * The owner, on the playback that replaced the deployment modal: "the clock
-   * should NOT be running. The idea is to only tick down when you could
-   * actually be making decisions and are 'taking' time from the game." A
-   * playback locks the board (every frame offers nothing to do), so from the
-   * moment a seat is sent one until its client says it has finished or been
-   * skipped (`playbackdone`), or the seat acts, its clock is held.
-   *
-   * The value is a DEADLINE, not a flag: a client that never says it is done
-   * (a crash, a stale bundle) must not freeze a bank, so the hold lapses on its
-   * own once a generous estimate of the playback has passed (main.ts
-   * playbackBudget) — the same reason the standing pass has a backstop. A
-   * "watch again" is NOT held: that is the player choosing to spend their time.
-   *
-   * Soft state like `reportHold`: never an action, never logged, NOT
-   * PERSISTED, cleared on disconnect.
-   */
+  /** A seat watching a playback is not on the clock. A deadline, not a flag, so a client that
+   * never says it is done cannot freeze a bank (main.ts playbackBudget). A "watch again" is not
+   * held. Soft state, not persisted, cleared on disconnect. */
   watchHold: [number | null, number | null];
-  /**
-   * 2026-10-04 — WHEN THE ACTION LOG LAST CHANGED (ms since the epoch): an
-   * action landed, an undo took one back, or a re-deal started a fresh log
-   * (creation, a resolved lobby, a completed deck pair, a rematch). The idle
-   * sweep measures inactivity from here — see `idleWindowMs`.
-   *
-   * PERSISTED, because it is the one thing a restart must not reset. Restore
-   * used to age rooms by the file's mtime, and every boot re-wrote every live
-   * file (the replay version stamp), so nothing ever aged out: 79 rooms, 64 of
-   * them under five actions, all resident, all "touched" at the last deploy.
-   * A file written before the field is backfilled by `lastActionOf`.
-   */
+  /** When the action log last changed (an action, an undo, a re-deal); the idle sweep measures
+   * from here. Persisted, because a restart must not reset it: a boot rewrites every file, so
+   * mtime cannot age a room. An older file is backfilled by `lastActionOf`. */
   lastActionAt: number;
-  /**
-   * Since when nobody has been in the room — no seat socket, no watcher — as
-   * the idle sweep last saw it; null while somebody is. In memory only, and
-   * owned by `sweepIdleRooms`: a restart starts every room's count again,
-   * which is what gives a tab that was open across a deploy the grace to come
-   * back before its room is closed under it.
-   */
+  /** Since when nobody (seat or watcher) has been in the room, as the idle sweep last saw it.
+   * In memory only, owned by `sweepIdleRooms`: a restart restarts the count, giving a tab open
+   * across a deploy the grace to come back. */
   unattendedSince: number | null;
   /** set only on the way out — see RoomClosed. A room holding it is never in
    * the map again. */
   closed?: RoomClosed;
-  /**
-   * Draft mode: the room where the trio gets chosen, before there is a game.
-   *
-   * A draft room used to be dealt the instant its creator joined, which meant
-   * one player picked the elements alone AND got to study pack 1 pick 1 for
-   * however long the other took to click the link. Both go away if the cards
-   * are not dealt until the trio is settled and both players are in — so a
-   * draft room now starts here and only becomes a game when `result` is set.
-   *
-   * null for a room created with an explicit trio (`&els=`, hotseat, tests),
-   * which still deals immediately.
-   */
+  /** Draft mode: the room where the trio is chosen. Nothing is dealt until the trio is settled
+   * and both players are in, so nobody studies the first pack alone. null for a room created
+   * with an explicit trio, which deals immediately. */
   lobby: Lobby | null;
   /** post-game: which seats have asked for a rematch. In memory only — a
    * rematch offer does not deserve to outlive the tab it was made in. */
@@ -1231,50 +585,28 @@ export interface Room {
    * reconnects into the finished game) is still sent where their opponent
    * went rather than into a second, empty rematch */
   rematchRoom: string | null;
-  /**
-   * BL-46 — EVERY AGREED FIX this game took (see `Amendment` in types.ts).
-   * PERSISTED: it is what the history's "fixed" tag is read from, and the
-   * archive of what a rewind took back. A claim about THIS log, so a re-deal
-   * drops it (resetSegment) and a rematch starts without it.
-   */
+  /** Every agreed fix this game took (`Amendment`, types.ts). Persisted: the history's "fixed"
+   * tag and the archive of what a rewind took back. A claim about THIS log, so a re-deal drops
+   * it (resetSegment) and a rematch starts without it. */
   amendments: Amendment[];
-  /**
-   * BL-48 — who disputed this game's result from the post-game screen, and
-   * why (see `Dispute` in types.ts). At most one per seat. PERSISTED: it is
-   * what the history's "disputed" tag is read from. It changes nothing else.
-   */
+  /** Who disputed this game's result from the post-game screen, and why; at most one per seat.
+   * Persisted: the history's "disputed" tag. It changes nothing else. */
   disputes: Dispute[];
-  /**
-   * BL-46 — the fix waiting for the other seat's answer, if any. Soft state
-   * shaped like `rematch`: never an action, never logged, NOT persisted (a
-   * restart is a reconnect, and a proposal does not deserve to outlive one).
-   * Dropped when any action lands, on an undo, on a disconnect, on decline or
-   * cancel, and 60 s after it was made (owner, 2026-10-16). Both clocks stop
-   * while it stands (`clockRunning`).
-   */
+  /** The fix waiting for the other seat's answer, if any. Soft state like `rematch`, not
+   * persisted; dropped when any action lands, on undo, disconnect, decline or cancel, and 60 s
+   * after it was made. Both clocks stop while it stands (`clockRunning`). */
   proposal: Proposal | null;
-  /** BL-46: per seat, until when a proposal is refused after a DECLINE (ms
-   * since the epoch; 0 = none). Soft, like `proposal`. */
+  /** per seat, until when a proposal is refused after a decline (ms since the epoch; 0 = none).
+   * Soft, like `proposal`. */
   fixCooldown: [number, number];
-  /**
-   * BL-46 — the agreed fixes not yet FILED as a bug report (see FixRun).
-   * PERSISTED, so a restart between a fix and the move after it still files
-   * the row (main.ts flushes every restored run at boot).
-   */
+  /** The agreed fixes not yet filed as a bug report (FixRun). Persisted, so a restart between a
+   * fix and the next move still files it (main.ts flushes every restored run at boot). */
   fixRun: FixRun | null;
 }
 
-/**
- * BL-46 — a RUN of agreed fixes: consecutive fixes with no game action
- * between them. The 2026-10-21 round filed 36 rewind rows, 15 of them only
- * because players stepped back one fix at a time; a run is one complaint, so
- * it files ONE report row, when it ends (main.ts flushFixRun: the next action
- * that lands, the end of the game, an idle sweep, a restart).
- *
- * Why not file at once and amend the row: report ids are LINE INDEXES of an
- * append-only journal. A row is written once and never touched, so the row
- * waits until the run is over instead.
- */
+/** A run of agreed fixes — consecutive, with no game action between — files ONE report row
+ * when it ends (main.ts flushFixRun). It waits rather than amending: report ids are line
+ * indexes of an append-only journal, so a row is written once. */
 export interface FixRun {
   /** index in `amendments` of the run's first fix */
   from: number;
@@ -1299,9 +631,8 @@ export interface RoomMatch { id: string; game: number }
 /** A saved `match` link, or null if it is not one. */
 export const sanitizeRoomMatch = (raw: unknown): RoomMatch | null => sanitizeMatchLink(raw);
 
-/** A saved room's CC rules (docs/22 §2.3) — scenarios.ts savedRules, the one
- * reader every deal of a saved room uses (stats, the card ledger, replay-room
- * read the same file this does). Re-exported under its old name. */
+/** A saved room's CC rules (docs/22 §2.3): scenarios.ts savedRules, the one reader every deal
+ * of a saved room uses, under its old name. */
 export const restoreRules = savedRules;
 
 /** A saved `league` tag, or null if it is not one. */
@@ -1330,73 +661,33 @@ export interface Lobby {
  * columns to the LEFT of the attack, `left[0]` just left of column 1 */
 export interface Formation { cols: number[][]; send: number[]; left?: number[][] }
 
-/** The DEFAULT chess-clock bank per player — BL-26 made it the default rather
- * than the rule. 40 minutes ran out mid-game in the playtests — a draft game
- * with real decisions wants an hour (Bena, 2026-08-20). Persisted games keep
- * whatever bank they were saved with, and a room may be created with another
- * bank or with none: see `Room.clockStart` and `sanitizeClock`.
- *
- * ⚠ Nothing outside room CREATION may read this. A site that wants "this
- * room's bank" wants `room.clockStart`, which is the whole point of BL-26 —
- * the two are equal only for a room nobody configured. The one apparent
- * exception is `restoreRooms`, and it is not one: a file saved before the
- * setting existed carries no bank, and 60:00 is the bank it was played with. */
+/** The default chess-clock bank per player, read only at room creation (and by a restore of a
+ * file older than the setting, which was played at this bank). Anything wanting this room's
+ * bank wants `room.clockStart`. */
 export const CLOCK_START_MS = 60 * 60 * 1000;
 
 /**
- * BL-01 — THE BANK A MATCHMADE ROOM GETS, per format.
- *
- * ⚠ A MATCHMADE GAME MUST NOT USE EITHER PLAYER'S PICKER. `chosenClockMs()`
- * in ui/main.ts reads *that browser's* `algoClockMs`, which is right for a
- * room you make and hand to a friend and wrong for a rated game against a
- * stranger: whoever's setting won would be choosing for somebody who never
- * saw it, and one player's "Off" would hand the other an untimed rated game —
- * which quietly disables BL-27, the anti-BM rule that is the only thing making
- * a stalled rated game end in a result.
- *
- * So the queue asks nobody. The numbers are the owner's own defaults
- * (2026-09-01: *"45m and 60m. Constructed games are shorter, so I'd say the
- * default for constructed is 45m and the default for live draft is 60m."*).
- *
- * ⚠ THE UI HAS ITS OWN COPY, `CLOCK_DEFAULT_BY_MODE` in ui/main.ts, and it
- * cannot import this one (the browser bundle does not reach into server/).
- * `279-queue-and-rating.test.ts` reads both files and fails if they disagree.
+ * The bank a matchmade room gets, per format. It must not come from either player's picker:
+ * one player's "Off" would hand the other an untimed rated game. The UI keeps its own copy
+ * (`CLOCK_DEFAULT_BY_MODE`, ui/main.ts), and 279-queue-and-rating.test.ts fails if they disagree.
  */
 export const MATCH_CLOCK_MS: Record<'constructed' | 'draft', number> = {
   constructed: 45 * 60 * 1000,
   draft: 60 * 60 * 1000,
 };
 
-/**
- * BL-26 — bounds on a per-room bank, in ms.
- *
- * The server's job here is to reject nonsense (a negative, a NaN, a year),
- * NOT to decide which banks are worth offering: two people who can both see
- * the setting before the first action may play whatever length they agree on,
- * and the list of PRESETS a player picks from is a UI question (and an open
- * one — see docs/questions-round36.md).
- *
- * The floor is deliberately low. A one-second bank is a silly game and a
- * perfectly legitimate test, and BL-27's expiry is only testable at speed
- * because of it — a floor set at "one minute, because who would want less"
- * would have made the anti-BM rule's own guard take a minute per assertion.
- */
+/** Bounds on a per-room bank, in ms: they reject nonsense, they do not choose presets. The
+ * floor is low on purpose: a one-second bank is what makes the time-loss rule testable at speed. */
 export const MIN_CLOCK_MS = 1000;
 export const MAX_CLOCK_MS = 6 * 60 * 60 * 1000;
 
 /**
- * BL-26 — a bank requested off the wire, turned into the setting a room is
- * created with. `null` is **no clock at all**, and it is a real setting rather
- * than a very large number: a room with no clock must not run one invisibly.
- *
- *   undefined            → the default (an old client, or a caller that does
- *                          not care, gets exactly today's behaviour)
+ * A bank requested off the wire, as the setting a room is created with. `null` is no clock at
+ * all — a real setting, never a large number.
+ *   undefined            → the default
  *   null / 0 / 'off'     → off
  *   a number of ms       → clamped into [MIN_CLOCK_MS, MAX_CLOCK_MS]
- *   anything else        → the default, never a throw: this reads a value off
- *                          a socket, and a junk `clock` field must not be able
- *                          to stop a room being created (same discipline as
- *                          sanitizeTrio / sanitizeMethod).
+ *   anything else        → the default, never a throw: a junk field must not stop a room being created
  */
 export function sanitizeClock(v: unknown): number | null {
   if (v === undefined) return CLOCK_START_MS;
@@ -1416,57 +707,31 @@ export function sanitizeClock(v: unknown): number | null {
 export function matchRunning(room: Room): boolean {
   if (roomWaiting(room)) return false;
   if (room.state.winner !== null || room.state.phase === 'gameover') return false;
-  // BL-27: …and a game decided WITHOUT the state saying so — a loss on time,
-  // or a stamped result whose replay stopped short. Without this arm the very
-  // next settle after an expiry would look at a board still full of legal
-  // moves and start both banks running again on a game that is over.
+  // a game decided outside the state (a loss on time, a stamped result whose replay stopped
+  // short): without this, the next settle would restart both banks on a game that is over
   if (decidedOutsideState(room)) return false;
   if (!room.sockets[0] || !room.sockets[1]) return false;
   return true;
 }
 
 export function clockRunning(room: Room): [boolean, boolean] {
-  // BL-26: a room with no clock does not run one. FIRST, above every other
-  // arm, because "off" has to be a property of the room rather than something
-  // the other conditions happen to add up to.
+  // a room with no clock runs none — first, so "off" is a property of the room
   if (room.clockStart === null) return [false, false];
-  // BL-37: every other arm this function used to spell out is now
-  // `matchRunning`, unchanged and in the same order — the match clock and the
-  // two banks stop for exactly the same reasons, and the ONLY thing that is
-  // true of the banks and not of the match is BL-26's "this room has no
-  // clock". Splitting it rather than copying it is the whole point: a room
-  // with the clock off is precisely the room whose length you want to know.
+  // the banks stop for exactly the match clock's reasons, plus "no clock" above
   if (!matchRunning(room)) return [false, false];
-  // BL-46 (owner, 2026-10-16): BOTH clocks stop while a proposed fix waits
-  // for its answer — the table is talking, not playing. Bounded: a proposal
-  // lapses after FIX_PROPOSAL_MS (main.ts sweeps it).
+  // both clocks stop while a proposed fix waits for its answer (it lapses after FIX_PROPOSAL_MS)
   if (room.proposal) return [false, false];
-  // The standing pass: a seat whose Pass all / Pass through stack — or, since
-  // report #323, whose auto-pass toggle or yield — is answering THIS window
-  // is not billed for it. It has already said what it will do, so
-  // the time its client spends pacing, staggering and sending that answer is
-  // not time it is thinking. `passAllWait` is written by `settlePassAll`, which
-  // settleClock runs just before this, and it is only ever set for a real pass
-  // window (no decision of the seat's own, priority, `passPriority` legal): a
-  // decision, a target, a declaration is still billed however the seat is
-  // armed. The OTHER seat has no legal action in a priority window, so it was
-  // never billed for the wait and still is not.
-  // …and a seat watching a playback (`watchHold`) is not billed either: the
-  // board it is shown has nothing on it to decide
+  // A seat whose standing pass, auto-pass or yield answers THIS window is not billed for it.
+  // `passAllWait` (set by `settlePassAll`, which settleClock runs first) marks only a real pass
+  // window, so a decision, a target or a declaration is still billed. Nor is a seat watching a playback.
   return [0, 1].map(s => legalActions(room.state, s as 0 | 1).length > 0
     && room.passAllWait[s]?.at !== room.state.actionCount
     && room.watchHold[s] === null) as [boolean, boolean];
 }
 
-/* ── THE STANDING PASS (owner, 2026-09-28) ────────────────────────────────
- *
- * "When a player is 'Pass all'ed, their timer should never go down." The owner
- * chose PAUSE + BACKSTOP: the client tells the server the arm (main.ts
- * `passall`), the server stops that seat's clock while the arm is answering
- * the window in front of it, and if the client's pass has not arrived within
- * PASS_ALL_BACKSTOP_MS the server sends it itself (main.ts `sweepPassAll`), so
- * a stuck or closed tab cannot freeze a game whose clock has stopped.
- */
+/* The standing pass. The client tells the server its arm; the seat's clock stops while the arm
+ * answers the window in front of it, and if its pass has not arrived within PASS_ALL_BACKSTOP_MS
+ * the server sends it (main.ts `sweepPassAll`), so a closed tab cannot freeze a game. */
 
 /** The arm as it rides the wire: ui/battle.ts `armSnapshot`, taken once at the
  * click. The `armed` bit is the field being non-null. */
@@ -1498,12 +763,12 @@ export function sanitizePassAll(raw: Record<string, unknown>): PassAllArm | null
   };
 }
 
-/** The auto-pass toggle and the yields as they ride the wire (report #323):
- * the two inputs `autoPassPlan` takes besides the window itself. */
+/** The auto-pass toggle and the yields as they ride the wire: the two inputs `autoPassPlan`
+ * takes besides the window. */
 export interface AutoPassPref {
-  /** the auto-pass toggle (C4) is on */
+  /** the auto-pass toggle is on */
   pref: boolean;
-  /** the units whose triggers this seat yields to (#2) */
+  /** the units whose triggers this seat yields to */
   yields: EntityId[];
 }
 
@@ -1537,18 +802,10 @@ export function setPassAll(room: Room, seat: Seat, arm: PassAllArm | null): bool
 }
 
 /**
- * Re-judge each seat's standing pass against the state as it is NOW: drop an
- * arm the client's own release list would drop, and stamp the window an arm is
- * answering. Run by settleClock, i.e. after every action and before every
- * clock snapshot, so every state a client is shown has been judged here first.
- *
- * ⚠ THE RELEASE IS THE CLIENT'S OWN FUNCTION (ui/passrelease.ts `passAllRelease`),
- * asked with the arm the client sent. Not a mirror of it: a second list here
- * would be the second opinion CR D1.3 forbids. The server's state is never older
- * than the client's view, so this releases whenever the client would, and
- * possibly earlier (the client may flush several states into one paint). Early
- * is the safe direction: the seat is billed again and the backstop stands
- * down, which is exactly how things were before the arm reached the wire.
+ * Re-judge each seat's standing pass against the state now: drop an arm the client's release
+ * would drop, and stamp the window an arm answers. Run by settleClock, so every state a client
+ * is shown is judged here first. The release is the client's own `passAllRelease`, never a
+ * mirror (CR D1.3); the server's state is never older, so it releases no later than the client.
  */
 function settlePassAll(room: Room, now: number): void {
   const s0 = room.state;
@@ -1567,17 +824,14 @@ function settlePassAll(room: Room, now: number): void {
         prefOn: false, yieldIds: new Set(),
       });
       if (release !== null) room.passAll[seat] = null;
-      // CT-182: a seat with its report dialog open keeps its arm but is not
-      // answered for — no stamp, so no backstop and no unbilled window
+      // a seat with its report dialog open keeps its arm but is not answered for: no stamp, so
+      // no backstop and no unbilled window
       else held = !room.reportHold[seat] && !room.proposal && inPassWindow(s0, seat, legal);
-      // BL-46: …nor while a proposed fix waits for its answer — a pass for the
-      // seat would land an action, and an action ends the proposal
+      // …nor while a proposed fix waits: a pass would land an action, which ends the proposal
     }
-    // Report #323: …and a window the auto-pass toggle or a yield answers, on
-    // the same terms — the client's own `autoPassPlan`, asked with the inputs
-    // the client sent. Full control drops every automatic answer (BL-18), and
-    // the report dialog and a proposed fix hold them (CT-182, BL-46), exactly
-    // as they hold the arm above.
+    // …and a window the auto-pass toggle or a yield answers, on the same terms (the client's
+    // own `autoPassPlan`). Full control drops every automatic answer; the report dialog and a
+    // proposed fix hold them, as they hold the arm above.
     const auto = room.autoPass[seat];
     if (!held && auto && !room.fullControl[seat] && !room.reportHold[seat] && !room.proposal
       && room.clockStart !== null && matchRunning(room)) {
@@ -1626,22 +880,17 @@ export function passAllStale(room: Room, seat: Seat, at: unknown): boolean {
   return at <= c.at;
 }
 
-/** Bill the time elapsed since the last settle to whichever seats were
- * running, clamp at zero, and recompute the running set from the current
- * state + connections. Call after anything that changes either (action
- * applied, undo, join, leave).
- *
- * BL-27: the clamp is no longer "display only". Reaching zero loses the game —
- * see `expiredSeat` / `expireOnTime`, which are the only readers of it. */
+/** Bill the time since the last settle to the running seats, clamp at zero, and recompute the
+ * running set. Call after anything that changes the state or the connections. Reaching zero
+ * loses the game (`expiredSeat` / `expireOnTime`). */
 export function settleClock(room: Room): void {
   const now = Date.now();
   const dt = Math.max(0, now - room.clockStamp);
   for (const s of [0, 1] as const) {
     if (room.clockRun[s]) room.clockMs[s] = Math.max(0, room.clockMs[s] - dt);
   }
-  // BL-37: the table's own clock, billed off the same stamp and the same
-  // interval so the three numbers always measure the same instants. It counts
-  // UP and has no floor: it is a record, not a resource.
+  // the table's own clock, billed off the same stamp and interval as the banks. It counts up
+  // and has no floor: a record, not a resource.
   if (room.matchRun) room.matchMs += dt;
   room.clockStamp = now;
   settlePassAll(room, now);   // before clockRunning, which reads its stamp
@@ -1658,26 +907,19 @@ export function settleClock(room: Room): void {
   if (room.matchRun && room.startedAt === null) room.startedAt = now;
 }
 
-/** What a client is told about this room's clocks. `start` is BL-26's setting
- * itself, carried so a seat joining twenty minutes in can still see what bank
- * the game was created with. */
+/** What a client is told about this room's clocks. `start` is the bank the room was created
+ * with, so a seat joining late still sees it. */
 export interface ClockSnapshot {
   ms: [number, number];
   running: [boolean, boolean];
   at: number;
-  /** the bank this room was created with (BL-26) */
+  /** the bank this room was created with */
   start: number;
 }
 
-/**
- * The clock snapshot attached to every state broadcast: clients extrapolate
- * locally from `at` using `running` until the next message arrives.
- *
- * BL-26: `null` for a room with the clock OFF, and the caller omits the field
- * entirely — a client must show NO clocks rather than a frozen 60:00, and the
- * honest way to say "there is no clock" is to send nothing rather than a pair
- * of numbers that never move.
- */
+/** The clock snapshot attached to every state broadcast; clients extrapolate from `at` using
+ * `running`. `null` for a room with the clock off, and the caller omits the field, so the
+ * client shows no clocks rather than a frozen one. */
 export function clockSnapshot(room: Room): ClockSnapshot | null {
   if (room.clockStart === null) return null;
   settleClock(room);
@@ -1687,47 +929,25 @@ export function clockSnapshot(room: Room): ClockSnapshot | null {
   };
 }
 
-/* ── BL-27: RUNNING OUT OF TIME LOSES THE GAME ────────────────────────────
- *
- * The owner's reason is not pacing, it is BM. Today a player who is losing can
- * simply stop acting: the game never ends, and it lands in history as
- * `finished: false` with no winner — indistinguishable from an honest "we both
- * had to go". A launch blocker, in his words: "we'll make the timer actally
- * cause a game loss before launching to prevent BMing."
- *
- * The decision lives HERE, as two pure-ish functions, and the *noticing* lives
- * in main.ts's sweep. That split is the whole design: expiry is the one game
- * event with no action behind it, so there is nothing to hang it off, and a
- * rule buried inside a timer callback can only ever be tested by waiting.
- */
+/* Running out of time loses the game, so a losing player cannot stall it forever. The decision
+ * lives here; the noticing lives in main.ts's sweep, because expiry is the one game event with
+ * no action behind it. */
 
 /**
- * Which seat (if any) has run out of time RIGHT NOW. Settles the clock first,
- * so it is answered against billed time rather than the last snapshot.
- *
- * Every negative arm is a requirement of the entry, not defensive padding:
- *
- *   clockStart === null   BL-26. Nothing expires in a room with no clock.
- *   already decided       a concede, a real win, or an expiry that already
- *                         fired. Idempotent: the sweep runs every second.
- *   roomWaiting           there is no game yet.
- *   clockRun[s]           A MERELY DISCONNECTED SEAT DOES NOT BLEED TIME.
- *                         `clockRunning` already returns [false,false] unless
- *                         both sockets are present, so this arm inherits that
- *                         rather than restating it — one rule, asked once.
+ * Which seat (if any) has run out of time right now, against billed time (it settles first).
+ *   clockStart === null   nothing expires in a room with no clock
+ *   already decided       idempotent: the sweep runs every second
+ *   roomWaiting           there is no game yet
+ *   clockRun[s]           a disconnected seat does not bleed time (`clockRunning` is
+ *                         [false, false] unless both sockets are present)
  */
 export function expiredSeat(room: Room): Seat | null {
   if (room.clockStart === null) return null;
   if (decidedWinner(room) !== null) return null;
   if (roomWaiting(room)) return null;
-  // THE CHEAP GATE, and the reason a once-a-second sweep over every room in
-  // the process costs nothing measurable. `clockRun` is the CACHED running
-  // set, maintained by settleClock at every event that could change it (an
-  // action, an undo, a join, a leave), so "could anybody's bank have reached
-  // zero since the last settle" is two subtractions. Only when the answer is
-  // yes do we settle — and settling means `clockRunning`, which means
-  // `legalActions` twice, which is the one thing worth not doing 86,400 times
-  // a day per room.
+  // The cheap gate: `clockRun` is the cached running set, kept by settleClock at every event
+  // that could change it, so this is two subtractions. Settle (which runs `legalActions`) only
+  // when a bank could have reached zero.
   const dt = Math.max(0, Date.now() - room.clockStamp);
   const maybe = ([0, 1] as const).some(s => room.clockRun[s] && room.clockMs[s] - dt <= 0);
   if (!maybe) return null;
@@ -1739,24 +959,10 @@ export function expiredSeat(room: Room): Seat | null {
 }
 
 /**
- * A seat has run out of time: end the game, stamp the result, tell the log.
- * Returns the LOSING seat, or null if nothing expired.
- *
- * THE RESULT IS STAMPED, NOT LOGGED — and that is deliberate, not a shortcut.
- * A concede is a real `Action` because a player took it; running out of time
- * is not something anybody did, and it cannot be replayed, because the clock
- * is wall time and is not part of the game state. Appending a pseudo-action
- * would make every saved log stop reproducing its own game. `Room.winner`
- * exists for exactly this shape — read its comment: "a fact stamped when it
- * happened cannot rot" — and `summarizeGame` already prefers the stamp over
- * the replay, so the history sync and the future rating fold (BL-02) see an
- * ordinary decided game with `finished: true` and a named winner.
- *
- * The note it appends is RETURNED as well as pushed, because the caller has to
- * put it on the wire: a view refresh with an empty event list leaves both
- * players looking at a stopped board and an unchanged log, which is the silent
- * ending this whole entry exists to abolish. (It did exactly that in the first
- * draft, and the guard below caught it.)
+ * A seat has run out of time: end the game, stamp the result, tell the log. Returns the losing
+ * seat, or null. The result is STAMPED (`Room.winner`), never logged as an action: the clock is
+ * wall time, not game state, so a pseudo-action would stop the log reproducing its game. The
+ * note is returned as well as pushed, because the caller must put it on the wire.
  */
 export function expireOnTime(room: Room): { loser: Seat; events: EngineEvent[] } | null {
   const loser = expiredSeat(room);
@@ -1779,18 +985,11 @@ export function expireOnTime(room: Room): { loser: Seat; events: EngineEvent[] }
 
 const rooms = new Map<string, Room>();
 
-/** Build a fresh game and its initial event list.
- *
- * CR D8.4: `scenario` rides along, and every caller in this file passes the
- * room's own. It is the LAST argument on purpose — a caller that forgets it
- * deals an ordinary game, which is the safe direction, and the two tests that
- * matter (185/186 + test-scenario.ts) fail loudly if a room path forgets. */
+/** Build a fresh game and its initial event list. CR D8.4: every caller passes the room's own
+ * `scenario`; forgetting it deals an ordinary game, the safe direction. */
 function fresh(seed: number, names: [string, string], mode: GameMode, els: Element[], decks?: [CardName[], CardName[]], scenario?: string, deal?: DraftDeal, rules?: GameRules): { state: GameState; events: EngineEvent[] } {
-  // BL-43: `deal` is the room's custom deal. Unlike a scenario, forgetting it
-  // is NOT the safe direction — a custom room would be re-dealt as a standard
-  // game under its own log — so test-custom-rules.ts checks every call site.
-  // docs/22 §3.1: `rules` (a CC game) is the same kind of argument, and test
-  // 822 checks every call site for it the same way.
+  // Forgetting `deal` (a custom draft) or `rules` (a CC game) is NOT safe: the room would be
+  // re-dealt as a standard game under its own log. Test 822 and test-custom-rules.ts check every call.
   const r = dealScenario(seed, names, mode, els, decks, scenario, deal, rules);
   return { state: r.state, events: r.events };
 }
@@ -1804,32 +1003,13 @@ export function roomWaiting(room: Room): boolean {
   return room.mode === 'constructed' && (!room.decks[0] || !room.decks[1]);
 }
 
-/**
- * Is this game decided, and by whom?
- *
- * The live state first, then the stamp. They come apart for a game saved
- * before the winner stamp existed whose log no longer replays to its ending:
- * the replay stops short so `state.winner` is null, but we know perfectly
- * well who won. Anything asking "is this game over" wants this, not the raw
- * state — otherwise such a room reads as still playable.
- */
+/** Is this game decided, and by whom: the live state first, then the stamp (an old log may no
+ * longer replay to its ending). Anything asking "is this game over" wants this. */
 export const decidedWinner = (room: Room): Seat | null => room.state.winner ?? room.winner;
 
-/**
- * BL-27 — decided by something the STATE does not know about.
- *
- * Two ways in, and they want the same treatment: a result STAMPED when it
- * happened whose replay no longer reaches it (the case `Room.winner` was
- * added for), and a loss on time, which never was a board position at all —
- * the engine has no idea and never will, because the clock is not part of the
- * game state and must not become part of it (a replay would then depend on
- * wall time, and every saved log would stop reproducing).
- *
- * Both mean: this game is over, and the board in front of you is not going to
- * say so. So `legalInRoom` offers nothing and `applyToRoom` refuses — without
- * which a seat that ran out of time could go on playing a game it had already
- * lost, on a board that still looked perfectly legal.
- */
+/** Decided by something the state does not know: a stamped result its replay no longer reaches,
+ * or a loss on time (the clock is not game state, and must not become it). So `legalInRoom`
+ * offers nothing and `applyToRoom` refuses. */
 const decidedOutsideState = (room: Room): boolean =>
   room.state.winner === null && room.winner !== null;
 
@@ -1875,27 +1055,19 @@ export function setLobbySubmission(room: Room, seat: 0 | 1, raw: unknown, lock: 
   return true;
 }
 
-/**
- * BL-18 — one seat's "nothing may act for me", as the server holds it.
- *
- * A setter rather than a bare assignment because the DECISION of what the flag
- * means belongs beside the field: it is soft state, it is never persisted, and
- * it is not a game action — so nothing here logs, stamps or saves. Returns
- * whether it actually changed, so a caller can decline to repaint for a
- * message that said what it already knew.
- */
+/** One seat's "nothing may act for me". Soft state: nothing logs, stamps or saves. True when it
+ * changed, so a caller can skip a repaint. */
 export function setFullControl(room: Room, seat: Seat, on: boolean): boolean {
-  // the client drops a standing pass when full control goes on (ui/main.ts
-  // setFullControl); the server's copy goes with it, whatever the order the
-  // two messages arrive in
+  // the client drops a standing pass when full control goes on; the server's copy goes with it,
+  // whatever order the two messages arrive in
   if (on) setPassAll(room, seat, null);
   if (room.fullControl[seat] === on) return false;
   room.fullControl[seat] = on;
   return true;
 }
 
-/** 2026-10-03 — one seat's playback hold (see `Room.watchHold`): a deadline,
- * or null to release it. True when it changed; the caller settles the clock. */
+/** One seat's playback hold (`Room.watchHold`): a deadline, or null to release it. True when it
+ * changed; the caller settles the clock. */
 export function setWatchHold(room: Room, seat: Seat, until: number | null): boolean {
   if (room.watchHold[seat] === until) return false;
   room.watchHold[seat] = until;
@@ -1908,8 +1080,8 @@ export function watchHoldExpired(room: Room, now: number): boolean {
   return room.watchHold.some(w => w !== null && now >= w);
 }
 
-/** CT-182 — one seat's report-dialog hold (see `Room.reportHold`). Soft state:
- * nothing logs, stamps or saves. True when it changed. */
+/** One seat's report-dialog hold (`Room.reportHold`). Soft state: nothing logs, stamps or
+ * saves. True when it changed. */
 export function setReportHold(room: Room, seat: Seat, on: boolean): boolean {
   if (room.reportHold[seat] === on) return false;
   room.reportHold[seat] = on;
@@ -1951,9 +1123,8 @@ export function resolveLobby(room: Room, history: TrioHistoryRow[]): TrioResult 
   room.state = state;
   room.actions = [];
   room.events = events;
-  // the dealt game's first planning segment starts here — without this the
-  // freeze would still hold the placeholder (and its placeholder NAMES) for
-  // the whole of turn 1
+  // the dealt game's first segment starts here, or the freeze would hold the placeholder (and its
+  // placeholder names) for all of turn 1
   resetSegment(room);
   room.clockStamp = Date.now();
   persist(room);
@@ -1967,14 +1138,9 @@ export function singleCards(room: Pick<Room, 'single' | 'decks'>): [CardName, Ca
   return room.single ? singleCardsOf(room.decks) : null;
 }
 
-/**
- * The stand-in deck of a constructed LEAGUE room before either player has
- * picked (owner, 2026-11-01: a deck for each game, chosen in the room). Every
- * other constructed room is created by somebody bringing a deck, so it always
- * has one to build its waiting state from; a league room is created by the
- * league, on the first Play, before anybody has chosen. The state built from
- * this is never dealt to anyone: it is thrown away when the second deck is in.
- */
+/** The stand-in deck of a constructed league room before either player has picked: the league
+ * creates the room before anybody has chosen. The state built from it is never dealt; it is
+ * thrown away when the second deck is in. */
 const leaguePlaceholderDeck = (): CardName[] => {
   const c = checkSingleCard(DECK_LIST[0]);
   if (!c.ok) throw new Error(`no placeholder deck: ${c.error}`);
@@ -1996,58 +1162,23 @@ function decksFor(room: Pick<Room, 'decks'> & { league?: RoomLeague | null; matc
 }
 
 /**
- * Does a deck riding on a JOIN register for this seat? The client sends its
- * selected deck with every join (ui/main.ts sendJoin), but that is only the
- * deck this BROWSER last selected — so it counts in two cases alone:
- *
- *   · `creates`: the join that makes a friend's constructed room. Its creator
- *     pressed Create on the home screen with the deck shown beside the button.
- *   · `pick`: the waiting room's own "Play this deck", where the picker shows
- *     the deck and lets you change it.
- *
- * Every other join lands in the waiting room with nothing registered. CT-542,
- * report #357 (2026-11-08): a friend's room used to take the joiner's held
- * deck on arrival, so the game was dealt the instant they came in, with a deck
- * they never saw and could not change ("Gember thought she selected the right
- * deck, but … it didn't actually follow her into the game"). A constructed
- * LEAGUE room is never created by a join and always worked this way (owner,
- * 2026-11-01: "change your deck every single game (or not)").
+ * Does a deck riding on a join register for this seat? The client sends its selected deck with
+ * every join, but that is only what this browser last selected, so it counts only when the join
+ * creates a friend's constructed room (`creates`: the deck was shown beside Create) or is the
+ * waiting room's own "Play this deck" (`pick`). Every other join registers nothing.
  */
 export function takesJoinDeck(room: Pick<Room, 'league' | 'match'>, pick: boolean, creates = false): boolean {
-  // docs/22 §2.4: a CC room never takes a join's deck. Game 1 registers
-  // through server/match.ts (main + sideboard, checkMatchDeck); games 2–3 are
-  // dealt from the match's locked configurations, never from whatever deck
-  // the joining browser happens to have selected.
+  // docs/22 §2.4: a CC room never takes a join's deck: game 1 registers through server/match.ts,
+  // and games 2–3 are dealt from the match's locked configurations
   if (room.match) return false;
   return pick || (creates && !room.league);
 }
 
 /**
- * Register `seat`'s deck (validated!) while the room is waiting. When it
- * completes the pair, the REAL game is dealt (the placeholder state and the
- * empty action log are discarded). Returns true when the game just started.
- *
- * ⚠ CONSTRUCTED ONLY, AND THE CHECK IS NOT BELT-AND-BRACES (2026-09-20).
- *
- * `roomWaiting` is true for two different rooms: a constructed room short of
- * a deck, and ANY room whose lobby has not resolved — which is every live
- * draft room while the elements are being picked. The client sends its chosen
- * deck on every join (ui/main.ts), because the browser has one selected and
- * the server was trusted to ignore it in a room that does not want one. It
- * did not, and the damage came in two sizes:
- *
- *   - the small one, which is what was noticed: `room.deckIds[seat]` got
- *     stamped in a DRAFT room, so the game landed in that deck's win/loss
- *     record. A deck's record filled up with games it was never in.
- *   - the large one, which nobody had hit yet: when BOTH seats arrived with a
- *     deck selected, `complete` went true and this dealt a CONSTRUCTED game
- *     inside an unresolved draft lobby, throwing away the state and the
- *     action log on the way.
- *
- * So the mode check is the fix, and it belongs here rather than at the call
- * site: registering a deck is a thing only a constructed room does, and every
- * caller now gets that for free. `single` rooms are constructed rooms (CR D8.2),
- * so they are covered.
+ * Register `seat`'s deck (validated) while the room is waiting; when it completes the pair the
+ * real game is dealt and the placeholder discarded. True when the game just started.
+ * Constructed rooms only (`single` rooms are, CR D8.2): `roomWaiting` is also true of every
+ * draft room still in its lobby, and the client sends a deck on every join.
  */
 export function setRoomDeck(room: Room, seat: 0 | 1, cards: CardName[], deckId: string | null = null): boolean {
   if (room.mode !== 'constructed') return false;
@@ -2055,10 +1186,8 @@ export function setRoomDeck(room: Room, seat: 0 | 1, cards: CardName[], deckId: 
   room.decks[seat] = [...cards];
   room.deckIds[seat] = deckId;
   let complete = !!room.decks[0] && !!room.decks[1];
-  // CR D8.2c: two cards that can never make a unit are a DRAW, not a game — the
-  // owner, 2026-09-18: end it, tell each what the other picked and why, and
-  // let them choose again (the same card is allowed). Nothing is dealt and
-  // nothing is recorded: no game was played, so no history row and no ladder.
+  // CR D8.2c: two cards that can never make a unit are a DRAW, not a game: nothing is dealt or
+  // recorded, each seat is told the pair, and both choose again (the same card is allowed).
   const pair = complete ? singleCards(room) : null;
   if (pair && !makesUnits(pair[0]) && !makesUnits(pair[1])) {
     room.singleDraw = pair;
@@ -2080,13 +1209,9 @@ export function setRoomDeck(room: Room, seat: 0 | 1, cards: CardName[], deckId: 
   return complete;
 }
 
-/**
- * CR D4.6 — what one applied action means to a CC take-back: the engine's mark
- * (ccundo.ts) and, for an action inside the open CC step, the MEASURED floor
- * beside it (seen.ts, docs/22 §3.6 point 3). Outside a hidden segment seenBy is
- * asked with no frozen board and no hold: in CC both players watch every event
- * live, so whatever reached EITHER seat is shown.
- */
+/** CR D4.6: what one applied action means to a CC take-back — the engine's mark (ccundo.ts)
+ * and, inside the open CC step, the measured floor (seen.ts). Outside a hidden segment both
+ * players watch every event live, so whatever reached either seat is shown. */
 function ccMeasure(before: GameState, a: Action, after: GameState, events: readonly EngineEvent[], names: readonly [string, string]): { mark: CcUndoMark; seen: Seen | null } {
   if (!before.sequential) return { mark: blankMark(a.seat), seen: null };
   const mark = ccUndoMark(before, a, after, events);
@@ -2144,19 +1269,12 @@ interface Rebuilt {
   segSeen: Seen[];
   segIdFloor: number[];
   segRefs: string[];
-  /**
-   * BL-38 — the board fingerprint after each action, AS THIS ENGINE SEES IT.
-   * Parallel to `actions`; `''` for an action this rebuild refused (the board
-   * did not move, and a fingerprint of the unmoved board would read as a match).
-   *
-   * ⚠ This is the rebuilding engine's answer, NOT the record. `undoActionAt`
-   * uses them for the spliced tail, which is new history and has no record
-   * yet. Nothing else may.
-   */
+  /** The board fingerprint after each action as THIS engine sees it; `''` where refused (an
+   * unmoved board's fingerprint would read as a match). An answer, not the record: only
+   * `undoActionAt`'s spliced tail, which is new history, may adopt it. */
   sigs: string[];
-  /** CARD STATS — this engine's card facts per action (null where refused).
-   * Same ⚠ as `sigs`: an answer, not the record; only the spliced tail of an
-   * undo may adopt it. */
+  /** this engine's card facts per action (null where refused). Like `sigs`, an answer, not the
+   * record: only an undo's spliced tail may adopt it. */
   cardLog: (CardFact | null)[];
   /** logged actions this rebuild could not apply (see LostAction) */
   skipped: LostAction[];
@@ -2194,9 +1312,8 @@ function rebuild(p: Room, b: Resume): Rebuilt {
     // every id it can name was allocated by an earlier action
     const sym = symbolizer(actions, segIdFloor, i, before.nextId);
     segIdFloor.push(before.nextId);
-    // hold only while the open segment is still the one this action is in:
-    // the forced battle drain runs public actions after the key has moved on
-    // (BL-46: and never an agreed fix, which is public — see applyToRoom)
+    // hold only while the open segment is still this action's: the forced battle drain runs
+    // public actions after the key has moved on, and an agreed fix is public
     const isFix = a.type === 'amend';
     const holding = !isFix && segKey !== null && segmentKey(before) === segKey;
     let r;
@@ -2225,8 +1342,7 @@ function rebuild(p: Room, b: Resume): Rebuilt {
     ccMarks.push(cc.mark);
     if (cc.seen) segSeen[i] = cc.seen;
     if (holding) inSegment.push({ i, before, a, after: state, events: r.events });
-    // BL-46: the frozen board shows an agreed fix, exactly as applyToRoom
-    // patched it when the fix landed — or a restart would un-show it
+    // the frozen board shows an agreed fix as applyToRoom patched it, or a restart would un-show it
     if (isFix && segKey !== null && segSnapshot && segmentKey(state) === segKey) {
       segSnapshot = amendFrozen(segSnapshot, a as Extract<Action, { type: 'amend' }>, before);
     }
@@ -2265,20 +1381,8 @@ export function getRoom(code: string): Room | undefined {
   return rooms.get(code);
 }
 
-/**
- * Every room this process is holding. BL-27's expiry sweep is the only caller
- * and the only reason it exists: expiry is the one game event with nobody
- * acting, so the only way to notice it is to go and look.
- *
- * An iterator rather than an array — the sweep runs once a second forever, and
- * it has no business allocating a copy of the room table each time to walk it.
- */
-/** Forget a room. THE FILE STAYS — it is the game's record and everything
- * that reads history reads files, not this map. What goes is the in-memory
- * copy that sweepExpiry walks every second and that nothing was ever freeing:
- * there was no `rooms.delete` anywhere, so every room since boot stayed
- * resident until the next restart. `keepFile: false` is for sandbox rooms,
- * which are scratch by definition. */
+/** Forget a room. The file stays: it is the game's record, and history reads files, not this
+ * map. `keepFile: false` is for sandbox rooms, which are scratch. */
 export function dropRoom(code: string, keepFile = true): boolean {
   const room = rooms.get(code);
   if (!room) return false;
@@ -2291,18 +1395,15 @@ export function dropRoom(code: string, keepFile = true): boolean {
   return true;
 }
 
+/** Every room this process holds, as an iterator: the expiry sweep walks it every second. */
 export function allRooms(): IterableIterator<Room> {
   return rooms.values();
 }
 
 /**
- * CT-334: how many of the OTHER seat's actions the open hidden step holds from
- * `seat` — 0 outside one. What `viewFor` takes off the `actionCount` it serves
- * `seat`, so the count moves for your own plays and not for theirs.
- *
- * The standing pass's `at` (passAllStale) needs no such care: `passPriority`
- * is legal only in a battle priority window, and battle is never a hidden
- * step, so wherever a pass can be stamped this is 0 and the two counts agree.
+ * How many of the other seat's actions the open hidden step holds from `seat` (0 outside one):
+ * what `viewFor` takes off the `actionCount` it serves, so the count moves only for your own
+ * plays. The standing pass's `at` needs no such care: `passPriority` is never legal in a hidden step.
  */
 export function hiddenActionsFrom(room: Room, seat: Seat): number {
   if (!room.segSnapshot || room.segStartIndex < 0) return 0;
@@ -2312,13 +1413,8 @@ export function hiddenActionsFrom(room: Room, seat: Seat): number {
   return n;
 }
 
-/**
- * CT-197: the test-mode sandbox rooms in the map, the least recently played
- * first — what main.ts's 50-room sandbox cap starts from after a restart.
- * The cap's list lived only in memory, so every sandbox restored at boot was
- * invisible to it and its file outlived the cap. Called once, right after
- * `restoreRooms()`; `/api/sandbox/open` appends every later one.
- */
+/** The sandbox rooms in the map, least recently played first: what main.ts's sandbox cap starts
+ * from after a restart. Called once, right after `restoreRooms()`. */
 export function sandboxCodesByAge(): string[] {
   return [...rooms.values()]
     .filter(r => r.scenario !== undefined && isSandboxId(r.scenario))
@@ -2326,33 +1422,14 @@ export function sandboxCodesByAge(): string[] {
     .map(r => r.code);
 }
 
-/* ── IDLE ROOMS CLOSE THEMSELVES (2026-10-04) ─────────────────────────────
- *
- * The owner: "Any game that's started seems to be allowed to stay open
- * forever, even if no one has taken an action. Rooms that have fewer than 5
- * actions should self 'complete' after just 1 hour of inaction. Rooms with
- * more actions than that should self complete after 12 hours of no further
- * action."
- *
- * His settled reading: a room closes when BOTH hold —
- *   - no action for its window (fewer than IDLE_FEW_ACTIONS actions → an
- *     hour; otherwise twelve), counted from `Room.lastActionAt`; and
- *   - nobody is in it: no seat socket, no watcher. An open tab keeps it.
+/* Idle rooms close themselves. A room closes when both hold:
+ *   - no action for its window (fewer than IDLE_FEW_ACTIONS actions → an hour; otherwise
+ *     twelve), counted from `Room.lastActionAt`; and
+ *   - nobody is in it (no seat socket, no watcher), and nobody has been for RECONNECT_GRACE_MS,
+ *     because a locking phone or a deploy drops sockets that come back.
  * A closed room gets NO result — rated or not, nobody wins, nothing moves a
- * rating, and the history reads it as unfinished. The file stays: it is the
- * game's record, and it is marked (`closed`) so a restart never brings it back
- * and a late visitor is told what happened to it.
- *
- * ⚠ "NOBODY IS IN IT" MUST HOLD FOR A MOMENT, NOT FOR ONE TICK. A phone that
- * locks drops its socket; a deploy drops every socket at once and the clients
- * reconnect a few seconds later. Read on a single tick, either would close a
- * room under a tab that is still open, which is the one thing the owner said
- * keeps a room alive. So the room must have been unattended for
- * RECONNECT_GRACE_MS as well — measured in memory from the first tick that
- * saw it empty, which after a restart is the first tick after boot. That is
- * also why restore does not close a past-its-window room outright: it cannot
- * know whether a tab is about to come back for it, and five minutes later the
- * sweep does.
+ * rating, and the history reads it as unfinished. The file stays, marked `closed`, so a
+ * restart never brings it back and a late visitor is told what happened to it.
  */
 /** fewer than this many actions is a room somebody opened and left */
 export const IDLE_FEW_ACTIONS = 5;
@@ -2397,15 +1474,9 @@ function pinMtime(path: string, at: number): void {
   try { utimesSync(path, at / 1000, at / 1000); } catch { /* the record is written; the date is a nicety */ }
 }
 
-/**
- * Close one room: mark the file, write it, forget the room. Returns true when
- * it was closed. NO RESULT IS STAMPED — `winner` is not touched, which is what
- * keeps a closed rated game out of every rating fold (rating.ts isRated asks
- * for a finished game with a winner).
- *
- * A SANDBOX room is scratch by definition and goes file and all, exactly as
- * the sandbox cap evicts one (main.ts); every other room keeps its file.
- */
+/** Close one room: mark the file, write it, forget the room; true when closed. No result is
+ * stamped, which keeps a closed rated game out of every rating fold (rating.ts isRated). A
+ * sandbox room goes file and all. */
 export function closeIdleRoom(room: Room, now: number): boolean {
   if (rooms.get(room.code) !== room) return false;
   if (room.scenario !== undefined && isSandboxId(room.scenario)) return dropRoom(room.code, false);
@@ -2448,16 +1519,9 @@ export function sweepIdleRooms(now: number): string[] {
 const FILE_CODE = /^[A-Z0-9]{1,12}$/;
 
 /**
- * What a visitor to a CLOSED room's link is told, or null when the code names
- * no closed room. Read off the file — the room is gone from memory by then.
- *
- * CT-195: and a FINISHED one. main.ts sweepFinished forgets a decided room an
- * hour after its last visitor leaves (and a restart does not load one older
- * than RESTORE_WINDOW_MS), so its link reached here too and was answered "No
- * game with code", as if it had been mistyped. The file still holds the
- * result, so the link says the game is over, who won, and where its replay is
- * (the match history's replay link — /api/replay serves it to the two players
- * only, so the sentence says it is theirs: a watcher's link lands here too).
+ * What a visitor to a closed or finished room's link is told, or null when the code names
+ * neither; read off the file, since the room is gone from memory. A finished game's link says
+ * who won and that its players can watch it back (/api/replay serves only them).
  */
 export function closedNotice(code: string): string | null {
   if (!FILE_CODE.test(code)) return null;
@@ -2485,14 +1549,8 @@ let otherCodeTaken: (code: string) => boolean = () => false;
 /** docs/25 §3 — main.ts tells this module which codes a cube event holds */
 export function setCodeTakenAlso(fn: (code: string) => boolean): void { otherCodeTaken = fn; }
 
-/**
- * May a NEW room be given this code? Not if a room holds it, a reservation
- * holds it, or a saved game does. The last is the one that was missing: room
- * codes were checked against the map alone, so a code whose room had been
- * forgotten (finished, or closed above) could be minted again — and the new
- * room's first write would overwrite the old game's only record, while the
- * old game's link opened a stranger's table.
- */
+/** May a new room be given this code? Not if a room, a reservation or a saved game holds it:
+ * reusing a forgotten room's code would overwrite that game's only record. */
 export function codeTaken(code: string): boolean {
   if (rooms.has(code) || reserved.has(code)) return true;
   // docs/25 §3: cube events share this code space (a code typed into Join is
@@ -2501,23 +1559,14 @@ export function codeTaken(code: string): boolean {
   return FILE_CODE.test(code) && existsSync(join(GAMES_DIR, `${code}.json`));
 }
 
-/** `creatorDeck` (constructed only): the first joiner's deck, used to build
- * the waiting room's placeholder state — setRoomDeck assigns it to the actual
- * seat once main.ts has picked one.
- *
- * BL-26: `clockStart` is THIS room's bank — `undefined` takes the default,
- * `null` means no clock. It is last and optional so every existing caller
- * (the tests, the rematch, the scenario deal) keeps getting exactly today's
- * 60-minute room without saying so.
- *
- * `cc` (docs/22 §2.4, server/match.ts only): a Competitive Constructed game
- * room — its `rules` (part of the deal), its `match` link, and the chess-clock
- * banks the match carried out of the previous game (`clockMs`). Constructed
- * only; a CC room with no creator deck waits on the placeholder deck. */
+/** `creatorDeck` (constructed only): the first joiner's deck, for the waiting room's placeholder
+ * state. `clockStart` is this room's bank (`undefined` the default, `null` no clock). `cc`
+ * (docs/22 §2.4, server/match.ts only): a CC game room's `rules`, `match` link and the banks
+ * the match carried out of the previous game. */
 export function createRoom(code: string, seed: number, names: [string, string] = ['Player 1', 'Player 2'], mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[], scenario?: string, clockStart: number | null = CLOCK_START_MS, customIn?: RoomCustom, single = false,
-  /** a match's game (docs/22), or — no `match` — a Competitive draft room's rules (report #356) */
+  /** a match's game (docs/22), or — no `match` — a Competitive draft room's rules */
   cc?: { rules?: GameRules; match?: RoomMatch; clockMs?: [number, number]; users?: [string | null, string | null]; league?: RoomLeague; rated?: boolean }): Room {
-  // BL-43: custom rules belong to a live draft, and never to a scenario deal
+  // custom rules belong to a live draft, and never to a scenario deal
   const custom = mode === 'draft' && !scenario ? customIn : undefined;
   const trio = sanitizeTrio(els, roomElementCount({ custom }));
   if (cc?.match && (mode !== 'constructed' || scenario || single)) throw new IllegalAction('a match room is a plain constructed room');
@@ -2537,7 +1586,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     // CR D8.4: only a scenario room carries one; `undefined` is the normal case
     // and is not persisted (see persist()).
     ...(scenario ? { scenario } : {}),
-    // BL-43: likewise only a custom room, and persisted only then
+    // likewise only a custom room, and persisted only then
     ...(custom ? { custom } : {}),
     // CR D8.2: only ever constructed, and persisted only when set
     ...(single && mode === 'constructed' ? { single: true as const } : {}),
@@ -2551,32 +1600,25 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     ...(cc?.rated ? { rated: true } : {}),
     lobby: mode === 'draft' && !els ? freshLobby() : null,
     rematch: [false, false], rematchRoom: null,
-    amendments: [], proposal: null, fixCooldown: [0, 0], fixRun: null,   // BL-46: nothing fixed yet
-    disputes: [],   // BL-48: nobody has disputed it
+    amendments: [], proposal: null, fixCooldown: [0, 0], fixRun: null,
+    disputes: [],
     state, actions: [], events, sockets: [null, null], watchers: new Set(), forks: [],
-    // stamped a line below, by resetSegment(), which is where EVERY
-    // fresh action log gets its first version stamp — a new room and a re-deal
-    // are the same event as far as "which engine is recording this" goes.
-    // Setting it here as well would be dead code the moment resetSegment runs,
-    // and dead code is exactly what a red-check cannot see through.
+    // stamped by resetSegment() below, where every fresh action log gets its first version stamp
     versions: [],
     segKey: null, segSnapshot: null, heldEvents: [[], []], heldFrames: [[], []], bases: [], closing: null, segStartIndex: -1, segSeen: [], seenPending: [],
     segIdFloor: [], segRefs: [], sigs: [], cardLog: [], cardOpen: null, deferred: [[], []], ccMarks: [],
-    // BL-26: both banks START at the room's own setting — the ONE site that is
-    // allowed to read the constant, and it reads it through the argument
-    // default rather than directly. A clockless room's `clockMs` is never
-    // billed, never sent and never read; 0 says so louder than 60:00 would.
-    // docs/22 §5.5: …except a CC game after the first, which starts on the
-    // banks the match carried out of the game before (one bank per MATCH)
+    // both banks start at the room's own setting (the one site that reads the default, through
+    // the argument); a clockless room's `clockMs` is never read. docs/22 §5.5: a CC game after
+    // the first starts on the banks the match carried out of the game before.
     clockStart, clockMs: clockStart === null ? [0, 0] : cc?.clockMs ? [...cc.clockMs] : [clockStart, clockStart],
-    matchMs: 0, matchRun: false, startedAt: null,   // BL-37
+    matchMs: 0, matchRun: false, startedAt: null,
     clockStamp: Date.now(), clockRun: [false, false],
     building: [null, null],
-    fullControl: [false, false],   // BL-18: opt-in, and nobody has yet
+    fullControl: [false, false],
     passAll: [null, null], passAllWait: [null, null], passAllCovered: [null, null],
-    autoPass: [null, null],       // report #323: nobody has said yet
-    reportHold: [false, false],   // CT-182
-    watchHold: [null, null],      // 2026-10-03: nobody is watching a playback yet
+    autoPass: [null, null],
+    reportHold: [false, false],
+    watchHold: [null, null],
     // stamped again by resetSegment below, which is where every fresh log starts
     lastActionAt: Date.now(), unattendedSince: null,
   };
@@ -2587,24 +1629,13 @@ export function createRoom(code: string, seed: number, names: [string, string] =
   return room;
 }
 
-// ── who is allowed to CREATE a room ───────────────────────────────────
-//
-// Joining used to be get-or-create, so a mistyped code silently minted a brand
-// new empty game and dropped you into it, alone, convinced you were in your
-// friend's room. Playtest: Rashi did exactly that, twice, and the misses sat in
-// games/ afterwards as empty rooms nobody had played in.
-//
-// Creation is now the privilege of a code the SERVER handed out: /api/new mints
-// one and reserves it, and the first join to a reserved code spends the
-// reservation to create the room. Every other code must already exist. A code
-// you typed yourself can never create anything, which is the whole point — the
-// New-game button is unaffected because it goes through /api/new already.
+// Who may create a room: only a code the server handed out (/api/new reserves it, and the first
+// join spends the reservation). A code you typed yourself never creates anything, so a mistyped
+// code cannot mint an empty game.
 
-/** minted-but-not-yet-joined codes: when each was minted and — BL-43 — the
- * custom rules its creator chose (already resolved and checked) with the fixed
- * elements they were checked against. A join creates the room from THIS, never
- * from its own message, so the second player can no more re-specify the rules
- * than the clock. */
+/** minted-but-not-yet-joined codes: when each was minted, and the custom rules its creator chose
+ * (resolved and checked) with the elements they were checked against. A join creates the room
+ * from THIS, never from its own message, so the second player cannot re-specify the rules. */
 interface Reservation { at: number; custom?: RoomCustom; els?: Element[] }
 const reserved = new Map<string, Reservation>();
 /** a reservation nobody used is a dead code — do not honour it forever */
@@ -2638,67 +1669,36 @@ export function roomExistsOrReserved(code: string): boolean {
 }
 
 /**
- * CR D7.5 / CT-148 — WHY THE MESSAGE LIVES HERE AND NOT IN THE SOCKET HANDLER.
- *
- * A mistyped room code is the one refusal a player earns before they have a
- * game at all, and the SENTENCE is the whole product: the client shows it
- * verbatim on the connecting screen, and if it never arrives the screen says
- * "Connecting to the server…" forever. That decision used to be two inline
- * `send(ws, {t:'error', …})` calls inside main.ts's `msg.t === 'join'` branch,
- * where the only way to read it was to open a real WebSocket and play — the
- * same trap the pacing and the drain had each fallen into. Lifted to
- * a named function it is a value, so a test can assert what the player is
- * told without binding a port.
- *
- * Returns null when nothing is wrong with the CODE itself. It says nothing
- * about decks, seats or modes — those refusals need the room, and come after.
+ * CR D7.5: the sentence a join with a bad room code is refused with, or null when the code is
+ * fine. The client shows it verbatim on the connecting screen. A value, so a test can read it
+ * without a socket; decks, seats and modes are refused later, with the room.
  */
 export function joinRefusal(code: string): string | null {
   if (!code) return 'a room code is required';
   if (!roomExistsOrReserved(code)) {
-    // 2026-10-04: a room the idle sweep closed is not a typo — say what happened
+    // a closed room is not a typo: say what happened
     const closed = closedNotice(code);
     if (closed) return closed;
-    // A code that names no room, and that we never minted, is a typo — say so
-    // instead of quietly creating an empty game around it (playtest: two of
-    // those ended up saved in games/, and the player thought they were in
-    // their opponent's room the whole time).
+    // a code that names no room and that we never minted is a typo: say so, never create a game
+    // around it
     return `No game with code ${code}. Check the code with your opponent, or start a new game.`;
   }
   return null;
 }
 
 /**
- * Which seat a joiner gets, or the sentence they are refused with.
- *
- * A seat is CLAIMED when `room.users[seat]` names an account — set on join,
- * persisted, restored, carried across a rematch. The claim is what binds, not
- * the live socket: the socket is gone the moment the victim's tab closes, and
- * "wait for the disconnect, then sit down" has to fail exactly like sitting
- * down on them. So:
+ * Which seat a joiner gets, or the sentence they are refused with. A seat is CLAIMED when
+ * `room.users[seat]` names an account; the claim binds, not the live socket, so "wait for the
+ * disconnect, then sit down" fails exactly like sitting down on them.
  *
  *   requested, claimed by another account  → refuse, naming the occupant
  *   requested, claimed by me               → allow; the stale tab is kicked
- *                                            (a stale tab must never dead-end
- *                                            the real person behind "seat
- *                                            taken" — the LAN-era rule, kept)
  *   requested, unclaimed                   → allow; whoever is there is kicked
- *   no seat requested                      → my own claimed seat if I have
- *                                            one, else the first seat that is
- *                                            neither claimed by another nor
- *                                            occupied, else "full"
+ *   no seat requested                      → my own claimed seat if I have one, else the
+ *                                            first seat neither claimed nor occupied, else "full"
  *
- * ⚠ THE SIGNED-OUT CARVE-OUT, argued rather than assumed. An unclaimed seat
- * has no identity to bind to, so a signed-out player can be displaced from
- * one by anyone with the code. The alternative is a per-connection seat
- * token — a second auth system beside the one that already exists, with its
- * own "I lost my tab" recovery story. The mitigation is "log in": a claimed
- * seat cannot be taken, and playing signed in is what records the game
- * anyway. A signed-out joiner asking for a CLAIMED seat is refused like
- * anyone else — no account is "another account" from the claim's side.
- *
- * Like `joinRefusal`: a value, so test-seat-binding.ts can read the
- * sentence without a socket.
+ * An unclaimed seat has no identity to bind to, so a signed-out player can be displaced from
+ * it; logging in is the mitigation. A value, so test-seat-binding.ts reads it without a socket.
  */
 export type SeatVerdict =
   | { seat: 0 | 1; kicked: Room['sockets'][number] }
@@ -2733,22 +1733,13 @@ export function seatVerdict(room: Room, requested: number | undefined, me: strin
 }
 
 /**
- * The room for `code`, creating it ONLY if the code was reserved by /api/new.
- * Returns null when the code names nothing — the caller turns that into the
- * error the player sees.
- *
- * `mode`/`els`/`creatorDeck`/`clockStart` only matter when the room doesn't
- * exist yet (the creator's first join carries them); joining an existing room
- * ignores them.
- *
- * ⚠ BL-26: that "ignores them" is load-bearing for the clock. The SECOND
- * player's join carries whatever their own client felt like sending, and the
- * room's bank is not theirs to set — a joiner who could re-specify it could
- * hand their opponent a three-second game by editing a link.
+ * The room for `code`, creating it only if /api/new reserved the code; null when it names
+ * nothing. `mode`/`els`/`creatorDeck`/`clockStart` matter only to the creator's first join; a
+ * join to an existing room ignores them, so a joiner cannot re-set the room's clock.
  */
 export function joinableRoom(code: string, mode: GameMode = 'shared', els?: Element[], creatorDeck?: CardName[], clockStart: number | null = CLOCK_START_MS, single = false,
-  /** docs/22 §5.1: a match's game 1, created by its creator's join (server/match.ts);
-   * or, no `match`, a Competitive draft room's rules (report #356) */
+  /** docs/22 §5.1: a match's game 1, created by its creator's join (server/match.ts); or, no
+   * `match`, a Competitive draft room's rules */
   cc?: { rules?: GameRules; match?: RoomMatch }): Room | null {
   const existing = rooms.get(code);
   if (existing) return existing;
@@ -2758,9 +1749,8 @@ export function joinableRoom(code: string, mode: GameMode = 'shared', els?: Elem
   const reservation = reserved.get(code);
   if (!reservation) return null;
   reserved.delete(code);
-  // BL-43: a reservation made with custom rules brings them, with the fixed
-  // elements (if any) the pool was checked against — the join's own `els` are
-  // not consulted. Only a live draft carries rules; any other mode plays standard.
+  // a reservation made with custom rules brings them, with the elements the pool was checked
+  // against; the join's own `els` are not consulted. Only a live draft carries rules.
   const custom = mode === 'draft' ? reservation.custom : undefined;
   return createRoom(code, (Math.random() * 1e9) >>> 0, undefined, mode, custom ? reservation.els : els, creatorDeck,
     undefined, clockStart, custom, single,
@@ -2770,26 +1760,17 @@ export function joinableRoom(code: string, mode: GameMode = 'shared', els?: Elem
 /** Apply an action to the room's authoritative state and record it. Throws
  * whatever the engine throws (IllegalAction) — caller reports it to the actor. */
 export function applyToRoom(room: Room, action: Action): EngineEvent[] {
-  // BL-27 — a game that is over without the BOARD saying so. The engine
-  // refuses everything once `state.winner` is set, but a loss on time never
-  // touches the state (and neither does a stamped result whose replay stopped
-  // short), so without this the loser could go on playing a game they had
-  // already lost. Narrow on purpose: `state.winner !== null` is still the
-  // engine's own business, so no in-state path can be changed by this line.
+  // a game over without the board saying so (a loss on time, a stamped result): the engine
+  // would still take the loser's moves. `state.winner` itself stays the engine's business.
   if (decidedOutsideState(room)) throw new IllegalAction('this game is already over');
   settleClock(room);   // bill elapsed time to whoever WAS on the clock
-  // BL-46: any action that lands ends a proposed fix (owner, 2026-10-16) — it
-  // was a proposal about the board as it stood. main.ts tells both seats.
+  // any action that lands ends a proposed fix, which was about the board as it stood
+  // (main.ts tells both seats)
   room.proposal = null;
   const before = room.state;
-  // hold this action's events back from the opponent only while the segment
-  // it was taken in is the one still open. (main.ts drains a run of forced
-  // battle actions after a segment's key has already moved on; those are
-  // public and must not land in anybody's held queue.)
-  //
-  // BL-46: an AGREED FIX is never held. It is public — both players agreed to
-  // it in the open — so its events reach both seats now, and the frozen board
-  // each seat is shown of the other's half is patched to show it (below).
+  // hold this action's events from the opponent only while the segment it was taken in is still
+  // open: main.ts drains forced battle actions after the key has moved on, and those are public.
+  // An agreed fix is never held: it is public, and the frozen board is patched to show it.
   const isFix = action.type === 'amend';
   const holding = !isFix && room.segKey !== null && segmentKey(before) === room.segKey;
   // the reference key is taken against the state the action is applied to,
@@ -2798,23 +1779,21 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   // inside a hidden step, the closing action's resolutions are kept as frames
   // for the playback (E.frames — rules-inert, a clone per resolution)
   const r = apply(room.state, action, holding ? { frames: true } : {});
-  // CARD STATS: the opening is the board the FIRST action was taken on — a
-  // restored room already mid-game has none recorded and never invents one
+  // the opening is the board the first action was taken on; a room restored mid-game has none
+  // and never invents one
   if (room.actions.length === 0 && !room.cardOpen) room.cardOpen = cardOpen(before);
   room.cardLog.push(cardFact(before, r.state, action, r.events));
   room.state = r.state;
   room.actions.push(action);
-  room.lastActionAt = Date.now();   // 2026-10-04: the idle sweep's clock
+  room.lastActionAt = Date.now();   // the idle sweep's clock
   room.segIdFloor.push(before.nextId);
   room.segRefs.push(referenceKey(before, r.state, action, sym, before.rngState !== r.state.rngState));
-  // BL-38: the record. Taken here, by the engine that just applied the action,
-  // because this is the only moment at which anybody knows for certain what
-  // the board looked like — every later answer is a reconstruction.
+  // the fingerprint record, taken by the engine that just applied the action: the only moment
+  // anybody knows the board for certain
   room.sigs.push(digest(signature(r.state)));
-  // CR D4.3e, D4.3f: what this showed each seat of the hidden cards — measured only for
-  // an action that stays inside the open hidden step (the only place an undo
-  // walks), as rebuild() re-measures it after a restart or an undo. Held in
-  // `seenPending` below until an undo asks (settleSeen)
+  // CR D4.3e, D4.3f: what this showed each seat of the hidden cards, measured only for an action
+  // that stays inside the open hidden step, as rebuild() re-measures it; held in `seenPending`
+  // until an undo asks (settleSeen)
   room.segSeen.push(NOTHING_SEEN);
   // CR D4.6: the CC take-back's marks, as rebuild() derives them
   const cc = ccMeasure(before, action, r.state, r.events, room.names);
@@ -2845,10 +1824,8 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
     }
   }
   if (room.state.winner !== null) room.winner = room.state.winner;   // stamp it
-  // CR D8.5: and if it was a concede that decided it, stamp who and WHEN. The
-  // turn is read off the state the action was applied to — a concede does
-  // not advance the turn, but "the turn it was taken on" is a fact about the
-  // moment, and the fold must never have to replay to recover it.
+  // CR D8.5: a concede that decided it stamps who and on which turn, read off the state it was
+  // applied to, so the fold never replays to recover it
   if (action.type === 'concede' && before.winner === null && room.state.winner !== null) {
     room.concession = { seat: action.seat, turn: before.turn };
   }
@@ -2858,14 +1835,9 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   return r.events;
 }
 
-/**
- * Close whatever segment was open and open the one the CURRENT state is in
- * (which may be none): a fresh freeze, a fresh start index, an empty hold.
- *
- * The caller reads `heldEvents` for the reveal BEFORE calling this. Every
- * segment boundary — 'plan'→'haste', 'haste'→null, 'deploy'→'plan' — is this
- * one call; there is no per-phase branch anywhere.
- */
+/** Close whatever segment was open and open the one the current state is in (maybe none): a
+ * fresh freeze, start index and hold. The caller reads `heldEvents` for the reveal first. Every
+ * segment boundary is this one call; there is no per-phase branch. */
 export function openSegment(room: Room): void {
   room.segKey = segmentKey(room.state);
   room.segSnapshot = room.segKey ? structuredClone(room.state) : null;
@@ -2884,26 +1856,23 @@ function resetSegment(room: Room): void {
   room.ccMarks = [];
   room.segIdFloor = [];
   room.segRefs = [];
-  // BL-38: a fingerprint is a claim about THIS log, and this is a different
-  // one — same rule as `forks` and `versions` below.
+  // a fingerprint is a claim about THIS log, like `forks` and `versions` below
   room.sigs = [];
   room.cardLog = [];
   room.cardOpen = null;
   // the previous action log is gone, so any fork recorded against it is too:
   // a fork is a claim about THIS log, and this is a different one
   room.forks = [];
-  // BL-46: an agreed fix is a claim about the discarded log too
+  // an agreed fix is a claim about the discarded log too
   room.amendments = [];
   room.proposal = null;
-  // BL-48: …and so is a dispute of its result
+  // …and so is a dispute of its result
   room.disputes = [];
   room.fixRun = null;
-  // and so is the version ledger, for exactly the same reason — the old
-  // stamps index an action log that no longer exists, and a `from` pointing
-  // into a discarded log is worse than no stamp at all. The re-deal happens on
-  // the running engine, so the new log starts stamped with it from action 0.
+  // and so is the version ledger: old stamps index a discarded log. The re-deal runs on this
+  // engine, so the new log is stamped with it from action 0.
   room.versions = [{ at: new Date().toISOString(), sha: engineVersion(), from: 0 }];
-  // 2026-10-04: a fresh log is a fresh start for the idle sweep
+  // a fresh log is a fresh start for the idle sweep
   room.lastActionAt = Date.now();
   openSegment(room);
   room.bases = [resumePoint(room)];
@@ -2916,48 +1885,10 @@ export function undoLastAction(room: Room): LostAction[] {
 }
 
 /**
- * The ONE thing a splice can break that no repair can fix: does a LATER action
- * name an entity that THIS action brought into existence?
- *
- * THIS USED TO BE THE WHOLE GATE, AND THE OWNER REJECTED IT (2026-08-23,
- * answering ledger #76):
- *
- *   "In deployment and planning, you're 'alone' in a world that no one else
- *    can see. So you should be perfectly allowed to undo everything, up to the
- *    beginning of that phase … I don't understand your question otherwise."
- *
- * He is right at the game level, and the gate was answering a question about
- * NUMBERING, not about the game. `nextId` is one global clock, so splicing an
- * action that allocated ids shifts every later id down by however many it
- * took; the log is replayed verbatim, so an opponent's `hostId: 8` goes on
- * saying 8 when their unit has become 7. That is a bookkeeping fault in OUR
- * representation, and the player should never have been asked to pay for it.
- * `undoActionAt` now REPAIRS it (see `renumberAction`) instead of refusing.
- *
- * What survives here is the residue that a repair genuinely cannot reach. The
- * ids in `[lo, hi)` are the ones the spliced action created, and after the
- * splice they do not exist at all — there is no number to rewrite them to. A
- * later action naming one of them is an action about a unit that is being
- * un-played, and the only honest answers are "refuse" or "silently drop their
- * move"; we refuse.
- *
- * Two things this deliberately does NOT ask, both of which were the report:
- *
- *  - **Who** acted after you. `seat` is kept in the signature because the call
- *    site reads better with it. Deployment being "entirely separate from the
- *    opponent" is true, and is precisely why the opponent's identity was never
- *    the question.
- *  - Whether the later action **has a payload**. Hand indices and choices are
- *    untouched by a renumbering; only ids are at risk, and `entityRefs` is the
- *    exhaustive list of those. The old `RENUMBER_IMMUNE` five (`donePlanning`,
- *    `doneHaste`, `doneDeploying`, `passPriority`, `concede`) are covered by
- *    the general rule rather than by an exception list — they name no id, so
- *    they can never be re-pointed.
- *
- * Inside a hidden segment this should essentially never fire: naming a unit
- * your opponent deployed behind the screen means naming a unit you cannot see.
- * It is kept because `undoActionAt` is also reachable from forensics and from
- * the public tail path, where an attack CAN name a unit deployed a turn ago.
+ * The one thing a splice can break that no repair can fix: does a later action name an entity
+ * this action created? Those ids (`[lo, hi)`) cease to exist, so there is no number to rewrite
+ * them to, and we refuse. Who acted after, and whether their action has a payload, are not
+ * asked: only ids are at risk, and `entityRefs` lists them all.
  */
 export function spliceable(room: Room, index: number, seat: Seat): boolean {
   void seat;
@@ -2972,53 +1903,10 @@ export function spliceable(room: Room, index: number, seat: Seat): boolean {
 }
 
 /**
- * The same action, renumbered for a log the splice has shortened.
- *
- * WHY THIS IS NOT "REWRITING SOMEBODY ELSE'S MOVE". An entity id is not part
- * of what a player chose — it is the row number we happened to file their
- * choice under. `augment { hostId: 8 }` means "the mod goes on that unit", and
- * after the unit ahead of it is un-played the same unit is called 7. Leaving
- * the 8 in place does not preserve their intent; it destroys it, which is
- * exactly what the "no such unit" refusal above was.
- *
- * WHY A CONSTANT SHIFT IS THE RIGHT ARITHMETIC. The spliced action allocated
- * `[lo, hi)`. If nothing else about the rebuild changes — which is the thing
- * we are about to check — every later action allocates the same ids it did
- * before, one block lower, so `id -> id - (hi - lo)` for everything at or
- * above `hi`. Ids below `lo` predate the splice and never move.
- *
- * WHY THE ASSUMPTION IS SAFE. It is not assumed, it is VERIFIED:
- * `undoActionAt` rebuilds and then compares every later action's reference
- * key, which resolves an id to "the k-th entity created by the action tagged
- * t7" rather than to a number. If the shift was right, every key comes out
- * byte-identical; if the world moved in any other way, a key differs and the
- * whole undo is rolled back. So the repair can only ever land when it is
- * provably a repair.
- *
- * The rewritten action carries the ORIGINAL's tag: it is the same action, and
- * the reference keys on both sides of the comparison have to agree about that
- * or every entity it created would look like a different entity.
- */
-/** Exported for `test-undo-segment.ts` §8: this is a pure function of an
- * action and an id range, and the `via: { face }` corruption is only
- * observable in its OUTPUT — by the time the rebuild has run, a mangled
- * activation is indistinguishable from an action the engine simply refused. */
-/**
- * CT-199 — A REFERENCE KEY, RENUMBERED THE WAY `renumberAction` RENUMBERS AN ACTION.
- *
- * A key names entities by creation identity (`symbolizer`), so a splice cannot
- * move them — but a CACHED card is written whole into a key (`at(p.cache, i)`,
- * and the zone delta's `c:{…}` entries), and its `uid` comes off the same
- * `nextId` clock. Splicing out an action that allocated ids [lo, hi) moves
- * every later uid down by hi − lo, exactly as it moves every later entity id,
- * and the key read that as the later move meaning something else: undoing a
- * spawn was refused because the opponent had cached a card after it.
- *
- * Only the COMPARISON renumbers (undoActionAt, the old key's side). What a key
- * writes is unchanged — the file's `refs` keep the uid, and the card ledger
- * reads them as it always has. A uid inside the
- * spliced block is left alone: that card was cached by the action being taken
- * back, so the rebuilt key cannot name it and the compare still refuses.
+ * A reference key renumbered the way `renumberAction` renumbers an action. A key names entities
+ * by creation identity, but a cached card is written whole into it, with a `uid` off the same
+ * `nextId` clock, so a splice shifts it. Only the comparison renumbers (undoActionAt); a uid
+ * inside the spliced block is left alone, so the compare still refuses.
  */
 export function renumberRefUids(ref: string, lo: number, hi: number): string {
   if (!ref.includes('"uid":')) return ref;
@@ -3030,19 +1918,10 @@ export function renumberRefUids(ref: string, lo: number, hi: number): string {
 }
 
 /**
- * CT-365 — WHY NO CACHED-CARD `uid` IS SHIFTED HERE. A `{ cached: { seat, uid } }`
- * target (types.ts `TargetRef` / `CachedRef`) never rides in an action payload,
- * so there is none to move. Measured 2026-10-25 against types.ts `ActionBody`:
- * no variant has a TargetRef, a CachedRef or a `uid` field. A target is chosen
- * on a decision and answered by `decide`, whose payload is `choice: number |
- * number[]` — an index into the options the rebuilt state offers, not a ref. The
- * cache-reading actions name a card by its cache INDEX (`playCached`, `prophesy`
- * / `augment` / `graft` with `from: 'cache'`, an amend `move` from 'cache'), and
- * an index does not come off the `nextId` clock. The one place a cached uid
- * reaches a comparison is the reference key, which `renumberRefUids` above
- * shifts. `ActionCarriesUid` below makes this a compile error rather than a
- * comment: give an action a `uid` (or a TargetRef) and the server typecheck
- * fails here, which is where it would have to be renumbered.
+ * No action payload carries a cached-card `uid` (a target is answered by a `decide` index, and
+ * the cache-reading actions name a cache index), so `renumberAction` shifts none; the one place
+ * a uid reaches a comparison is the reference key (`renumberRefUids`). `ActionCarriesUid` makes
+ * this a compile error: give an action a `uid` and the server typecheck fails here.
  */
 type ActionCarriesUid<T> = T extends readonly (infer U)[] ? ActionCarriesUid<U>
   : T extends object ? { [K in keyof T]-?: K extends 'uid' ? true : ActionCarriesUid<T[K]> }[keyof T]
@@ -3050,6 +1929,12 @@ type ActionCarriesUid<T> = T extends readonly (infer U)[] ? ActionCarriesUid<U>
 const _noUidInActions: [ActionCarriesUid<Action>] extends [false] ? true : never = true;
 void _noUidInActions;
 
+/**
+ * The same action, renumbered for a log the splice has shortened: every id at or above `hi`
+ * moves down by `hi - lo`. An id is the row a choice was filed under, not the choice, so this
+ * keeps the player's intent. The shift is verified, not assumed: `undoActionAt` compares every
+ * later reference key and rolls back on any difference. The result keeps the original's tag.
+ */
 export function renumberAction(a: Action, lo: number, hi: number): Action {
   const shift = hi - lo;
   let moved = false;
@@ -3104,37 +1989,12 @@ function asLost(l: LostAction[], kind: 'lost' | 'changed'): LostAction[] {
 }
 
 /**
- * Undo the action at `index` (splice + full rebuild), or REFUSE.
- *
- * Returns [] on success; a non-empty list is the refusal, and each entry names
- * a later action the splice would have damaged and how (`LostAction.kind`).
- * Callers enforce who may remove what; `spliceable()` screens the one case no
- * repair can reach, and this repairs and measures everything else.
- *
- * An undo must never cost anybody an action they did not ask to give up, and
- * must never quietly turn one into a different action. So the splice is
- * performed, REPAIRED, MEASURED against the log it came from, and rolled back
- * if either happened — a measurement beats a prediction:
- *
- *   lost     the rebuild refused an action it used to accept. This was always
- *            here; a silently dropped play is the bug that made game UZRG
- *            unreadable.
- *   changed  every surviving later action's REFERENCE KEY must be unchanged.
- *            This is the important half: an action that stays legal while
- *            pointing at another unit, another card in hand or another roll of
- *            the dice is invisible to the rebuild, invisible in the log, and
- *            worse than any refusal.
- *
- * THE REPAIR is what makes the owner's "you should be perfectly allowed to
- * undo everything" actually true rather than nearly true. Splicing shifts the
- * id clock, and the log replays verbatim, so without it the opponent's
- * `hostId` goes on naming a number that no longer exists and the undo dies on
- * "no such unit" — measured in real games, not supposed. `renumberAction`
- * rewrites those references down by the block the spliced action gave up, and
- * the reference-key comparison below is the PROOF that the rewrite was a
- * repair: keys are written in terms of which action created an entity, not of
- * its number, so a correct renumbering leaves every key byte-identical and any
- * other movement shows up as `changed` and is rolled back.
+ * Undo the action at `index` (splice + full rebuild), or refuse: [] on success, otherwise each
+ * entry names a later action the splice would damage. The splice is repaired (`renumberAction`),
+ * measured against the log it came from, and rolled back if a later action is
+ *   lost     refused by the rebuild, though it was accepted before; or
+ *   changed  still legal, but its reference key moved (another unit, card or roll).
+ * Callers enforce who may remove what.
  */
 export function undoActionAt(room: Room, index: number): LostAction[] {
   // the rebuild starts at bases[0], so nothing before it can be spliced out
@@ -3142,14 +2002,11 @@ export function undoActionAt(room: Room, index: number): LostAction[] {
   if (old && index < room.bases[0]!.at) return [{ i: index, type: old.type, seat: old.seat, why: 'it is before the earliest step the game can go back to', kind: 'lost' }];
   settleSeen(room);
   settleClock(room);   // bill up to the undo; the rebuild changes who runs
-  room.proposal = null;   // BL-46: the board a proposed fix was about is moving
+  room.proposal = null;   // the board a proposed fix was about is moving
   const restore = [...room.actions];
   const wasRefs = [...room.segRefs];
-  // CR D4.3d: what each later action in the open step SHOWED somebody of the
-  // hidden cards. A splice may not change it: the seat that saw those cards
-  // has seen them, and re-dealing them under their feet (your shuffle undone
-  // after their glimpse of a shared deck) is the take-back the rule forbids,
-  // done to somebody else
+  // CR D4.3d: what each later action in the open step showed somebody of the hidden cards. A
+  // splice may not change it: re-dealing cards a seat has seen is the take-back the rule forbids.
   const wasSeen = [...room.segSeen];
   const wasStart = room.segStartIndex;
   // the block of ids this action allocated — the ones that cease to exist,
@@ -3170,8 +2027,8 @@ export function undoActionAt(room: Room, index: number): LostAction[] {
     for (let j = index + 1; j < restore.length; j++) {
       const sameSeen = wasStart < 0 || j < wasStart
         || JSON.stringify(rb.segSeen[j - 1] ?? NOTHING_SEEN) === JSON.stringify(wasSeen[j] ?? NOTHING_SEEN);
-      // CT-199: the old key with its cache uids renumbered as the splice
-      // renumbered the ids — a cached card's uid is off the same id clock
+      // the old key with its cache uids renumbered as the splice renumbered the ids (a cached
+      // card's uid is off the same clock)
       const was = lo !== undefined && hi !== undefined && hi > lo && wasRefs[j] !== undefined
         ? renumberRefUids(wasRefs[j]!, lo, hi) : wasRefs[j];
       if (rb.segRefs[j - 1] === was && sameSeen) continue;
@@ -3191,23 +2048,14 @@ export function undoActionAt(room: Room, index: number): LostAction[] {
     return lost.length ? asLost(lost, 'lost') : asLost(changed, 'changed');
   }
   assignRebuild(room, rb);
-  // BL-38 — AN UNDO IS THE ONE THING THAT REWRITES A RECORD, AND MAY.
-  //
-  // Splicing action `index` out means every action after it was applied to a
-  // board that no longer exists, so the fingerprints recorded for them are
-  // about a game this file no longer claims to be. They are not evidence any
-  // more; they are the previous draft. The prefix up to the splice is
-  // untouched history and keeps its recorded entries.
-  //
-  // (The rollback path above deliberately does none of this: it restores the
-  // log, so the record it belongs to is still the right one, and leaving
-  // `room.sigs` alone is what keeps it that way.)
+  // An undo is the one thing that rewrites the fingerprint record: every action after the splice
+  // was applied to a board that no longer exists. The prefix keeps its recorded entries; the
+  // rollback above restores the log, so it leaves `room.sigs` alone.
   room.sigs = room.sigs.length === restore.length
     ? room.sigs.slice(0, index).concat(rb.sigs.slice(index))
-    : rb.sigs;   // a pre-BL-38 file has no prefix worth preserving
-  // CARD STATS, the same splice — except that a prefix the file never
-  // recorded stays unrecorded (null), rather than being filled in by today's
-  // engine: that is precisely the recomputation the card log exists to avoid
+    : rb.sigs;   // a file without fingerprints has no prefix worth preserving
+  // the card log, the same splice, except that an unrecorded prefix stays null rather than being
+  // filled in by today's engine
   const keptCards = room.cardLog.slice(0, index);
   while (keptCards.length < index) keptCards.push(null);
   room.cardLog = keptCards.concat(rb.cardLog.slice(index));
@@ -3217,52 +2065,16 @@ export function undoActionAt(room: Room, index: number): LostAction[] {
   return [];
 }
 
-/**
- * THE TAKE-BACK, as one decision.
- *
- * Ledger #37 (UZRG, 2026-08-21) — *"Planning should be like deployment,
- * entirely divorced from what your opponent is doing … you can't take back
- * making the wrong resource … if your opponent does something (which
- * shouldn't matter)"* — was answered by building the three hidden segments.
- * One day later ledger #76 (WEHH, 2026-08-22) filed the SAME complaint about
- * deployment, because the segments were only half of it: the segment says
- * which of your actions the undo should look at, and the SPLICE GATE says
- * whether it may go. #37's guards pin the first and cannot fail on the
- * second, and the reason nothing else pinned it is that the decision lived
- * inside a WebSocket message handler, where only a whole game over a socket
- * could reach it. It lives here now, and `test-undo-segment.ts` drives it
- * directly in the shape the owner reported.
- *
- * Returns ok, or the refusal to show the player — in the words of the thing
- * that actually went wrong. The old text ("your opponent has already acted on
- * top of that one") named the gate's proxy, not its reason, which is a large
- * part of why the report reads as a bug rather than as a rule.
- */
+/** The take-back, as one decision: ok, or the refusal to show the player, in the words of what
+ * actually went wrong. test-undo-segment.ts drives it directly. */
 export type UndoOutcome = { ok: true } | { ok: false; why: string };
 
 /**
- * How far back a walk may go: the first action in the open segment that is the
- * PLAYER'S OWN business.
- *
- * The owner drew this line himself (2026-08-23): *"you should be perfectly
- * allowed to undo everything, up to the beginning of that phase (unless there
- * is anything that triggers at the beginning/end of those phases such as
- * paying debt or 'at the beginning of deployment')"*.
- *
- * `segStartIndex` is nearly that line and not quite. Most start-of-phase
- * machinery never reaches the log at all — debt is paid inside the barrier
- * action that ends the resource step (CR 502.4), and start-of-deployment rot
- * damage inside the one that opens deployment (CR 112.13c), so both are already
- * below `segStartIndex`. What DOES reach the log is a start-of-phase trigger
- * that asks a question: the segment opens with the suspension already
- * standing, and the `decide` answering it lands at `segStartIndex` itself —
- * inside the walk, and undoable, which is what he says he does not want.
- *
- * So: if the segment opened mid-suspension, the leading run of `decide`
- * actions draining it is the phase's business, not the player's. That run is
- * unambiguous — while a decision is pending nobody else may act, so nothing
- * can be interleaved into it, and it ends at the first action that is not a
- * `decide` (the player's first free move of the step).
+ * How far back a walk may go: the first action in the open segment that is the player's own
+ * business. Debt and rot damage resolve inside the barrier actions (CR 502.4, CR 112.13c), so
+ * below `segStartIndex`; but a segment that opens mid-suspension starts with a run of `decide`s
+ * draining a start-of-phase trigger, which is the phase's business. Nobody else may act while a
+ * decision is pending, so that run is unbroken and ends at the first non-`decide`.
  */
 export function segmentFloor(room: Room): number {
   const start = room.segStartIndex;
@@ -3273,13 +2085,9 @@ export function segmentFloor(room: Room): number {
   return i;
 }
 
-/**
- * CR D4.6 — the earliest action `seat` may take back in a CC game right now, or
- * `actions.length` when there is none: the engine's floor (ccUndoFloor: the
- * open step is this seat's, never past a Done, a question, a draw or a reveal)
- * raised to just after the latest action in that run that showed EITHER seat a
- * hidden card (server/seen.ts — both players watch a CC step live).
- */
+/** CR D4.6: the earliest action `seat` may take back in a CC game now, or `actions.length` for
+ * none: the engine's floor (ccUndoFloor) raised past the latest action in that run that showed
+ * either seat a hidden card (seen.ts: both players watch a CC step live). */
 export function ccFloor(room: Room, seat: Seat): number {
   const len = room.actions.length;
   if (!room.state.sequential || decidedWinner(room) !== null) return len;
@@ -3297,14 +2105,9 @@ export const ccUndoOpen = (room: Room, seat: Seat): boolean =>
 
 export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
   settleSeen(room);
-  // BL-46: an AGREED FIX stands. A rewind's cut is a hard floor — both
-  // players agreed to the board it left, and nothing of the cut is in the log
-  // to measure against. An agreed EDIT is never undone itself (the walk
-  // passes over it), and an action before it may be taken back only when
-  // undoActionAt measures the edit as meaning exactly what it meant
-  // (referenceKey's 'amend' case); otherwise the refusal says it would change
-  // an agreed fix. So the other seat's earlier moves are not frozen by a fix
-  // that does not depend on them.
+  // An agreed fix stands: a rewind's cut is a hard floor, and an agreed edit is never undone
+  // itself. An action before an edit may go only if undoActionAt measures the edit unchanged
+  // (referenceKey's 'amend' case), so a fix does not freeze moves it does not depend on.
   const fixFloor = amendFloor(room);
   const segKey = room.segKey;
   // A pending PRE-COMMIT cast chain of the requester's own (X / cost /
@@ -3312,22 +2115,16 @@ export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
   // pends nobody else can act, so the log's tail is provably theirs and
   // splicing it takes nothing away from the opponent. The client chains
   // one undo per state until the suspension clears (cast-cancel, docs/07).
-  // The undo lock (CR D4.3) needs no floor here: every stage of the chain comes BEFORE the item
-  // resolves, so nothing hidden has been shown yet — a glimpse or a draw runs
-  // at resolution, under a 'resolve' suspension, which this test excludes.
+  // The undo lock (CR D4.3) needs no floor here: every stage comes before the item resolves, so
+  // nothing hidden has been shown yet (a glimpse or a draw runs at resolution).
   const sus = room.state.suspension, dec = room.state.decision;
   const castChain = !!dec && !!sus && dec.seat === seat
     && (sus.type === 'cast' ? sus.item.kind !== 'triggered' && sus.item.controller === seat
       // CR D4.2: picking a burst's next token is part of the same pre-commit cast
       : sus.type === 'burstPick' && sus.seat === seat);
-  // CR D4.6 — COMPETITIVE CONSTRUCTED: UNDO UNTIL DONE (docs/22 §3.6, §8 answer 2).
-  // A CC game has no hidden segment, so the walk above never starts; its own
-  // walk is the trailing run of this seat's actions in the open CC step, back
-  // to the latest barrier (engine/src/ccundo.ts) and to the latest action that
-  // showed EITHER seat a hidden card (the measured floor). One action per press,
-  // the last one — by construction this seat's own — through every gate the
-  // segment walk uses. The opponent watches it happen (main.ts sends both seats
-  // the new board).
+  // CR D4.6: undo until Done (docs/22 §3.6). A CC game has no hidden segment; its walk is the
+  // trailing run of this seat's actions in the open CC step, back to the latest barrier and the
+  // latest action that showed either seat a hidden card — one action per press, through every gate.
   if (room.state.sequential && !segKey && !castChain) {
     const len = room.actions.length;
     const floor = ccFloor(room, seat);
@@ -3351,19 +2148,12 @@ export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
     // the last one overall — your opponent is acting in parallel, behind the
     // screen, and what they do must not be able to take your undo away. So
     // walk back to YOUR most recent action within the segment and splice
-    // that. ALL THREE segments, not deployment alone: 'plan', 'haste' and
-    // 'deploy' are one `segmentKey`, which is exactly what #37 asked for
-    // ("planning should be like deployment") and what makes #76's fix reach
-    // planning for free.
-    //
-    // Pressing undo repeatedly walks you back to `segmentFloor` and stops
-    // there — the owner's "up to the beginning of that phase". The window
-    // closes at each barrier, which is right: once both of you have pressed
-    // done, the step's decisions lock.
+    // that, in all three segments. Repeated presses walk back to `segmentFloor` and stop there;
+    // the window closes at each barrier, when the step's decisions lock.
     const floor = segmentFloor(room);
     let i = room.actions.length - 1;
-    // BL-46: an agreed fix is nobody's own action to take back — the walk
-    // passes over it (see FIX_UNDO_REFUSAL for what still stops it)
+    // an agreed fix is nobody's own action to take back: the walk passes over it
+    // (FIX_UNDO_REFUSAL says what still stops it)
     while (i >= floor && i >= 0 && (room.actions[i]!.seat !== seat || room.actions[i]!.type === 'amend')) i--;
     if (floor < 0 || i < 0 || i < floor) {
       // distinguish the two ways the walk ends, because they mean different
@@ -3376,24 +2166,15 @@ export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
         : { ok: false, why: 'nothing to undo — nothing of yours this step' };
     }
     if (i < room.bases[0]!.at) return { ok: false, why: 'nothing to undo — nothing of yours this step' };
-    // CR D4.3 — NOR PAST WHAT YOU HAVE SEEN. The owner, 2026-10-04: an action
-    // that showed you hidden cards cannot be taken back, nor anything before
-    // it — "once you've seen the cards, it stands". Without this, Lilbot's
-    // Glimpse 2 in deployment plus undo was a free look at the top of a deck
-    // whose order the seed fixes. The walk stops just after the latest action
-    // of the step that showed THIS seat a hidden card (yours or, if one ever
-    // shows you something, your opponent's); an opponent's peek at a shared
-    // deck showed you nothing and does not stop you. Measured per action —
-    // server/seen.ts says how, and why there is no list of "reveal" cards.
+    // CR D4.3: nor past what you have seen. The walk stops just after the step's latest action
+    // that showed THIS seat a hidden card, measured per action (seen.ts); an opponent's peek at
+    // a shared deck showed you nothing and does not stop you.
     if (i < fixFloor) return { ok: false, why: FIX_UNDO_REFUSAL };
     if (i <= lastSeen(room.segSeen, seat, room.segStartIndex)) {
       return { ok: false, why: SEEN_REFUSAL };
     }
-    // ...and the one thing left that can still stop it: a later move that names an
-    // entity this action created, which un-playing it destroys outright. Note
-    // what is NOT asked any more, which was the whole of #76: "has your
-    // opponent acted since", nor even "would this renumber their move" — a
-    // renumbering is our bookkeeping and undoActionAt repairs it.
+    // ...and the one thing left that can stop it: a later move naming an entity this action
+    // created. A renumbering is our bookkeeping, and undoActionAt repairs it.
     if (!spliceable(room, i, seat)) {
       return { ok: false, why: 'a later move is about the very unit that action put on the board — it cannot be taken back on its own' };
     }
@@ -3410,35 +2191,24 @@ export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
   return { ok: true };
 }
 
-/* ══ BL-46 — AGREED FIXES ("Beta: propose a fix") ═══════════════════════
+/* Agreed fixes. Both shapes need the other seat's yes, and change nothing else in the game:
  *
- * The owner, 2026-10-16: *"Assuming both players agree, it doesn't change
- * anything in the game. it'll only be used to solve broken engine/game
- * issues. For example, Debeli lost a game yesterday since their card draw
- * didn't trigger (twice) and the game would have been 100% normal if they
- * could have just given themselves a card."* And: *"don't worry about the
- * 'rules' of this. It has to be agreed upon and is used in friendly matches."*
- *
- * Two shapes, both needing the other seat's yes:
- *
- *   EDIT    an `amend` action (engine/src/types.ts). Logged like any action,
- *           so replay, restore and the record see it; built ONLY here, by the
- *           accept path — main.ts refuses one off a socket.
- *   REWIND  the log is TRUNCATED, the way Learn to Play rewinds (ui/solo.ts):
- *           "Rewinding a whole step or two seems fine to me. Either say 'up to
- *           5 actions' or 'restart this step'" — both are offered. The actions
+ *   EDIT    an `amend` action (engine/src/types.ts), logged like any action so replay,
+ *           restore and the record see it; built ONLY here, by the accept path — main.ts
+ *           refuses one off a socket.
+ *   REWIND  the log is TRUNCATED, as Learn to Play rewinds (ui/solo.ts). The actions
  *           taken back are archived on the room (`Amendment.removed`), and the
  *           agreement waives the seen-cards undo lock (CR D4.3).
  *
- * The proposal itself is soft state (`Room.proposal`), shaped like a rematch
- * offer; the record is `Room.amendments`.
+ * The proposal is soft state (`Room.proposal`), like a rematch offer; the record is
+ * `Room.amendments`.
  */
 
-/** how long a proposal waits for its answer (owner, 2026-10-16) */
+/** how long a proposal waits for its answer */
 export const FIX_PROPOSAL_MS = 60_000;
 /** after a decline, how long the proposer waits before proposing again */
 export const FIX_COOLDOWN_MS = 15_000;
-/** the most non-forced actions a rewind may take back (the owner: "up to 5") */
+/** the most non-forced actions a rewind may take back */
 export const FIX_REWIND_MAX = 5;
 /** how far back a rewind's search looks, in logged actions */
 const FIX_REWIND_WINDOW = 80;
@@ -3459,16 +2229,14 @@ export interface Proposal {
   /** the fix in one sentence, every action named — the RECORD's wording (the
    * game file and the bug report; no player reads it) */
   what: string;
-  /** CT-323/325 — a rewind as each seat reads it ("your Fireball", "their
-   * pass"; a hidden-step action of the other seat never named or counted).
-   * Absent for an edit, which reads the same to both. */
+  /** a rewind as each seat reads it ("your Fireball", "their pass"; a hidden-step action of the
+   * other seat never named or counted). Absent for an edit, which reads the same to both. */
   whats?: [string, string];
   /** …and as the public log line reads it, which both seats see */
   pub?: string;
   reason: string;
-  /** BL-76 — the proposer ticked "Not a bug! Just taking something back."
-   * (owner, 2026-11-13): the reason may then be empty, and the report the
-   * fix files says it is a take-back. Absent: an ordinary fix. */
+  /** the proposer ticked "Not a bug! Just taking something back.": the reason may be empty, and
+   * the report the fix files says it is a take-back */
   takeBack?: true;
   /** `actions.length` when it was made — an answer to a different board is refused */
   at: number;
@@ -3479,7 +2247,7 @@ export interface Proposal {
 /** what a seat is shown of the open proposal (and of nothing else) */
 export interface ProposalView {
   id: number; seat: Seat; kind: 'edit' | 'rewind'; what: string; reason: string;
-  /** BL-76: the proposer says it is a take-back, not a bug */
+  /** the proposer says it is a take-back, not a bug */
   takeBack?: true;
   /** ms left to answer */
   left: number;
@@ -3491,15 +2259,9 @@ export interface RewindOption { to: number; label: string; takes: string | null 
 
 let proposalSeq = 0;
 
-/** a file's fixes back off disk — drop what is not one.
- *
- * NOT bounded by the log's length any more (it was, `at <= actions`): a later
- * rewind that goes back further than an earlier fix leaves that fix's `at`
- * past the end of the log, legitimately — stepping back one fix at a time
- * does exactly that. The bound dropped those fixes on every restart, which
- * lost their record and shifted every later fix's index (the 2026-10-21
- * round's runs; replay-room.ts --branch walks this list last to first and
- * needs all of it). */
+/** a file's fixes back off disk, dropping what is not one. Not bounded by the log's length: a
+ * later rewind that went further back legitimately leaves an earlier fix's `at` past the end
+ * (replay-room.ts --branch walks this whole list). */
 function sanitizeAmendments(raw: unknown, _actions: number): Amendment[] {
   if (!Array.isArray(raw)) return [];
   return raw.filter((a): a is Amendment => !!a && typeof a === 'object'
@@ -3509,13 +2271,9 @@ function sanitizeAmendments(raw: unknown, _actions: number): Amendment[] {
     && typeof a.what === 'string' && typeof a.reason === 'string');
 }
 
-/** The log index below which one seat's undo may not reach: the length the
- * last agreed REWIND left (-1 when none). An agreed edit is guarded by
- * measurement instead — see undoForSeat.
- *
- * The LAST rewind's, not the largest: a later rewind that went back further
- * cut the earlier one's board away, and the largest `at` then lay past the
- * end of the log and refused every undo until the log grew back past it. */
+/** The log index below which one seat's undo may not reach: the length the LAST agreed rewind
+ * left (-1 when none) — not the largest, since a later, deeper rewind cut the earlier one's
+ * board away. An agreed edit is guarded by measurement instead (undoForSeat). */
 export function amendFloor(room: Room): number {
   for (let k = room.amendments.length - 1; k >= 0; k--) {
     const a = room.amendments[k]!;
@@ -3539,8 +2297,7 @@ export function fixesRefusal(room: Room): string | null {
 /** Why an EDIT cannot be proposed right now (the timing half) — null when it
  * can. A rewind has no timing rule: "a rewind any time". */
 export function editTiming(room: Room): string | null {
-  // (the hidden steps were refused here at first — lifted the same day, see
-  // apply.ts doAmend; a fix is shown to both seats at once)
+  // a fix is shown to both seats at once, so the hidden steps take edits too (apply.ts doAmend)
   if (room.state.decision) return 'no edits while a decision is pending — a rewind still works';
   return null;
 }
@@ -3552,8 +2309,8 @@ export function fixInfo(room: Room, seat: Seat, now = Date.now()): { proposal?: 
   const p = room.proposal;
   const cool = room.fixCooldown[seatSlot(seat)] - now;
   return {
-    // CT-325: each seat reads the fix in its own words — never the record's,
-    // which names the other seat's hidden actions
+    // each seat reads the fix in its own words, never the record's, which names the other
+    // seat's hidden actions
     ...(p ? { proposal: { id: p.id, seat: p.seat, kind: p.kind, what: p.whats?.[seatSlot(seat)] ?? p.what, reason: p.reason, ...(p.takeBack ? { takeBack: true as const } : {}), left: Math.max(0, p.expires - now) } } : {}),
     ...(cool > 0 ? { cooldown: cool } : {}),
   };
@@ -3594,30 +2351,12 @@ function tailStates(room: Room): { lo: number; states: GameState[] } {
 }
 
 /**
- * What a rewind may go back to, right now, as `seat` would propose it: the
- * points just before each of the last five non-forced actions, just before
- * the asking seat's own last action, the start of this step, and the start of
- * the step before (the owner: "up to 5 actions" or "restart this step").
- *
- * NON-FORCED, because a forced step (an empty board "attacking", main.ts
- * drainForced) re-applies itself the moment the board owes it: a rewind
- * that cut just after one would land, and immediately take it again.
- *
- * CT-323: every option NAMES what it takes back ("back to before your
- * Fireball — takes back your Fireball and their pass"). The bare count
- * ("take back the last 1 action") read across both seats, and in 9 runs of
- * the 2026-10-21 round "the last 1" took back only the opponent's reply.
- *
- * CT-325 — INSIDE A HIDDEN STEP the other seat's actions there are unseen, so:
- *   · a cut INSIDE the step is offered only where it takes back none of the
- *     other seat's hidden actions — its public ones (done planning, done
- *     deploying, an agreed fix) may go (XSAP #247 took back the opponent's
- *     hidden Maw of Despair, RTPE #255 the reverse);
- *   · the start of the step (and the step before) may take the other seat's
- *     hidden actions too — both seats have seen that board — and says so in
- *     words that carry no count, whether or not they did anything;
- *   · nothing anywhere counts the log ("(10 logged actions)" told the other
- *     seat how many hidden actions the proposer had taken).
+ * What a rewind may go back to now, as `seat` would propose it: just before each of the last
+ * five non-forced actions, before the seat's own last action, and the start of this step and
+ * of the step before. Non-forced, because a forced step re-applies itself as soon as the board
+ * owes it. Every option names what it takes back. Inside a hidden step a cut within the step
+ * takes none of the other seat's hidden actions, the step's start may (saying so with no
+ * count), and nothing counts the log.
  */
 export function rewindPlans(room: Room, seat: Seat): CutPlan[] {
   if (fixesRefusal(room) !== null || !room.actions.length) return [];
@@ -3646,10 +2385,8 @@ export function rewindPlans(room: Room, seat: Seat): CutPlan[] {
   };
   /** something in the cut this seat can see and did not merely re-trigger */
   const real = (xs: CutItem[]): boolean => xs.some(x => !(x.hidden && x.seat !== seat));
-  /** a cut inside the open hidden step takes back none of the other seat's
-   * HIDDEN actions there: only this seat's own, and the other seat's public
-   * ones (rewind-cuts.ts PUBLIC_IN_HIDDEN: done planning, done deploying, an
-   * agreed fix) — CR D4.5d */
+  /** a cut inside the open hidden step takes back none of the other seat's hidden actions there,
+   * only its public ones (rewind-cuts.ts PUBLIC_IN_HIDDEN) — CR D4.5d */
   const ownOnly = (to: number): boolean => {
     if (segNow === null) return true;
     if (to <= openStart) return false;   // that is the start of the step's own option
@@ -3693,14 +2430,9 @@ export function rewindPlans(room: Room, seat: Seat): CutPlan[] {
   const here = segNow !== null ? openStart : startOf(len);
   // (the window's edge mid-step — a restart, or a step longer than the window — is not its start)
   if (here > lo || lo === 0) offer({ to: here, kind: 'start', step: stepLabel(at(len)), items: items(here), hiddenStep: segNow !== null, seat });
-  // CT-376 — "the start of the step before" gets the before-cuts' forced-action
-  // skip. A cut just before a forced action lands and takes it again at once
-  // (main.ts drainForced), so the step's first board a player can STAND on is
-  // its first non-forced action. A step that was nothing but forced actions
-  // (turn 1's two empty attack declarations) was never stood on at all: cutting
-  // to it collapsed onto the start of the step after it — the current one. Such
-  // a step is passed over, and the option is the last step before this one that
-  // a player actually stood in.
+  // the start of the step before skips forced actions, as the before-cuts do (a cut just before
+  // one takes it again at once); a step of nothing but forced actions was never stood on, so it
+  // is passed over for the last step a player actually stood in.
   let end = here;
   while (end > lo) {
     const prev = startOf(end - 1);
@@ -3766,8 +2498,7 @@ export function proposeFix(room: Room, seat: Seat, req: { edit?: unknown; rewind
   const cool = room.fixCooldown[seatSlot(seat)] - now;
   if (cool > 0) return { ok: false, why: `your last fix was declined — wait ${Math.ceil(cool / 1000)}s` };
   const reason = typeof req.reason === 'string' ? req.reason.trim().slice(0, FIX_REASON_MAX) : '';
-  // BL-76: a take-back is not a bug, and needs no "what went wrong" (owner,
-  // 2026-11-13: "stop players from having to type 'oops' or 'aoiehf'")
+  // a take-back is not a bug, and needs no "what went wrong"
   const takeBack = req.takeBack === true;
   if (!takeBack && reason.length < 3) return { ok: false, why: 'say what went wrong — it is filed as a bug report' };
   let p: Omit<Proposal, 'id' | 'expires' | 'at' | 'seat' | 'reason' | 'takeBack'>;
@@ -3775,7 +2506,7 @@ export function proposeFix(room: Room, seat: Seat, req: { edit?: unknown; rewind
     const to = req.rewind;
     const plan = rewindPlans(room, seat).find(o => o.to === to);
     if (!plan) return { ok: false, why: 'that rewind is not on offer any more — open the fix again' };
-    // CT-325: no count of the log in any of them, and each seat its own words
+    // no count of the log in any of them, and each seat its own words
     p = {
       kind: 'rewind', to: plan.to, what: cutText(plan, 'record', room.names),
       whats: [cutText(plan, 0, room.names), cutText(plan, 1, room.names)],
@@ -3844,13 +2575,8 @@ export function recordAmendment(room: Room, entry: Amendment): void {
   persist(room);
 }
 
-/* ── BL-48: DISPUTE A FINISHED GAME ─────────────────────────────────────
- *
- * Report #231: "concede the win to the opponent after a match — for instance,
- * if you ended up winning due to a bug." The owner, 2026-10-21: "Maybe just a
- * 'dispute game' button right on the final screen, by 'rematch'". A dispute
- * files a report and tags the game; it changes no result, rating or stat
- * (main.ts / dispute.ts carry it out). */
+/* Disputing a finished game: a dispute files a report and tags the game; it changes no result,
+ * rating or stat (main.ts / dispute.ts carry it out). */
 
 /** the longest "what went wrong" a dispute keeps */
 export const DISPUTE_NOTE_MAX = 1000;
@@ -3924,8 +2650,8 @@ export function noteFixRun(room: Room, continues: boolean, at: number, now = Dat
   persist(room);
 }
 
-/** End the open run: clear it and hand back what to file (null: none).
- * `keepDate`: the boot's flush, which is not a move (CT-196, see persist). */
+/** End the open run: clear it and hand back what to file (null: none). `keepDate`: the boot's
+ * flush, which is not a move (see persist). */
 export function takeFixRun(room: Room, keepDate = false): { from: number; at: number; fixes: Amendment[] } | null {
   const r = room.fixRun;
   if (!r) return null;
@@ -3945,17 +2671,10 @@ function sanitizeFixRun(raw: unknown, amendments: unknown): FixRun | null {
 }
 
 /**
- * Carry out an agreed REWIND: truncate the log to `p.to` and rebuild — the
- * Learn to Play shape, server-side. Returns the record, or a refusal (the room
- * is then untouched).
- *
- * What goes with the cut, because it was a claim about the actions cut: the
- * fingerprints and card facts (`sigs`, `cardLog`), version stamps past the
- * end (clamped, so the actions that follow are still credited to this
- * engine), and the soft state an action would have dropped — the standing
- * passes, the deferral queues, a formation being built, a playback hold.
- * The caller drains the forced steps the rebuilt board owes and re-sends each
- * seat a whole fresh view (a join), which drops the clients' own arms too.
+ * Carry out an agreed rewind: truncate the log to `p.to` and rebuild. Returns the record, or a
+ * refusal (the room untouched). What goes with the cut, being a claim about the actions cut:
+ * `sigs`, `cardLog`, version stamps past the end (clamped), and the soft state an action would
+ * have dropped. The caller drains the forced steps owed and re-sends each seat a fresh view.
  */
 export function rewindRoom(room: Room, p: Proposal, by: Seat): { ok: true; amendment: Amendment } | { ok: false; why: string } {
   const to = p.to;
@@ -3994,11 +2713,10 @@ export function rewindRoom(room: Room, p: Proposal, by: Seat): { ok: true; amend
   return { ok: true, amendment };
 }
 
-/** The refusal a player reads when an undo is rolled back. A refusal has to
- * name what was measured, or the player has no way to tell a rule from a bug
- * — which is how #76 came to be filed. */
+/** The refusal a player reads when an undo is rolled back. It names what was measured, so the
+ * player can tell a rule from a bug. */
 function undoRefusal(refused: LostAction[]): string {
-  // BL-46: an agreed fix in the way is named as one
+  // an agreed fix in the way is named as one
   if (refused.some(r => r.type === 'amend')) return 'taking that back would change an agreed fix — it cannot be undone now';
   const changed = refused.every(r => r.kind === 'changed');
   const what = refused.length === 1 ? 'a move' : `${refused.length} moves`;
@@ -4007,41 +2725,9 @@ function undoRefusal(refused: LostAction[]): string {
     : `taking that back would drop ${what} made after it — it cannot be undone now`;
 }
 
-/**
- * read a file's version ledger back, keeping only entries that could
- * have been written by this server.
- *
- * Defensive because the input is a FILE: it may predate the field entirely
- * (→ `[]`, which is honest — "this game does not say what recorded it"), and
- * a hand-edited one may hold anything. A malformed entry is DROPPED rather
- * than repaired: an invented `from` would send `--as-recorded` to the wrong
- * commit for part of the log, which is the exact failure the ledger exists to
- * prevent. `from` must be non-decreasing for the segments to mean anything.
- */
-/**
- * BL-38 — the recorded fingerprints off disk. Aligned to the log, and NOTHING
- * IS INVENTED: an action the file has no fingerprint for gets `''`, which
- * means "not recorded" and never "matches".
- *
- * ⚠ THE OBVIOUS VERSION OF THIS FUNCTION DEFEATS THE WHOLE FEATURE, and it
- * was written first. Filling a gap with the REBUILDING ENGINE'S OWN ANSWER
- * looks harmless — it is the best guess available, and on an unmoved engine it
- * is even right. But it is then PERSISTED, and from that moment the file
- * carries a full set of fingerprints that were computed after the fact. The
- * next replay compares today's answer against today's answer, matches, and
- * reports `as-recorded` — "this is the game that was played" — about a game
- * nothing ever verified.
- *
- * It is not hypothetical: every live room on the deploy box predates this
- * field, and the restart that ships it restores all of them. The feature would
- * have started lying on the deploy that introduced it.
- *
- * A record is a thing somebody wrote down at the time, or it is not a record.
- *
- * A file whose record is longer than its log is truncated to the log: the
- * extra entries index actions that are not there, and an array that cannot be
- * indexed by action is not a record of anything.
- */
+/** The recorded fingerprints off disk, aligned to the log. Nothing is invented: a missing entry
+ * is `''` ("not recorded"), never the rebuilding engine's answer, which once persisted would let
+ * a later replay verify today's answer against itself. Entries past the log are dropped. */
 function sanitizeSigs(raw: unknown, actions: number): string[] {
   const recorded = Array.isArray(raw) ? raw : [];
   const out: string[] = [];
@@ -4061,6 +2747,9 @@ function sanitizeCardLog(raw: unknown, actions: number): (CardFact | null)[] {
   return out;
 }
 
+/** A file's version ledger, keeping only entries this server could have written. A malformed
+ * entry is dropped, never repaired: an invented `from` would send `--as-recorded` to the wrong
+ * commit. `from` must be non-decreasing. */
 function sanitizeVersions(raw: unknown): VersionStamp[] {
   if (!Array.isArray(raw)) return [];
   const out: VersionStamp[] = [];
@@ -4074,22 +2763,10 @@ function sanitizeVersions(raw: unknown): VersionStamp[] {
 }
 
 /**
- * this room is about to be played on THIS engine (see replay-room.ts): say so in the file if
- * it is not already what the file says.
- *
- * Returns true when something was appended (so the caller persists).
- *
- * Idempotent by construction: the stamp only appends when the running SHA
- * differs from the last one recorded, so restarting ten times on one commit
- * writes one stamp, not ten (the deploy box restarts a lot).
- *
- * A room whose file predates the field gets its FIRST stamp here, with
- * `from` = however many actions are already logged. That is the truthful
- * statement available: everything before this index was recorded by an engine
- * this file never named, and everything after it by this one. It deliberately
- * does NOT claim `from: 0` — backdating the current SHA over a log recorded by
- * an older engine would make `--as-recorded` confidently replay the wrong
- * rules and call the mismatch a rules change.
+ * This room is about to be played on THIS engine: append a stamp unless the last one already
+ * names it (true when appended, so the caller persists; one stamp per commit across restarts).
+ * A file without stamps gets its first at `from` = the actions already logged, never `from: 0`:
+ * backdating the current SHA over an older engine's log would make `--as-recorded` replay the wrong rules.
  */
 function stampVersion(room: Room): boolean {
   const sha = engineVersion();
@@ -4122,35 +2799,22 @@ function assignRebuild(room: Room, rb: Rebuilt): void {
   room.ccMarks = rb.ccMarks;
   room.segIdFloor = rb.segIdFloor;
   room.segRefs = rb.segRefs;
-  // BL-38: `sigs` is deliberately NOT adopted here. Every other field above is
-  // a derivation and is supposed to be replaced by the newest rebuild; `sigs`
-  // is the record, and a rebuild is exactly the event it has to survive. The
-  // two callers that legitimately extend it (restoreRooms filling a pre-BL-38
-  // file, undoActionAt recording a spliced tail) do so themselves, by name,
-  // where the reason is visible.
+  // `sigs` is NOT adopted: it is the record, and a rebuild is what it must survive. Its two
+  // legitimate extenders (restoreRooms, undoActionAt's spliced tail) write it themselves.
 }
 
-/**
- * Build the room a rematch moves to: same players, same seats, same format,
- * a new seed — and, for a draft, a fresh lobby that already knows what you
- * just played (so "run it back" is one click).
- *
- * Constructed keeps both decks and deals immediately: you have already each
- * brought one, and being sent back to the deck picker to choose the same deck
- * again would be a strange way to say "again".
- */
+/** Build the room a rematch moves to: same players, seats and format, a new seed. A draft gets a
+ * fresh lobby that knows what you just played; constructed keeps both decks and deals at once. */
 export function createRematch(old: Room, code: string): Room {
   const seed = (Math.random() * 1e9) >>> 0;
-  // BL-26: a rematch keeps the clock setting. "Run it back" means the same
-  // game again, and a pair who agreed on a 20-minute bank (or on none) did not
-  // agree to an hour on the second one.
+  // a rematch keeps the clock setting: it is the same game again
   const room = old.mode === 'constructed' && old.decks[0] && old.decks[1]
     // …and a single card duel stays one, with the same two cards
     ? createRoom(code, seed, [...old.names], old.mode, old.els, old.decks[0]!, undefined, old.clockStart, undefined, !!old.single)
-    // BL-43: and a custom draft keeps its rules — the same resolved deal, not a re-resolution
+    // and a custom draft keeps its rules — the same resolved deal, not a re-resolution
     : createRoom(code, seed, [...old.names], old.mode, old.mode === 'draft' ? undefined : old.els,
       undefined, undefined, old.clockStart, old.custom, false,
-      // report #356: a Competitive draft's rematch is Competitive too
+      // a Competitive draft's rematch is Competitive too
       old.mode === 'draft' && old.rules?.sequential ? { rules: { sequential: true } } : undefined);
   if (old.mode === 'constructed' && old.decks[0] && old.decks[1]) {
     room.decks = [[...old.decks[0]!], [...old.decks[1]!]];
@@ -4172,28 +2836,13 @@ export function createRematch(old: Room, code: string): Room {
 }
 
 /**
- * BL-01 — build the room the MATCHMAKER puts two strangers into.
- *
- * The sibling of `createRematch` above, and deliberately shaped like it: the
- * SERVER builds the room outright and hands both clients its code, rather than
- * one client creating a room and the other being told to find it. That is what
- * makes "two players land in the same room without either one sending a link"
- * true by construction — there is no window in which one of them has a room
- * and the other has a URL.
- *
- * `a` and `b` are the two queue entries. `a` takes seat 0. The caller decides
- * which is which (queue.ts randomises it off the pair, so neither the
- * longer-waiting player nor the higher-rated one gets a systematic side).
- *
- * ⚠ THREE THINGS THIS DOES THAT A NORMAL ROOM CREATION DOES NOT:
- *
- * 1. `rated: true`. This is the ONLY site that sets it — see Room.rated.
- * 2. The clock comes from MATCH_CLOCK_MS, not from either player. See that
- *    constant for why asking them would break BL-27.
- * 3. `users` is stamped before either client has connected, exactly as the
- *    rematch does, so the game is attributable from the first action. If it
- *    waited for the joins, a player who accepted and then closed the tab
- *    would leave a game belonging to nobody.
+ * Build the room the matchmaker puts two strangers into. The server builds it outright and hands
+ * both clients its code, so there is no window where one has a room and the other a URL. `a`
+ * takes seat 0 (queue.ts randomises the pair). Unlike a normal creation:
+ *   1. `rated: true` — the only site that sets it (Room.rated);
+ *   2. the clock comes from MATCH_CLOCK_MS, not from either player;
+ *   3. `users` is stamped before either client connects, so the game is attributable from the
+ *      first action even if a player closes the tab.
  */
 export function createMatch(
   a: { userId: string; username: string; deck?: CardName[]; deckId?: string },
@@ -4205,11 +2854,8 @@ export function createMatch(
   const names: [string, string] = [a.username, b.username];
   if (mode === 'constructed') {
     if (!a.deck || !b.deck) throw new IllegalAction('a constructed match needs both decks');
-    // The constructed branch of createRematch, for the same reason: both
-    // players have already chosen a deck (you cannot queue for constructed
-    // without one), so the room DEALS rather than opening a deck-picker
-    // lobby. createRoom only takes one deck, so the second is assigned and
-    // the state re-dealt from both.
+    // both players brought a deck to queue, so the room deals rather than opening a picker;
+    // createRoom takes one deck, so the second is assigned and the state re-dealt from both
     const room = createRoom(code, seed, names, mode, undefined, a.deck, undefined, MATCH_CLOCK_MS.constructed);
     room.decks = [[...a.deck], [...b.deck]];
     room.deckIds = [a.deckId ?? null, b.deckId ?? null];
@@ -4223,9 +2869,7 @@ export function createMatch(
     persist(room);
     return room;
   }
-  // Draft: pass NO trio, so createRoom opens the ordinary blind lobby. Two
-  // strangers have even more reason than two friends not to let one of them
-  // pick the elements — which is the argument the lobby was built on.
+  // Draft: no trio, so createRoom opens the blind lobby and neither stranger picks the elements
   const room = createRoom(code, seed, names, mode, undefined, undefined, undefined, MATCH_CLOCK_MS.draft);
   room.users = [a.userId, b.userId];
   room.rated = true;
@@ -4235,19 +2879,12 @@ export function createMatch(
 }
 
 /**
- * The room a LEAGUE match is played in (docs/20-league.md §5) — createMatch's
- * draft branch, with three differences:
- *
- * 1. `league` is stamped, so the finished game reports to the league.
- * 2. The lobby is fixed to the 'random' method: the trio is drawn uniformly,
- *    and only once BOTH players have said they are ready — so nobody sees a
- *    pack before the opponent has arrived (the P1P1 peek trio.ts warns of).
- *    Dealing at creation with `els` would skip the lobby and allow exactly that.
- * 3. `rated` is the caller's: the week's pairings are system-made like the
- *    queue's and move the rating; a week-0 game two players chose is not.
- *
- * `users` is stamped before either client connects, as createMatch does, so
- * seatVerdict refuses anybody but the two players from the first join.
+ * The room a league match is played in (docs/20-league.md §5): createMatch's draft branch, but
+ *   1. `league` is stamped, so the finished game reports to the league;
+ *   2. the lobby uses the 'random' method, drawn only once both players are ready, so nobody
+ *      sees a pack before the opponent arrives (dealing at creation would skip the lobby);
+ *   3. `rated` is the caller's: system-made pairings move the rating, a week-0 game does not.
+ * `users` is stamped before either client connects, so seatVerdict admits only the two players.
  */
 export function createLeagueRoom(
   a: { userId: string; username: string },
@@ -4259,11 +2896,9 @@ export function createLeagueRoom(
 ): Room {
   const seed = (Math.random() * 1e9) >>> 0;
   const names: [string, string] = [a.username, b.username];
-  // A CONSTRUCTED season (owner, 2026-11-01) uses the ordinary constructed
-  // waiting room: each seat picks a deck there, the game deals when both are
-  // in. Created with the placeholder (decks stay [null, null]), on the
-  // constructed clock the matchmaker's constructed rooms use. A rated one
-  // moves the CONSTRUCTED rating, because the rating is per room.mode.
+  // A constructed season uses the ordinary constructed waiting room: each seat picks a deck there.
+  // Created on the placeholder and the constructed clock; a rated one moves the constructed
+  // rating (the rating is per room.mode).
   const room = mode === 'constructed'
     ? createRoom(code, seed, names, 'constructed', undefined, leaguePlaceholderDeck(), undefined, MATCH_CLOCK_MS.constructed)
     : createRoom(code, seed, names, 'draft', undefined, undefined, undefined, MATCH_CLOCK_MS.draft);
@@ -4276,14 +2911,9 @@ export function createLeagueRoom(
   return room;
 }
 
-/** Rename a seat. Names are cosmetic: they live in room.names (persisted, used
- * by replay) and in the live state's player slot for rendering.
- *
- * NOTE this happens OUTSIDE the action log, so it does not reach the open
- * segment's frozen snapshot — and turn 1's 'plan' segment is snapshotted at
- * room creation, before anybody has typed a name. viewFor() therefore carries
- * the LIVE name over the frozen player slot; a name is never hidden.
- * The state is replaced, never edited: a rebuild base may be holding it. */
+/** Rename a seat. Names are cosmetic and live outside the action log, so they never reach the
+ * open segment's frozen snapshot: viewFor() carries the live name over it (a name is never
+ * hidden). The state is replaced, never edited: a rebuild base may be holding it. */
 export function renameSeat(room: Room, seat: 0 | 1, name: string): void {
   room.names[seat] = name;
   room.state = named(room.state, room.names);
@@ -4300,25 +2930,16 @@ export function setSeatUser(room: Room, seat: 0 | 1, userId: string | null): voi
 
 // ── persistence ───────────────────────────────────────────────────────
 
-/** Games whose last move is older than this are left on disk and NOT
- * restored at boot. They are still readable by replay-room.ts and by the
- * history fold, which read files; what they no longer do is get replayed
- * through the engine on every restart and walked by the sweep every second
- * for ever. Measured from `lastActionOf`, never the mtime (see
- * Room.lastActionAt for why the mtime said nothing). */
+/** Games whose last move (`lastActionOf`, never the mtime) is older than this stay on disk and
+ * are not restored at boot; replay-room.ts and the history fold still read their files. */
 const RESTORE_WINDOW_MS = 7 * 24 * 3600_000;
 /** how long a finished game with nobody at it stays in memory (main.ts sweepFinished) */
 export const FORGET_AFTER_MS = 3600_000;
 
 /**
- * When a saved game's log last changed. `lastActionAt` when the file has it.
- *
- * A file written before the field is BACKFILLED from its replay version stamps:
- * the first stamp whose `from` equals the log's length was written by a boot
- * that found every action already there, so its `at` is an upper bound on the
- * last action — and the earliest such stamp is the tightest. (A 0-action room
- * finds its creation stamp, `from: 0`, which is the start the owner counts
- * from.) With no such stamp the last write was a move, and the mtime is it.
+ * When a saved game's log last changed: `lastActionAt`, or for an older file the earliest version
+ * stamp whose `from` equals the log's length (written by a boot that found every action there, so
+ * an upper bound on the last one). With no such stamp, the mtime.
  */
 export function lastActionOf(raw: { lastActionAt?: unknown; actions?: unknown; versions?: unknown }, mtimeMs: number): number {
   if (typeof raw.lastActionAt === 'number' && Number.isFinite(raw.lastActionAt)) return raw.lastActionAt;
@@ -4332,118 +2953,83 @@ export function lastActionOf(raw: { lastActionAt?: unknown; actions?: unknown; v
 }
 
 /**
- * `keepDate` (CT-196): write the file but leave its mtime where it was.
- * history.ts reads the mtime as the day a game was played, so a write that is
- * not a move must not move it — the restore's version stamp and fork record,
- * and the boot's filing of a fix run, were re-dating every unfinished game to
- * the day of each restart. Every other write is a move (or a seat, a deck, a
- * name — something history should re-read), and dates the file as before.
+ * `keepDate`: write the file but leave its mtime, which history.ts reads as the day a game was
+ * played. A write that is not a move (a version stamp, a fork record, a boot's fix-run filing)
+ * must not move it.
  */
 function persist(room: Room, keepDate = false, live = true): void {
-  // ⚠ SANDBOX ROOMS ARE PERSISTED TOO — BL-06's call, and test-sandbox.ts
-  // asserts a played one rebuilds byte-identically across a restart. What
-  // bounds the disk is main.ts's cap: the fifty-first sandbox evicts the
-  // oldest WITH its file (dropRoom(code, false)).
+  // sandbox rooms are persisted too (test-sandbox.ts rebuilds one across a restart); main.ts's
+  // cap bounds the disk, evicting the oldest with its file
   try {
     mkdirSync(GAMES_DIR, { recursive: true });
     const path = join(GAMES_DIR, `${room.code}.json`);
     let was: number | null = null;
     if (keepDate) { try { was = statSync(path).mtimeMs; } catch { /* no file yet: nothing to keep */ } }
-    // temp + rename, like accounts.ts: this file is the game's only record,
-    // and a crash mid-write must not leave it half-written (restoreRooms
-    // would silently skip the corrupt room and the game would be lost)
+    // temp + rename: this file is the game's only record, and a crash mid-write must not leave it
+    // half-written
     const tmp = `${path}.tmp`;
-    // clockMs is persisted too: elapsed time cannot be reconstructed from a
-    // replay. (Additive field — older files without it restore at CLOCK_START_MS, which is 60:00 — this comment said 40:00 until 2026-08-26 and was wrong from the day the constant moved.)
+    // clockMs is persisted: elapsed time cannot be reconstructed from a replay
     writeFileSync(tmp, JSON.stringify({
       seed: room.seed, mode: room.mode, els: room.els, names: room.names,
-      // accounts: who each seat belonged to, so the stats fold knows whose
-      // game this was long after the sockets are gone (additive field)
+      // who each seat belonged to, so the stats fold knows whose game this was
       users: room.users,
       // and the result, stamped at the time — see Room.winner
       winner: room.winner,
-      // CR D8.5: and, when a concede decided it, who conceded on which turn.
-      // Additive: written only when present, so no other file grows a field.
+      // CR D8.5: when a concede decided it, who conceded on which turn (written only when present)
       ...(room.concession ? { concession: room.concession } : {}),
-      // the draft lobby: a room can be restarted mid-trio-choice, and losing
-      // two rankings to a deploy would be a genuinely annoying way to lose
-      // them (additive field)
+      // the draft lobby: a room can restart mid-trio-choice
       ...(room.lobby ? { lobby: room.lobby } : {}),
-      // CR D8.4: the scenario is part of the DEAL, so it sits beside `seed`
-      // rather than anywhere near the log. Additive: absent on every ordinary
-      // room and on every file written before the tester existed.
+      // CR D8.4: the scenario is part of the DEAL, so it sits beside `seed`, not the log
       ...(room.scenario ? { scenario: room.scenario } : {}),
-      // BL-43: the custom rules AND the deal they resolved to, beside the seed —
-      // the deal is what a restore re-deals from. Additive: written only when present.
+      // the custom rules and the deal they resolved to: the deal is what a restore re-deals from
       ...(room.custom ? { custom: room.custom } : {}),
-      // CR D8.2: a single card duel. Additive: written only when set.
+      // CR D8.2: a single card duel, written only when set
       ...(room.single ? { single: true } : {}),
       ...(room.singleDraw ? { singleDraw: room.singleDraw } : {}),
-      // BL-02: rated iff the matchmaker made this room. Additive and written
-      // only when true, so no existing game file grows a field — and an
-      // absent flag reads as unrated, which is right for every game played
-      // before the queue existed.
+      // rated iff the matchmaker made this room; written only when true, and absent reads as unrated
       ...(room.rated ? { rated: true } : {}),
       // the league match this room settles. Additive: written only when set.
       ...(room.league ? { league: room.league } : {}),
-      // docs/22 §2.3: a CC game's rules are PART OF THE DEAL (beside `seed`,
-      // like `custom`), and its match link. Additive: written only when set.
+      // docs/22 §2.3: a CC game's rules are part of the deal, like `custom`; and its match link
       ...(room.rules ? { rules: room.rules } : {}),
       ...(room.match ? { match: room.match } : {}),
       actions: room.actions, clockMs: room.clockMs,
-      // 2026-10-04: when the log last changed — what restore and the idle
-      // sweep age a room by (never the mtime; see Room.lastActionAt)
+      // when the log last changed: what restore and the idle sweep age a room by
       lastActionAt: room.lastActionAt,
       // …and, on the one write that ends a room's life, why it ended
       ...(room.closed ? { closed: room.closed } : {}),
-      // BL-26: the room's own bank, ALWAYS written (including `null`, which is
-      // "no clock" and must be distinguishable from a file that predates the
-      // setting — an absent field means 60:00, which is what those games were
-      // really played with). See restoreRooms.
+      // the room's own bank, always written: `null` is no clock, and must differ from a file that
+      // predates the setting (absent means CLOCK_START_MS)
       clockStart: room.clockStart,
-      // BL-37: how long the match actually took, and when it started. Always
-      // written; a file without them predates the timer and reads as unknown
-      // (0 / null), which is why the post-game screen omits the line rather
-      // than printing 0:00 for every game ever played before today.
+      // how long the match took and when it started; absent (an older file) reads as unknown
       matchMs: room.matchMs, startedAt: room.startedAt,
-      // WHAT EACH ACTION MEANT WHEN IT WAS TAKEN (referenceKey), parallel to
-      // `actions`. Process-local tags; the card ledger reads only each key's
-      // zone-delta tail.
+      // what each action meant when it was taken (referenceKey); its tags are process-local, so
+      // the card ledger reads only each key's zone-delta tail
       ...(room.segRefs.length === room.actions.length && room.actions.length
         ? { refs: room.segRefs }
         : {}),
-      // BL-38: WHAT THE BOARD LOOKED LIKE AFTER EACH ACTION, recorded as it was
-      // played. This is what lets a replay say "this is the game" rather than
-      // "no action was refused" — see Room.sigs. Guarded on length exactly as
-      // `refs` is: a partial array cannot be indexed by action, and half a
-      // record that reads as a whole one is worse than none. Additive — a file
-      // without it replays as before and says so.
+      // the board after each action, recorded as played (Room.sigs). Length-guarded like `refs`: a
+      // partial array cannot be indexed by action, and half a record read as whole is worse than none.
       ...(room.sigs.length === room.actions.length && room.actions.length
         ? { sigs: room.sigs }
         : {}),
-      // CARD STATS: what each action did to the cards, recorded as played —
-      // see Room.cardLog. Same length guard as `sigs`.
+      // what each action did to the cards (Room.cardLog); the same length guard
       ...(room.cardLog.length === room.actions.length && room.actions.length
         ? { cardLog: room.cardLog }
         : {}),
       ...(room.cardOpen && room.actions.length ? { cardOpen: room.cardOpen } : {}),
-      // BL-46: the agreed fixes — the "fixed" tag's source and a rewind's
-      // archive. Additive: written only when there is one.
+      // the agreed fixes: the "fixed" tag's source and a rewind's archive
       ...(room.amendments.length ? { amendments: room.amendments } : {}),
-      // BL-48: who disputed the result. Additive: written only when somebody did.
+      // who disputed the result
       ...(room.disputes.length ? { disputes: room.disputes } : {}),
       // …and the run of them not yet filed as a report (see FixRun)
       ...(room.fixRun ? { fixRun: room.fixRun } : {}),
-      // every restore that could not faithfully rebuild this game. Without
-      // it the file goes on claiming to be a straight-through record of a
-      // game it no longer describes (additive field)
+      // every restore that could not faithfully rebuild this game, so the file never claims to be
+      // a straight-through record of it
       ...(room.forks.length ? { forks: room.forks } : {}),
-      // which engine recorded which stretch of this log (see replay-room.ts) — the decoder
-      // ring `replay-room.ts --as-recorded` needs to check the file's claim
-      // against the rules as they actually were. Additive: a file without it
-      // restores exactly as before, it just cannot be replayed as-recorded.
+      // which engine recorded which stretch of this log: what `replay-room.ts --as-recorded` replays against
       ...(room.versions.length ? { versions: room.versions } : {}),
-      // constructed: decks are part of the replay config (additive field)
+      // constructed: decks are part of the replay config
       ...(room.mode === 'constructed' ? { decks: room.decks, deckIds: room.deckIds } : {}),
       // where a restart resumes this game: the log is never replayed to load it.
       // A finished game keeps it while it is in memory (its post-game screen)
@@ -4481,15 +3067,9 @@ function resumeOf(raw: unknown, actions: number): { base: Resume; events: Engine
   return { base: point(actions, events.length, state, seg.start as number, seg.snapshot ?? null, held, frames), events };
 }
 
-/**
- * CT-335 — A RUN OF FIXES IN A FILE THE RESTORE DOES NOT LOAD.
- *
- * A restored room's unfiled run is filed by main.ts at boot (flushFixRun). A
- * room the restore leaves on disk — closed, or a week without a move — never
- * reaches the map, so its run was never filed by anybody. restoreRooms takes
- * such a run OUT of its file (the date kept: not a move) and parks it here;
- * main.ts files each one as the same report row a live run files.
- */
+/** A run of fixes in a file the restore does not load (closed, or a week without a move). The
+ * restore takes it out of the file (keeping the date) and parks it here; main.ts files each one
+ * as a live run is filed. */
 export interface StaleFixRun {
   code: string;
   users: [string | null, string | null];
@@ -4532,11 +3112,9 @@ export function restoreRooms(now = Date.now()): void {
       const raw = JSON.parse(readFileSync(path, 'utf8')) as {
         seed: number; mode?: GameMode; els?: Element[]; names?: [string, string];
         actions: Action[]; clockMs?: [number, number];
-        /** BL-26: the room's bank. Absent in every file written before the
-         *  setting existed — see the restore below. */
+        /** the room's bank; absent in a file older than the setting (see below) */
         clockStart?: number | null;
-        /** BL-37: how long the match ran, and when it started. Absent in every
-         *  file written before the timer existed, which reads as unknown. */
+        /** how long the match ran, and when it started; absent reads as unknown */
         matchMs?: number;
         startedAt?: number | null;
         users?: [string | null, string | null];
@@ -4548,17 +3126,17 @@ export function restoreRooms(now = Date.now()): void {
         /** per-action reference keys, as of when the game was played
          * (process-local tags — never compared; the card ledger reads them) */
         refs?: unknown;
-        /** BL-38: per-action board fingerprints, as of when the game was played */
+        /** per-action board fingerprints, as of when the game was played */
         sigs?: unknown;
-        /** CARD STATS: per-action card facts and the opening, as played */
+        /** per-action card facts and the opening, as played */
         cardLog?: unknown;
         cardOpen?: unknown;
         versions?: VersionStamp[];
         /** CR D8.4: the scenario this room was dealt with */
         scenario?: unknown;
-        /** BL-43: the custom rules, and the deal they resolved to */
+        /** the custom rules, and the deal they resolved to */
         custom?: { rules?: unknown; deal?: unknown } | null;
-        /** BL-02: the matchmaker made this room */
+        /** the matchmaker made this room */
         rated?: unknown;
         /** the league match this room settles (docs/20-league.md) */
         league?: unknown;
@@ -4571,22 +3149,22 @@ export function restoreRooms(now = Date.now()): void {
         single?: unknown;
         /** CR D8.2c: the pair it was last drawn on */
         singleDraw?: unknown;
-        /** 2026-10-04: when the log last changed — see lastActionOf */
+        /** when the log last changed (lastActionOf) */
         lastActionAt?: unknown;
-        /** 2026-10-04: the idle sweep closed it — never restored */
+        /** the room was closed: never restored */
         closed?: unknown;
-        /** BL-46: the agreed fixes */
+        /** the agreed fixes */
         amendments?: unknown;
-        /** BL-48: who disputed the result */
+        /** who disputed the result */
         disputes?: unknown;
-        /** BL-46: the run of them not yet filed */
+        /** the run of them not yet filed */
         fixRun?: unknown;
         /** where a live game resumes (liveBlock) */
         live?: unknown;
       };
-      // CT-335: a file this loop does not load still files its run of fixes
+      // a file this loop does not load still files its run of fixes
       const strayRun = raw.fixRun === undefined ? null : staleFixRunOf(code, raw);
-      // 2026-10-04: a CLOSED game is over for good — never back in the map
+      // a CLOSED game is over for good — never back in the map
       if (raw.closed) {
         closedCount++;
         if (strayRun) {
@@ -4600,9 +3178,8 @@ export function restoreRooms(now = Date.now()): void {
         continue;
       }
       const lastActionAt = lastActionOf(raw, mtimeMs);
-      // …and a finished game past the hour `sweepFinished` keeps one for would
-      // only be replayed here to be forgotten again: restart time is for the
-      // games being played
+      // a finished game past the hour `sweepFinished` keeps one for is not loaded: it would only
+      // be forgotten again
       const stampedOver = raw.winner === 0 || raw.winner === 1;
       // closed in its file on the way past (no result — `winner` untouched), so
       // its link says what happened instead of "no game with that code"
@@ -4625,7 +3202,7 @@ export function restoreRooms(now = Date.now()): void {
         const tmp = `${path}.tmp`;
         writeFileSync(tmp, JSON.stringify(kept));
         renameSync(tmp, path);
-        pinMtime(path, mtimeMs);   // CT-196: filing a run is not a move
+        pinMtime(path, mtimeMs);   // filing a run is not a move
       };
       if (now - lastActionAt > RESTORE_WINDOW_MS || (stampedOver && now - lastActionAt > FORGET_AFTER_MS)) {
         // a week without a move. An UNFINISHED one is closed; a finished one
@@ -4644,11 +3221,9 @@ export function restoreRooms(now = Date.now()): void {
       const mode = raw.mode ?? 'shared';
       const custom = restoreCustom(raw.custom, mode);
       const els = sanitizeTrio(raw.els, roomElementCount({ custom }));
-      // CR D8.4. A file naming a scenario this build does not have is NOT
-      // restored as an ordinary game: the log was recorded against a board
-      // that came from somewhere, and replaying it without that board would
-      // produce a plausible-looking room describing a game nobody played.
-      // Loud, and the catch below turns it into a skipped room with a reason.
+      // CR D8.4: a file naming a scenario this build lacks is refused, never restored as an
+      // ordinary game: replaying its log without that board would describe a game nobody played.
+      // The catch below skips the room with the reason.
       const scenario = raw.scenario === undefined || raw.scenario === null
         ? undefined
         : String(raw.scenario);
@@ -4706,13 +3281,8 @@ export function restoreRooms(now = Date.now()): void {
       }
       // the actions before the resume point are sealed, so their bookkeeping is padding
       const { base: b, events } = resumed, { state } = b;
-      // BL-26 — THE ADDITIVE CASE, and the only place CLOCK_START_MS is still
-      // read outside creation. A file written before the setting existed has
-      // no `clockStart`, and 60:00 is not a guess for it: it is the bank that
-      // game was actually played with, because it was the only one there was.
-      // `sanitizeClock(undefined)` says exactly that, and `null` on disk (a
-      // room created with no clock) survives the round trip as `null` rather
-      // than being read as "missing".
+      // the only read of CLOCK_START_MS outside creation: a file older than the setting has no
+      // `clockStart`, and was played at the default. `null` on disk (no clock) stays `null`.
       const clockStart = sanitizeClock(raw.clockStart);
       const clockMs: [number, number] = Array.isArray(raw.clockMs) && raw.clockMs.length === 2
         ? [Math.max(0, Number(raw.clockMs[0]) || 0), Math.max(0, Number(raw.clockMs[1]) || 0)]
@@ -4724,8 +3294,7 @@ export function restoreRooms(now = Date.now()): void {
         ...(single ? { single: true as const } : {}),
         ...(single && Array.isArray(raw.singleDraw) && raw.singleDraw.length === 2 && raw.singleDraw.every(c => typeof c === 'string')
           ? { singleDraw: raw.singleDraw as [CardName, CardName] } : {}),
-        // BL-02: carried across the restart, or the queue's games would
-        // quietly stop being rated every time the box is deployed
+        // carried across the restart, or the queue's games would stop being rated at every deploy
         ...(raw.rated === true ? { rated: true } : {}),
         // …and a league room stays one, or its result would never reach the league
         ...(league ? { league } : {}),
@@ -4733,9 +3302,9 @@ export function restoreRooms(now = Date.now()): void {
         ...(rules ? { rules } : {}),
         ...(match ? { match } : {}),
         rematch: [false, false], rematchRoom: null,
-        // BL-46: the record survives the restart; a proposal does not
+        // the record survives the restart; a proposal does not
         amendments: sanitizeAmendments(raw.amendments, actions.length), proposal: null, fixCooldown: [0, 0],
-        // BL-48: and so does a dispute
+        // and so does a dispute
         disputes: sanitizeDisputes(raw.disputes),
         // …and so does a run of fixes not yet filed — main.ts files it at boot
         fixRun: sanitizeFixRun(raw.fixRun, raw.amendments),
@@ -4749,51 +3318,39 @@ export function restoreRooms(now = Date.now()): void {
         bases: [b], closing: null, segStartIndex: b.seg.start, seenPending: [],
         segSeen: actions.map(() => NOTHING_SEEN), segIdFloor: actions.map(() => 0), ccMarks: actions.map(a => blankMark(a.seat)),
         segRefs: sanitizeSigs(raw.refs, actions.length), deferred: [[], []],
-        // BL-38: the file's own record, kept verbatim, and an empty slot for
-        // every action it has none for — see sanitizeSigs
+        // the file's own record, kept verbatim, with an empty slot for every action it has none for
         sigs: sanitizeSigs(raw.sigs, actions.length),
-        // CARD STATS: the file's record, verbatim; null where it has none
+        // the file's card record, verbatim; null where it has none
         cardLog: sanitizeCardLog(raw.cardLog, actions.length),
         cardOpen: actions.length ? sanitizeOpen(raw.cardOpen) : null,
         forks: Array.isArray(raw.forks) ? raw.forks : [],
         versions: sanitizeVersions(raw.versions),
         clockStart,
-        // Nobody is connected right after a restart, so no clock runs yet —
-        // and BL-27 leans on both halves of this line. `clockStamp` is NOW,
-        // not the moment the file was written, so the hours the server spent
-        // down are never billed to anybody; `clockRun` is [false,false], so
-        // the expiry sweep skips this room outright until somebody joins and
-        // settles it. Nobody may lose on the strength of wall-clock time that
-        // passed while there was no game to play.
+        // Nobody is connected after a restart, so no clock runs: `clockStamp` is now, so the downtime
+        // is never billed, and `clockRun` is [false, false], so the expiry sweep skips the room until
+        // somebody joins. Nobody loses on time that passed with no game to play.
         clockMs, clockStamp: Date.now(), clockRun: [false, false],
-        // BL-37: the match clock is CARRIED ACROSS the restart, for the same
-        // reason `clockMs` is — it is time that really was spent on this game.
-        // What is NOT carried is the hours the server was down: `matchRun` is
-        // false and `clockStamp` is now, so the first settle after somebody
-        // joins bills nothing for the gap. A file that predates the timer
-        // restores at 0, which reads as unknown.
+        // the match clock is carried across the restart (time really spent on this game), but not the
+        // downtime: `matchRun` is false and `clockStamp` is now. An older file restores at 0, unknown.
         matchMs: Math.max(0, Number(raw.matchMs) || 0),
         matchRun: false,
         startedAt: typeof raw.startedAt === 'number' ? raw.startedAt : null,
         building: [null, null],
-        // BL-18: not persisted — every client re-asserts it on the join that
-        // brings it back into the room
+        // not persisted: every client re-asserts it on the join that brings it back
         fullControl: [false, false],
         // …and neither is a standing pass, which no join ever carries back
         passAll: [null, null], passAllWait: [null, null], passAllCovered: [null, null],
         autoPass: [null, null],       // …nor the auto-pass toggle or a yield
-        reportHold: [false, false],   // CT-182: …nor a report dialog
+        reportHold: [false, false],   // …nor a report dialog
         watchHold: [null, null],      // …nor a playback
-        // 2026-10-04: from the file (or backfilled), never "now" — a restart is
-        // not a move. A room already past its window is restored anyway and
-        // the idle sweep closes it once the reconnect grace has passed: this
-        // loop cannot know whether a tab is about to come back for it.
+        // from the file (or backfilled), never "now": a restart is not a move. A room past its window
+        // is restored anyway, and the idle sweep closes it after the reconnect grace.
         lastActionAt, unattendedSince: null,
       });
       // a LIVE room now continues under THIS engine: a rules change still
       // changes what the actions after it mean, so the boundary is stamped
       const restored = rooms.get(code)!;
-      // CT-196: a restart is not a move — the stamp is written, the date kept
+      // a restart is not a move: the stamp is written, the date kept
       if (decidedWinner(restored) === null && stampVersion(restored)) persist(restored, true);
       console.log(`[rooms] restored ${code} (${raw.actions.length} actions)`);
     } catch (err) {
