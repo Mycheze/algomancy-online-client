@@ -67,18 +67,21 @@ export interface CatalogueEntry extends Printed {
 export type CardClass = 'card' | 'token' | 'resource' | 'marker' | 'help' | 'exclusive';
 export type Release = 'base' | 'kickstarter' | 'lightdark';
 
+/** The expansion's name as its printed decks spell it ("Light & Dark (Dark/Fire)"). */
+const LIGHT_AND_DARK = 'Light & Dark';
+
 /** The release a printed deck belongs to. Derived from the deck NAME rather
  * than listed per card, so a new Light & Dark hybrid deck lands in the right
  * group with no edit here. */
 export function releaseOf(deck: string): Release {
   if (deck === 'Kickstarter Exclusive') return 'kickstarter';
-  if (/^Light & Dark\b/.test(deck)) return 'lightdark';
+  if (deck.startsWith(LIGHT_AND_DARK)) return 'lightdark';
   return 'base';
 }
 
-/** How each release is named to a player. */
+/** How each release is named to a player: the expansion as printed. */
 export const RELEASE_LABEL: Record<Release, string> = {
-  base: 'Base Game', kickstarter: 'Kickstarter Exclusive', lightdark: 'Light vs Dark',
+  base: 'Base Game', kickstarter: 'Kickstarter Exclusive', lightdark: LIGHT_AND_DARK,
 };
 
 const CATALOGUE = catalogueJson as unknown as Record<string, CatalogueEntry>;

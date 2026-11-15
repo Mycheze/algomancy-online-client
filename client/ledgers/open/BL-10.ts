@@ -342,5 +342,11 @@ export default {
     + 'error tone (role="alert", class crdocerr), "The rules document could not load: …", with a Try again button '
     + '(cr-retry, loadDoc then a repaint, so Loading… shows while it asks). Loading stays the dim note. §L.7 is used '
     + 'up: its scenario line was already red (.scnstatus.bad). Guarded by '
-    + '1383-rules-review-load-failure-is-an-error.test.ts. Reasoned, not looked at (no browser).',
+    + '1383-rules-review-load-failure-is-an-error.test.ts. Reasoned, not looked at (no browser).\n\n'
+    + '2026-11-15 (steward): the expansion is called by its printed name (docs/23-ui-inventory/03 §3.10: "\"Light vs '
+    + 'Dark\" vs \"Light & Dark\""). The card browser\'s and the builder pool\'s Printed deck chip read RELEASE_LABEL, '
+    + 'which said "Light vs Dark"; every printed deck is "Light & Dark (…)" and so are the home page, the rules and the '
+    + 'updates. cardindex.ts names it once (LIGHT_AND_DARK) for both the label and releaseOf. Typing either name still '
+    + 'finds the 166 cards. Left on purpose: §3.10\'s "colourless" chip beside the `is:colorless` flag, which is query '
+    + 'syntax (1241 left syntax untouched). Guarded by the census 1483-expansion-named-as-printed.test.ts.',
 } satisfies BacklogTicket;
