@@ -244,8 +244,8 @@ export const TUTORIAL: readonly TutorialSection[] = [
         btns: ['attackall', 'confirmattack', 'skipattack', 'clearform'],
       },
       {
-        text: 'If spell tokens could come along, the bar asks: click the tokens to bring, then Attack — n tokens riding, or Bring none.',
-        btns: ['rideconfirm', 'ridenone', 'ridecancel'],
+        text: 'If spell tokens could come along, a dialog shows them: click the tokens to bring, then Attack — n tokens riding, or Bring all, or Bring none.',
+        btns: ['rideconfirm', 'rideall', 'ridenone', 'ridecancel'],
       },
       {
         text: 'Blocking: pick up a unit and drop it in the slot in front of the attacking column you want to block (front or back row). To send a '

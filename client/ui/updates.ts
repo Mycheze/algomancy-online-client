@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-15', kind: 'change', text: 'After Attack!, the spell tokens that can come along now open in a dialog as cards: click the ones to bring, or use Bring all or Bring none. A counterattack asks the same way.' },
   { date: '2026-11-15', kind: 'change', text: 'A cached card shown beside your hand now wears one small "Cache" chip instead of the "cached" label above it and the turn chip. Hover the chip to see how long you have; the cache itself still shows the turn chip.' },
   { date: '2026-11-15', kind: 'change', text: 'On the game table, the bin now has the wider spot beside your name and shows its top three cards side by side; the cache, which rarely holds more than one or two, shows two and a +N.' },
   { date: '2026-11-15', kind: 'fix', text: 'A spell played through Tides of the Cosmos now offers Maelstrom Charger\'s copy, as it does from hand, and Spellbind played that way can take its mods.' },

@@ -86,6 +86,7 @@ import { Harness } from '../../engine/src/harness.ts';
 import { E } from '../../engine/src/engine.ts';
 import { legalActions } from '../../engine/src/apply.ts';
 import { viewFor } from '../../server/view.ts';
+import { spawn, toDeployment, toNextBattle } from '../../engine/test/util.ts';
 import { client, openLog } from './ui-driver.ts';
 import type { GameState, Seat } from '../../engine/src/types.ts';
 
@@ -447,6 +448,22 @@ const RAISE: Record<string, () => void> = {
     };
     ui.update(viewFor(s, SEAT), legalActions(s, SEAT));
   },
+  // the ride-along dialog is raised by Attack! on a built attack with a spell
+  // token at home that could come along
+  'ui.confirmRide': () => {
+    const h = new Harness(26998);
+    toDeployment(h);
+    const A = h.state.initiative;
+    const atk = spawn(h, A, 'The Foretold');
+    const e = new E(h.state);
+    e.createSpellToken(A, 'Poison', 1, e.homeRegion(A));
+    e.settle();
+    toNextBattle(h, A);
+    ui.join(h.state, A, legalActions(h.state, A));
+    ui.click({ act: 'unit', id: String(atk) });
+    ui.click({ act: 'slot', ci: '0', row: '0' });
+    ui.click({ btn: 'confirmattack' });
+  },
 };
 
 /** open the bare-table right-click menu and click the entry matching `want` */
@@ -484,7 +501,7 @@ const GAME_OVER = {
 };
 
 /** the overlays that are up only while this seat owes an answer (see §3) */
-const ASKED_OF_ME = new Set(['pickSetOpen']);
+const ASKED_OF_ME = new Set(['pickSetOpen', 'ui.confirmRide']);
 
 let REVEAL_STATE: GameState = new Harness(26900).state;
 let FIRST_CARD = 0;

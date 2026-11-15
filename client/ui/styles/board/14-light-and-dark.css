@@ -173,17 +173,25 @@
    opening the cache dialog. */
 .cachenames span { color: var(--accent); cursor: help; border-bottom: 1px dotted var(--accent); }
 
-/* [69] the ride-along picker. It sits INSIDE the prompt bar rather than being
-   a card row of its own: the report asked for "a little dialogue", and a bar
-   the width of the board full of full-size token cards would be a bigger
-   interruption than the accident it is preventing. Each chip is the same
-   clickable token as the one in the strip (data-act="token"), so picking here
-   and picking there are literally the same click. */
+/* the chips of a question asked inside the prompt bar (the counterattack's
+   "send which units?"): small, toggled on and off. */
 .ridepick { display: inline-flex; flex-wrap: wrap; gap: 4px; vertical-align: middle; margin: 0 4px; }
 .ridechip { display: inline-block; padding: 2px 8px; border-radius: 10px; cursor: pointer;
   border: 1px solid #7a5e1e; background: #1b2028; color: var(--fg, #e8e6df); font-size: 12px; }
 .ridechip:hover { border-color: var(--accent); }
 .ridechip.on { background: #3d5a20; border-color: var(--glow, #b7e26a); color: #eaf6d8; }
+
+/* the ride-along dialog (ui/ride-picker.ts): every spell token that may come
+   into the battle as a card, clicked in and out. Below the other dialogs, like
+   the pick dialogs, so the card zoom and the menus open over it. */
+.overlay.rideover { z-index: 58; }
+.overlaybox.ridebox { width: min(860px, 94vw); max-height: 92vh; max-height: 92dvh; overflow-y: auto;
+  display: flex; flex-direction: column; gap: var(--space-4); }
+.ridebox .ridezone { display: flex; flex-wrap: wrap; gap: var(--space-4); justify-content: center; min-height: 60px; }
+.ridebox .ridecard .card { width: clamp(72px, 10vw, 128px); }
+.ridebox .ridecard.on .card { outline: 4px solid var(--glow, #b7e26a); box-shadow: 0 0 14px rgba(183, 226, 106, .6); }
+.ridebox .ridefoot { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); }
+.ridebox .ridegap { flex: 1 1 auto; }
 
 /* CR 721.4a: what an augment would actually donate to a SPELL token, in the
    mod-in-progress bar — "you can only do this with attributes" (Caleb
