@@ -359,6 +359,18 @@ try_deploy() {
 # itself, never fired, and a push after a 33-minute gate on a master that moved meanwhile was refused:
 # seven times in five days a fix cleared to ship was staged for the owner instead.)
 # Returns 3 when the re-gate on the moved master is red; SHIP_GLOG is then that gate's log.
+# answered(0/1) outcome policy-json → true when the policy's ONLY objections are "the owner's call"
+# and the owner has just made it: this run resumed on his Discord answer and the worker read it as a
+# go-ahead (verdict ship). 2026-11-12: he answered a staged UI rework "approve A is fine for now" —
+# not the bare word, so an ANSWER (by design: "Approve, but …" must not land) — the worker re-ran,
+# wrote "You said yes to option A, so this is going live", and the policy staged it again for "292
+# changed UI lines — the owner's call". It sat three days behind an approval he had already given.
+# Every other reason (protected files, deleted tests, append-only contracts) still stages.
+owners_call_made() {
+  [ "$1" = 1 ] && [ "$2" = ship ] || return 1
+  jq -e '(.reasons | length) > 0 and all(.reasons[]; test("the owner.s call"))' <<<"$3" >/dev/null
+}
+
 ship_head() { # item
   local item="$1" pol try
   SHIP_GLOG=""
@@ -565,11 +577,16 @@ EOF
   local ncommits; ncommits=$(g rev-list --count origin/master..HEAD)
   log "$item → $outcome ($ncommits commit(s)): $title"
 
-  local final="$outcome" branch="" glog="" pol="" reasons=""
+  local final="$outcome" branch="" glog="" pol="" reasons="" answered=0
+  [ -f "$STATE/answers/$(slug "$item").md" ] && answered=1
   case "$outcome" in
     ship|already-fixed|not-a-bug)
       if [ "$ncommits" -gt 0 ]; then
         pol=$(policy origin/master HEAD); reasons=$(jq -r '.reasons|join("; ")' <<<"$pol")
+        if owners_call_made "$answered" "$outcome" "$pol"; then
+          pol=$(jq -c '.verdict = "ship"' <<<"$pol"); reasons="not held: the owner answered on Discord ($reasons)"
+          log "$item: the owner already answered — shipping over: $(jq -r '.reasons|join("; ")' <<<"$pol")"
+        fi
         glog=$(gate "$(slug "$item")"); local grc=$?
         if [ $grc -ne 0 ]; then
           branch=$(stage_head "$item"); final=gate-red
