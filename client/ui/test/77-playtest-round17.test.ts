@@ -698,7 +698,8 @@ test('[67] the Confirm button holds the block declaration until the ride questio
     'the counterattack side asks the same question the attack side does');
   assert.ok(ui.has({ act: 'token', id: String(tok) }), 'and the token is a chip you can pick');
 
-  ui.click({ act: 'token', id: String(tok) });
+  const picked = ui.click({ act: 'token', id: String(tok) });
+  assert.match(picked, /Counterattack — 1 token riding/, 'the confirm button says how many are riding');
   ui.click({ btn: 'rideconfirm' });
   const acts = ui.actions();
   assert.equal(acts.length, 1, 'answering it declares the blocks');
@@ -732,8 +733,6 @@ test('[67] wiring: the copy and the keybinding the board cannot be asked about',
   assert.ok(MAIN.includes('\'[data-btn="rideconfirm"]\''), 'Enter sends the counterattack you picked riders for');
   assert.ok(!MAIN.includes('\'[data-btn="ridenone"]\''),
     'and Enter must NOT be able to decline for you — that is the accident being fixed');
-  assert.match(MAIN, /Counterattack — \$\{n\} token/,
-    'the confirm button says how many are riding');
   assert.match(MAIN, /battle\?\.step !== 'declare' && h\.state\.battle\?\.step !== 'blocks'/,
     'and the question is cleared when BOTH steps it belongs to are over');
 });

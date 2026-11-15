@@ -164,6 +164,7 @@ import * as pg from './postgame.ts';
 // docs/22 — a Competitive match: the home card, the waiting room, the between screen
 import * as mt from './match.ts';
 import * as ps from './pickset.ts';
+import * as rp from './ride-picker.ts';
 import * as mm from './queue.ts';
 import { installLegal } from './legal.ts';
 import * as tt from './tabletop.ts';
@@ -6655,27 +6656,10 @@ function phaseBarHtml(err: string): string {
   if (s.phase === 'battle') {
     const b = s.battle!;
     if (b.step === 'declare') {
-      // [69] "It's very easy to attack without bringing along any spell tokens
-      // into the new region… make it a choice AFTER declaring attackers." The
-      // attack is built and Attack! has been pressed; the declaration is held
-      // here until the ride-along question is answered once. The tokens listed
-      // are the ones the ENGINE would accept (ui/battle.ts ridableTokens
-      // mirrors doDeclareAttack), and each chip is the same clickable token as
-      // the one in the strip, so the answer and the affordance are one thing.
-      if (ui.confirmRide !== null) {
-        const chips = ridableTokens(s, ui.confirmRide)
-          .map(id => s.entities[id]).filter((t): t is Entity => !!t)
-          .map(t => `<span class="ridechip${ui.spellTokens.includes(t.id) ? ' on' : ''}"
-              data-act="token" data-id="${t.id}">${ui.spellTokens.includes(t.id) ? '✓ ' : ''}${esc(t.card)} <b>X=${t.x}</b></span>`)
-          .join('');
-        const n = ui.spellTokens.length;
-        return `<div class="promptbar pending"><span class="who">${esc(s.players[ui.confirmRide]!.name)}:</span>
-          Select the spell tokens you wish to bring into the attacked region, or select Bring none.
-          <span class="ridepick">${chips}</span>
-          <button data-btn="ridecancel">Go back <span class="kh">(esc)</span></button>
-          <button ${n ? '' : 'class="primary" '}data-btn="ridenone">Bring none</button>
-          ${n ? `<button class="primary" data-btn="rideconfirm">Attack — ${n} token${n === 1 ? '' : 's'} riding <span class="kh">(enter)</span></button>` : ''}${err}</div>`;
-      }
+      // [69] the attack is built and Attack! has been pressed; the declaration
+      // waits on the ride-along dialog (ui/ride-picker.ts) and the bar only
+      // says what is being asked
+      if (ui.confirmRide !== null) return rideBarHtml(ui.confirmRide, err);
       // BL-19: one reading of "is anything built" for both bars and for Esc —
       // ui/formation.ts hasBuild. This bar used to ask about spellTokens and
       // forget `send`, the block bar the exact other way round.
@@ -6702,27 +6686,8 @@ function phaseBarHtml(err: string): string {
         ${built ? '<button data-btn="clearform" title="empty the formation being built">✕ Clear <span class="kh">(esc)</span></button>' : ''}${err}</div>`;
     }
     if (b.step === 'blocks') {
-      // [67] CR 610.3: the same dialogue as the attack side, on the counterattack.
-      // "What happened to Rashi's Poison tokens here? She just wanted to bring
-      // them with her attackers but they somehow went onto the stack" — the
-      // Confirm is held here until the question is answered once. The chips
-      // are `data-act="token"`, literally the same clickable token as the one
-      // in the strip, and sendableTokens (ui/battle.ts) mirrors
-      // doDeclareBlocks, so the list can never offer what the engine refuses.
-      if (ui.confirmRide !== null) {
-        const chips = sendableTokens(s, ui.confirmRide)
-          .map(id => s.entities[id]).filter((t): t is Entity => !!t)
-          .map(t => `<span class="ridechip${ui.send.includes(t.id) ? ' on' : ''}"
-              data-act="token" data-id="${t.id}">${ui.send.includes(t.id) ? '✓ ' : ''}${esc(t.card)} <b>X=${t.x}</b></span>`)
-          .join('');
-        const n = splitCounterattack(s, ui.send).spellTokens.length;
-        return `<div class="promptbar pending"><span class="who">${esc(s.players[ui.confirmRide]!.name)}:</span>
-          Select the spell tokens you wish to bring into the attacked region, or select Bring none.
-          <span class="ridepick">${chips}</span>
-          <button data-btn="ridecancel">Go back <span class="kh">(esc)</span></button>
-          <button ${n ? '' : 'class="primary" '}data-btn="ridenone">Bring none</button>
-          ${n ? `<button class="primary" data-btn="rideconfirm">Counterattack — ${n} token${n === 1 ? '' : 's'} riding <span class="kh">(enter)</span></button>` : ''}${err}</div>`;
-      }
+      // [67] CR 610.3: the counterattack asks the same ride-along question
+      if (ui.confirmRide !== null) return rideBarHtml(ui.confirmRide, err);
       // #281/#292 (owner, 2026-10-27): Confirm with units left over and none
       // sent asks once. Each chip is one leftover unit the engine would take
       // (ui/battle.ts sendableRest), toggled in and out of the send list the
@@ -7865,6 +7830,28 @@ function ensureBottomUi(): void {
  * the action bar carries the way back in. Nothing is decided by hiding it; the
  * step is still open and the picks are kept (ui.draftPack / ui.bottomPick).
  */
+/** the ride-along dialog's view: the tokens the declaration would accept
+ * (ui/battle.ts mirrors doDeclareAttack and doDeclareBlocks), each marked
+ * picked or not, read off the list the board's own token clicks toggle */
+function rideView(): rp.RideView | null {
+  const s = h.state;
+  if (ui.confirmRide === null || !s.battle) return null;
+  const counter = s.battle.step === 'blocks';
+  const ids = counter ? sendableTokens(s, ui.confirmRide) : ridableTokens(s, ui.confirmRide);
+  const list = counter ? ui.send : ui.spellTokens;
+  const tokens = ids.map(id => s.entities[id]).filter((t): t is Entity => !!t)
+    .map(t => ({ id: t.id, card: t.card, x: t.x, on: list.includes(t.id) }));
+  return {
+    who: s.players[ui.confirmRide]!.name, side: counter ? 'counter' : 'attack', tokens,
+    picked: counter ? splitCounterattack(s, ui.send).spellTokens.length : ui.spellTokens.length,
+  };
+}
+/** the action bar while the ride-along dialog is up: what is being asked, and no
+ * buttons — the answers are in the dialog, so Enter finds only its confirm */
+function rideBarHtml(seat: Seat, err: string): string {
+  return `<div class="promptbar pending"><span class="who">${esc(h.state.players[seat]!.name)}:</span>
+    choose the spell tokens to bring into the battle${err}</div>`;
+}
 /** the dialog was put away to look at the board, this step */
 let pickHidden = false;
 /** whose pick is open (the draft step, or the constructed bottom-2) */
@@ -8107,6 +8094,7 @@ function renderNow(): boolean {
     ${castingHtml()}
     ${pickOpen() ? pickModalHtml() : ''}
     ${pickSetOpen() ? ps.pickSetHtml(pickSetDec(), cardHtml, iconizeText) : ''}
+    ${ui.confirmRide !== null ? rp.ridePickerHtml(rideView(), cardHtml) : ''}
     ${erasedDialogHtml()}
     ${concedeHtml()}
     ${menuHtml()}
@@ -10702,6 +10690,17 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
     ui.rideAnswered = true; ui.confirmRide = null;
     if (h.state.battle?.step === 'blocks') declareBuiltBlocks(); else declareBuiltAttack();
   },
+  // every token that may ride goes, and the declaration with them
+  rideall: () => {
+    const s = h.state;
+    const seat = ui.confirmRide;
+    ui.rideAnswered = true; ui.confirmRide = null;
+    if (seat === null) return;
+    if (s.battle?.step === 'blocks') {
+      for (const id of sendableTokens(s, seat)) if (!ui.send.includes(id)) ui.send.push(id);
+      declareBuiltBlocks();
+    } else { ui.spellTokens = ridableTokens(s, seat); declareBuiltAttack(); }
+  },
   ridecancel: () => { ui.confirmRide = null; },   // back to building, unanswered
   confirmblocks: () => { confirmBuiltBlocks(); },
   // the counterattack question's chips: each is one leftover unit, in or out
@@ -11848,6 +11847,8 @@ function closeTopOverlay(): boolean {
   // still open — see pickModalHtml)
   if (pickSetOpen()) { ps.pickSetButton(pickSetDec(), 'pshide', 0, h.state.actionCount); return true; }
   if (pickOpen()) { pickHidden = true; return true; }
+  // the ride-along dialog: putting it away is its Go back, back to the attack being built
+  if (ui.confirmRide !== null) { ui.confirmRide = null; return true; }
   return false;
 }
 
@@ -11864,7 +11865,7 @@ function overlaysUp(withPick = true): boolean {
   const overlayUp = isReportOpen() || isRevealsOpen() || amend.isAmendOpen() || judgeOpen || helpOpen || logOpen || !!inspect
     || binView !== null || erasedView !== null || concedeAsk !== null || cacheView !== null || !!ui.menu
     || !!pendingTrio || (!!postGame && !postGameHidden) || replayActive() || reportJustSent()
-    || (withPick && (pickOpen() || pickSetOpen()));
+    || (withPick && (pickOpen() || pickSetOpen() || ui.confirmRide !== null));
   return overlayUp;
 }
 /**
@@ -11900,9 +11901,8 @@ document.addEventListener('keydown', e => {
     if (ui.menu) { ui.menu = null; render(); return; }
     if (closeTopOverlay()) { render(); return; }
     if (inField) return;
-    // the five "are you sure?" bars — Esc is their "Go back" (the doneplan and
-    // the [69] ride-along ones even advertise it on the button)
-    if (ui.confirmRide !== null) { ui.confirmRide = null; render(); return; }
+    // the "are you sure?" bars — Esc is their "Go back" (the doneplan one
+    // advertises it on the button; the ride-along dialog's rung is in closeTopOverlay)
     if (ui.confirmCounter !== null) { ui.confirmCounter = null; render(); return; }
     if (ui.confirmDone !== null) { ui.confirmDone = null; render(); return; }
     // CR D2.8/BL-30 — ABOVE the others because it is the innermost: it stands in
@@ -11992,7 +11992,9 @@ document.addEventListener('keydown', e => {
     // overlays swallow Enter so it cannot confirm game actions behind them
     // …and the pick dialog, when it is the only thing up, IS the game action
     // Enter confirms (Keep / Put on the bottom)
-    if (overlayUp && !(pickOpen() && !ui.menu && !document.querySelector('.overlay:not(.pickover)'))) return;
+    // (Enter confirms the ride-along dialog's picks the same way)
+    if (overlayUp && !((pickOpen() || ui.confirmRide !== null) && !ui.menu
+      && !document.querySelector('.overlay:not(.pickover):not(.rideover)'))) return;
     // D3: …and that exception reads the DOM for `.overlay`, which the report's
     // scrim is not — every layer that is not a pick dialog swallows Enter here
     if (overlaysUp(false)) return;
