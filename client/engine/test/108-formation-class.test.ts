@@ -540,11 +540,12 @@ test('#107 CR 602.6: the slot ask carries the real FormationSpot, and is still A
   finishBattle(h);
 });
 
-test('#107: all three formationSlot ask sites are accounted for', async () => {
-  // Derived, not typed: three SITES serving seven cards (CR 602.6 placeInFormation
+test('#107: all four formationSlot ask sites are accounted for', async () => {
+  // Derived, not typed: four SITES serving seven cards (CR 602.6 placeInFormation
   // → Hooba-Lin/Bot/God/Pon-out-of-battle; CR 602.7 collectFormationSpot →
   // Tiderunner Initiate/Trench Stalker; CR 702.3e pushInlinePlay → Hooba-Pon in
-  // battle). A fourth site reddens this, and its author has to give it a
+  // battle; CR 602.7 declareInlinePlay's own-spot ask → Tiderunner Initiate/Trench
+  // Stalker played by an effect, CT-564, test 1481). A fifth site reddens this, and its author has to give it a
   // `spot` and a test rather than shipping an unpointable question.
   const dir = new URL('../src/', import.meta.url);
   const files = (await readdir(dir, { recursive: true })).filter(f => f.endsWith('.ts'));
@@ -557,7 +558,7 @@ test('#107: all three formationSlot ask sites are accounted for', async () => {
       if (code.includes("kind: 'formationSlot'")) sites.push(f);
     }
   }
-  assert.deepEqual(sites.sort(), ['cards/sets/batch-water-a.ts', 'engine.ts', 'engine.ts'],
+  assert.deepEqual(sites.sort(), ['cards/sets/batch-water-a.ts', 'cards/sets/batch-water-a.ts', 'engine.ts', 'engine.ts'],
     'a new formationSlot ask must carry `spot` on every option (#107) and be covered here');
 });
 

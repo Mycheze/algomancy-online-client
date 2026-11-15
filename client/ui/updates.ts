@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-15', kind: 'fix', text: 'A unit played through another card, such as Insidious Invitation or Tides of the Cosmos, now asks what it asks when played from hand: The Everywhere names a card, and Tiderunner Initiate and Trench Stalker can join your formation.' },
   { date: '2026-11-15', kind: 'change', text: 'A page left open across an update now reloads itself onto the new version, on any page. It waits while you are in a game, building a deck, playing a challenge or writing a report.' },
   { date: '2026-11-15', kind: 'change', text: 'The League\'s Time code tab now has a message box: write your message, Insert the time where your cursor is, and copy it all into Discord at once. Pick the day off a calendar; AM times show gold, PM dusk blue.' },
   { date: '2026-11-15', kind: 'change', text: 'Games now carry on across a server update instead of being replayed from the start. After an update, moves made before it in the current step can no longer be undone.' },

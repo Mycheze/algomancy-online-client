@@ -33,7 +33,7 @@
  *    composeParts now materializes the copies as separate parts, each with
  *    its own targets and [cost] — see EffectDef.graftCopies.
  */
-import type { EffectPart, Entity, EntityId, FormationSpot, Seat, StackItem, TargetRef } from '../../types.ts';
+import type { CardName, EffectPart, Entity, EntityId, FormationSpot, Seat, StackItem, TargetRef } from '../../types.ts';
 import type { E, InlineCostAsk } from '../../engine.ts';
 import { ambushEffect, card, getCard, isGraftMultiplier, isSpellEffect, requiresTargets, specForSlot, unitRestrict, type EffectCtx, type EffectDef, type ResolvedTarget } from '../dsl.ts';
 import { selfOf, isEnt, isUnitCard, inlineMode, eraseFromPlay, perSeatRows } from './helpers.ts';
@@ -381,8 +381,9 @@ export const inlinePlayGoesToStack = (g: E): boolean =>
  * CR 702.1, 702.3 — DECLARE a card played by an effect: build its item and settle
  * everything the play has to settle before anybody may see it — X and the
  * other variable costs (CR 702.3a), its targets (CR 702.3c), its mode (CR 702.5),
- * the formation spot it is played into (CR 702.3e) and the fixed bracketed
- * costs (CR 702.4e). ONE function for BOTH branches of `playInline` (CT-332):
+ * the formation spot it is played into (CR 702.3e — the caller's, or the
+ * played card's own, CR 602.7), the fixed bracketed costs (CR 702.4e) and the
+ * played card's own "as I am played" naming (CR 702.3g). ONE function for BOTH branches of `playInline` (CT-332):
  * the in-place branch used to hand-roll its own declaration and skipped the
  * bracketed costs entirely, so a "[Sacrifice a unit]" spell played where
  * nobody could respond was played free of the sacrifice.
@@ -472,8 +473,45 @@ const declareInlinePlay = (
     item.formationSpot = spot;
     if (remembered) item.formationRemembered = true;
     if (fseat !== null && fseat !== seat) item.formationSeat = fseat;
+  } else if (!opts.intoFormation && def.kind === 'unit' && def.playsIntoFormation) {
+    // CR 602.7 (CT-564): the PLAYED card's own "You may play me into an open spot
+    // in your formation" (Tiderunner Initiate, Trench Stalker) — part of how
+    // the card is played whoever made the play, so it is asked here exactly as
+    // `E.collectFormationSpot` asks it for a play from hand: the player's own
+    // open spots, "stay out of formation" always on the menu (the text says
+    // *may*), and nothing asked with no formation (CR 602.7c). Asked on BOTH
+    // branches — no caller places a card it did not promise a spot to, so the
+    // in-place branch hands the answer to `spawnUnit` itself. A caller that
+    // already promises a spot (Hooba-Pon's `intoFormation`) asks that one only.
+    const slots = g.formationSlots(seat);
+    if (slots.length) {
+      // #107: `spot` beside `value` on every option, as at every formation ask
+      const out: FormationSpot = { kind: 'out' };
+      const options = [
+        ...slots.map(s => ({ label: s.label, value: s.spot, spot: s.spot })),
+        { label: 'stay out of formation', value: out, spot: out },
+      ];
+      const own = ctx.choose(`${key}:ownSpot`, {
+        kind: 'formationSlot', seat,
+        prompt: `${name}: which open spot in your formation is it played into?`,
+        options,
+      }) as FormationSpot;
+      if (own.kind !== 'out') item.formationSpot = own;
+    }
   }
   g.collectInlineCastCosts(item, 'fixed', ask('cost'));
+  // CR 702.3g (CT-564): "As I am played, name a card" (The Everywhere) is the
+  // played card's own question, and a card played by an effect is PLAYED
+  // (CR 701.4) — the stage `E.collectAsPlayedNaming` asks for a play from hand,
+  // at the same point (after the costs), announced the same way. The answer
+  // rides the item to `resolveItem`, or the in-place branch's `spawnUnit`.
+  const naming = def.kind === 'unit' ? def.namesAsPlayed : undefined;
+  if (naming) {
+    const named = ctx.choose(`${key}:named`, {
+      kind: 'payOrDecline', seat, prompt: naming.prompt, options: naming.options(g, item),
+    }) as CardName;
+    g.applyAsPlayedNaming(item, named);
+  }
   // CR 112.14c (CT-332): the printed "[Gain N debt]" line (Hyper Beam) is a cost
   // of the PLAY, which `playAtTiming` pays beside the mana — so a free play,
   // which waives the mana and nothing else, still pays it. It is not a
@@ -537,7 +575,14 @@ const playInlineInPlace = (
     // CR 701.4a: the zone goes on the spawn too — Proph and Stalwart Sentinel
     // listen there for a unit. CR 111.10k rides along: `spawnUnit` spends the
     // Deferral Drone charge exactly when `opts.from !== undefined`.
-    return { outcome: 'unit', unit: g.spawnUnit(seat, name, ctx.region, { from: opts.from, owner }) };
+    // CT-564: and what the play declared about the body — the spot its own
+    // "play me into an open spot" chose, and The Everywhere's name — exactly
+    // the fields `resolveItem`'s unit arm hands over on the push branch.
+    return { outcome: 'unit', unit: g.spawnUnit(seat, name, ctx.region, {
+      from: opts.from, owner,
+      ...(item.formationSpot ? { spot: item.formationSpot } : {}),
+      ...(item.named !== undefined ? { named: item.named } : {}),
+    }) };
   }
   const eff = def.spellEffect;
   const part = item.parts[0];

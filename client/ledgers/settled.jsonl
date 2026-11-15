@@ -1717,3 +1717,7 @@
 {"id":"BL-74","as":"done"}
 {"id":"BL-76","as":"done"}
 {"id":"CT-198","as":"done","legacy":true,"note":"Its guard pinned the replay-to-load drift keys; that mechanism was deleted when restarts began resuming from stored state."}
+{"id":"CT-564","on":"2026-11-15","as":"done","note":"declareInlinePlay (batch-water-a.ts) now asks the played card's own namesAsPlayed (The Everywhere) and playsIntoFormation (Tiderunner Initiate, Trench Stalker) stages on both branches of playInline. The remaining cast-window stages the inline path skips (as-you-play, X, {Modular}) are CT-571."}
+{"id":"CT-568","on":"2026-11-15","as":"done","note":"carried by CT-564: Tiderunner Initiate off Insidious Invitation is offered the open spots."}
+{"id":"#399","on":"2026-11-15","as":"fixed","to":["CT-564"]}
+{"id":"#405","on":"2026-11-15","as":"fixed","to":["CT-564","CT-568"]}
