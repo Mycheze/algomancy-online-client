@@ -103,9 +103,9 @@ function selftest() {
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [a, b] = process.argv.slice(2);
   if (a === 'selftest') selftest();
-  else if (!a) { console.error('usage: node steward/fetch-file.mjs <url> [dir]   (default dir: $STEWARD_STATE/downloads)'); process.exit(2); }
+  else if (!a) { console.error('usage: node steward/fetch-file.mjs <url> [dir]   (default dir: $STEWARD_OUTBOX/downloads)'); process.exit(2); }
   else {
-    const dir = b || join(process.env.STEWARD_STATE || join(homedir(), 'algomancy-steward', 'state'), 'downloads');
+    const dir = b || join(process.env.STEWARD_OUTBOX || join(homedir(), 'algomancy-steward', 'outbox'), 'downloads');   // state/ is the runner's
     try { const f = await download(a, dir); console.log(f.path); console.error(`saved ${f.bytes} bytes (${f.type}) from ${f.url}`); }
     catch (e) { console.error(`fetch-file: ${e.message}`); process.exit(1); }
   }

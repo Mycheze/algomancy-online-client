@@ -6,7 +6,8 @@
 #   steward/review.sh show <item>        a handoff, its branch's commits and files
 #   steward/review.sh diff <item>        the branch's full diff
 #   steward/review.sh try <item>         check the branch out in a worktree and say how to run it
-#   steward/review.sh approve <item>…    sign off (any number; --all = every staged branch)
+#   steward/review.sh approve <item>…    sign off (any number; --all = every staged branch;
+#                                        --protected first = also a change to the protected files)
 #   steward/review.sh reject <item> "why" [--retry]
 #                                        drop it; the reason goes in the journal the worker reads
 #                                        (--retry: let it try again, differently)
@@ -73,7 +74,7 @@ show)
     echo; echo "── $r"
     g log --format='  %h %s' "origin/master..$r"
     g diff --stat "origin/master...$r" | tail -25
-    echo; node "$REPO/steward/policy.mjs" origin/master "$r" | jq -r '"policy: \(.verdict)  \(.reasons|join("; "))"'
+    echo; node "$REPO/steward/policy.mjs" origin/master "$r" | jq -r '"policy: \(.verdict)  \(.reasons|join("; "))", (select((.protected // []) | length > 0) | "protected: \(.protected|join(", ")) — lands only on approve --protected")'
   fi ;;
 diff)
   s=$(slug "${1:?item}"); fetch; r=$(ref_of "$s"); [ -n "$r" ] || { echo "no branch for $s"; exit 1; }; g diff "origin/master...$r" ;;
@@ -88,13 +89,18 @@ try)
   echo "done:     git worktree remove --force $wt" ;;
 approve)
   fetch
+  note=""; [ "${1:-}" = --protected ] && { note=protected; shift; }
   items=("$@"); [ "${1:-}" = --all ] && mapfile -t items < <(g for-each-ref --format='%(refname:lstrip=3)' refs/remotes/origin/steward/)
   [ ${#items[@]} -gt 0 ] || { echo "approve what? (an item, or --all)"; exit 2; }
   for item in "${items[@]}"; do
     s=$(slug "$item")
-    g rev-parse -q --verify "origin/steward/$s" >/dev/null || { echo "  no branch steward/$s"; continue; }
+    if ! g rev-parse -q --verify "origin/steward/$s" >/dev/null; then
+      # already approved plainly: --protected adds the word the landing waits for
+      if [ -n "$note" ] && g rev-parse -q --verify "origin/steward-approved/$s" >/dev/null; then jnote "$s" approved "$note"; echo "  ✓ $s: approved, protected files included"
+      else echo "  no branch steward/$s"; fi; continue
+    fi
     g push -q --atomic origin "+refs/remotes/origin/steward/$s:refs/heads/steward-approved/$s" ":refs/heads/steward/$s" || { echo "  ✗ $s: the push was refused"; continue; }
-    jnote "$s" approved; echo "  ✓ $s approved — the worker lands it on its next tick"
+    jnote "$s" approved "$note"; echo "  ✓ $s approved — the worker lands it on its next tick"
   done ;;
 reject)
   item="${1:?item}"; why="${2:?say why — the worker reads it}"; s=$(slug "$item"); fetch

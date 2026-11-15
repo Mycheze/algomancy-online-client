@@ -10,7 +10,7 @@
  * one names the incident or contract it comes from. The agent may always ask
  * for `stage`; this can only turn a `ship` into a `stage`, never the reverse.
  *
- * Output: { verdict: 'ship'|'stage', reasons: [...], deploy: {...}, files: n, lines: n }
+ * Output: { verdict: 'ship'|'stage', reasons: [...], deploy: {...}, files: n, lines: n, protected: [paths] }
  *   deploy.needed       false = nothing on the box changes (ledgers, tests, docs)
  *   deploy.restartGame  engine / server / data the game server reads
  *   deploy.restartBot   bot/ or the corpus and rules the bot reads (web + bot units)
@@ -56,6 +56,12 @@ const PROTECTED = [/^steward\//, /^\.claude\//, /^deploy\//, /^CLAUDE\.md$/, /(^
 const SKILL = /^steward\/SKILL\.md$/;
 const prot = rows.map(r => r.path).filter(p => PROTECTED.some(re => re.test(p)) && !SKILL.test(p));
 if (prot.length) reasons.push(`touches protected files (${prot.join(', ')})`);
+// What an approval must name ("approve protected"): the steward's harness, the deploy, the agent's
+// settings, the dependencies. Every post that offers approve lists them; the runner lands an approved
+// branch that touches one only on that phrase. Both sides of a rename count.
+const LEASH = [/^steward\//, /^deploy\//, /^\.claude\//, /(^|\/)package(-lock)?\.json$/, /(^|\/)(npm-shrinkwrap\.json|yarn\.lock|pnpm-lock\.yaml)$/,
+  /(^|\/)requirements[^/]*\.txt$/, /^\.env\.example$/];
+const leash = [...new Set([...rows.map(r => r.path), ...status.flatMap(s => s.slice(1))])].filter(p => LEASH.some(re => re.test(p))).sort();
 const skillLines = rows.filter(r => SKILL.test(r.path)).reduce((n, r) => n + r.add + r.del, 0);
 if (skillLines > 150) reasons.push(`${skillLines} changed lines in the steward's own skill (over 150) — a rewrite of how it works, the owner's call`);
 
@@ -90,4 +96,4 @@ const restartGame = paths.some(p => !isTest(p) && (/^client\/(engine\/src|server
 const restartBot = paths.some(p => !isTest(p) && (/^bot\//.test(p) && !/^bot\/pipeline\//.test(p) || /^data\/(corpus|comprehensive-rules|cards)\//.test(p)));
 const deploy = { needed: paths.some(p => !inert(p)), restartGame, restartBot };
 
-console.log(JSON.stringify({ verdict: reasons.length ? 'stage' : 'ship', reasons, deploy, files: rows.length, lines }, null, 1));
+console.log(JSON.stringify({ verdict: reasons.length ? 'stage' : 'ship', reasons, deploy, files: rows.length, lines, protected: leash }, null, 1));

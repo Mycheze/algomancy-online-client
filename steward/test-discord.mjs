@@ -9,7 +9,7 @@
  * re-posted; a finished one closes its post; pause works from the night log;
  * the morning summary posts once a day.
  */
-import { execFile, execFileSync } from 'node:child_process';
+import { execFile, execFileSync, spawn } from 'node:child_process';
 import { promisify } from 'node:util';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync, appendFileSync } from 'node:fs';
 import { createServer } from 'node:http';
@@ -53,6 +53,9 @@ const server = createServer(async (req, res) => {
     return json({ id: t });
   }
   if (req.method === 'PUT' && (m = /^\/channels\/(\d+)\/thread-members\/(\d+)$/.exec(p))) { threads.get(m[1]).members.push(m[2]); res.writeHead(204); return res.end(); }
+  if (req.method === 'GET' && (m = /^\/channels\/(\d+)\/messages\/(\d+)$/.exec(p)) && m[1] === FORUM) {
+    const x = channelMsgs.find(c => c.id === m[2]); return x ? json(x) : json({ message: 'Unknown Message' }, 404);
+  }
   if (req.method === 'GET' && p === `/channels/${FORUM}/messages`) {
     const after = BigInt(u.searchParams.get('after') || '0');
     return json(channelMsgs.filter(x => BigInt(x.id) > after).reverse());
@@ -80,7 +83,7 @@ const STATE = join(T, 'state'), REPO = join(T, 'repo');
 mkdirSync(join(STATE, 'handoffs', 'done'), { recursive: true }); mkdirSync(REPO);
 const git = (...a) => execFileSync('git', ['-C', REPO, ...a], { stdio: 'pipe' });
 git('init', '-q'); git('-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-q', '--allow-empty', '-m', 'x');
-git('update-ref', 'refs/remotes/origin/steward/CT-1', 'HEAD');
+git('update-ref', 'refs/remotes/origin/steward/CT-1', 'HEAD'); git('update-ref', 'refs/remotes/origin/master', 'HEAD');
 writeFileSync(join(STATE, 'handoffs', 'CT-1.md'), '# CT-1 — a fix\n\n**Needs from you:** approve the branch\n\n## What I found\nVerified: it was broken.\n');
 writeFileSync(join(STATE, 'handoffs', 'CT-3.md'), '# CT-3 — answered already\n\n**Needs from you:** answer Q1\n\n**Discord-ready:**\n> Ask?\n');
 mkdirSync(join(STATE, 'answers'), { recursive: true }); writeFileSync(join(STATE, 'answers', 'CT-3.md'), '# Owner answer — CT-3\n\nReading B.\n');
@@ -155,6 +158,23 @@ try {
     appendFileSync(join(STATE, 'journal.jsonl'), JSON.stringify({ ts: new Date().toISOString(), item: slug, outcome: 'shipped', title: 'the Debt chip is bigger on iPad', summary: 'Raised it to 44px on touch.' }) + '\n');
     await run("sync"); const last = threads.get(it.thread).msgs.at(-1).content;
     ok(threads.get(it.thread).archived && /shipped — the Debt chip is bigger/.test(last) && /44px/.test(last), 'when it is done the thread says what was done, and closes');
+
+    // while a tick holds state/lock, a request is acknowledged without writing state/, and written after
+    const lockFile = join(STATE, 'lock'), held = () => { try { execFileSync('flock', ['-n', lockFile, 'true']); return false; } catch { return true; } };
+    const holder = spawn('flock', [lockFile, 'sleep', '60'], { stdio: 'ignore', detached: true });   // the sleep inherits the lock: kill the group
+    while (!held()) await new Promise(r => setTimeout(r, 20));
+    const ask2 = id(); channelMsgs.push({ id: ask2, type: 0, author: { id: OWNER }, content: 'The mulligan button is hidden', attachments: [] });
+    const dbBefore = readFileSync(join(STATE, 'discord.json'), 'utf8'), jBefore = readFileSync(join(STATE, 'journal.jsonl'), 'utf8'), nThreads = threads.size;
+    await run('inbox');
+    const ackT = [...threads.entries()].find(([, t]) => t.onMessage === ask2);
+    ok(ackT && /queued as/.test(ackT[1].msgs[0]?.content || ''), 'during a tick a request is acknowledged at once, in its own thread');
+    ok(!existsSync(join(STATE, 'inbox', `inbox-${ask2}.md`)) && readFileSync(join(STATE, 'discord.json'), 'utf8') === dbBefore && readFileSync(join(STATE, 'journal.jsonl'), 'utf8') === jBefore,
+      '…and nothing in the runner\'s state is written while the tick runs');
+    process.kill(-holder.pid); while (held()) await new Promise(r => setTimeout(r, 20));
+    await run('inbox');
+    const f2 = join(STATE, 'inbox', `inbox-${ask2}.md`);
+    ok(existsSync(f2) && /mulligan button is hidden/.test(readFileSync(f2, 'utf8')) && db().items[`inbox-${ask2}`]?.thread === ackT?.[0] && threads.size === nThreads + 1,
+      'after the tick it is written from Discord\'s copy, on the thread it already has');
   }
 
   owner(t2, 'reject: wrong approach, do it in one batch');
@@ -172,6 +192,17 @@ try {
     'what he wrote under it is queued as its own request, not an answer');
   ok(req && threads.has(req[1].thread) && threads.get(t4).msgs.some(m => (m.content || '').includes(`<#${req[1].thread}>`)),
     'the request has its own thread, and the approval thread links to it');
+
+  // a branch that changes the protected files is approved only by "approve protected"
+  mkdirSync(join(REPO, 'steward')); writeFileSync(join(REPO, 'steward', 'x.sh'), 'echo\n');
+  git('add', '-A'); git('-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-q', '-m', 'a harness change');
+  git('update-ref', 'refs/remotes/origin/steward/CT-5', 'HEAD');
+  writeFileSync(join(STATE, 'handoffs', 'CT-5.md'), '# CT-5 — a harness fix\n\n**Needs from you:** approve the branch\n\n## In short\nA harness fix.\n');
+  await run('sync'); const t5 = db().items['CT-5'].thread;
+  owner(t5, 'approve');
+  ok((await run('sync')) === '' && /Reply \*\*approve protected\*\*/.test(threads.get(t5).msgs.at(-1).content), 'a plain approve of it is refused, saying what to reply');
+  owner(t5, 'approve protected');
+  ok((await run('sync')) === 'approve CT-5 protected', '"approve protected" approves it, marked for the runner');
 
   (await run('summary')); const n = threads.get(lt).msgs.length; (await run('summary'));
   ok(/The night of/.test(threads.get(lt).msgs.at(-1).content) && threads.get(lt).msgs.length === n, 'the morning summary posts once a day');

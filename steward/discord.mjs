@@ -9,6 +9,8 @@
  * The owner replies in a post:
  *
  *   approve            the runner lands the branch (rebase, full gate, master, deploy)
+ *   approve protected  the same, and the only approval that lands a change to the protected files
+ *                      (steward/, deploy/, .claude/, dependencies, .env.example — policy.mjs's list)
  *   reject <why>       dropped; the reason goes in the journal the worker reads
  *   retry <why>        dropped, but the worker may try again, differently
  *   anything else      his answer — screenshots, and any image or PDF he LINKS, are saved beside it — and the
@@ -26,7 +28,7 @@
  *
  *   node steward/discord.mjs sync          post new/changed handoffs, close finished ones, read replies.
  *                                          Prints one action per line for the runner, which owns git:
- *                                          approve <slug> | reject <slug> <why> | retry <slug> <why> | pause | resume
+ *                                          approve <slug> [protected] | reject <slug> <why> | retry <slug> <why> | pause | resume
  *   node steward/discord.mjs log "<text>"  one line in the night log
  *   node steward/discord.mjs summary       the morning summary of the night (the runner calls it once a day)
  *   node steward/discord.mjs inbox         ONLY take new inbox messages (✅ + a "queued" thread). Its own
@@ -69,10 +71,14 @@ export function classify(text, inLog = false) {
   // the bare word only: "Approve, but change the wording" is an ANSWER, not an approval.
   // "accept" and a lone 👍/✅ are approvals too (2026-11-08: his "accept" on BL-17 was filed as an answer).
   const APPROVE = /^(?:approve|approved|accept|accepted|lgtm|ship it|👍|✅)[\s.!👍✅]*$/iu;
+  // the only approval that lands a change to the protected files (see runnerBlock)
+  const APPROVE_P = /^(?:approve|approved|accept|accepted)\s+protected[\s.!]*$/i;
+  if (APPROVE_P.test(t)) return { verb: 'approve', protected: true };
   if (APPROVE.test(t)) return { verb: 'approve' };
   // the word alone on its first paragraph, then something else: approved, and the rest is a NEW request
   // (2026-11-08, BL-11: "approve" then "That reminds me too, there needs to be a tooltip…")
   const para = /^([^\n]*)\n\s*\n([\s\S]+)$/.exec(t);
+  if (para && APPROVE_P.test(para[1].trim())) return { verb: 'approve', protected: true, more: para[2].trim() };
   if (para && APPROVE.test(para[1].trim())) return { verb: 'approve', more: para[2].trim() };
   let m = /^(reject|rejected)\b[\s:—–-]*([\s\S]*)$/i.exec(t);
   if (m) return { verb: 'reject', why: m[2].trim() };
@@ -121,7 +127,31 @@ const journalRows = () => (existsSync(join(STATE, 'journal.jsonl')) ? readFileSy
   .split('\n').filter(Boolean).flatMap(l => { try { return [JSON.parse(l)]; } catch { return []; } });
 const jnote = (item, outcome, note) => appendFileSync(join(STATE, 'journal.jsonl'),
   JSON.stringify({ ts: new Date().toISOString().slice(0, 19) + 'Z', item, outcome, note, by: 'owner', via: 'discord' }) + '\n');
-const branchExists = slug => { try { execFileSync('git', ['-C', REPO, 'rev-parse', '-q', '--verify', `refs/remotes/origin/steward/${slug}`], { stdio: 'ignore' }); return true; } catch { return false; } };
+const refExists = ref => { try { execFileSync('git', ['-C', REPO, 'rev-parse', '-q', '--verify', ref], { stdio: 'ignore' }); return true; } catch { return false; } };
+const branchExists = slug => refExists(`refs/remotes/origin/steward/${slug}`);
+const approvedExists = slug => refExists(`refs/remotes/origin/steward-approved/${slug}`);
+
+/** what the runner says about a branch it asks the owner to approve: from the branch and the policy
+ *  (the judged copy beside this file), never from the worker's write-up */
+function checked(slug) {
+  const ref = [`refs/remotes/origin/steward/${slug}`, `refs/remotes/origin/steward-approved/${slug}`].find(refExists);
+  if (!ref) return null;
+  try {
+    const pol = JSON.parse(execFileSync('node', [join(dirname(fileURLToPath(import.meta.url)), 'policy.mjs'), 'refs/remotes/origin/master', ref],
+      { cwd: REPO, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }));
+    const stat = execFileSync('git', ['-C', REPO, 'diff', '--shortstat', `refs/remotes/origin/master...${ref}`], { encoding: 'utf8' }).trim();
+    return { pol, stat, leash: pol.protected ?? ['(the policy did not say)'] };
+  } catch { return { error: true, leash: ['(the branch could not be read)'] }; }
+}
+export function runnerBlock(c) {
+  if (!c) return '';
+  if (c.error) return '**Checked by the runner:** it could not read this branch. Approving it needs **approve protected**.';
+  return ['**Checked by the runner** (not the worker\'s words):',
+    `- ${c.stat || 'no changes'}`,
+    c.pol.reasons?.length ? `- Held for you because it ${clip(c.pol.reasons.join('; '), 400)}` : '- Nothing in it needed you by the ship rules.',
+    c.leash.length ? `- ⚠ **Protected files:** ${clip(c.leash.join(', '), 400)}. It lands only on **approve protected**; a plain approve does not land it.`
+      : '- Protected files (the steward, deploy, settings, dependencies): none.'].join('\n');
+}
 
 // ── Discord REST ─────────────────────────────────────────────────────────────
 async function api(method, path, body, files) {
@@ -162,9 +192,10 @@ function firstMessage(slug, md) {
   if (choice) parts.push(clip(choice, 700));
   if (found) parts.push(clip(found, q ? 700 : 1300));
   if (q) parts.push(clip(q.replace(/\*\*Discord-ready:?\*\*[\s\S]*$/, '').trim(), 700));
-  parts.push('-# The full write-up, with the technical details, is the attached file.');
-  parts.push(`-# ${hasBranch ? HOWTO : HOWTO_Q}`);
-  return clip(parts.join('\n\n'), 1990);
+  // the runner's block and the reply line are never clipped away: the worker's words give way
+  const tail = [hasBranch ? runnerBlock(checked(slug)) : '', '-# The full write-up, with the technical details, is the attached file.',
+    `-# ${hasBranch ? HOWTO : HOWTO_Q}`].filter(Boolean).join('\n\n');
+  return clip(parts.join('\n\n'), 1990 - tail.length - 2) + '\n\n' + tail;
 }
 const mdFile = (slug, md) => [{ name: `${slug}.md`, data: md }];
 
@@ -287,8 +318,14 @@ async function readReplies(db, actions) {
         c.verb = 'answer'; c.text = String(m.content || '').trim();   // nothing to approve: it is all an answer
       }
       if (c.verb === 'approve') {
-        if (!branchExists(slug)) { await say(it.thread, `There is no branch to approve for ${slug} — reply with your answer instead.`); continue; }
-        actions.push(`approve ${slug}`);
+        // "approve protected" after a plain approve: the branch is already steward-approved/
+        if (!branchExists(slug) && !(c.protected && approvedExists(slug))) { await say(it.thread, `There is no branch to approve for ${slug} — reply with your answer instead.`); continue; }
+        const leash = checked(slug)?.leash ?? [];
+        if (leash.length && !c.protected) {
+          await say(it.thread, `Not yet: this changes protected files (${clip(leash.join(', '), 300)}). Reply **approve protected** to land it.`);
+          continue;
+        }
+        actions.push(`approve ${slug}${c.protected ? ' protected' : ''}`);
         await react(it.thread, m.id);
         await say(it.thread, 'Approved. It runs through the full tests (about an hour), then goes live once nobody is in a game. I will post here when it is live.');
         if (c.more) {
@@ -314,39 +351,71 @@ async function readReplies(db, actions) {
   }
 }
 
+// While a tick holds state/lock the agent may be running, and the runner checks that nothing in
+// state/ changed under it. So the minute check then only ACKNOWLEDGES (✅, the thread) and keeps
+// ids in ACKS — never words, which the agent could forge there — and the first check or sync
+// after the tick writes each request from Discord's own copy of the message.
+const ACKS = join(STATE, 'discord-inbox.json');
+const tickRunning = () => { try { execFileSync('flock', ['-n', join(STATE, 'lock'), 'true'], { stdio: 'ignore' }); return false; } catch (e) { return e.status === 1; } };
+const loadAcks = () => { try { return { acked: {}, ...JSON.parse(readFileSync(ACKS, 'utf8')) }; } catch { return { acked: {} }; } };
+const isRequest = m => m?.author?.id === OWNER && !m.author?.bot && [0, 19].includes(m.type ?? 0);
+const later = (a, b) => (b && BigInt(b) > BigInt(a) ? b : a);
+
 /** the owner's plain messages in the channel → inbox requests, each with a thread on it */
-async function readInbox(db) {
+async function readInbox(db, ackOnly = false) {
   if (db.channelType === undefined) db.channelType = (await api('GET', `/channels/${FORUM}`)).type;
   if (db.channelType === 15) return;                 // a forum has no top-level messages
   if (!db.inboxLastSeen) db.inboxLastSeen = FORUM;   // the channel's own id is its creation time
-  const msgs = ((await api('GET', `/channels/${FORUM}/messages?after=${db.inboxLastSeen}&limit=100`)) || []).sort(byId);
+  const acks = loadAcks();
+  if (!ackOnly && (acks.lastSeen || Object.keys(acks.acked).length)) {
+    const left = {};
+    for (const [id, thread] of Object.entries(acks.acked)) {
+      const m = await api('GET', `/channels/${FORUM}/messages/${id}`).catch(e => (/→ 404 /.test(e.message) ? null : undefined));
+      if (m === undefined) left[id] = thread;        // Discord did not answer: next time (a deleted message is dropped)
+      else if (isRequest(m) && !db.items[`inbox-${id}`]) await takeRequest(db, m, thread);
+    }
+    db.inboxLastSeen = later(db.inboxLastSeen, acks.lastSeen); save(db);
+    if (Object.keys(left).length) writeFileSync(ACKS, JSON.stringify({ acked: left })); else rmSync(ACKS, { force: true });
+  }
+  const after = ackOnly ? later(db.inboxLastSeen, acks.lastSeen) : db.inboxLastSeen;
+  const msgs = ((await api('GET', `/channels/${FORUM}/messages?after=${after}&limit=100`)) || []).sort(byId);
   if (!msgs.length) return;
-  db.inboxLastSeen = msgs.at(-1).id; save(db);
+  if (ackOnly) { acks.lastSeen = msgs.at(-1).id; writeFileSync(ACKS, JSON.stringify(acks)); }
+  else { db.inboxLastSeen = msgs.at(-1).id; save(db); }
   for (const m of msgs) {
-    if (m.author?.id !== OWNER || m.author?.bot || ![0, 19].includes(m.type ?? 0)) continue;
-    const slug = `inbox-${m.id}`;
-    const text = String(m.content || '').trim() || '(a screenshot only)';
-    const files = await saveAttachments(slug, m);
-    await queueRequest(db, slug, text, files, null, m.id);
+    if (!isRequest(m)) continue;
+    if (ackOnly) { acks.acked[m.id] = await threadOn(m.id, `inbox-${m.id}`, String(m.content || '')); writeFileSync(ACKS, JSON.stringify(acks)); }
+    else await takeRequest(db, m);
     await react(FORUM, m.id);
   }
 }
+async function takeRequest(db, m, thread) {
+  const slug = `inbox-${m.id}`;
+  const text = String(m.content || '').trim() || '(a screenshot only)';
+  const files = await saveAttachments(slug, m);
+  await queueRequest(db, slug, text, files, null, m.id, thread);
+}
+const hello = slug => `Got it — queued as \`${slug}\`. The worker takes it after the item it is on now. It will ask here if it needs anything, and say here when it is done.`;
+async function threadOn(msgId, slug, text) {
+  const first = text.split('\n').find(l => l.trim()) || 'request';
+  const thread = (await api('POST', `/channels/${FORUM}/messages/${msgId}/threads`, { name: clip(first, 90), auto_archive_duration: 10080 })).id;
+  await say(thread, hello(slug));
+  return thread;
+}
 
 /** write state/inbox/<slug>.md and give it a thread: a top-level message gets a thread ON it
- *  (onMessage); a request written under an approval in another thread gets a private one */
-async function queueRequest(db, slug, text, files, from, onMessage) {
+ *  (onMessage); a request written under an approval in another thread gets a private one; one
+ *  acknowledged while a tick ran already has its thread */
+async function queueRequest(db, slug, text, files, from, onMessage, thread) {
   const id = slug.replace(/^inbox-/, '');
   const day = new Date(Number((BigInt(id) >> 22n) + 1420070400000n)).toISOString().slice(0, 10);
   mkdirSync(join(STATE, 'inbox'), { recursive: true });
   writeFileSync(join(STATE, 'inbox', `${slug}.md`),
     `# Inbox — from the owner, ${day} (Discord message ${id}${from ? `, ${from}` : ''})\n\n${text}\n` + filesBlock(files));
   const first = text.split('\n').find(l => l.trim()) || 'request';
-  const hello = `Got it — queued as \`${slug}\`. The worker takes it after the item it is on now. It will ask here if it needs anything, and say here when it is done.`;
-  let thread;
-  if (onMessage) {
-    thread = (await api('POST', `/channels/${FORUM}/messages/${onMessage}/threads`, { name: clip(first, 90), auto_archive_duration: 10080 })).id;
-    await say(thread, hello);
-  } else thread = await openThread(db, clip(first, 90), `> ${clip(text, 1500).replace(/\n/g, '\n> ')}\n\n${hello}`);
+  if (thread) { /* acknowledged earlier */ }
+  else if (onMessage) thread = await threadOn(onMessage, slug, text);
+  else thread = await openThread(db, clip(first, 90), `> ${clip(text, 1500).replace(/\n/g, '\n> ')}\n\n${hello(slug)}`);
   db.items[slug] = { thread, hash: null, lastSeen: thread, closed: false, inbox: true };
   save(db);
   jnote(slug, 'inbox', clip(text, 400));
@@ -362,8 +431,12 @@ async function sync() {
   for (const slug of open) {
     const md = readFileSync(join(HANDOFFS, `${slug}.md`), 'utf8');
     const it = db.items[slug];
+    // a staged branch force-pushed under an unchanged write-up is re-posted too (a post from before
+    // this field only learns it, so as not to repeat every waiting post once; an approved one keeps it)
+    const blk = branchExists(slug) ? hash(runnerBlock(checked(slug))) : it?.block;
     if (!it || it.closed) await postItem(db, slug, md);
-    else if (it.hash !== hash(md)) await updateItem(db, slug, md);
+    else if (it.hash !== hash(md) || (it.block !== undefined && blk !== it.block)) await updateItem(db, slug, md);
+    if (blk !== undefined) { db.items[slug].block = blk; save(db); }
   }
   for (const [slug, it] of Object.entries(db.items)) {
     if (it.closed || open.includes(slug)) continue;
@@ -402,6 +475,9 @@ function selftest() {
   eq(classify('approve\n\nThat reminds me, a tooltip for zoom.'), { verb: 'approve', more: 'That reminds me, a tooltip for zoom.' }, 'approve, then a new request');
   eq(classify('approve\nbut make it blue').verb, 'answer', 'approve with a qualifier on the next line is an answer');
   eq(classify('A: approve').verb, 'answer', 'an option letter is an answer');
+  eq(classify('approve protected'), { verb: 'approve', protected: true }, 'approve protected');
+  eq(classify('Approve protected.\n\nand a tooltip'), { verb: 'approve', protected: true, more: 'and a tooltip' }, 'approve protected, then a new request');
+  eq(classify('approve, protected files are fine').verb, 'answer', 'protected in a sentence is an answer');
   eq(classify('reject: the green is on purpose'), { verb: 'reject', why: 'the green is on purpose' }, 'reject with a reason');
   eq(classify('retry - do it in one batch'), { verb: 'retry', why: 'do it in one batch' }, 'retry');
   eq(classify('Rejection is wrong here, B is right').verb, 'answer', '"Rejection…" is not a reject');
@@ -439,7 +515,7 @@ const [cmd, ...rest] = process.argv.slice(2);
 if (cmd === 'selftest') selftest();
 else if (!TOKEN || !FORUM || !OWNER) { if (cmd === 'log') process.exitCode = 3; /* unconfigured: the runner falls back to its webhook */ }
 else {
-  const run = { sync, inbox: () => readInbox(load()), log: () => log(rest.join(' ')), summary }[cmd];
+  const run = { sync, inbox: () => readInbox(load(), tickRunning()), log: () => log(rest.join(' ')), summary }[cmd];
   if (!run) { console.error('usage: discord.mjs sync | inbox | log "<text>" | summary | selftest'); process.exit(2); }
   // the inbox check is every minute: busy now = next minute. The tick waits its turn (a check takes seconds).
   const unlock = lock(cmd === 'inbox' ? 0 : 120e3);

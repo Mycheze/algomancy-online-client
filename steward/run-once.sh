@@ -32,6 +32,9 @@ LOGS="$ROOT/logs"
 BIN="$ROOT/bin"
 CONF="${STEWARD_CONF:-$HOME/.config/algomancy-steward/env}"
 mkdir -p "$STATE"/{handoffs,answers,redgate,outcomes,inbox,handoffs/done,answers/done} "$LOGS" "$BIN"
+# the agent's only writable state (outcome.json, handoffs/, notes); $STATE is the runner's. Made every
+# tick, which is the whole migration: nothing in $STATE moves.
+OUTBOX="$ROOT/outbox"; mkdir -p "$OUTBOX/handoffs"
 
 [ -f "$CONF" ] && { set -a; . "$CONF"; set +a; }
 : "${STEWARD_TZ:=Europe/Prague}"
@@ -50,6 +53,16 @@ VPS=algomancy-vps
 VREPO=/home/bena/Documents/Algomancy
 SITE=https://algomancy.online
 export PATH="$HOME/.local/bin:$HOME/.local/node/bin:$PATH"
+
+# What a child that runs agent-written code (the agent, the gate) may see: these, LC_*, and what the
+# call adds. The config's secrets and the ssh agent stay with the runner. Tests set their own ALGO_*;
+# the two knobs here are the only ones they read from outside, and NODE_OPTIONS is extended by check.mjs.
+SAFE_ENV=(PATH HOME USER LOGNAME SHELL LANG LANGUAGE TERM TMPDIR TZ NODE_OPTIONS ALGO_TEST_WAIT_MS ALGO_TEST_STARTUP_MS)
+scrubbed() { # [NAME=value …] cmd …
+  local -a e=(); local n
+  for n in "${SAFE_ENV[@]}" $(compgen -v LC_); do [ -n "${!n+x}" ] && e+=("$n=${!n}"); done
+  env -i "${e[@]}" "$@"
+}
 
 TS="$(date -u +%Y%m%dT%H%M%SZ)"
 log() { echo "[$(date -u +%FT%TZ)] $*" | tee -a "$LOGS/runner.log" >&2; }
@@ -78,7 +91,8 @@ notify() {
 
 slug() { echo "$1" | sed -E 's/^#/report-/; s/[^A-Za-z0-9._-]+/-/g; s/^-+|-+$//g' | cut -c1-60; }
 
-g() { git -C "$REPO" "$@"; }
+# no hooks: the agent can write .git/hooks, and the runner's git runs with the runner's keys
+g() { git -C "$REPO" -c core.hooksPath=/dev/null "$@"; }
 
 in_hours() { # start end → is the local hour in [start,end)?
   local h start=$1 end=$2; h=$((10#$(TZ="$STEWARD_TZ" date +%H)))
@@ -101,11 +115,21 @@ trust() {
   # still checks the result). Local to this clone (.git/info), never committed.
   mkdir -p "$REPO/.git/info"
   grep -qs 'updates.ts merge=union' "$REPO/.git/info/attributes" || echo 'client/ui/updates.ts merge=union' >> "$REPO/.git/info/attributes"
-  g show origin/master:steward/policy.mjs > "$BIN/policy.mjs" || { log "cannot extract policy.mjs from origin/master"; exit 1; }
+  # one commit per tick, held in memory: trust runs again after the agent, which can write $BIN and refs
+  TRUSTED="${TRUSTED:-$(g rev-parse origin/master)}"
+  g show "$TRUSTED:steward/policy.mjs" > "$BIN/policy.mjs" || { log "cannot extract policy.mjs from origin/master"; exit 1; }
   # the owner's channel: it decides what an owner message means, so it is judged code too.
   # fetch-file.mjs first: discord.mjs imports it (the links he sends are downloaded on arrival)
-  g show origin/master:steward/fetch-file.mjs > "$BIN/fetch-file.mjs" 2>/dev/null || rm -f "$BIN/fetch-file.mjs"
-  g show origin/master:steward/discord.mjs > "$BIN/discord.mjs" 2>/dev/null || rm -f "$BIN/discord.mjs"
+  g show "$TRUSTED:steward/fetch-file.mjs" > "$BIN/fetch-file.mjs" 2>/dev/null || rm -f "$BIN/fetch-file.mjs"
+  g show "$TRUSTED:steward/discord.mjs" > "$BIN/discord.mjs" 2>/dev/null || rm -f "$BIN/discord.mjs"
+  # the exit trap runs this copy
+  [ -f "$BIN/thermal.sh" ] && g show "$TRUSTED:steward/thermal.sh" > "$BIN/thermal.sh" && chmod +x "$BIN/thermal.sh"
+  # git over ssh for the agent AND the gate (which runs the agent's tests): a refusal, every tick
+  cat > "$BIN/git-ssh-guard" <<'EOF'
+#!/bin/sh
+echo "steward: no git network access inside a run (the runner fetched just before you started: origin/* is current; push is the runner's job)" >&2; exit 1
+EOF
+  chmod +x "$BIN/git-ssh-guard"
 }
 
 # ── the owner's replies on Discord → the same actions as steward/review.sh ──
@@ -120,9 +144,11 @@ discord_sync() {
         if [ "$STEWARD_MODE" = live ]; then
           # forced and atomic (BL-71): a re-approval replaces a stale approved tip, and a refused
           # update never deletes the staged branch it was copying
-          g push -q --atomic origin "+refs/remotes/origin/steward/$item:refs/heads/steward-approved/$item" ":refs/heads/steward/$item" && approved=1
+          # (an "approve protected" after a plain approve has no staged branch left: its row is the act)
+          g rev-parse -q --verify "origin/steward/$item" >/dev/null \
+            && g push -q --atomic origin "+refs/remotes/origin/steward/$item:refs/heads/steward-approved/$item" ":refs/heads/steward/$item" && approved=1
         else log "DRY: would approve $item"; fi
-        journal "$item" approved by=owner via=discord; log "approved on Discord: $item" ;;
+        journal "$item" approved by=owner via=discord note="$why"; log "approved on Discord: $item${why:+ ($why)}" ;;
       reject|retry)
         if [ "$STEWARD_MODE" = live ] && g rev-parse -q --verify "origin/steward/$item" >/dev/null; then
           g push -q origin "refs/remotes/origin/steward/$item:refs/archive/steward/$item" ":refs/heads/steward/$item"
@@ -291,8 +317,9 @@ deps() {
 gate() {
   local tag="$1" glog="$LOGS/gate-$TS-$1.log" rc
   log "gate ($tag) → $glog"
-  npm --prefix "$REPO/client/ui" run build >/dev/null 2>&1
-  timeout "$((STEWARD_GATE_MIN * 60))" bash -c "$STEWARD_GATE_CMD" >"$glog" 2>&1; rc=$?
+  # agent-written code: no secrets, no ssh agent, and git over ssh refuses (a rail, not a sandbox)
+  scrubbed GIT_SSH_COMMAND="$BIN/git-ssh-guard" npm --prefix "$REPO/client/ui" run build >/dev/null 2>&1
+  scrubbed GIT_SSH_COMMAND="$BIN/git-ssh-guard" timeout "$((STEWARD_GATE_MIN * 60))" bash -c "$STEWARD_GATE_CMD" >"$glog" 2>&1; rc=$?
   echo "EXIT $rc" >>"$glog"
   log "gate ($tag) EXIT $rc"
   echo "$glog"; return $rc
@@ -429,10 +456,17 @@ approved_finished() { # item → 0 when its work is finished
   case "$last" in shipped|landed|already-fixed|not-a-bug) return 0 ;; *) return 1 ;; esac
 }
 
+# The owner's last approval of the item said "approve protected" (Discord, or review.sh --protected).
+approved_protected() { # item
+  jq -se --arg i "$(slug "$1")" 'map(select(.item == $i and .outcome == "approved")) | last | (.note // "") == "protected"' "$STATE/journal.jsonl" >/dev/null 2>&1
+}
+
 land_approved() {
-  local ref item glog rc
+  local ref item glog rc leash
   for ref in $(g for-each-ref --format='%(refname:short)' refs/remotes/origin/steward-approved/); do
     item="${ref#origin/steward-approved/}"
+    # waiting for "approve protected": nothing to do until a new approval row
+    [ "$(jq -rs --arg i "$item" 'map(select(.item == $i)) | last | .outcome // ""' "$STATE/journal.jsonl" 2>/dev/null)" = approved-needs-protected ] && continue
     if approved_finished "$item"; then
       log "approved $item already reached master another way — archiving its branch"
       if [ "$STEWARD_MODE" = live ]; then
@@ -449,6 +483,14 @@ land_approved() {
       g rebase --abort
       jq -cn --arg b "$ref" --arg i "$item" --arg l "rebase conflict onto master" '{branch:$b,item:$i,log:$l,tries:0}' > "$STATE/redgate/$item.json"
       journal "$item" approved-conflict branch="$ref"; continue
+    fi
+    # the steward's leash, the deploy and the deps land only on an approval that names them
+    leash=$(policy origin/master HEAD | jq -er '.protected // ["(the policy did not say)"] | join(", ")') || leash="(the policy could not run)"
+    if [ -n "$leash" ] && ! approved_protected "$item"; then
+      log "approved $item changes protected files ($leash) — it lands on \"approve protected\" only"
+      journal "$item" approved-needs-protected branch="$ref" protected="$leash"
+      notify "$item was approved, but it changes protected files ($leash). It lands only on **approve protected** in its thread."
+      continue
     fi
     glog=$(gate "approved-$item"); rc=$?
     if [ $rc -ne 0 ]; then
@@ -489,6 +531,47 @@ redgate() { # branch item log intent base_sha
     '{branch:$b,item:$i,log:$l,intent:$in,sha:$s,tries:$t,masterRed:$mr}' > "$f"
 }
 
+# ── what the agent may read but never change ───────────────────────────────
+# All of $STATE (the owner's answers and requests, the journal, the queue, the flags), the judged
+# copies in $BIN, the config the next tick sources, and the clone's git config and remote refs (they
+# decide what the runner's git runs and what the policy compares). Its settings deny the writes, but
+# its Bash runs as this user, so the runner compares before and after, in memory. Nothing else writes
+# these during a run: discord.mjs's minute check only acknowledges while the tick holds state/lock
+# (discord-inbox.json, ids only). A review.sh write in that time reads as tampering too.
+fingerprint() {
+  (cd "$STATE" && find . \( -name lock -o -name discord.lock -o -name discord-inbox.json \) -prune -o -type f -print0 | sort -z | xargs -0r sha256sum)
+  local f; for f in "$BIN"/{policy.mjs,discord.mjs,fetch-file.mjs,thermal.sh,git-ssh-guard} "$CONF" "$REPO"/.git/info/*; do [ -f "$f" ] && sha256sum "$f"; done
+  echo "$(git config --file "$REPO/.git/config" --list | grep -v '^branch\.' | sha256sum | cut -c1-64)  repo-git-config"
+}
+refprint() { g for-each-ref --format='%(objectname)  %(refname)' refs/remotes refs/replace; }
+guard_before() { PRE_FILES=$(fingerprint); PRE_REFS=$(refprint); PRE_GITCONF=$(cat "$REPO/.git/config"); PRE_CONF=$(cat "$CONF" 2>/dev/null); }
+guard_after() { # → each path the run changed that it may only read; empty = none
+  local files refs r; files=$(fingerprint)
+  # first undo what would run code in, or mislead, the runner's next git call and the next tick
+  [ "$(grep ' repo-git-config$' <<<"$files")" = "$(grep ' repo-git-config$' <<<"$PRE_FILES")" ] || printf '%s\n' "$PRE_GITCONF" > "$REPO/.git/config"
+  [ "$(grep -F "  $CONF" <<<"$files")" = "$(grep -F "  $CONF" <<<"$PRE_FILES")" ] || ( umask 077; printf '%s\n' "$PRE_CONF" > "$CONF" )
+  trust
+  refs=$(refprint)
+  if [ "$refs" != "$PRE_REFS" ]; then
+    for r in $(g for-each-ref --format='%(refname)' refs/replace); do g update-ref -d "$r"; done
+    g fetch -q --prune origin '+refs/heads/*:refs/remotes/origin/*' >&2 || log "could not re-fetch the refs the run changed"
+  fi
+  comm -3 <(printf '%s\n%s\n' "$PRE_FILES" "$PRE_REFS" | sort) <(printf '%s\n%s\n' "$files" "$refs" | sort) \
+    | sed -E 's/^\t//; s/^[0-9a-f]+  //' | sort -u
+}
+
+# its verdict is not believed and nothing ships: the work is staged for the owner and the steward pauses
+tampered_run() { # item ncommits changed run-log
+  local item="$1" branch="" what; what=$(head -20 <<<"$3" | paste -sd ' ')
+  [ "$2" -gt 0 ] && branch=$(stage_head "$item")
+  printf '# %s — the worker changed files it may only read\n\n**Needs from you:** a look at what it did. The steward is paused until you say **resume** in the night log.\n\n## In short\nThe run on %s changed files that hold your answers and requests or that steer the steward. Its verdict was thrown away and nothing went live.%s\n\n## Details\nChanged: %s\n\nTranscript: %s\n' \
+    "$item" "$item" "${branch:+ Its work is kept on a branch so you can see it; reply **reject** to drop it.}" "$what" "$4" > "$STATE/handoffs/$(slug "$item").md"
+  touch "$STATE/paused"
+  journal "$(slug "$item")" "$([ "$STEWARD_MODE" = live ] || echo dry-)tampered" branch="$branch" changed="$what" run="$4"
+  log "TAMPERED: the $item run changed $what — nothing shipped; paused"
+  notify "⚠ $item: the run changed files it may only read ($what). Nothing shipped${branch:+; its work is on $branch}; the steward is paused (say resume in the night log)."
+}
+
 # ── 2. the night's item ──────────────────────────────────────────────────
 work_one() {
   clean_tree origin/master
@@ -522,31 +605,31 @@ work_one() {
   # the agent's leash: git over ssh refuses; ssh/scp/push denied in its settings. fetch/pull are
   # NOT denied there (2026-11-08): a denied `git fetch` threw away the whole `;` chain it sat in
   # (45 commands lost in five days); here it fails alone, with a line saying why, and the rest runs.
-  cat > "$BIN/git-ssh-guard" <<'EOF'
-#!/bin/sh
-echo "steward: no git network access inside a run (the runner fetched just before you started: origin/* is current; push is the runner's job)" >&2; exit 1
-EOF
-  chmod +x "$BIN/git-ssh-guard"
   cp "$REPO/steward/claude-settings.json" "$BIN/claude-settings.json"
 
-  rm -f "$STATE/outcome.json"
+  rm -f "$STATE/outcome.json" "$OUTBOX/outcome.json" "$OUTBOX"/handoffs/*.md
   local start_sha; start_sha=$(g rev-parse HEAD)
   # a repair = an item that had a red branch before this run (whichever queue line the agent took)
   local pre_red; pre_red=" $(ls "$STATE/redgate" 2>/dev/null | tr '\n' ' ')"
   local left; left=$(window_left); local cap=$((STEWARD_RUN_HOURS * 3600))
   [ "$left" -lt "$cap" ] && cap=$((left + 1800))
   local prompt
-  prompt="You are the Algomancy steward, running unattended on the home box. Read steward/SKILL.md in full and follow it exactly, for ONE item. Your state directory is $STATE (exported as STEWARD_STATE); tonight's queue is $STATE/queue.txt. Today is $(date -u +%F) UTC. You have about $((cap / 60)) minutes. Before you stop, make sure $STATE/outcome.json exists and your work is committed."
+  prompt="You are the Algomancy steward, running unattended on the home box. Read steward/SKILL.md in full and follow it exactly, for ONE item. The state directory $STATE (STEWARD_STATE) is the runner's: read it, never write it. You write only in $OUTBOX (STEWARD_OUTBOX). Tonight's queue is $STATE/queue.txt. Today is $(date -u +%F) UTC. You have about $((cap / 60)) minutes. Before you stop, make sure $OUTBOX/outcome.json exists and your work is committed."
   log "claude: up to $((cap / 60)) min, model $STEWARD_MODEL"
   local rlog="$LOGS/run-$TS.jsonl" rc
-  ( cd "$REPO" && GIT_SSH_COMMAND="$BIN/git-ssh-guard" STEWARD_STATE="$STATE" \
+  # the agent gets the one secret the claude binary authenticates with, and no other
+  local -a auth=(); [ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ] && auth=("CLAUDE_CODE_OAUTH_TOKEN=$CLAUDE_CODE_OAUTH_TOKEN")
+  guard_before
+  ( cd "$REPO" && scrubbed "${auth[@]}" GIT_SSH_COMMAND="$BIN/git-ssh-guard" STEWARD_STATE="$STATE" STEWARD_OUTBOX="$OUTBOX" \
       timeout "$cap" "$STEWARD_CLAUDE_BIN" -p "$prompt" --model "$STEWARD_MODEL" \
-        --settings "$BIN/claude-settings.json" --permission-mode acceptEdits --add-dir "$STATE" "$LOGS" \
+        --settings "$BIN/claude-settings.json" --permission-mode acceptEdits --add-dir "$OUTBOX" "$LOGS" \
         --output-format stream-json --verbose ) >"$rlog" 2>"$LOGS/run-$TS.err"; rc=$?
   log "claude exited $rc"
+  # before any other git call or judged copy runs: what did it change that it may only read?
+  local tampered; tampered=$(guard_after)
 
   # usage limit → sleep until it resets, and do not count it against the item
-  if tail -c 4000 "$rlog" "$LOGS/run-$TS.err" | grep -qiE 'usage limit|hit your limit|rate.?limit|limit reached|overloaded'; then
+  if [ -z "$tampered" ] && tail -c 4000 "$rlog" "$LOGS/run-$TS.err" | grep -qiE 'usage limit|hit your limit|rate.?limit|limit reached|overloaded'; then
     local reset; reset=$(tail -c 4000 "$rlog" | grep -oE 'limit reached\|[0-9]{10}' | tail -1 | cut -d'|' -f2)
     [ -z "$reset" ] && reset=$(( $(date +%s) + 3600 ))
     echo "$reset" > "$STATE/backoff-until"
@@ -554,8 +637,10 @@ EOF
     clean_tree; return 0
   fi
 
-  # what did it do?
+  # what did it do? (a run that changed what it may only read has no verdict: it is not believed)
   local item outcome title summary
+  if [ -n "$tampered" ]; then rm -f "$STATE/outcome.json"
+  elif [ -s "$OUTBOX/outcome.json" ]; then cp "$OUTBOX/outcome.json" "$STATE/outcome.json"; fi
   if [ -s "$STATE/outcome.json" ] && jq -e . "$STATE/outcome.json" >/dev/null 2>&1; then
     item=$(jq -r '.item // empty' "$STATE/outcome.json"); outcome=$(jq -r '.outcome // empty' "$STATE/outcome.json")
     title=$(jq -r '.title // ""' "$STATE/outcome.json"); summary=$(jq -r '.summary // ""' "$STATE/outcome.json")
@@ -566,6 +651,8 @@ EOF
     outcome=failed; title="(no verdict written)"; summary="claude exited $rc without an outcome.json (timeout=124)"
   fi
   cp "$STATE/outcome.json" "$STATE/outcomes/$TS-$(slug "$item").json" 2>/dev/null
+  # its write-up for this item becomes the runner's to post
+  [ -z "$tampered" ] && [ -f "$OUTBOX/handoffs/$(slug "$item").md" ] && mv -f "$OUTBOX/handoffs/$(slug "$item").md" "$STATE/handoffs/"
 
   # the fetched snapshot is triage's; put it back on any other item (committed or not)
   restore_fetched "$item" "$start_sha"
@@ -576,6 +663,7 @@ EOF
   fi
   local ncommits; ncommits=$(g rev-list --count origin/master..HEAD)
   log "$item → $outcome ($ncommits commit(s)): $title"
+  if [ -n "$tampered" ]; then tampered_run "$item" "$ncommits" "$tampered" "$rlog"; clean_tree; return 0; fi
 
   local final="$outcome" branch="" glog="" pol="" reasons="" answered=0
   [ -f "$STATE/answers/$(slug "$item").md" ] && answered=1
@@ -617,6 +705,7 @@ EOF
       else final=staged; fi ;;
     needs-human|gave-up)
       [ "$ncommits" -gt 0 ] && branch=$(stage_head "$item") ;;
+    suspicious) ;;   # a report that asked for the harness, credentials or a command: nothing is kept
   esac
 
   local rg="$STATE/redgate/$(slug "$item").json"
@@ -657,6 +746,7 @@ EOF
       fi
       mv -f "$STATE/handoffs/$(slug "$item").md" "$STATE/handoffs/done/" 2>/dev/null; branch="" ;;
     needs-human) ensure_handoff "$item" "a decision (the summary below says which)" ;;
+    suspicious) rm -f "$STATE/handoffs/$(slug "$item").md"; ensure_handoff "$item" "a look: this report asked the worker to change its own setup, the deploy, accounts or permissions, or to run a command, so nothing was done with it. Reply **reject** to drop it, or say what to do." ;;
     shipped|already-fixed|not-a-bug) mv -f "$STATE/handoffs/$(slug "$item").md" "$STATE/handoffs/done/" 2>/dev/null; retire_branch "$item" ;;
   esac
   [ "$STEWARD_MODE" != live ] && final="dry-$final"
@@ -709,4 +799,5 @@ main() {
   discord_sync
 }
 
-main "$@"
+# one line, read whole before main runs: bash reads a script as it goes, and the agent can append to this copy
+main "$@"; exit

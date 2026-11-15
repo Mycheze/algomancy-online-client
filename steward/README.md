@@ -138,13 +138,25 @@ Personal Server that only he and the bot can see (`steward/discord.mjs`):
   (`algomancy-steward-inbox.timer`) checks the channel every minute, because the
   tick only reads it when it starts, and a tick can run for hours.
 
+Every post that offers approve ends with a block the runner computes from the
+branch itself (never the worker's write-up): the `git diff` totals, the
+policy's reasons, and the changed files under `steward/`, `deploy/`,
+`.claude/`, any `package.json`/lockfile, `requirements*.txt` and
+`.env.example` (policy.mjs's `protected`). A branch that touches one lands
+only on **approve protected** (`review.sh approve --protected`): a plain
+approve is refused in the thread, and `land_approved` checks again after the
+rebase (journal `approved-needs-protected` until he says it).
+
 He replies in the post: **approve** · **reject** <why> · **retry** <why> · or
 just answers in words, with screenshots if he likes (they are saved beside the
 answer for the worker to look at). **pause** / **resume** in the night log.
 Only his messages count (`STEWARD_DISCORD_OWNER`); a ✅ means it was taken.
 The runner reads the replies at the start of every tick, any hour, so an
 approval starts landing within minutes. `node steward/test-discord.mjs` runs
-the whole loop against a fake Discord.
+the whole loop against a fake Discord; the gate runs it with the two
+selftests (`npm --prefix client run test:steward`). `test-runner.sh` is not in
+the gate: it needs a git remote and the thermal cap, so it runs on the box
+(or off it with `STEWARD_TEST_MAIN` and a scratch `STEWARD_TEST_REMOTE`).
 
 Config on the box (`~/.config/algomancy-steward/env`): `STEWARD_DISCORD_TOKEN`
 (the bot's token), `STEWARD_DISCORD_FORUM` (the forum's channel id),
@@ -234,8 +246,24 @@ Done on 2026-11-03; kept here so it can be redone.
 - **The guard rails are rails, not a sandbox.** The agent runs as `bena` with
   the box's keys on disk. What stops it pushing is a refusing
   `GIT_SSH_COMMAND` and denied commands, plus the fact that the runner, not
-  the agent, decides what ships.
+  the agent, decides what ships. The agent and the gate (which runs the
+  agent's tests) start from an allow-listed environment (`SAFE_ENV` in
+  `run-once.sh`): no Discord token, no ssh agent, and the gate gets the same
+  ssh guard; only the agent gets the Claude token. That keeps secrets out of
+  `env`, not out of reach: the real fix is running the agent as its own user.
 - The worker keeps its state in `~/algomancy-steward/state`, outside the
   repo: `journal.jsonl` (append-only, one row per event, the agent's memory),
   `handoffs/`, `answers/`, `redgate/`, `outcomes/`, and the flags `paused`,
-  `backoff-until`, `pending-deploy`.
+  `backoff-until`, `pending-deploy`. It is **the runner's**: the agent reads it
+  and writes only `~/algomancy-steward/outbox` (`outcome.json`, `handoffs/`,
+  notes, downloads), whose verdict and handoff the runner copies in after the
+  run. The agent is not given `state/` with `--add-dir` and its settings deny
+  edits there, in `bin/`, the clone's `.git/` and the config. Because its Bash
+  still runs as the same user, the runner hashes `state/`, its judged copies in
+  `bin/`, the config, the clone's git config and remote refs before the run and
+  compares after: any change → the verdict is discarded, the work is staged,
+  the journal says `tampered`, the steward pauses and the night log says why
+  (the git config, config file and refs are put back first). While a tick holds
+  `state/lock`, the inbox timer only acknowledges (✅ and the thread) and keeps
+  ids in `state/discord-inbox.json`; the request is written from Discord after
+  the tick. A `review.sh` write during a run reads as tampering too: resume.
