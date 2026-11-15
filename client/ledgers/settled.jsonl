@@ -1721,3 +1721,7 @@
 {"id":"CT-568","on":"2026-11-15","as":"done","note":"carried by CT-564: Tiderunner Initiate off Insidious Invitation is offered the open spots."}
 {"id":"#399","on":"2026-11-15","as":"fixed","to":["CT-564"]}
 {"id":"#405","on":"2026-11-15","as":"fixed","to":["CT-564","CT-568"]}
+{"id":"CT-569","on":"2026-11-15","as":"wontfix","note":"Not a won't-do: a duplicate, closed by the steward's tidy. It held no work of its own (its fix said \"Nothing here — it is BL-77's\"); the card zoom on every page stays open as BL-77, which carries report #404."}
+{"id":"#404","on":"2026-11-15","as":"ticket","to":["BL-77"],"note":"Carried by BL-77 alone; CT-569 was its duplicate and is closed."}
+{"id":"CT-570","on":"2026-11-15","as":"wontfix","note":"Not a won't-do: a duplicate, closed by the steward's tidy. It held no work of its own (its fix said \"Nothing here — it is BL-78's\"); the spell-token ride picker stays open as BL-78, which carries report #406."}
+{"id":"#406","on":"2026-11-15","as":"ticket","to":["BL-78"],"note":"Carried by BL-78 alone; CT-570 was its duplicate and is closed."}
