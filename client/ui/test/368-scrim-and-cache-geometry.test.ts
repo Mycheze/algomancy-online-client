@@ -646,3 +646,53 @@ test('every bin and cache thumb in the info block has a definite width sized fro
   }
   assert.deepEqual(fails, []);
 });
+
+/* ═══ CT-566 the bin's slot is the wider ═══════════════════════════════ */
+
+/** the info line's heights: 60px and up covers both --linh values and the spectator's taller line */
+const LINE_HEIGHTS = Array.from({ length: 171 }, (_, k) => 60 + 2 * k);   // 60..400
+
+test('CT-566: the bin reserves more width than the cache on every info line, wide or narrow, with or without the mod hint #401', () => {
+  const markup = paint('regions', false);
+  const fails: string[] = [];
+  for (const hasmods of [false, true]) {
+    const html = hasmods ? markup.replaceAll('class="regionbin"', 'class="regionbin hasmods"') : markup;
+    const { all } = tree(html, APP_CLASSES.regions);
+    const inLine = (e: El): boolean => { for (let a = e.parent; a; a = a.parent) if (a.classes.has('linfo')) return true; return false; };
+    const bins = all.filter(e => e.classes.has('regionbinthumbs') && inLine(e));
+    const caches = all.filter(e => e.classes.has('regioncache') && inLine(e));
+    // not blind: both lines drew both slots, and the mod-hint variant really is one
+    assert.equal(bins.length, 2, 'a bin on each info line');
+    assert.equal(caches.length, 2, 'a cache on each info line');
+    assert.equal(all.filter(e => e.classes.has('regionbin') && e.classes.has('hasmods')).length, hasmods ? 2 : 0);
+    for (const vw of [1440, 1000]) {
+      for (const cqh of LINE_HEIGHTS) {
+        const env: Env = { vw, vh: 900, cqh };
+        bins.forEach((bin, k) => {
+          const where = `${vw}px window, ${cqh}px line${hasmods ? ', mod hint' : ''}`;
+          const b = px(resolved(bin, 'width', env) ?? '', env);
+          const c = px(splitTop(resolved(caches[k]!, 'grid-template-columns', env) ?? '', ' ').at(-1) ?? '', env);
+          if (b === null || c === null) fails.push(`${where}: bin ${b} / cache ${c} is not a definite length`);
+          else if (b <= c) fails.push(`${where}: bin ${b.toFixed(1)}px is not wider than the cache's ${c.toFixed(1)}px`);
+        });
+      }
+    }
+  }
+  assert.deepEqual(fails, []);
+});
+
+test('CT-566: the cache shows its newest two live cards and folds the rest into a +N #401', () => {
+  const h = new Harness(36802);
+  const pl = h.state.players[0]!;
+  pl.cache ??= [];
+  for (const [k, card] of ['Wildfire', 'Good Whale', 'Rune Channeler'].entries()) {
+    pl.cache.push({ card, uid: 36810 + k, playableUntilTurn: h.state.turn });
+  }
+  store.setItem('algoLayout', '2');
+  const html = ui.join(h.state, 0, legalActions(h.state, 0));
+  const at = html.indexOf('<div class="lcache"><div class="regioncache');
+  assert.ok(at >= 0, 'the cache is on my line');
+  const cache = html.slice(at, html.indexOf('<div class="lid">', at));
+  assert.deepEqual([...cache.matchAll(/data-cslot="0:(\d+)"/g)].map(m => Number(m[1])), [1, 2], 'the newest two');
+  assert.match(cache, /<span class="cmore">\+1<\/span>/, 'the oldest folds into +1');
+});

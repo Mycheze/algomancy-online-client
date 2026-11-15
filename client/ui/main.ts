@@ -4995,8 +4995,8 @@ function regionCacheHtml(p: Seat): string {
   const keys = cacheAnimKeys(p);
   const liveIdx = cache.map((_, i) => i).filter(i => !cacheSpent(p, i));
   const spent = cache.length - liveIdx.length;
-  // the newest three; older live ones fold into a "+N" that opens the dialog
-  const shown = liveIdx.slice(-3);
+  // the newest two; older live ones fold into a "+N" that opens the dialog
+  const shown = liveIdx.slice(-2);
   const folded = liveIdx.length - shown.length;
   // CT-64/CR D6.16: a thumb that can be PLAYED right now plays on one click; every
   // other thumb — and every other pixel of the panel — still opens the dialog.

@@ -103,7 +103,7 @@ test('§2 one line per player, in the owner\'s order; no deck line; no top bar',
   // the line's content height; the label is master's plain zone label, beside
   // the thumbs, not a pill on them (audit, board round 8)
   assert.match(CSS, /\.linfo \.regionbin \{ --binth: clamp\(18px, calc\(\(100cqh - 6px\) \/ 1\.4\), 48px\); \}/);
-  assert.match(CSS, /\.linfo \.regioncache \{ --cacheth: clamp\(22px, calc\(100cqh \/ 1\.4\), 48px\);\s*grid-template-columns: auto calc\(3 \* var\(--cacheth\) \+ 12px \+ 22px\); \}/);
+  assert.match(CSS, /\.linfo \.regioncache \{ --cacheth: clamp\(22px, calc\(100cqh \/ 1\.4\), 48px\);\s*grid-template-columns: auto calc\(2 \* var\(--cacheth\) \+ 6px \+ 22px\); \}/);
   assert.match(CSS, /grid-template-areas: "lbl fan" "hint fan";/);
   assert.doesNotMatch(CSS, /\.linfo \.regionbin > \.zonelabel, \.linfo \.regioncache > \.zonelabel \{[^}]*position: absolute/);
   // the phase icons in the window's middle: the line is three tracks, the

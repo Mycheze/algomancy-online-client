@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-15', kind: 'change', text: 'On the game table, the bin now has the wider spot beside your name and shows its top three cards side by side; the cache, which rarely holds more than one or two, shows two and a +N.' },
   { date: '2026-11-15', kind: 'fix', text: 'A spell played through Tides of the Cosmos now offers Maelstrom Charger\'s copy, as it does from hand, and Spellbind played that way can take its mods.' },
   { date: '2026-11-15', kind: 'fix', text: 'A unit played through another card, such as Insidious Invitation or Tides of the Cosmos, now asks what it asks when played from hand: The Everywhere names a card, and Tiderunner Initiate and Trench Stalker can join your formation.' },
   { date: '2026-11-15', kind: 'change', text: 'A page left open across an update now reloads itself onto the new version, on any page. It waits while you are in a game, building a deck, playing a challenge or writing a report.' },

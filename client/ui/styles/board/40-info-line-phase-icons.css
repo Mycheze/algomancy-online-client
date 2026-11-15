@@ -58,7 +58,9 @@
    anything or not, so nothing beside it moves, its thumbs as tall as the
    line allows. The label is master's (the plain zone label), BESIDE the
    thumbs rather than above them: above, it took 16px of a one-line height
-   and the thumbs came out smaller than the old block's (audit, board round 8). */
+   and the thumbs came out smaller than the old block's (audit, board round 8).
+   The bin is the pile that fills up, so its slot is the wider: three thumbs
+   side by side, where the cache has room for two and a "+N" (owner). */
 .linfo .regionbin, .linfo .regioncache { border-left: 0; padding: 0 3px; width: auto; max-width: none; min-width: 0;
   height: 100cqh; display: grid; grid-template-columns: auto auto; grid-template-rows: auto minmax(0, 1fr);
   grid-template-areas: "lbl fan" "hint fan"; column-gap: 6px; align-items: start; }
@@ -66,18 +68,18 @@
 .linfo .regionbinthumbs, .linfo .regioncache > .cthumbs, .linfo .regioncache > .binempty { grid-area: fan; align-self: center; }
 .linfo .regionbin { --binth: clamp(18px, calc((100cqh - 6px) / 1.4), 48px); }
 .linfo .regioncache { --cacheth: clamp(22px, calc(100cqh / 1.4), 48px);
-  grid-template-columns: auto calc(3 * var(--cacheth) + 12px + 22px); }
+  grid-template-columns: auto calc(2 * var(--cacheth) + 6px + 22px); }
 .linfo .regioncache .cthumbs { flex-wrap: nowrap; margin-top: 0; align-items: center; }
 /* the chip sits ON the card's foot: under it, it cost the thumb a third of its
    height in a one-line slot (FORCED, audit board round 8) */
 .linfo .regioncache .cthumb { position: relative; }
 .linfo .regioncache .cchip { position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%); margin: 0;
   white-space: nowrap; z-index: 2; }
-.linfo .regionbinthumbs { height: calc(var(--binth) * 1.4 + 6px); width: calc(var(--binth) + 26px); }
+.linfo .regionbinthumbs { height: calc(var(--binth) * 1.4 + 6px); width: calc(3 * var(--binslot, var(--binth)) + 12px); }
 .linfo .regionbinthumbs:has(> .binempty), .linfo .regioncache > .binempty { height: auto; align-self: start; margin-top: 2px; }
 .linfo .regionbinthumbs .card { width: var(--binth); }
-.linfo .regionbinthumbs .card:nth-child(2) { left: 12px; top: 3px; }
-.linfo .regionbinthumbs .card:nth-child(3) { left: 24px; top: 6px; }
+.linfo .regionbinthumbs .card:nth-child(2) { left: calc(50% - var(--binth) / 2); top: 0; }
+.linfo .regionbinthumbs .card:nth-child(3) { left: calc(100% - var(--binth)); top: 0; }
 /* "playable as mods" under the label, beside the thumbs */
 .linfo .binmodhint { grid-area: hint; align-self: end; width: 74px; margin: 0; line-height: 1.2; }
 /* a spectator sees the top seat's whole hand: a stretch of the line after the
@@ -148,8 +150,9 @@
      (the thumbs are smaller for it) */
   .linfo .regionbin, .linfo .regioncache { grid-template-columns: auto; grid-template-rows: auto minmax(0, 1fr) auto;
     grid-template-areas: "lbl" "fan" "hint"; }
-  .linfo .regioncache { grid-template-columns: calc(3 * var(--cacheth) + 12px + 22px); }
-  .linfo .regionbin { --binth: clamp(18px, calc((100cqh - 24px) / 1.4), 48px); }
+  .linfo .regioncache { grid-template-columns: calc(2 * var(--cacheth) + 6px + 22px); }
+  /* the mod hint's row shrinks the thumbs, never the slot */
+  .linfo .regionbin { --binth: clamp(18px, calc((100cqh - 24px) / 1.4), 48px); --binslot: clamp(18px, calc((100cqh - 24px) / 1.4), 48px); }
   .linfo .regionbin.hasmods { --binth: clamp(18px, calc((100cqh - 38px) / 1.4), 48px); }
   .linfo .regioncache { --cacheth: clamp(22px, calc((100cqh - 18px) / 1.4), 48px); }
   .linfo .binmodhint { width: auto; white-space: nowrap; align-self: start; }
