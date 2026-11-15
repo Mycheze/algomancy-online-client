@@ -5780,5 +5780,11 @@ export const CLOSED: LedgerEntry[] = [
     status: 'agreed-fix',
     note: "A judge trying the take-back tool, reason \"test\", agreed by StubTailDstroyer. Turn 5 block window, two Morphic Mentor triggers on the stack: took back Nyar's Soul Tithe at a Morphic Mentor trigger [171]-[172] (Origon had already triggered to negate it); Nyar played Protective Adaptations on Oracle of Foretelling first [171]-[172], then the same Soul Tithe [173]-[174]. HECZ (Nyar v StubTailDstroyer, constructed) replays FAITHFUL (185 of 185); --branch triage none of (a)-(d). A sequencing take-back by agreement; no defect.",
   },
+  {
+    id: 408, room: "MNNC", date: "2026-11-15",
+    report: "Nyar, seat 0, agreed fix: back to before Nyar's done planning, then back to before Yagamino's done planning, then back to before Nyar's cards to the bottom (Nyar's last action). \"test\"",
+    status: 'agreed-fix',
+    note: "A judge trying the take-back tool, reason \"test\", three agreed steps in one run, agreed by Yagamino. Turn 5 planning: fix 0 took back the done-planning and both done-with-haste [171]-[173]; fix 1 Yagamino's done planning, Nyar's recycle of Celestial Purge and two resource activations [167]-[170]; fix 2 Nyar's cards to the bottom [166]. The redo put the cards on the bottom again [166] and both players finished planning and haste [167]-[169]. MNNC (Nyar v Yagamino, constructed) fetched 2026-11-15 and replays FAITHFUL (221 of 221); --branch triage none of (a)-(d) for all three. Legal plays taken back by agreement; no defect.",
+  },
 ];
 
