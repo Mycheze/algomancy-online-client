@@ -47,7 +47,7 @@ const uiLines = rows.filter(r => isUi(r.path)).reduce((n, r) => n + r.add + r.de
 if (uiLines > 250) reasons.push(`${uiLines} changed UI lines (over 250) — a rework of a screen, the owner's call`);
 
 // ── 2. the steward may not change its own leash, the deploy, or the deps ───
-const PROTECTED = [/^steward\//, /^\.claude\//, /^deploy\//, /^client\/ui\/scripts\//, /^CLAUDE\.md$/, /(^|\/)package(-lock)?\.json$/,
+const PROTECTED = [/^steward\//, /^\.claude\//, /^deploy\//, /^client\/ui\/scripts\//, /^client\/engine\/scripts\/(paths|fetch-reports)\.mjs$/, /^client\/engine\/scripts\/cr\/[^/]+\.mjs$/, /^CLAUDE\.md$/, /(^|\/)package(-lock)?\.json$/,
   /^\.gitignore$/, /^\.env/, /requirements\.txt$/, /^LICENSE$/, /^data\/NOTICE\.md$/];
 // …except the skill's own TEXT (2026-11-06). The owner asked for a daily retro that "does an
 // update to it to improve weak points" by itself; the skill is instructions, and what actually
@@ -62,7 +62,7 @@ if (links.length) reasons.push(`adds or changes a symlink (${links.join(', ')})`
 // What an approval must name ("approve protected"): the steward's harness, the deploy, the agent's
 // settings, the dependencies. Every post that offers approve lists them; the runner lands an approved
 // branch that touches one only on that phrase. Both sides of a rename count.
-const LEASH = [/^steward\//, /^deploy\//, /^\.claude\//, /^client\/ui\/scripts\//, /(^|\/)package(-lock)?\.json$/, /(^|\/)(npm-shrinkwrap\.json|yarn\.lock|pnpm-lock\.yaml)$/,
+const LEASH = [/^steward\//, /^deploy\//, /^\.claude\//, /^client\/ui\/scripts\//, /^client\/engine\/scripts\/(paths|fetch-reports)\.mjs$/, /^client\/engine\/scripts\/cr\/[^/]+\.mjs$/, /(^|\/)package(-lock)?\.json$/, /(^|\/)(npm-shrinkwrap\.json|yarn\.lock|pnpm-lock\.yaml)$/,
   /(^|\/)requirements[^/]*\.txt$/, /^\.env\.example$/];
 const leash = [...new Set([...rows.map(r => r.path), ...status.flatMap(s => s.slice(1))])].filter(p => LEASH.some(re => re.test(p))).sort();
 const skillLines = rows.filter(r => SKILL.test(r.path)).reduce((n, r) => n + r.add + r.del, 0);
