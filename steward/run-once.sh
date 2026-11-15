@@ -358,7 +358,8 @@ try_deploy() {
   fi
   prev=$(awk '/^PREV/{print $2}' <<<"$out")
   local units=""; [ "$rg" = true ] && units="algomancy-game"; [ "$rb" = true ] && units="$units algomancy-web algomancy-bot"
-  [ -n "$units" ] && vps "sudo systemctl restart $units"
+  # one unit per sudo call: the VPS's narrowed sudo allows each restart by name, not a list
+  [ -n "$units" ] && vps "for u in $units; do sudo -n systemctl restart \$u; done"
   local ok=0
   for _ in $(seq 1 30); do
     if curl -fsS -m 10 -o /dev/null "$SITE/" && { [ -z "$units" ] || vps "systemctl is-active -q $units"; }; then ok=1; break; fi
@@ -369,7 +370,7 @@ try_deploy() {
     rm -f "$STATE/pending-deploy"; notify "deployed: $why"
   else
     log "deploy FAILED health check → rolling back to $prev"
-    vps "set -e; cd $VREPO; git reset -q --hard $prev; npm --prefix client/ui run build >/dev/null 2>&1; ${units:+sudo systemctl restart $units}" || true
+    vps "set -e; cd $VREPO; git reset -q --hard $prev; npm --prefix client/ui run build >/dev/null 2>&1; ${units:+for u in $units; do sudo -n systemctl restart \$u; done}" || true
     journal deploy deploy-rolled-back sha="$prev" why="$why"
     touch "$STATE/paused"; notify "⚠ deploy failed its health check and was ROLLED BACK to $prev; steward paused. Why: $why"
     return 1
@@ -536,7 +537,9 @@ redgate() { # branch item log intent base_sha
 # (discord-inbox.json, ids only). A review.sh write in that time reads as tampering too.
 fingerprint() {
   (cd "$STATE" && find . \( -name lock -o -name discord.lock -o -name discord-inbox.json \) -prune -o -type f -print0 | sort -z | xargs -0r sha256sum)
-  local f; for f in "$BIN"/{policy.mjs,discord.mjs,fetch-file.mjs,thermal.sh,git-ssh-guard} "$CONF" "$REPO"/.git/info/*; do [ -f "$f" ] && sha256sum "$f"; done
+  # commondir, config.worktree and alternates redirect the runner's git to a config or objects elsewhere
+  local f; for f in "$BIN"/{policy.mjs,discord.mjs,fetch-file.mjs,thermal.sh,git-ssh-guard} "$CONF" "$REPO"/.git/info/* \
+    "$REPO"/.git/{commondir,config.worktree,objects/info/alternates}; do [ -f "$f" ] && sha256sum "$f"; done
   echo "$(git config --file "$REPO/.git/config" --list | grep -v '^branch\.' | sha256sum | cut -c1-64)  repo-git-config"
 }
 refprint() { g for-each-ref --format='%(objectname)  %(refname)' refs/remotes refs/replace; }
@@ -544,6 +547,7 @@ guard_before() { PRE_FILES=$(fingerprint); PRE_REFS=$(refprint); PRE_GITCONF=$(c
 guard_after() { # → each path the run changed that it may only read; empty = none
   local files refs r; files=$(fingerprint)
   # first undo what would run code in, or mislead, the runner's next git call and the next tick
+  rm -f "$REPO"/.git/{commondir,config.worktree}
   [ "$(grep ' repo-git-config$' <<<"$files")" = "$(grep ' repo-git-config$' <<<"$PRE_FILES")" ] || printf '%s\n' "$PRE_GITCONF" > "$REPO/.git/config"
   [ "$(grep -F "  $CONF" <<<"$files")" = "$(grep -F "  $CONF" <<<"$PRE_FILES")" ] || ( umask 077; printf '%s\n' "$PRE_CONF" > "$CONF" )
   trust
@@ -621,6 +625,8 @@ work_one() {
         --settings "$BIN/claude-settings.json" --permission-mode acceptEdits --add-dir "$OUTBOX" "$LOGS" \
         --output-format stream-json --verbose ) >"$rlog" 2>"$LOGS/run-$TS.err"; rc=$?
   log "claude exited $rc"
+  # a link in the outbox would make the runner's cp/mv below copy or post whatever it points at
+  find "$OUTBOX" ! -type f ! -type d -delete
   # before any other git call or judged copy runs: what did it change that it may only read?
   local tampered; tampered=$(guard_after)
 

@@ -75,7 +75,7 @@ cp client/server/tester.env.example client/server/tester.env
 **3. Units and the edge:**
 
 ```bash
-sudo cp deploy/Caddyfile /etc/caddy/Caddyfile && sudo systemctl reload caddy
+sudo install -m 644 /home/bena/Documents/Algomancy/deploy/Caddyfile /etc/caddy/Caddyfile && sudo systemctl reload caddy
 sudo cp deploy/algomancy-*.service deploy/algomancy-backup.timer /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now algomancy-game algomancy-web algomancy-bot algomancy-backup.timer
@@ -161,7 +161,7 @@ algomancy-vps:/home/bena/Documents/Algomancy/client/storybook/storybook-static/`
 ⚠ Storybook draws every story in an `<iframe>`, so the edge must allow
 same-origin framing under `/storybook/*`: `deploy/Caddyfile` does since
 2026-11-03, and a box whose `/etc/caddy/Caddyfile` predates that needs the
-`sudo cp deploy/Caddyfile … && sudo systemctl reload caddy` from step 3 once,
+`sudo install -m 644 /home/bena/Documents/Algomancy/deploy/Caddyfile /etc/caddy/Caddyfile && sudo systemctl reload caddy` from step 3 once,
 or Storybook opens to an empty preview.
 
 The bot token's routes (`/api/bot/*`, `/api/league/bot/*`, `/api/cr/editor`)
@@ -177,7 +177,8 @@ A client-only change is live on the next page load; `serveFile` sends
 itself when it sees a new server boot id. A restart onto a changed engine
 replays every live room onto it; a room whose log no longer replays is
 **frozen** (CT-160) rather than silently rebuilt, and both players are told.
-A bot change: `sudo systemctl restart algomancy-web algomancy-bot`.
+A bot change: `sudo systemctl restart algomancy-web` and `sudo systemctl restart algomancy-bot`
+(one unit per call: the narrowed sudo allows each restart by name, not a list).
 
 ⚠ **Once, with the 2026-10-11 model-layer change:** if `.env` still has
 `DEEPSEEK_TIMEOUT=60` (the old `.env.example` shipped it), delete the line
