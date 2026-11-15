@@ -5792,5 +5792,11 @@ export const CLOSED: LedgerEntry[] = [
     status: 'agreed-fix',
     note: "A take-back, ticked \"Not a bug\", three steps in one run, agreed by Nyar. Turn 5 battle, Yagamino's discard triggers on the stack (Pallid Gorger, two Swarmlings, Dropslime): fix 3 took back two passes [236]-[237] while Pallid Gorger resolved; fix 4 two passes [234]-[235] while a Swarmling found its [1] unpayable; fix 5 back to Dropslime's resolution [229]-[233], taking back Pay [1] for a Swarmling copy [232]. The redo resolved Dropslime the same way (3 to Nyar) and declined both remaining Swarmling copies [232], [235]. MNNC (Nyar v Yagamino, constructed) fetched 2026-11-15 and replays FAITHFUL (358 of 358, determinism OK); --branch triage none of (a)-(d) for all three. A spending choice changed by agreement; no defect.",
   },
+  {
+    id: 410, room: "DGWB", date: "2026-11-15",
+    report: "Nyar, seat 1, agreed fix: back to before Gember's Auric Ascendant's ability — takes back Gember's Auric Ascendant's ability and Gember's choice: Robot (Gember's). \"test\"",
+    status: 'agreed-fix',
+    note: "A judge trying the take-back tool, reason \"test\", one agreed step, agreed by Gember. Turn 4 counterattack, block window: took back Auric Ascendant's ability [106] and its recall cost paid with a Robot token [107] (recalled to hand, then erased as a token, as it should be). The redo activated the same ability and recalled Construct Overseer instead [107], then two passes. DGWB (Nyar v Gember, draft) fetched 2026-11-15 and replays FAITHFUL (256 of 256, determinism OK); --branch triage none of (a)-(d), the redo repeats the first 1 of 2. A cost choice changed by agreement; no defect.",
+  },
 ];
 
