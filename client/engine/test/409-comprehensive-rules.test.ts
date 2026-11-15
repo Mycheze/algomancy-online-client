@@ -6,7 +6,8 @@
  * record passes the mechanical half of the anti-hallucination contract
  * (scripts/cr/check.mjs). Five parts over the committed state:
  *
- *  (1) re-rendering gives the committed files, byte for byte, and the ledger
+ *  (1) the committed .json is a fresh render, byte for byte (the other
+ *      editions are not committed: the server renders them), and the ledger
  *      needs no new number;
  *  (2) the ledger is append-only against the last commit (`git show HEAD:`);
  *  (3) check.mjs finds no problems;
@@ -26,7 +27,7 @@
  * finalize (and the polish round 4: its explicit key list and its merging
  * finalize) and stamp, each over a fixture with its defect planted. §11: a
  * rule key named inside prose prints as its number, and one that names no live
- * rule fails the check — the committed document carries no raw key.
+ * rule fails the check — the rendered document carries no raw key.
  *
  * Fast on purpose: one extract() (no pdftotext — the printed pages are a
  * committed JSON), one `git show`, no process per test title.
@@ -34,12 +35,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { relative } from 'node:path';
-import { REPO_ROOT, CR_LEDGER, CR_SOURCE_CLASSIFICATION, CR_UNITS } from '../scripts/paths.mjs';
+import { REPO_ROOT, CR_JSON, CR_LEDGER, CR_SOURCE_CLASSIFICATION, CR_UNITS } from '../scripts/paths.mjs';
 import { extract } from '../scripts/cr/extract.mjs';
 import type { Extract } from '../scripts/cr/extract.d.mts';
-import { render, loadInputs, refResolver, OUTPUT_PATHS, type CrInputs } from '../scripts/cr/render.mjs';
+import { render, loadInputs, refResolver, type CrInputs } from '../scripts/cr/render.mjs';
 import { check } from '../scripts/cr/check.mjs';
 import {
   allocate, appendOnlyProblems, compareNums, emptyLedger, formatLedger, letterFor, letterIndex,
@@ -69,15 +70,13 @@ function pinned(name: string, actual: number, pin: number, list: string): void {
   assert.equal(actual, pin, `${name}: ${actual}, below the pin of ${pin} — lower EXPECTED_ in this file to ${actual}`);
 }
 
-test('(1) re-rendering gives the committed document files, byte for byte, and no number is born CT-502', () => {
+test('(1) re-rendering gives the committed .json, byte for byte, and no number is born CT-502', () => {
   assert.ok(INPUTS && OUT, `the committed state does not render: ${LOAD_ERROR}`);
   assert.deepEqual(OUT.born, [], `the committed ledger lacks ${OUT.born.length} number(s) (first: ${JSON.stringify(OUT.born[0])}) — run npm --prefix client run cr:render`);
   assert.equal(readFileSync(CR_LEDGER, 'utf8'), formatLedger(OUT.ledger), 'ledger.json is not in canonical form — run cr:render');
-  for (const [k, p] of Object.entries(OUTPUT_PATHS)) {
-    assert.ok(existsSync(p), `${relative(REPO_ROOT, p)} is missing — run cr:render`);
-    assert.ok(readFileSync(p, 'utf8') === OUT.files[k as keyof typeof OUT.files],
-      `${relative(REPO_ROOT, p)} differs from a fresh render — it is generated: fix the record and run cr:render, never edit the output`);
-  }
+  assert.ok(readFileSync(CR_JSON, 'utf8') === OUT.files.json,
+    `${relative(REPO_ROOT, CR_JSON)} differs from a fresh render — it is generated: fix the record and run cr:render, never edit the output`);
+  for (const [k, text] of Object.entries(OUT.files)) assert.ok(text.length > 0, `the ${k} edition renders empty`);
   // and the render is deterministic: a second run is byte-identical
   assert.deepEqual(render(INPUTS, EX).files, OUT.files);
 });
@@ -999,12 +998,12 @@ test('§11 a key named in prose prints as its live number, in all three editions
   assert.deepEqual(check(i, fixtureExtract()).problems.map((p) => p.code), []);
 });
 
-test('§11 the committed document prints no rule key and no dead rule number in its prose', () => {
-  if (!INPUTS) return;
+test('§11 the rendered document prints no rule key and no dead rule number in its prose', () => {
+  if (!INPUTS || !OUT) return;
   const { refsIn } = refResolver(INPUTS.ledger);
   const bad: string[] = [];
   for (const k of ['doc', 'annexD', 'discrepanciesMd', 'ownerQuestions'] as const) {
-    let t = readFileSync(OUTPUT_PATHS[k], 'utf8');
+    let t = OUT.files[k];
     t = t.replace(/<sub>[\s\S]*?<\/sub>/g, ''); // provenance ("Key: …") and test bindings are identifiers, not prose
     const cl = t.indexOf(`## ${INPUTS.outline.changelog.title}`);
     if (cl >= 0) t = t.slice(0, cl); // the changelog is keyed by rule key on purpose
@@ -1017,27 +1016,21 @@ test('§11 the committed document prints no rule key and no dead rule number in 
 
 // The game server builds the review page's document in-process (render.mjs
 // buildReview(), cached by its inputs' mtimes); nothing review-shaped is
-// committed. 437 proves the build is the editions' own text; this proves the
-// build of the COMMITTED records is the committed document.
+// committed. 437 proves the build's files are render()'s output; this proves
+// the build of the COMMITTED records agrees with the rendered document.
 test('§12 buildReview runs on the committed data and agrees with the rendered document: same rule numbers, same keys', async () => {
   const { buildReview } = await import('../scripts/cr/render.mjs');
   const { readLedger } = await import('../scripts/cr/ledger.mjs');
   const r = await buildReview({ ex: EX });
   assert.equal(r.born, 0, `the review numbers ${r.born} rule(s) the committed ledger lacks — run npm --prefix client run cr:render`);
-  // its files are the committed files, under their committed names
-  const pairs = { doc: 'doc', html: 'html', txt: 'txt', annexD: 'annexD', disc: 'discrepanciesMd', oq: 'ownerQuestions', changelog: 'changelog' } as const;
-  for (const [w, k] of Object.entries(pairs)) {
-    const f = r.files[w as keyof typeof pairs];
-    assert.equal(f.name, relative(REPO_ROOT, OUTPUT_PATHS[k]).split('/').pop(), `files.${w} is not named as the committed file`);
-    assert.ok(f.text === readFileSync(OUTPUT_PATHS[k], 'utf8'), `files.${w} differs from the committed ${f.name} — run cr:render`);
-  }
-  // the same rule numbers, in the same order: every anchor of the committed .md and Annex D, and nothing else, is an id on the page
-  const md = readFileSync(OUTPUT_PATHS.doc, 'utf8') + readFileSync(OUTPUT_PATHS.annexD, 'utf8');
+  // the same rule numbers, in the same order: every anchor of the rendered .md and Annex D, and nothing else, is an id on the page
+  assert.ok(OUT, `the committed state does not render: ${LOAD_ERROR}`);
+  const md = OUT.files.doc + OUT.files.annexD;
   const mdNums = [...md.matchAll(/<a id="r([^"]+)"><\/a>/g)].map((m) => m[1]);
   const pageNums = r.parts.flatMap((p) => [...p.html.matchAll(/<(?:h3|article)[^>]* id="r([^"]+)"/g)].map((m) => m[1]));
-  assert.ok(mdNums.length > 1500, `only ${mdNums.length} numbers in the committed document`);
+  assert.ok(mdNums.length > 1500, `only ${mdNums.length} numbers in the rendered document`);
   assert.deepEqual(pageNums, mdNums);
-  // the same keys: the committed ledger's, and each rule on the page carries the key the committed .md prints for its number
+  // the same keys: the committed ledger's, and each rule on the page carries the key the .md prints for its number
   const ledger = readLedger(CR_LEDGER);
   assert.deepEqual(r.keys, Object.fromEntries(ledger.entries.map((e) => [e.key, e.num])));
   const pageKeyOf = new Map<string, string>();

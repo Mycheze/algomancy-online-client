@@ -25,7 +25,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { UI_DIR, CR_DOC } from '../../engine/scripts/paths.mjs';
+import { UI_DIR, CR_JSON } from '../../engine/scripts/paths.mjs';
 import { lobbyHtml, type LobbyView } from '../pages/lobby.ts';
 
 const src = (rel: string): string => readFileSync(join(UI_DIR, rel), 'utf8');
@@ -65,7 +65,7 @@ test('1212 §2 the post-game\'s button to the queue screen reads like the home s
 });
 
 test('1212 §3 constructed\'s draw-4-put-2-back is the "draw phase" on the bar as in the panel and the rules', () => {
-  assert.match(readFileSync(CR_DOC, 'utf8'), /taken together as one draw phase/, 'the rules\' own name for it');
+  assert.match(readFileSync(CR_JSON, 'utf8'), /taken together as one draw phase/, 'the rules\' own name for it');
   const main = code('main.ts');
   const bar = main.match(/function pickShowHtml\(\)[\s\S]*?\n}/)?.[0] ?? '';
   assert.ok(bar, 'the bar that brings a hidden pick back');

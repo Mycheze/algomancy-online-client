@@ -12,7 +12,7 @@ Covered surfaces:
 | C | **Lesson window** (+ minimised pill, card preview, board highlights) | automatically during `?learn=play` (lessonTick, main.ts:8290); from menu "Read a lesson" | `windowHtml()` lessonlayer.ts:186, `pageHtml()` :155, `figureHtml()` :80, `pillHtml()` :222 |
 | D | **Judge box** (in-game only) | toolbar `⚖` (main.ts:7372), inspector `⚖ Ask the judge about X` (main.ts:5144), card right-click menu (main.ts:12314) | `judgeOverlayHtml()` main.ts:5165 |
 | E | **Rules review page** (the CR with comments) | `?crreview=1` (+`&at=`, `&c=`, or tab name as value), profile `📜 Rules review` for owner/judge badges (account.ts:520), judge answer source links (main.ts:5159) | `paint()` crreview.ts:674, plus crlayer.ts / crsearch.ts |
-| F | **Public CR page** (`/comprehensive-rules`) | iframe in tab A4, "Open … in a new tab ↗" | server serves the generated `data/comprehensive-rules/Algomancy-Comprehensive-Rules.html` (server/main.ts:1204) — NOT ui code |
+| F | **Public CR page** (`/comprehensive-rules`) | iframe in tab A4, "Open … in a new tab ↗" | server serves the generated `Algomancy-Comprehensive-Rules.html` edition (rendered in-process since 2026-11-15, not committed) (server/main.ts:1204) — NOT ui code |
 | G | **Rules question board panel** | `?question=<id>` (main.ts:12687), CR review `❓ Questions` list | `questionHtml()` replaybar.ts:209 (the rest of the replay bar is another reader's) |
 | H | **Scenario tester panel** (🧪) | only in a server-dealt scenario room; toolbar `🧪` (main.ts:7366) | `panelHtml()` scenario.ts:119, slot main.ts:7395 |
 | I | **Test mode (sandbox) panel** + home launcher | home "On your own" → `Test mode` (injected by sandbox.ts:409); the panel appears in a sandbox room | `panelHtml()` sandbox.ts:166 |
@@ -398,7 +398,7 @@ The content is **the renderer's own HTML** (engine/scripts/cr/render.mjs) inject
 
 ## F. Public CR page (`/comprehensive-rules`) — not ui code, but it is a page users see
 
-Served as the generated `data/comprehensive-rules/Algomancy-Comprehensive-Rules.html` (11,445 lines; server/main.ts:1204), framed in A.5 and opened in a new tab. **Third palette**: its own `:root` light theme (`--bg #f6f7f8`, `--accent #1f5f8b`) with a `prefers-color-scheme: dark` variant and `[data-theme]` overrides; fonts `IBM Plex Sans/Mono/Serif` (no font file loaded by the client → falls back to system-ui/Georgia). It does not share the client's header, footer, tokens or buttons. Its dark palette is the one copied into `.crdoc` (style.css:5323-5331). Owned by `engine/scripts/cr/render.mjs` — a redesign must decide whether this page joins the client's design system.
+Served as the generated `Algomancy-Comprehensive-Rules.html` edition (rendered in-process since 2026-11-15, not committed) (11,445 lines; server/main.ts:1204), framed in A.5 and opened in a new tab. **Third palette**: its own `:root` light theme (`--bg #f6f7f8`, `--accent #1f5f8b`) with a `prefers-color-scheme: dark` variant and `[data-theme]` overrides; fonts `IBM Plex Sans/Mono/Serif` (no font file loaded by the client → falls back to system-ui/Georgia). It does not share the client's header, footer, tokens or buttons. Its dark palette is the one copied into `.crdoc` (style.css:5323-5331). Owned by `engine/scripts/cr/render.mjs` — a redesign must decide whether this page joins the client's design system.
 
 ---
 

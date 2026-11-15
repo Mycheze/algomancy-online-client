@@ -125,24 +125,26 @@ export const CR_HARNESS_DIR = join(CR_BUILD_DIR, 'harness');
  *  verdicts (`<unit>-r<K>[-a<A>].json`). Gitignored */
 export const CR_VERIFY_INPUT_DIR = join(CR_BUILD_DIR, 'verify-input');
 export const CR_VERIFY_OUTPUT_DIR = join(CR_BUILD_DIR, 'verdicts');
+/** the editions `cr:render` writes. Gitignored: the server renders them in-process */
+export const CR_EDITIONS_DIR = join(CR_BUILD_DIR, 'editions');
 /** THE document. ⚠ Generated — never hand-edit; fix the record, re-render */
-export const CR_DOC = join(CR_DIR, 'Algomancy-Comprehensive-Rules.md');
+export const CR_DOC = join(CR_EDITIONS_DIR, 'Algomancy-Comprehensive-Rules.md');
 /** the same document as one HTML page. ⚠ Generated — never hand-edit */
-export const CR_DOC_HTML = join(CR_DIR, 'Algomancy-Comprehensive-Rules.html');
+export const CR_DOC_HTML = join(CR_EDITIONS_DIR, 'Algomancy-Comprehensive-Rules.html');
 /** the same document as plain text. ⚠ Generated — never hand-edit */
-export const CR_DOC_TXT = join(CR_DIR, 'Algomancy-Comprehensive-Rules.txt');
+export const CR_DOC_TXT = join(CR_EDITIONS_DIR, 'Algomancy-Comprehensive-Rules.txt');
 /** Annex D, the conventions only the digital client has (clocks, undo,
  *  auto-passing). ⚠ Generated — never hand-edit */
-export const CR_ANNEX_D = join(CR_DIR, 'Annex-D-Digital-Conventions.md');
+export const CR_ANNEX_D = join(CR_EDITIONS_DIR, 'Annex-D-Digital-Conventions.md');
 /** the discrepancy report, discrepancies.json triaged into four tiers for a
  *  human. ⚠ Generated — never hand-edit */
-export const CR_DISCREPANCIES_MD = join(CR_DIR, 'discrepancies.md');
+export const CR_DISCREPANCIES_MD = join(CR_EDITIONS_DIR, 'discrepancies.md');
 /** the discrepancy report's first tier on its own: the questions only the
  *  owner can answer, numbered and grouped by topic. ⚠ Generated — never hand-edit */
-export const CR_OWNER_QUESTIONS = join(CR_DIR, 'owner-questions.md');
+export const CR_OWNER_QUESTIONS = join(CR_EDITIONS_DIR, 'owner-questions.md');
 /** what each edition added, removed or renamed, keyed by rule key; derived
  *  from the ledger. ⚠ Generated — never hand-edit */
-export const CR_CHANGELOG = join(CR_DIR, 'changelog.md');
+export const CR_CHANGELOG = join(CR_EDITIONS_DIR, 'changelog.md');
 /** the document as data: one row per live rule (text with every cross-reference
  *  resolved), Annex D's rows and the glossary — what the judge bot's corpus
  *  (bot/pipeline/build_corpus.py) is chunked from. ⚠ Generated — never hand-edit */

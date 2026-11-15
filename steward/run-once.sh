@@ -349,6 +349,7 @@ try_deploy() {
     if ! git diff --quiet \$prev HEAD -- client/engine/package-lock.json client/server/package-lock.json; then
       npm --prefix client/engine ci --no-audit --no-fund >/dev/null && npm --prefix client/server ci --no-audit --no-fund >/dev/null; fi
     if ! git diff --quiet \$prev HEAD -- bot/requirements.txt; then .venv/bin/pip install -q -r bot/requirements.txt; fi
+    node client/engine/scripts/cr/render.mjs --review-json >/dev/null || { git reset -q --hard \$prev; echo CR-BUILD-FAILED; exit 3; }
     npm --prefix client/ui run build >/dev/null 2>&1
     echo PREV \$prev NOW \$(git rev-parse HEAD)" 2>&1)
   if ! grep -q '^PREV ' <<<"$out"; then

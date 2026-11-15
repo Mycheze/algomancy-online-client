@@ -336,7 +336,7 @@ gone.
 comment that outlived its cause · `RULED-OK` the engine is right and an answer
 says so.
 
-> **Read [CR 101.4, 101.1](../../data/comprehensive-rules/Algomancy-Comprehensive-Rules.md#r101.4) and [[card-ruling-steer]] first.** The
+> **Read [CR 101.4, 101.1](https://algomancy.online/comprehensive-rules#r101.4) and [[card-ruling-steer]] first.** The
 > standing steer decides every ambiguity below: *"Algomancy is meant to be a
 > highly exploratory and synergistic game where anything is possible"* and
 > **"Printed text always wins."** Take the permissive reading.

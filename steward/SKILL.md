@@ -250,8 +250,8 @@ committed.
 Any change to what the engine *does* is a rules claim. Settle it from the
 sources, in this order, and record what each one said (or that it said nothing):
 
-1. **The comprehensive rules** — `data/comprehensive-rules/Algomancy-Comprehensive-Rules.md`
-   (rule text AND examples; `sources.owner` blocks in `rules/*.json` are the
+1. **The comprehensive rules** — `data/comprehensive-rules/Algomancy-Comprehensive-Rules.json`
+   (rule text AND examples, one row per rule; `sources.owner` blocks in `rules/*.json` are the
    owner's past decisions).
 2. **The RAQ** — `client/ledgers/raq.ts`, then the thread *titles* in
    `data/rulings/exports/` (`ls … | sed 's/Caleb Gannon.s Discord - //; s/ \[[0-9]*\].json//'`)
@@ -284,8 +284,8 @@ where. Recommendations are for UX and process only.
 and #323 were closed by-design on exactly these, and the owner had to overrule
 all three):
 
-- **A CR rule whose basis is "Engine only"** (its `<sub>Basis:` line, or a
-  `discrepancies.md` entry saying "the sources are silent"). That rule is a
+- **A CR rule whose basis is "Engine only"** (its row's `"basis": "engine"` in the
+  json, or a `discrepancies/*.json` entry saying "the sources are silent"). That rule is a
   description of the engine — the very thing the report says is wrong. Citing
   it is "the engine does X because the engine does X".
 - **A quote answering a different question.** Read what the designer was

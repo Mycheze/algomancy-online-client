@@ -21,7 +21,7 @@
  *       page with the board's targeting gold (--target)
  *   §4  the comprehensive rules are dark wherever they are shown: render.mjs
  *       writes the document dark whatever the reader's system prefers, in the
- *       client's own colours, and the committed page was re-rendered with it
+ *       client's own colours (the server serves its render, nothing committed)
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -30,7 +30,7 @@ import { join } from 'node:path';
 
 import { declarations } from '../scripts/css-scan.mjs';
 import { readStylePieces } from './read-styles.ts';
-import { CR_DOC_HTML, REPO_ROOT } from '../../engine/scripts/paths.mjs';
+import { REPO_ROOT } from '../../engine/scripts/paths.mjs';
 
 const MANUAL = { page: '#3e1d52', orange: '#f68c3f' };
 
@@ -144,17 +144,14 @@ const rootVars = (css: string): Map<string, string> => {
 };
 
 test('§4 the comprehensive rules are dark whatever the reader prefers, in the client\'s colours', () => {
-  const src = readFileSync(join(REPO_ROOT, 'client', 'engine', 'scripts', 'cr', 'render.mjs'), 'utf8');
-  const html = readFileSync(CR_DOC_HTML, 'utf8');
-  for (const [what, text] of [['render.mjs', src], ['the committed Algomancy-Comprehensive-Rules.html', html]] as const) {
-    assert.doesNotMatch(text, /prefers-color-scheme/, `${what}: the palette must not hang on the reader's system setting`);
-    const v = rootVars(text);
-    const same: [string, string][] = [['--bg', '--color-bg'], ['--surface', '--color-surface'], ['--fg', '--color-text'],
-      ['--muted', '--color-text-muted'], ['--line', '--color-border'], ['--accent', '--color-info'],
-      ['--accent-soft', '--color-info-bg'], ['--mark', '--color-accent']];
-    for (const [doc, role] of same) assert.equal(v.get(doc), tok(role), `${what}: ${doc} is the client's ${role}`);
-    assert.match(text, /:root\s*\{[^}]*color-scheme:\s*dark/, `${what}: the document says it is dark (its scrollbars, its controls)`);
-  }
+  const text = readFileSync(join(REPO_ROOT, 'client', 'engine', 'scripts', 'cr', 'render.mjs'), 'utf8');
+  assert.doesNotMatch(text, /prefers-color-scheme/, 'render.mjs: the palette must not hang on the reader\'s system setting');
+  const v = rootVars(text);
+  const same: [string, string][] = [['--bg', '--color-bg'], ['--surface', '--color-surface'], ['--fg', '--color-text'],
+    ['--muted', '--color-text-muted'], ['--line', '--color-border'], ['--accent', '--color-info'],
+    ['--accent-soft', '--color-info-bg'], ['--mark', '--color-accent']];
+  for (const [doc, role] of same) assert.equal(v.get(doc), tok(role), `render.mjs: ${doc} is the client's ${role}`);
+  assert.match(text, /:root\s*\{[^}]*color-scheme:\s*dark/, 'render.mjs: the document says it is dark (its scrollbars, its controls)');
   // the review page shows the same document under .crdoc, on the roles themselves
   const review = pieces.find(p => /pages\/\d+-crreview\.css$/.test(p.piece))!.text;
   const crdoc = decls(review).filter(d => d.selector === '.crdoc');

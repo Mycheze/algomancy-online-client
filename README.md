@@ -43,7 +43,8 @@ Three consequences for anyone reading it:
   every rule the client enforces — printed, the designer's answers, and the
   owner's own calls where neither speaks — each resting on a checked quote or
   an executed test. That document is the engine's spec; code cites it as
-  `CR 608.2b`.
+  `CR 608.2b`. Read it at <https://algomancy.online/comprehensive-rules>: the
+  repo holds its records, not the rendered document.
 - **The work queues are in the repo.** [`client/ledgers/`](client/ledgers/README.md)
   holds every ticket, bug report and verdict: one small file per open ticket,
   and one append-only line per settled decision. A fix is claimed by the test

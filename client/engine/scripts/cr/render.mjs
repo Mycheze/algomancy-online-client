@@ -8,7 +8,8 @@
  * no environment. The edition, effective date and engine commit come from
  * outline.json, set by hand at release, so committing does not change the
  * document. Run as a script it allocates numbers for unseen keys (ledger.mjs —
- * the only place a number is born), writes the ledger, and writes every file.
+ * the only place a number is born), writes the ledger and the .json in place,
+ * and the other editions into the gitignored build/editions/.
  *
  *   npm --prefix client run cr:render
  */
@@ -17,7 +18,7 @@ import { join, basename, dirname } from 'node:path';
 import {
   CR_OUTLINE, CR_FRONT_MATTER, CR_RULES_DIR, CR_LEDGER, CR_VERDICTS_DIR, CR_DISCREPANCIES_DIR,
   CR_FINDINGS_DIR, CR_DOC, CR_DOC_HTML, CR_DOC_TXT,
-  CR_ANNEX_D, CR_DISCREPANCIES_MD, CR_OWNER_QUESTIONS, CR_CHANGELOG, CR_REVIEW_DEBUG_JSON,
+  CR_ANNEX_D, CR_DISCREPANCIES_MD, CR_OWNER_QUESTIONS, CR_CHANGELOG, CR_REVIEW_DEBUG_JSON, CR_EDITIONS_DIR,
 } from '../paths.mjs';
 import { allocate, compareNums, formatLedger, indexLedger, parseNum, readLedger, resolveKey } from './ledger.mjs';
 import { ANY_NUM_RE, BASES, TIERS, VERDICTS, recordHash } from './schema.mjs';
@@ -1273,6 +1274,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const inputs = loadInputs();
     const out = render(inputs, extract());
     writeFileSync(CR_LEDGER, formatLedger(out.ledger));
+    mkdirSync(CR_EDITIONS_DIR, { recursive: true });
     for (const [k, p] of Object.entries(OUTPUT_PATHS)) writeFileSync(p, out.files[k]);
     console.log(`rendered ${Object.keys(OUTPUT_PATHS).map((k) => basename(OUTPUT_PATHS[k])).join(', ')}; ${out.born.length} number(s) born`);
   }

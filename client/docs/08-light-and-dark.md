@@ -116,7 +116,7 @@ referenced later"*, *"a neutral zone like the hand and bin"* (2024-02-25).
   live glimpse, affinity waived either way, and nothing at all once the window has closed.
   ⚠ These two bullets sat next to each other for a year while the engine read the second as
   overriding the first, which is how an expired glimpse stayed a live graft forever. See
-  [CR 720.5a, 720.4b](../../data/comprehensive-rules/Algomancy-Comprehensive-Rules.md#r720.5a).
+  [CR 720.5a, 720.4b](https://algomancy.online/comprehensive-rules#r720.5a).
 - When a card in play with mods on it is cached, **the mods go to the bin**, they do not
   travel with it (Caleb, 2024-09-15).
 

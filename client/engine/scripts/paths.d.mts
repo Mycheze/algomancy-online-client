@@ -28,6 +28,7 @@ export const CR_BUILD_DIR: string;
 export const CR_HARNESS_DIR: string;
 export const CR_VERIFY_INPUT_DIR: string;
 export const CR_VERIFY_OUTPUT_DIR: string;
+export const CR_EDITIONS_DIR: string;
 export const CR_DOC: string;
 export const CR_DOC_HTML: string;
 export const CR_DOC_TXT: string;

@@ -13,41 +13,48 @@ the printed text (`data/rules/`, the card pool), the designer's own answers
 rules-questions channel), the owner's calls (recorded in the
 rule records themselves, `sources.owner`), and the engine's tests. Every path below is
 named in `client/engine/scripts/paths.mjs` (`CR_*`); `bot/paths.py` names the
-directory and the document. Do not spell them again.
+directory and the `.json`. Do not spell them again.
+
+**Read the document at <https://algomancy.online/comprehensive-rules>** (a rule:
+`#r608.2b`). Since 2026-11-15 the repo commits its records and the `.json`
+edition only; the game server renders the rest in-process.
 
 ## Layout
 
 ```
 data/comprehensive-rules/
   README.md                            this file
-  Algomancy-Comprehensive-Rules.md     THE document              generated   CR_DOC
-  Algomancy-Comprehensive-Rules.html   the same, one HTML page   generated   CR_DOC_HTML
-  Algomancy-Comprehensive-Rules.txt    the same, plain text      generated   CR_DOC_TXT
-  Algomancy-Comprehensive-Rules.json   the same, as data (the judge bot's corpus is chunked from it)  generated  CR_JSON
-  Annex-D-Digital-Conventions.md       digital-only conventions  generated   CR_ANNEX_D
+  Algomancy-Comprehensive-Rules.json   THE document as data (the judge bot's corpus is chunked from it)  generated  CR_JSON
   rules/*.json                         the rule records, one file per section   CR_RULES_DIR
   rules/glossary.json                  the glossary: pointer rows (term → rule)  CR_RULES_DIR
   ledger.json                          rule key -> number        reviewed    CR_LEDGER
   verdicts/<unit>.json                 the verifier's verdicts   reviewed    CR_VERDICTS_DIR
   verdicts/README.md                   why R-numbers survive in them (frozen history)
   discrepancies/<unit>.json            what did not reconcile    records     CR_DISCREPANCIES_DIR
-  discrepancies.md                     the report, four tiers    generated   CR_DISCREPANCIES_MD
-  owner-questions.md                   its tier 1: the owner's questions  generated  CR_OWNER_QUESTIONS
   findings/<unit>.json                 engine bugs -> CT tickets records     CR_FINDINGS_DIR
-  changelog.md                         what changed per edition  generated   CR_CHANGELOG
   outline.json                         chapters, sections, slots reviewed    CR_OUTLINE
   front-matter.md                      the introduction          hand-written CR_FRONT_MATTER
   build/                               extract output, packs     gitignored  CR_BUILD_DIR
   build/verify-input/, build/verdicts/ the verifier's in and out gitignored  CR_VERIFY_INPUT_DIR, CR_VERIFY_OUTPUT_DIR
   build/harness/<unit>/                mutants, judgements, feedback gitignored CR_HARNESS_DIR
   build/review.json                    the review page's document, for debugging only  gitignored  CR_REVIEW_DEBUG_JSON
+  build/editions/                      what cr:render writes besides the .json  gitignored  CR_EDITIONS_DIR
+    Algomancy-Comprehensive-Rules.md     THE document              CR_DOC
+    Algomancy-Comprehensive-Rules.html   the same, one HTML page   CR_DOC_HTML
+    Algomancy-Comprehensive-Rules.txt    the same, plain text      CR_DOC_TXT
+    Annex-D-Digital-Conventions.md       digital-only conventions  CR_ANNEX_D
+    discrepancies.md                     the report, four tiers    CR_DISCREPANCIES_MD
+    owner-questions.md                   its tier 1: the owner's questions  CR_OWNER_QUESTIONS
+    changelog.md                         what changed per edition  CR_CHANGELOG
 ```
 
 The rules review page in the client (`/api/cr/*`, `client/ui/crreview.ts`)
-reads no file here of its own: the game server calls `render.mjs`
-`buildReview()` on the records, the same code that writes the editions, and
-caches the result until one of the files it read changes. So nothing
-review-shaped is committed, and the page cannot disagree with the document.
+and the public page (`/comprehensive-rules`) read no file here of their own:
+the game server calls `render.mjs` `buildReview()` on the records, the same
+code that writes the editions, and caches the result until one of the files it
+read changes. So nothing review-shaped is committed, and the page cannot
+disagree with the document. A build that throws answers 503; a deploy runs
+that build before any restart (`deploy/README.md`).
 `npm --prefix client run cr:render -- --review-json` writes what it builds to
 `build/review.json` (and writes nothing else).
 
@@ -58,7 +65,7 @@ The scripts are `client/engine/scripts/cr/*.mjs`. The gate is
 
 | kind | files | how it changes |
 |---|---|---|
-| **generated** | the document (`.md` `.html` `.txt`), Annex D, `discrepancies.md`, `owner-questions.md`, `changelog.md` | re-run the scripts. A wrong sentence is fixed in its record, re-verified, re-rendered — never in the output. |
+| **generated** | the `.json` (committed); the document (`.md` `.html` `.txt`), Annex D, `discrepancies.md`, `owner-questions.md`, `changelog.md` (in `build/editions/`, not committed) | re-run the scripts. A wrong sentence is fixed in its record, re-verified, re-rendered — never in the output. |
 | **records** | `rules/*.json`, `discrepancies/*.json`, `findings/*.json` (one file per drafting unit) | written by the draft/verify rounds (findings also by `harness.mjs finalize`); the document's source. |
 | **committed reviewed state** | `ledger.json`, `verdicts/*.json` | append/edit only through the cr scripts. A decision someone made; nothing can rebuild it. |
 | **gitignored** | `build/` | scratch, rebuilt on every run |
@@ -271,8 +278,9 @@ too, not in a scratchpad.
 ### 4. Render and check
 
 ```bash
-npm --prefix client run cr:render   # number unseen keys (ledger.json), write the document,
-                                    # Annex D, discrepancies.md, owner-questions.md, changelog.md
+npm --prefix client run cr:render   # number unseen keys (ledger.json), write the .json, and the
+                                    # document, Annex D, discrepancies.md, owner-questions.md,
+                                    # changelog.md into build/editions/
 npm --prefix client run cr:check    # the mechanical checks; exits 1 on any problem
 node client/engine/scripts/cr/check.mjs --unit U12   # one unit's problems only (unnumbered is a note)
 (cd client/engine && node --test test/409-comprehensive-rules.test.ts)   # the gate
@@ -397,14 +405,15 @@ reminder (`323-recent-updates` and `227` ban them there); in the rules reference
 What keeps it honest is the contract above — every rule rests on a checkable
 quote or a verified, executed demonstration; a verifier who never saw the
 drafter's notes, with planted mutants; mechanical quote checks — and the
-gate, `409-comprehensive-rules`, which proves the committed document is what
+gate, `409-comprehensive-rules`, which proves the committed `.json` is what
 the scripts produce. The owner decides only where no printed or designer
 source does, and his decision goes into the rule it settles, in his words,
 dated.
 
 ## How to answer the owner questions
 
-`owner-questions.md` lists the tier-1 discrepancies. In each of them, the
+`owner-questions.md` (in `build/editions/` after a `cr:render`, or the
+review page's download) lists the tier-1 discrepancies. In each of them, the
 strongest source's own words support two readings, and no higher source
 decides. Each question gives its readings (A, B, …) with what each means at the
 table, the reading the document follows today, and a recommendation.

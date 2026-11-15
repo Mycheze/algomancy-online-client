@@ -15,7 +15,7 @@
  *
  * Nothing review-shaped is committed. The routes ask a BUILDER for the
  * review — by default render.mjs's `buildReview()`, the same code paths that
- * write the committed .md/.html/.txt, so the page and the document cannot
+ * write the .md/.html/.txt editions, so the page and the document cannot
  * say two different things — and cache its answer until one of the files it
  * read (`CrReview.inputs`) changes on disk. So a `cr:render` or a record edit
  * shows on the next request with no restart. A build that throws (a stale
@@ -115,8 +115,8 @@ export function cachedBuilder(build: CrBuilder, recheckMs = 1000): () => Promise
 // THE DEFAULT BUILDER — render.mjs `buildReview()`. Imported lazily: it scans
 // the engine source and the test titles (about a second), which no request but
 // this one should pay, and a server must boot even when the rules data does
-// not build.
-const defaultReview = cachedBuilder(async () => (await import('../engine/scripts/cr/render.mjs')).buildReview());
+// not build. main.ts serves /comprehensive-rules from it too (files.html).
+export const defaultReview = cachedBuilder(async () => (await import('../engine/scripts/cr/render.mjs')).buildReview());
 
 export interface CrRouteDeps {
   /** the review document; the default builds it from data/comprehensive-rules */

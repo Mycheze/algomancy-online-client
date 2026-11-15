@@ -127,8 +127,15 @@ A card change now reaches the repo as a message in #steward with the new scan
 
 ```bash
 git -C /home/bena/Documents/Algomancy pull --ff-only
+node /home/bena/Documents/Algomancy/client/engine/scripts/cr/render.mjs --review-json >/dev/null
 npm --prefix /home/bena/Documents/Algomancy/client/ui run build
 ```
+
+The middle line goes before any restart. The comprehensive rules are not
+committed as a document: the game server renders them from the records for
+`/comprehensive-rules` and every download, and that line is the same build.
+If it fails, go back to the previous commit and restart nothing, or the
+rules page answers 503 until the records are fixed.
 
 Optional — only when the design-system components changed, and only on a box
 an admin wants to look at Storybook on (the profile's 🎨 Design (Storybook)

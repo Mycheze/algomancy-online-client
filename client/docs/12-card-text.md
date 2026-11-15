@@ -24,7 +24,7 @@ mirror-image gap, and then a box that can afford to be believed.
 
 ## Half one: the engine can take things away now
 
-[CR 712.1](../../data/comprehensive-rules/Algomancy-Comprehensive-Rules.md#r712.1) is the
+[CR 712.1](https://algomancy.online/comprehensive-rules#r712.1) is the
 layer. It is a **veto, not a sum**: one suppressor switches a half off and nothing switches
 it back on, and it sits *under* every other layer, so "loses all attributes" takes the
 mod-granted and column-shared ones too. Two forms — an until-regroup flag a spell stamps on
@@ -36,7 +36,7 @@ a unit has lost its abilities and cannot say why is not much better than one tha
 text, its mods' donated text, granted text), activated abilities, the statics and cost
 modifiers it radiates, and both replacement hooks. Stats are not abilities.
 
-[CR 109.8](../../data/comprehensive-rules/Algomancy-Comprehensive-Rules.md#r109.8) is the other direction. A grant is a
+[CR 109.8](https://algomancy.online/comprehensive-rules#r109.8) is the other direction. A grant is a
 **reference, not a copy** — `{ card, via, index, text, from }` pointing at an authored
 ability — so it stays serializable, replays bit-identically, and composes for free through
 the `viaCard` parameter `fireEvent` already had.

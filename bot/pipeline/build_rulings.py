@@ -315,8 +315,6 @@ def _load_exports(needs_ocr: list) -> list[dict]:
     """Parse forum-thread exports. Big flat chat channels (GuildTextChat) are
     NOT naively parsed here — their designer Q&A is mined + quality-filtered by the
     curation fleet into data/rulings/generated_rulings.jsonl (see _load_generated)."""
-    if not EXPORTS_DIR.exists():
-        return []
     out = []
     # A thread exported twice (re-exported after it was renamed — the file name
     # carries the title) appears as two files with one thread id. Only the
@@ -337,6 +335,9 @@ def _load_exports(needs_ocr: list) -> list[dict]:
             # Skip a partial (mid-export) or malformed file rather than aborting
             # the whole corpus build.
             print(f"  [skip] {path.name}: {type(e).__name__} {e}")
+    if not newest:  # an empty list here dropped 76 rulings unnoticed on 2026-09-20
+        raise SystemExit(f"build_rulings: no RAQ thread export in {EXPORTS_DIR} (gitignored: build in the "
+                         "checkout that has them, or run pipeline/export_rulings.sh) — refusing to drop the rulings")
     for _when, path in sorted(newest.values(), key=lambda x: x[1]):
         try:
             out.extend(_parse_dce_export(path, needs_ocr))

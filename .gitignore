@@ -70,6 +70,14 @@ Thumbs.db
 # a local Discord token for bot/pipeline/export_rulings.sh — never commit
 discord-token.txt
 
-# the comprehensive-rules export's intermediate extract output (paths.mjs CR_BUILD_DIR).
+# the comprehensive-rules export's intermediate extract output and its rendered editions (paths.mjs CR_BUILD_DIR).
 # The Python `build/` rule above already matches it; this names it so a change to that rule cannot un-ignore it.
 data/comprehensive-rules/build/
+# where the editions were committed until 2026-11-15: a stale render left in an old checkout is not to come back
+data/comprehensive-rules/Algomancy-Comprehensive-Rules.md
+data/comprehensive-rules/Algomancy-Comprehensive-Rules.html
+data/comprehensive-rules/Algomancy-Comprehensive-Rules.txt
+data/comprehensive-rules/Annex-D-Digital-Conventions.md
+data/comprehensive-rules/discrepancies.md
+data/comprehensive-rules/owner-questions.md
+data/comprehensive-rules/changelog.md
