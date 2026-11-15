@@ -1716,3 +1716,4 @@
 {"id":"BL-73","as":"done"}
 {"id":"BL-74","as":"done"}
 {"id":"BL-76","as":"done"}
+{"id":"CT-198","as":"done","legacy":true,"note":"Its guard pinned the replay-to-load drift keys; that mechanism was deleted when restarts began resuming from stored state."}
