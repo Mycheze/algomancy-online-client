@@ -10,7 +10,9 @@ feedback), so every web answer is logged exactly like a Discord one.
 Endpoints
 ---------
   GET  /                 the chat UI (web/index.html)
-  POST /api/ask          {question, history, session_id} -> answer + sources + cards
+  POST /api/ask          {question, history, session_id} -> answer + sources + cards;
+                         429 when budget.py refuses, 403 from a public peer without
+                         x-algo-bot when ALGO_BOT_TOKEN is set
   POST /api/feedback     {response_id, rating, session_id} -> logged (good|weird|bad)
   GET  /api/colors       suggest a fresh 3-colour deck + this session's coverage
   POST /api/colors/played {colors, session_id} -> record a combo as played
@@ -34,6 +36,7 @@ Run
 """
 
 import hmac
+import ipaddress
 import os
 from pathlib import Path
 from urllib.parse import quote
@@ -53,6 +56,7 @@ from html import escape
 # icons come back as image/webp everywhere.
 mimetypes.add_type("image/webp", ".webp")
 
+import budget
 import combos
 import core
 import crnotes
@@ -60,7 +64,7 @@ import draft
 import mods
 import store
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Header, HTTPException, Query
+from fastapi import FastAPI, Header, HTTPException, Query, Request
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -131,6 +135,9 @@ class AskRequest(BaseModel):
     # only with the x-algo-bot header (api_ask drops it otherwise), so nobody
     # calling this page's /api/ask can claim one. Never a name or an id.
     asker: AskerBadge | None = None
+    # The game server's opaque per-account key (client/server/judge-history.ts),
+    # counted by the budget's per-asker cap. Believed only from the game server.
+    asker_key: str | None = Field(default=None, max_length=64)
 
 
 class FeedbackRequest(BaseModel):
@@ -220,21 +227,55 @@ def index():
     return FileResponse(str(STATIC / "index.html"), headers={"Cache-Control": "no-store"})
 
 
+def _peer_ip(host: str | None):
+    try:
+        ip = ipaddress.ip_address(host or "")
+    except ValueError:
+        return None
+    return getattr(ip, "ipv4_mapped", None) or ip
+
+
+def _ask_allowed(vouched: bool, peer) -> bool:
+    """With ALGO_BOT_TOKEN set, /api/ask answers the game server (the header)
+    and this app's own page, which sends no header: so a loopback or
+    private-network peer is let through too. A reverse proxy or tunnel on this
+    box reads as loopback; the budget is what bounds that."""
+    if not os.getenv("ALGO_BOT_TOKEN", "") or vouched:
+        return True
+    return peer is not None and (peer.is_loopback or peer.is_private)
+
+
 @app.post("/api/ask")
-async def api_ask(req: AskRequest, x_algo_bot: str | None = Header(default=None)):
+async def api_ask(req: AskRequest, request: Request, x_algo_bot: str | None = Header(default=None)):
+    vouched = _bot_allowed(x_algo_bot)
+    host = request.client.host if request.client else None
+    peer = _peer_ip(host)
+    if not _ask_allowed(vouched, peer):
+        raise HTTPException(status_code=403, detail="Ask the judge in the game, or with /ask on Discord.")
     question = (req.question or "").strip()
     if not question:
         raise HTTPException(status_code=400, detail="Empty question.")
     # BL-17: a badge is believed only from the game server (see AskRequest.asker)
     asker = None
-    if req.asker is not None and _bot_allowed(x_algo_bot):
+    if req.asker is not None and vouched:
         asker = {"owner": True} if req.asker.owner else {"judge": req.asker.judge} if req.asker.judge else None
+    # Who the per-asker cap counts: the game server's account key when it is
+    # vouched for (with no token configured, when it comes over loopback), else
+    # the peer address. Never the page's session_id, which the caller picks.
+    unset = not os.getenv("ALGO_BOT_TOKEN", "")
+    if req.asker_key and (vouched or (unset and peer is not None and peer.is_loopback)):
+        asker_key = f"game:{req.asker_key}"
+    else:
+        asker_key = f"addr:{peer or host}"
     history = [{"role": t.role, "content": t.content} for t in req.history]
     meta = {}
     try:
         answer, hits, reasoning = await core.answer_question(question, history,
                                                              context=req.context, meta=meta,
-                                                             surface=req.surface)
+                                                             surface=req.surface,
+                                                             asker=asker_key, badge=asker)
+    except budget.OverBudget as exc:
+        raise HTTPException(status_code=429, detail=str(exc))
     except Exception as exc:  # surface API/auth errors instead of a silent 500
         store.log_failure("lesson" if req.context else "followup" if history else "ask",
                           question, exc, core.LLM_MODEL, llm=meta,
@@ -595,11 +636,11 @@ if __name__ == "__main__":
 
     import uvicorn
 
-    # ⚠ LOOPBACK BY DEFAULT. This app has no auth and no rate limit in front of
-    # a paid model, and it does not need either: the game server on :5000
-    # proxies /api/judge and /api/cardinfo to it and caps what comes through.
-    # --host 0.0.0.0 is still here for a box that genuinely wants the page
-    # public; it is a decision now, not the default.
+    # ⚠ LOOPBACK BY DEFAULT. The game server on :5000 proxies /api/judge and
+    # /api/cardinfo to it and caps what comes through; behind that, budget.py
+    # bounds every question, and with ALGO_BOT_TOKEN set /api/ask refuses a
+    # public peer without the header. --host 0.0.0.0 is still here for a box
+    # that genuinely wants the page public; it is a decision, not the default.
     # ⚠ AND NO SECRET ON THE COMMAND LINE — see bot.py's note.
     ap = argparse.ArgumentParser(description="Run the Algomancy rules web app.")
     ap.add_argument("--model", help=f"model id (default: {core.LLM_MODEL})")

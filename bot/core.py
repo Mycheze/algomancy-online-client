@@ -25,6 +25,7 @@ from urllib.parse import quote, urlparse
 import openai
 from openai import AsyncOpenAI
 
+import budget
 from cards import CardIndex
 import crnotes
 import quotecheck
@@ -1135,8 +1136,15 @@ def _use_reasoning(question):
     return needs_reasoning(question)
 
 
-async def answer_question(question, history, context=None, meta=None, surface="web"):
+async def answer_question(question, history, context=None, meta=None, surface="web",
+                          asker=None, badge=None):
     """Retrieve, call the model, return (answer_text, hits, reasoning_used).
+
+    ⚠ THE ONE DOOR TO THE PAID MODEL. Every surface calls this, so the budget
+    is checked here and nowhere else: `asker` is the key budget.BUDGET counts
+    per day, `badge` the asker's owner/judge badge (or a Future of it) that
+    exempts them from that count. Raises budget.OverBudget, before any model
+    call, when a limit says no; its message is the sentence to show.
 
     `surface` ("web" | "discord"): where the answer is read — the game server's
     judge box and the bot's web page are "web", every Discord path "discord". It
@@ -1149,6 +1157,18 @@ async def answer_question(question, history, context=None, meta=None, surface="w
     takes as `llm=` — the model that actually answered, latency, usage, cost,
     whether the fallback was used. A dict and not a fourth return value, so the
     three-tuple every caller unpacks is unchanged."""
+    gate = budget.BUDGET
+    if gate is None:
+        return await _answer_question(question, history, context, meta, surface)
+    meta = {} if meta is None else meta
+    async with gate.admit(asker, badge):
+        try:
+            return await _answer_question(question, history, context, meta, surface)
+        finally:
+            gate.spend(meta.get("cost_usd"))
+
+
+async def _answer_question(question, history, context, meta, surface):
     if ai is None:
         raise RuntimeError("model client not initialised — call core.init_client() first")
     start = time.monotonic()

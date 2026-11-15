@@ -159,7 +159,11 @@ WEB_DIR = BOT_DIR / "web"          # the FastAPI app's front-end, still served a
 # cannot be overridden late; a function can.
 
 def var_dir() -> Path:
-    """Every mutable thing this deployment owns; gitignored in full."""
+    """Every mutable thing this deployment owns; gitignored in full.
+
+    Same variable, default and meaning as client/server/statepaths.ts
+    varDir(): empty is unset, and a relative value is relative to the
+    process's working directory."""
     override = os.environ.get("ALGO_VAR_DIR")
     return Path(override) if override else REPO_ROOT / "var"
 

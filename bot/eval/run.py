@@ -282,6 +282,10 @@ async def main_async(args):
     # set BEFORE core is imported: its ENGINE_VERSION carries the tools axis
     os.environ["ALGO_TOOLS"] = args.tools
     import core
+    import budget
+    # the operator's own deliberate spend, with its own --concurrency: not a
+    # surface, so the players' budget does not apply
+    budget.BUDGET = None
     from retriever import Retriever
     corpus_path = Path(args.corpus) if args.corpus else Path(paths.CORPUS)
     if args.corpus:

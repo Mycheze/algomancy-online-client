@@ -13,6 +13,7 @@ with the game client, and every path to it is named once in `paths.py`.
 bot/
   paths.py        every location, named once; the runtime-state paths are functions of ALGO_VAR_DIR
   core.py         the brain: retrieval, the verified primer, the prompt, the DeepSeek call, citations
+  budget.py       the one spending limit every question passes: per asker, per day's spend, in flight
   retriever.py    BM25 over data/corpus/, with the authority tiers as score multipliers
   oracle.py       the one loader for the card transcription
   cards.py        the card index: fuzzy name match, description search, art resolution
@@ -223,6 +224,16 @@ costs a fraction of a cent, and every row of `var/logs/responses.jsonl` says
 how much: `latency_ms`, `usage` (prompt/cached/completion/reasoning tokens),
 `cost_usd` (null for a model `core.PRICES` does not know). A question that got
 no answer is a row too, with `error` set and `answer` empty.
+
+Every question, from any surface, passes `budget.py` inside
+`core.answer_question`: `ALGO_ASK_PER_DAY` questions per asker per UTC day
+(40; an owner or judge badge is exempt), `ALGO_ASK_USD_PER_DAY` of logged
+spend per day across the bot and the web app together (5), and
+`ALGO_ASK_IN_FLIGHT` answers at once per process (4). A refusal is one sentence:
+an ephemeral reply on Discord, a 429 `detail` on `/api/ask`. With
+`ALGO_BOT_TOKEN` set, `/api/ask` also refuses a public peer that does not send
+the `x-algo-bot` header; loopback and private-network peers (this app's own
+page) still get in.
 
 ---
 

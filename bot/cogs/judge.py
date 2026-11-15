@@ -20,6 +20,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+import budget
 import core
 import gameserver
 import store
@@ -71,8 +72,12 @@ class Judge(commands.Cog):
         asker = asyncio.ensure_future(gameserver.asker_badge(interaction.user.id))
         try:
             answer, hits, reasoning = await asyncio.wait_for(
-                answer_question(question, history=[], meta=meta, surface="discord"),
+                answer_question(question, history=[], meta=meta, surface="discord",
+                                asker=budget.discord_asker(interaction.user.id), badge=asker),
                 timeout=ANSWER_TIMEOUT)
+        except budget.OverBudget as exc:
+            await fail(interaction, f"⚠️ {exc}")
+            return
         except asyncio.TimeoutError as exc:
             store.log_failure("ask", question, exc, core.LLM_MODEL, llm=meta,
                               engine_version=core.ENGINE_VERSION,

@@ -59,6 +59,7 @@ from dotenv import load_dotenv
 # Load .env before importing core, which reads LLM_* (or DEEPSEEK_*) config at import time.
 load_dotenv()
 
+import budget
 import combos
 import core
 import crnotes
@@ -176,8 +177,12 @@ class AlgoBot(commands.Bot):
                 # BL-17: the asker's badge, looked up while the model thinks
                 asker = asyncio.ensure_future(gameserver.asker_badge(message.author.id))
                 try:
-                    answer, hits, reasoning = await answer_question(message.content, history,
-                                                                    meta=meta, surface="discord")
+                    answer, hits, reasoning = await answer_question(
+                        message.content, history, meta=meta, surface="discord",
+                        asker=budget.discord_asker(message.author.id), badge=asker)
+                except budget.OverBudget as exc:
+                    await message.reply(f"⚠️ {exc}")
+                    return
                 except Exception as exc:
                     store.log_failure("followup", message.content, exc, core.LLM_MODEL,
                                       llm=meta, engine_version=core.ENGINE_VERSION,

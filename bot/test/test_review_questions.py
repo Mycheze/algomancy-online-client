@@ -122,13 +122,15 @@ with TestClient(webapp.app) as client:
 reset()
 
 
-async def _fake_answer(question, history, *, context=None, meta=None, surface="web"):
+async def _fake_answer(question, history, *, context=None, meta=None, surface="web", **kw):
     return f"answer to {question}", [], False
 
 webapp.core.answer_question = _fake_answer
 os.environ["ALGO_BOT_TOKEN"] = "s3cret"
 try:
-    with TestClient(webapp.app) as client:
+    # a loopback peer, as the game server and the bot's own page are: with a
+    # token set, /api/ask refuses a headerless public peer (test_budget_surfaces)
+    with TestClient(webapp.app, client=("127.0.0.1", 50000)) as client:
         def ask(q, asker=None, token=None):
             body = {"question": q, **({"asker": asker} if asker is not None else {})}
             r = client.post("/api/ask", json=body, headers={"x-algo-bot": token} if token else {})
