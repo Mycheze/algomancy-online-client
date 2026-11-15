@@ -278,7 +278,7 @@ test('not one test in test/ is `{ todo: true }` — a todo can never fail (the H
     + "Immolation's second half stayed dead through two playtest reports and a conceded "
     + 'game. Write the real test (it may fail — that is the point), or, if the gap is '
     + 'genuinely not buildable yet, declare it where declarations get checked: '
-    + 'ledgers/card-ledger.ts for a dead card half, ledgers/card-todo.ts for anything else. '
+    + 'ledgers/card-ledger.ts for a dead card half, a CT ticket in ledgers/open/ for anything else. '
     + 'Both are asserted against reality on every run; a todo is asserted against nothing.');
 
   // and the scan itself must not go blind: if `test(` stops being how a test

@@ -63,7 +63,7 @@ export interface ReportRow {
   page?: string; by?: { name: string; owner?: boolean; judge?: number } | null;
   /** BL-46: filed by an agreed fix; BL-76: `takeBack` — every fix in it was a take-back, not a bug */
   fix?: { takeBack?: boolean };
-  status: string | null; guards: string[]; ledgerNote: string | null;
+  status: string | null; ledgerNote: string | null;
   mark: 'real' | 'not' | null; markedBy: string | null;
 }
 
@@ -280,7 +280,7 @@ function accountsHtml(accounts: AccountRow[], over: Overview | null): string {
 
 function statusChip(r: ReportRow): string {
   if (!r.status) return '<span class="stchip none" title="no ledger entry yet">untriaged</span>';
-  const t = r.guards.length ? `${r.guards.length} guard(s): ${r.guards.join(' · ')}` : (r.ledgerNote ?? '');
+  const t = r.ledgerNote ?? '';
   // agreed-fix (CT-327): a row an accepted in-game fix filed, read and found
   // to be a take-back with no defect — the note says what was taken back
   const label = r.status === 'agreed-fix' ? 'agreed fix' : r.status;

@@ -167,7 +167,7 @@ A verdict is not a report. It is a **test**.
   case is pinned forever, which is what the owner asked for in round 27:
   *"Doing this with every case will ensure that edge cases get solved and stay
   solved as the game gets closer and closer to being finished."*
-- **`broken` / `slightly off`** → a `card-todo.ts` entry with the scenario
+- **`broken` / `slightly off`** → a CT ticket (`client/ledgers/open/`) with the scenario
   attached, and **the same scenario becomes the failing test that proves the
   fix**. No hand-built input, no unit-testing the last hop — the exact defect
   `docs/13-assessment.md` §5 lists four `fixed` reports for.

@@ -12,7 +12,7 @@ Four packages and two directories of data:
 | [`engine/`](engine/README.md) | the rules, as a pure TypeScript reducer: `apply(state, action)`, `legalActions`, seeded replay, every card's behaviour, and the test suite that is the comprehensive rules made executable |
 | [`ui/`](ui/README.md) | the browser client. One esbuild bundle that imports the engine, so it can also run a game with no server at all |
 | [`server/`](server/README.md) | the WebSocket game server: rooms, per-seat redacted views, hidden simultaneous steps, persistence, accounts, decks, matchmaking, and the HTTP the bot uses |
-| [`ledgers/`](ledgers/README.md) | every work queue, open and closed: card tickets, playtest reports, the backlog, the owner's card verdicts |
+| [`ledgers/`](ledgers/README.md) | every work queue: one file per open ticket in `open/`, everything settled in `settled.jsonl`, the snapshots of live reports and verdicts |
 | `docs/` | the specs, see below |
 | `package.json` | the fan-out: `check`, `dev`, `reports` |
 
@@ -47,7 +47,7 @@ names reaches a real `tsc`.
 
 `npm run reports` fetches the live playtest reports, verdicts and admin marks
 off the deploy box into `ledgers/*.snapshot.jsonl`, where the suite checks
-every row has a ledger entry. That is step zero of a fix round; the ledgers
+every row has a row in `ledgers/settled.jsonl`. That is step zero of a fix round; the ledgers
 README explains the loop.
 
 ## The specs, in `docs/`

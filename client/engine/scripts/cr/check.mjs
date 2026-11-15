@@ -67,13 +67,16 @@ export const ENGINE_EVIDENCE_ROOTS = ['client/engine/src/'];
 export const DIGITAL_EVIDENCE_ROOTS = [...ENGINE_EVIDENCE_ROOTS, 'client/ui/', 'client/server/'];
 const NOT_SOURCE = ['client/ui/test/', 'client/server/test/', 'client/server/e2e/'];
 /**
- * The retired R-ruling register (deleted 2026-10-11, archived at
- * refs/archive/r-register-final). A frozen verdict's spans, and a finding's
- * evidence, may quote it: that is history of what was checked, never evidence a
- * rule rests on (only engine/ui/server source counts), so a span or evidence item
- * in it is neither a problem nor stale.
+ * Deleted files a frozen verdict's spans, or a finding's evidence, may quote: the
+ * retired R-ruling register (archived at refs/archive/r-register-final) and the
+ * old TS ledgers (archived at refs/archive/ledgers-2026-11). That is history of
+ * what was checked, never evidence a rule rests on (only engine/ui/server source
+ * counts), so a span or evidence item in one is neither a problem nor stale.
  */
-export const RETIRED_SOURCES = new Set(['client/docs/digital-rules.md']);
+export const RETIRED_SOURCES = new Set([
+  'client/docs/digital-rules.md',
+  'client/ledgers/card-todo.ts', 'client/ledgers/card-todo-closed.ts', 'client/ledgers/backlog-closed.ts',
+]);
 export const isAnnexD = (r) => /^annexd(\.|$)/.test(String(r?.key ?? ''));
 export function isEvidenceSpan(r, file) {
   const f = String(file ?? '');

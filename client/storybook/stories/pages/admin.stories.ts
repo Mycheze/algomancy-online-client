@@ -21,12 +21,12 @@ const base: AdminView = {
   ],
   reportRows: [
     { id: 318, ledgerId: 318, ts: '2026-11-01T19:02:00Z', room: 'QXZK', seat: 0, note: 'Mindburn showed the discarded card to the next chooser.',
-      actionIndex: 212, kind: 'bug', severity: 'medium', by: { name: 'Nyar', judge: 2 }, status: 'fixed', guards: ['cbb48f1a'],
-      ledgerNote: null, mark: 'real', markedBy: 'Warden' },
+      actionIndex: 212, kind: 'bug', severity: 'medium', by: { name: 'Nyar', judge: 2 }, status: 'fixed',
+      ledgerNote: 'fixed by CT-500', mark: 'real', markedBy: 'Warden' },
     { id: 319, ledgerId: null, ts: '2026-11-02T08:15:00Z', room: '', seat: null, page: 'deck', note: 'The deck page jumps when I add a card.',
-      actionIndex: null, kind: 'ux', severity: 'minor', by: null, status: null, guards: [], ledgerNote: null, mark: null, markedBy: null },
+      actionIndex: null, kind: 'ux', severity: 'minor', by: null, status: null, ledgerNote: null, mark: null, markedBy: null },
     { id: 320, ledgerId: 320, ts: '2026-11-02T09:40:00Z', room: 'RRTA', seat: 1, note: 'I want a dark-mode card zoom.',
-      actionIndex: 3, kind: 'feature', by: { name: 'Quillon' }, status: 'live', guards: [], ledgerNote: 'parked', mark: 'not', markedBy: 'Warden' },
+      actionIndex: 3, kind: 'feature', by: { name: 'Quillon' }, status: 'live', ledgerNote: 'parked', mark: 'not', markedBy: 'Warden' },
   ],
   gameRows: [
     { code: 'QXZK', playedAt: '2026-11-01T18:30:00Z', mode: 'constructed', els: [], sides: [['fire', 'earth'], ['water']],

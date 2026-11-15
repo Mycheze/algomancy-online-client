@@ -8,7 +8,7 @@
     "check:serial": "npm --prefix engine run check && npm --prefix ui run check && npm --prefix server run check && npm --prefix ledgers run check && npm run test:py && npm run test:steward",
     "test:py": "../.venv/bin/python ../bot/test/run_all.py",
     "test:steward": "node ../steward/test-discord.mjs && node ../steward/test-discord.mjs 15 && node ../steward/discord.mjs selftest && node ../steward/fetch-file.mjs selftest",
-    "backlog": "npm --prefix ledgers run ready",
+    "tickets": "npm --prefix ledgers run ready",
     "reports": "node engine/scripts/fetch-reports.mjs",
     "raq:index": "node engine/scripts/index-raq.mjs",
     "rq:index": "node engine/scripts/index-rq.mjs",

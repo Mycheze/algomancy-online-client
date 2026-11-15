@@ -91,7 +91,7 @@ const rel = (p: string): string => relative(REPO_ROOT, p);
 test('§0 POSITIVE CONTROL: the corpus is the real test tree and the readers are in it', () => {
   const files = corpus();
   assert.ok(files.length > 500, `only ${files.length} files scanned — the walk is not reaching the test trees`);
-  for (const known of ['247-asset-paths.test.ts', 'ui-driver.ts', '70-playtest-round15.test.ts', 'test-malformed.ts', 'backlog.ts']) {
+  for (const known of ['247-asset-paths.test.ts', 'ui-driver.ts', '70-playtest-round15.test.ts', 'test-malformed.ts', 'tickets.ts']) {
     assert.ok(files.some(f => basename(f) === known), `${known} is not in the corpus`);
   }
   const readers = files.filter(f => /from '(?:\.\/|\.\.\/\.\.\/ui\/test\/)read-styles\.ts'/.test(readFileSync(f, 'utf8')));

@@ -1517,8 +1517,7 @@ export const CLOCK_START_MS = 60 * 60 * 1000;
  *
  * ⚠ THE UI HAS ITS OWN COPY, `CLOCK_DEFAULT_BY_MODE` in ui/main.ts, and it
  * cannot import this one (the browser bundle does not reach into server/).
- * `279-queue-and-rating.test.ts` reads both files and fails if they disagree —
- * the same lock `ledgers/backlog.test.ts` already puts on CLOCK_START_MS.
+ * `279-queue-and-rating.test.ts` reads both files and fails if they disagree.
  */
 export const MATCH_CLOCK_MS: Record<'constructed' | 'draft', number> = {
   constructed: 45 * 60 * 1000,

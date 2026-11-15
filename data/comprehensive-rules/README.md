@@ -111,7 +111,7 @@ authority. When two readings are equally available, take the permissive one.
 When an owner call and the engine disagree, the rule states the CALL (current
 law under this order) and carries an inline marker "engine differs, see
 <finding id>"; the divergence is filed as a CT ticket in
-`client/ledgers/card-todo.ts`, not fixed here.
+`client/ledgers/open/`, not fixed here.
 
 ## THE ANTI-HALLUCINATION CONTRACT (the owner's main worry; every agent follows it)
 1. **No claim without checkable evidence.** Every rule record carries at least one evidence item that a script can

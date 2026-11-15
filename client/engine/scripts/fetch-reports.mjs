@@ -137,7 +137,7 @@ function fetch(src, destAbs, scratch) {
    * SHRINK, because a shrink meant a truncated server file — refused the
    * first four live reports ever filed there. The snapshot is the union of
    * every journal this project has had, in the order the rows arrived, and a
-   * row's id is its line index (70-playtest-ledger), so the only merge that
+   * row's id is its line index (`#N` in ledgers/settled.jsonl), so the only merge that
    * keeps every existing id is: keep the snapshot, APPEND the rows the server
    * has that the snapshot does not. A row is "known" by its exact line.
    *
@@ -206,8 +206,8 @@ try {
     `\nissues:   snapshot ${before ?? 0} -> server ${issues}: `
     + (delta > 0
       ? `${delta} NEW REPORT${delta === 1 ? '' : 'S'}. `
-        + 'Run the suite: 70-playtest-ledger.test.ts is now red until every one of them has a '
-        + 'ledger entry in client/ledgers/playtest-ledger.ts.'
+        + 'Run the suite: ledgers/tickets.test.ts is now red until every one of them has a '
+        + '`#N` row in client/ledgers/settled.jsonl.'
       : 'no new reports.'));
   if (delta > 0) {
     // T6: the form's kind/severity on the new rows, one line each — the
@@ -258,7 +258,7 @@ try {
     `marks:    ${markRows} row(s) -> ${inForce.size} report(s) judged `
     + `(${inForce.size - dismissed} real, ${dismissed} dismissed).`
     + (dismissed
-      ? ' A dismissed report still needs a ledger entry — `by-design` or `wontfix`, with the '
+      ? ' A dismissed report still needs a settled row — `by-design` or `wontfix`, with the '
         + 'reason — it does not need investigating.'
       : ''));
   console.log(`runs:     ${runRows} solo-room run(s) kept in ${local(REPORT_RUNS_JSONL)}.`);
@@ -268,8 +268,8 @@ try {
     `verdicts: snapshot ${vBefore} -> server ${verdicts}: `
     + (vDelta > 0
       ? `${vDelta} NEW VERDICT${vDelta === 1 ? '' : 'S'}. `
-        + 'Run the suite: 264-verdict-loop.test.ts is red until every non-`works` one has an '
-        + 'entry in client/ledgers/card-todo.ts.'
+        + 'Run the suite: 264-verdict-loop.test.ts is red until every non-`works` one has a '
+        + '`verdict:` row in client/ledgers/settled.jsonl.'
       : 'no new verdicts.'));
 } finally {
   if (scratch) rmSync(scratch, { recursive: true, force: true });

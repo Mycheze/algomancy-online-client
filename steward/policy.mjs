@@ -81,7 +81,7 @@ for (const r of rows) {
     const lost = nonCr(base) - nonCr(head);
     if (lost > 0) reasons.push(`the bot corpus loses ${lost} non-rules rows (lost rulings?)`);
   }
-  if (/^client\/ledgers\/.*-closed\.ts$/.test(r.path) && r.del > r.add + 20) reasons.push(`${r.path} loses ${r.del - r.add} lines (closed entries are regression guards)`);
+  if (r.path === 'client/ledgers/settled.jsonl' && r.del) reasons.push(`removes ${r.del} line(s) from settled.jsonl (append-only: a later row overrides, nothing is erased)`);
 }
 
 // ── 5. size: a big diff deserves eyes even when it is "just engine" ──────────

@@ -20,12 +20,11 @@
  * refused to non-admins, server-side, not just hidden in the UI"* — and the
  * reason that line is there at all is that hiding a button is not a permission.
  *
- * ── WHY THE REPORT VIEW IMPORTS A LEDGER OUT OF THE SOURCE TREE ──────
+ * ── WHY THE REPORT VIEW READS A LEDGER OUT OF THE SOURCE TREE ────────
  *
- * A report's IMPLEMENTATION STATUS is not server state. It lives in
- * `client/ledgers/playtest-ledger.ts`, which is committed source: a report is
- * `fixed` when somebody wrote an entry naming the test that keeps it fixed.
- * The dashboard reads that file at runtime and joins it to the journal by id.
+ * A report's IMPLEMENTATION STATUS is not server state. It is the report's
+ * standing row in `client/ledgers/settled.jsonl`, which is committed source,
+ * read through ledgers/tickets.ts on every request and joined to the journal by id.
  *
  * Two consequences worth stating, because both are features:
  *
@@ -37,10 +36,6 @@
  *    would write to a source file on the deploy box and be destroyed by the
  *    next `git pull`. The writable signal is the TRIAGE MARK below, which is
  *    runtime state and lives in var/ where runtime state belongs.
- *
- * The import is cheap: playtest-ledger.ts pulls in its closed half and a
- * TYPE-ONLY re-export of report-fields.ts, and nothing else. No engine, no
- * card registry.
  */
 import { readFileSync, appendFileSync } from 'node:fs';
 import type { IncomingMessage } from 'node:http';
@@ -50,19 +45,10 @@ import {
 } from './accounts.ts';
 import { allRooms } from './rooms.ts';
 import { gameElements, gameSides } from './stats.ts';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { issuesFile, reportMarksFile } from './statepaths.ts';
-import { LEDGER, type ReportStatus } from '../ledgers/playtest-ledger.ts';
+import { settled, type SettledRow } from '../ledgers/tickets.ts';
+import { ISSUES_SNAPSHOT } from '../engine/scripts/paths.mjs';
 import type { IssueRow } from './report-fields.ts';
-
-/**
- * The COMMITTED report snapshot — source, not runtime state, which is why it is
- * resolved from this file's own location and not through statepaths.ts (that
- * module is "everything the deployment writes", and nothing writes this).
- */
-const ISSUES_SNAPSHOT = join(
-  dirname(fileURLToPath(import.meta.url)), '..', 'ledgers', 'playtest-issues.snapshot.jsonl');
 
 /* ── who is allowed in ────────────────────────────────────────────────── */
 
@@ -223,15 +209,12 @@ export interface AdminReportRow extends IssueRow {
    *  snapshot. null = not in the snapshot yet, i.e. filed since the last
    *  `npm run reports`, which is the normal state for a fresh report. */
   ledgerId: number | null;
-  /** what the LEDGER says, out of the running build. null = no entry yet,
-   *  which for a new report is the normal state and not an error.
-   *  'agreed-fix' (CT-327) is a row an accepted in-game fix filed whose cut
-   *  was a take-back with no defect: closed, guardless, and NOT open work —
-   *  the page draws it as "agreed fix", apart from `fixed`. */
+  /** what the LEDGER says, out of the running build. null = no row yet,
+   *  which for a new report is the normal state and not an error. 'live' is a
+   *  report an open ticket carries; 'agreed-fix' is a take-back two players
+   *  agreed in game, with no defect: closed, and NOT open work. */
   status: ReportStatus | null;
-  /** the tests the ledger names as keeping it fixed */
-  guards: string[];
-  /** the ledger's note, where it has one */
+  /** the ledger's note, or which ticket fixed it */
   ledgerNote: string | null;
   /** the admin's triage mark, if any */
   mark: ReportMark | null;
@@ -262,7 +245,7 @@ export interface AdminReportRow extends IssueRow {
 export function reportRows(): AdminReportRow[] {
   let text: string;
   try { text = readFileSync(issuesFile(), 'utf8'); } catch { return []; }
-  const byId = new Map(LEDGER.map(e => [e.id, e]));
+  const byId = settled();
   const snapshotIndex = snapshotIds();
   const m = marks();
   const rows: AdminReportRow[] = [];
@@ -271,21 +254,25 @@ export function reportRows(): AdminReportRow[] {
     let raw: IssueRow;
     try { raw = JSON.parse(line) as IssueRow; } catch { return; }
     const ledgerId = snapshotIndex.get(raw.ts) ?? null;
-    const led = ledgerId === null ? undefined : byId.get(ledgerId);
+    const led = ledgerId === null ? undefined : byId.get(`#${ledgerId}`);
     const mark = m.get(raw.ts);
     rows.push({
       ...raw,
       id,
       ledgerId,
-      status: led?.status ?? null,
-      guards: led?.guards ?? [],
-      ledgerNote: led?.note ?? null,
+      status: led ? reportStatus(led) : null,
+      ledgerNote: led ? led.note ?? (led.to?.length ? `${led.as === 'fixed' ? 'fixed by' : 'see'} ${led.to.join(', ')}` : null) : null,
       mark: mark?.mark ?? null,
       markedBy: mark?.by ?? null,
     });
   });
   return rows.reverse();
 }
+
+export type ReportStatus = 'fixed' | 'live' | 'partial' | 'by-design' | 'wontfix' | 'agreed-fix';
+/** a report's row as the page names it: a report an open ticket carries is 'live' */
+const reportStatus = (r: SettledRow): ReportStatus | null =>
+  r.as === 'ticket' ? 'live' : ['fixed', 'partial', 'by-design', 'wontfix', 'agreed-fix'].includes(r.as) ? r.as as ReportStatus : null;
 
 /**
  * timestamp → line index in the committed report snapshot, which IS the id the

@@ -110,11 +110,6 @@ in_window() { [ "$STEWARD_WINDOW" = always ] && return 0; in_hours $((10#${STEWA
 # comes from origin/master, extracted before the agent starts. (run-once.sh
 # itself is extracted from origin/master by the unit's ExecStartPre.)
 trust() {
-  # updates.ts is one entry per line and every round adds one at the top, so two
-  # branches always "conflict" there; a union merge keeps both (the gate's test 323
-  # still checks the result). Local to this clone (.git/info), never committed.
-  mkdir -p "$REPO/.git/info"
-  grep -qs 'updates.ts merge=union' "$REPO/.git/info/attributes" || echo 'client/ui/updates.ts merge=union' >> "$REPO/.git/info/attributes"
   # one commit per tick, held in memory: trust runs again after the agent, which can write $BIN and refs
   TRUSTED="${TRUSTED:-$(g rev-parse origin/master)}"
   g show "$TRUSTED:steward/policy.mjs" > "$BIN/policy.mjs" || { log "cannot extract policy.mjs from origin/master"; exit 1; }
@@ -224,7 +219,7 @@ master_gate() { # make $MG describe origin/master; 0 = green
 # ── the fetched report snapshot belongs to triage alone ─────────────────────
 # fetch-reports writes the server's new rows into client/ledgers/*.snapshot.jsonl.
 # Committed by any other item (the runner's own "uncommitted work" commit swept
-# them in on 2026-11-03), they turn 70-playtest-ledger red on that branch.
+# them in on 2026-11-03), they turn ledgers/tickets.test red on that branch.
 restore_fetched() { # item start_sha
   [ "$1" = triage ] && return 0
   [ -s "$STATE/fetched.txt" ] || return 0
@@ -235,7 +230,7 @@ restore_fetched() { # item start_sha
   done < "$STATE/fetched.txt"
   if [ $changed = 1 ] && ! g diff --cached --quiet; then
     g commit -qm "steward: the fetched report snapshot goes back to master's" \
-      -m "Only a triage run ledgers new report rows; on any other branch they turn 70-playtest-ledger red."
+      -m "Only a triage run settles new report rows; on any other branch they turn ledgers/tickets.test red."
   fi
 }
 

@@ -45,9 +45,9 @@ Three consequences for anyone reading it:
   an executed test. That document is the engine's spec; code cites it as
   `CR 608.2b`.
 - **The work queues are in the repo.** [`client/ledgers/`](client/ledgers/README.md)
-  holds every ticket, bug report and verdict, open and closed. The closed
-  halves are long and are kept on purpose: each closed entry names the test
-  that proves it, and those tests still run. They are the project's memory.
+  holds every ticket, bug report and verdict: one small file per open ticket,
+  and one append-only line per settled decision. A fix is claimed by the test
+  that carries its ticket id in its title.
 
 ## The map
 
@@ -170,7 +170,7 @@ bot/pipeline/    the scripts that BUILD data/ — run by hand, never on a reques
 client/engine/   src/ (the rules reducer) · test/ · scripts/         the engine, and only the engine
 client/ui/       the browser client, one esbuild bundle; imports the engine
 client/server/   the WebSocket game server · test/ (unit) · e2e/ (spawns the real server)
-client/ledgers/  every work queue, open and closed, and the snapshots of live reports
+client/ledgers/  every work queue: open tickets, settled.jsonl, and the snapshots of live reports
 client/docs/     deck-format.md, the design docs, the question sheets (test fixtures)
 deploy/          Caddyfile, the systemd units, the backup, the install recipe
 var/             ALL mutable runtime state. Gitignored whole. Never commit it; back it up.

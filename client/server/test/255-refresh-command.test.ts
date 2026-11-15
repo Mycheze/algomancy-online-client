@@ -113,8 +113,8 @@ test('§0 POSITIVE CONTROL: the scan reads real files and the remote pattern rea
   assert.ok(FILES.length > 300,
     `the walk found only ${FILES.length} files — it has gone blind, and §1 below would then `
     + 'pass by quantifying over nothing');
-  assert.ok(FILES.some(f => f.endsWith(path.join('engine', 'test', '70-playtest-ledger.test.ts'))),
-    'the walk did not reach 70-playtest-ledger.test.ts, which is the file the refresh command '
+  assert.ok(FILES.some(f => f.endsWith(path.join('ledgers', 'tickets.test.ts'))),
+    'the walk did not reach ledgers/tickets.test.ts, which is the file the refresh command '
     + 'lives in — the corpus is wrong, not clean');
 
   // the pattern itself: it must match a real reference, and must NOT match the
@@ -130,8 +130,8 @@ test('§0 POSITIVE CONTROL: the refresh command is written down somewhere findab
     `no ${DEPLOY_HOST}:<path> reference anywhere in the repo. Either the fetch instruction was `
     + 'deleted — in which case the intake loop has no documented repair at all and the path-constants rule has '
     + 'regressed — or the scan is broken. Both need a human.');
-  assert.ok(refs.some(r => r.file.includes('70-playtest-ledger')),
-    'no remote path in 70-playtest-ledger.test.ts. That file IS the snapshot guard; the command '
+  assert.ok(refs.some(r => r.file.endsWith('tickets.test.ts')),
+    'no remote path in ledgers/tickets.test.ts. That file IS the snapshot guard; the command '
     + `that refreshes the snapshot belongs in it. Found instead: ${JSON.stringify(refs)}`);
 });
 
@@ -198,7 +198,7 @@ test('§3 npm run reports exists and points at a script that exists', () => {
   const cmd = pkg.scripts?.['reports'];
   assert.ok(cmd,
     'client/package.json has no `reports` script. It is the only thing that can actually see '
-    + 'the deploy box, and every failure message in 70-playtest-ledger.test.ts tells the reader '
+    + 'the deploy box, and every failure message in ledgers/tickets.test.ts tells the reader '
     + 'to run it.');
 
   const named = /(\S+\.mjs)/.exec(cmd!);

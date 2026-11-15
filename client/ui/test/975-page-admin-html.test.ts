@@ -25,7 +25,7 @@ function view(over: Partial<AdminView> = {}): AdminView {
     accountRows: [{ id: 'a', username: 'Ann <b>', createdAt: '2026-10-01T00:00:00Z', admin: false, badge: { judge: 2, since: 'x' },
       games: 3, wins: 1, lastPlayed: null, friends: 0, decks: 0, discord: null }],
     reportRows: [{ id: 7, ledgerId: 7, ts: '2026-11-01T10:00:00Z', room: 'QXZK', seat: 0, note: 'it <script>broke</script>',
-      actionIndex: 3, kind: 'bug', severity: 'minor', by: { name: 'Bo' }, status: 'fixed', guards: [], ledgerNote: null,
+      actionIndex: 3, kind: 'bug', severity: 'minor', by: { name: 'Bo' }, status: 'fixed', ledgerNote: null,
       mark: 'real', markedBy: 'ops' }],
     gameRows: [{ code: 'G1', playedAt: '2026-11-01T10:00:00Z', mode: 'draft', els: ['fire'], finished: true, diverged: false,
       winner: 1, turns: 8, minutes: 20, players: ['Ann', 'Bo'], known: [true, true], rated: false, custom: false }],

@@ -15,7 +15,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { RAQ, type RaqEntry } from '../../ledgers/raq.ts';
-import { CARD_TODO } from '../../ledgers/card-todo.ts';
+import { openIds, settled } from '../../ledgers/tickets.ts';
 import { RAQ_SNAPSHOT } from '../scripts/paths.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -64,7 +64,7 @@ test('a reviewed thread lists what it settles; a skipped one says why', () => {
 });
 
 test('every claim carries its source and the evidence its status needs', () => {
-  const tickets = new Set(CARD_TODO.map(t => t.id));
+  const tickets = new Set([...openIds(), ...settled().keys()]);
   const bad: string[] = [];
   const each = (e: RaqEntry, fn: (c: NonNullable<RaqEntry['claims']>[number], at: string) => void): void =>
     (e.claims ?? []).forEach((c, i) => fn(c, `${e.id} claim ${i + 1}`));
@@ -72,7 +72,7 @@ test('every claim carries its source and the evidence its status needs', () => {
     each(e, (c, at) => {
       if (!c.claim.trim() || !c.source.trim()) bad.push(`${at}: needs the claim and who said it`);
       if (c.status === 'covered' && !c.guards?.length) bad.push(`${at}: covered by what? name the test`);
-      if (c.status === 'broken' && (c.ticket === undefined || !tickets.has(c.ticket))) {
+      if (c.status === 'broken' && (c.ticket === undefined || !tickets.has(`CT-${c.ticket}`))) {
         bad.push(`${at}: broken needs a real CT ticket (got ${c.ticket})`);
       }
       if ((c.status === 'outdated' || c.status === 'untestable') && !c.note?.trim()) {

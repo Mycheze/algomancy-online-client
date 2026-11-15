@@ -85,7 +85,7 @@ A card is two halves joined by its name.
 The pool is 492 cards, the base set and the Light & Dark expansion, and no
 card is parked: `../ledgers/card-ledger.ts`, which would declare clauses that
 do nothing, is empty, and `test/71-card-ledger.test.ts` proves it both ways.
-A gap that cannot be built yet is a ticket in `../ledgers/card-todo.ts`, never
+A gap that cannot be built yet is a ticket in `../ledgers/open/`, never
 a `todo` test, because a test that cannot fail tracks nothing.
 
 ## The spec: the comprehensive rules

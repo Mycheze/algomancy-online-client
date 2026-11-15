@@ -34,7 +34,7 @@ client/ui/pages/       the non-game pages: view → pure …Html → paint, one 
 client/ui/components/  the design system's `ui-` components: pure props → HTML string, a story and a test each
 client/storybook/      Storybook for the components and pages (own package; the gate only typechecks its stories)
 client/server/  the WebSocket game server · test/ (in-process) · e2e/ (spawns the real server)
-client/ledgers/ every work queue: card-todo, playtest-ledger, backlog, and the derived ones
+client/ledgers/ every work queue: open/ (one file per open ticket), settled.jsonl, the snapshots, the derived queues
 client/docs/    the specs — and a test fixture directory, see below
 steward/        the unattended night worker on the home box (its README is the contract)
 var/            ALL mutable runtime state: the bot's logs, saved games, the account
@@ -92,17 +92,18 @@ Read it before touching that string.
   register. The R-ruling register (`client/docs/digital-rules.md`, `R1`–`R350`)
   was retired on 2026-10-11 and is archived at `refs/archive/r-register-final`;
   184 fails on any `R<n>` citation that comes back.
-- **`client/ledgers/` holds every work queue** — `card-todo.ts` (the one that
-  matters), `playtest-ledger.ts`, `backlog.ts` and the derived queues. They are
-  data, not tests; four of them used to sit in `engine/test/` and read as tests.
-  `engine/test/` holds only `*.test.ts` and its harnesses — and only the ENGINE's
+- **`client/ledgers/` holds every work queue** — `open/CT-n.ts` and
+  `open/BL-n.ts`, one file per open ticket (card and engine work; everything
+  else), deleted when it closes; `settled.jsonl`, every settled report, ticket and
+  verdict, append-only (`merge=union`), last row per id wins; and the derived
+  queues. `tickets.ts` reads them, `tickets.test.ts` holds the locks, and
+  `npm --prefix client/ledgers run ready` prints the open work and the next free
+  ids. A test claims a ticket by carrying its id (`CT-563`, `#388`) in its title;
+  nothing in a ledger names a test. The old TS ledgers are archived at
+  `refs/archive/ledgers-2026-11`. `engine/test/` holds only `*.test.ts` and its harnesses — and only the ENGINE's
   tests since 2026-09-03: the ui-only ones are in `client/ui/test/`, the
   server-only ones in `client/server/test/`, and the scripts that spawn the real
-  server in `client/server/e2e/` (moved out of the package root 2026-09-20). A
-  ledger names a guard test by bare filename and every resolver looks in all four. Each ledger is split in two:
-  `card-todo.ts` is the type and the open entries, `card-todo-closed.ts` the
-  closed ones (same for `backlog` and `playtest-ledger`); the closed half still
-  runs — every proof is a regression guard — it is just not the file you open.
+  server in `client/server/e2e/` (moved out of the package root 2026-09-20).
 - **`client/ui/` is the entire browser client.** It was `engine/ui/` until the
   reorg, which is why older commits and comments put it there.
 - **`client/engine/src/cards/sets/index.ts` is append-only.** Import order =

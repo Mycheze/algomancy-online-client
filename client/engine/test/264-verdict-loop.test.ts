@@ -4,11 +4,11 @@
  * (see fetch-reports.mjs). The scenario tester (docs/14) exists so the owner — the rules
  * authority — can judge a card by playing it, and docs/14 §6 states the
  * obligation in one sentence: a `broken` or `slightly off` verdict becomes a
- * `card-todo.ts` entry with the scenario attached, and the same scenario
+ * CT ticket with the scenario attached, and the same scenario
  * becomes the failing test that proves the fix.
  *
- * Nothing enforced it. `83-card-todo.test.ts` §4 already asserts that every
- * `live` playtest REPORT is carried into `card-todo.ts` — that guard is the
+ * Nothing enforced it. The report ledger already asserted that every
+ * playtest REPORT is carried by a ticket — that guard is the
  * only reason a report cannot be dropped on the floor, and it was written
  * after two reports were. The verdict half of the same loop had no such
  * assertion and, until round 36, no committed file to assert over: the raw
@@ -39,7 +39,7 @@
  *
  * `ROWS.filter(r => r.verdict !== 'works')` cannot see that, and neither could
  * the sweep that produced CT-177. **A verdicts file is a JOURNAL, not a set of
- * facts** — the same thing `playtest-ledger.ts`'s header says about reports
+ * facts** — the same thing the report ledger learned about reports
  * #90 and #114, where the owner retracted twenty-nine minutes later. §1a is
  * that rule, and §0 keeps it from becoming dead code.
  *
@@ -49,7 +49,7 @@
  *   §1  every non-`works` verdict names a card the pool has
  *   §1a supersession — a later verdict on the same scenario AND room retires
  *       an earlier one, because that is the owner's own retraction convention
- *   §2  every non-`works` verdict has a `card-todo.ts` entry naming that card
+ *   §2  every standing non-`works` verdict has a `verdict:` row in settled.jsonl
  *   §3  the committed snapshot has not fallen behind the transcription in
  *       ledgers/unreached.ts, which is the other reader of the same file
  *
@@ -63,7 +63,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import '../src/cards/registry.ts';
 import { canonicalCardName, getCard } from '../src/cards/dsl.ts';
-import { CARD_TODO } from '../../ledgers/card-todo.ts';
+import { settled } from '../../ledgers/tickets.ts';
 import { WITNESSED } from '../../ledgers/unreached.ts';
 import { VERDICTS_SNAPSHOT } from '../scripts/paths.mjs';
 
@@ -141,7 +141,7 @@ test('§1a a later verdict on the same scenario AND room retires the earlier one
   }
 
   // The one this file exists to remember. Named, because the next reader will
-  // find CT-177 in card-todo.ts marked `done` against a card that was never
+  // find CT-177 in settled.jsonl marked `done` against a card that was never
   // broken, and this is the sentence that explains why it was ever opened.
   const veng = ROWS.filter(r => r.scenario === 'vengeance-taxes-their-play');
   assert.ok(veng.length >= 2, 'the Vengeance pair is the worked example of this rule');
@@ -150,7 +150,7 @@ test('§1a a later verdict on the same scenario AND room retires the earlier one
   assert.equal(last.verdict, 'works', '…and cleared by the same owner, on the same room, at 13:23Z');
   assert.ok(!OPEN_VERDICTS.includes(first),
     'so it must NOT be counted as an open verdict. A guard that reads a journal as a set of '
-    + 'facts manufactures work out of retractions — the exact failure playtest-ledger.ts '
+    + 'facts manufactures work out of retractions — the exact failure the report ledger '
     + 'records for reports #90 and #114.');
 });
 
@@ -164,28 +164,20 @@ test('§1 every verdict names a card this pool actually has', () => {
     'a verdict naming a card the registry does not have is a verdict nothing can act on');
 });
 
-// ── §2 THE LOCK — a verdict that is not `works` has a ticket ────────────
+// ── §2 THE LOCK — a verdict that is not `works` has a row ──────────────
 
-test('§2 every non-`works` verdict is carried into card-todo.ts, by card', () => {
-  // Matched by CARD, not by scenario id: docs/14 §6 says the scenario is
-  // "attached", and a ticket may well be filed before anyone thinks to record
-  // which scenario produced it — but the card is the thing both sides always
-  // know. Deliberately loose in that one direction and strict everywhere else.
-  const ticketed = new Set<string>();
-  for (const e of CARD_TODO) for (const c of e.cards ?? []) ticketed.add(c);
-
+test('§2 every standing non-`works` verdict has a verdict: row in settled.jsonl', () => {
+  // Keyed like LIVE: a re-run in another room is a fresh judgement and needs its own row.
+  const rows = settled();
   const dropped = OPEN_VERDICTS
-    .filter(r => !ticketed.has(r.card))
-    .map(r => `${r.ts.slice(0, 10)} ${r.card} — "${r.verdict}" in scenario `
-      + `${r.scenario}${r.room ? ` (room ${r.room}, action ${r.actionIndex})` : ''} `
-      + 'has no card-todo.ts entry');
-
+    .map(r => ({ r, id: `verdict:${r.scenario}@${r.room ?? ''}` }))
+    .filter(({ id }) => !rows.has(id))
+    .map(({ r, id }) => `${r.ts.slice(0, 10)} ${r.card} — "${r.verdict}"${r.room ? ` (room ${r.room}, action ${r.actionIndex})` : ''}: `
+      + `append {"id":"${id}","as":"ticket","to":["CT-n"]}`);
   assert.deepEqual(dropped, [],
     'owner verdicts with nothing tracking them:\n  ' + dropped.join('\n  ')
-    + '\n\ndocs/14 §6: a `broken` or `slightly off` verdict becomes a card-todo entry with '
-    + 'the scenario attached. This assertion is what makes that a rule rather than an '
-    + 'intention — it is the same lock 83-card-todo.test.ts §4 puts on playtest reports, '
-    + 'and it exists because Vengeance went five days without one.');
+    + '\n\ndocs/14 §6: a `broken` or `slightly off` verdict becomes a CT ticket with the scenario '
+    + 'attached, and the row is what makes that a rule: Vengeance went five days without one.');
 });
 
 // ── §3 the two readers of this file agree ───────────────────────────────

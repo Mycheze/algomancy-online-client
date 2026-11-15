@@ -1,0 +1,4 @@
+# Append-only, one entry per line: two branches that each add a line keep both.
+# (tickets.test and 323-recent-updates still check the merged result.)
+client/ledgers/settled.jsonl merge=union
+client/ui/updates.ts merge=union

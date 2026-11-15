@@ -27,8 +27,33 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ent, withE } from './util.ts';
-import { everywhereBatch } from '../../ledgers/card-todo-helpers.ts';
+import { Harness } from '../src/harness.ts';
+import type { EntityId } from '../src/types.ts';
+import { ent, playEverywhere, spawn, toDeployment, withE } from './util.ts';
+
+/** Cerebrox, a The Everywhere that named `named`, and Blurf, Prediction Prophet and
+ *  Flourishing Flora, all in one region. `kill` disposes some of them as ONE death
+ *  batch and returns how many Cerebrox triggers the batch itself queued, counted
+ *  before they resolve (each -1/-1 kills the small units and starts a batch of its own). */
+function everywhereBatch(seed: number, named = 'Cerebrox') {
+  const h = new Harness(seed);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  const cerebrox = spawn(h, A, 'Cerebrox');
+  const everywhere = playEverywhere(h, A, named);
+  const others = ['Blurf', 'Prediction Prophet', 'Flourishing Flora'].map(n => spawn(h, A, n));
+  const kill = (ids: EntityId[]): number => {
+    let n = -1;
+    withE(h, e => {
+      const queued = () => e.s.triggerQueue.filter(t => t.sourceCard === 'Cerebrox').length;
+      const before = queued();
+      e.destroyBatch(ids.map(id => e.entity(id)!), 'dies');
+      n = queued() - before;
+    });
+    return n;
+  };
+  return { h, cerebrox, everywhere, others, kill };
+}
 
 test('CT-532 control: with The Everywhere naming another card, Cerebrox hears all three trashes of a batch', () => {
   const { h, cerebrox, others, kill } = everywhereBatch(115304, 'Blurf');

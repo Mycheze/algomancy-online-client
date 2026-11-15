@@ -8,7 +8,7 @@
  * week: `tidy`, last in the queue, never ran once, and every item staged or red before a later run
  * shipped it left its `steward/<item>` branch behind (13 of them).
  *
- * The queue runs over a FIXTURE tree — a copy of `steward/queue.mjs` beside three small ledgers —
+ * The queue runs over a FIXTURE tree — a copy of `steward/queue.mjs` beside two open tickets —
  * not the live ledgers. Until 2026-11-13 it read the live ones and needed two open items in them:
  * closing BL-63 left only BL-10, and the order test went red on a ledger change that broke nothing.
  * The live run is kept as a smoke check (the real ledgers still load).
@@ -32,20 +32,19 @@ function fn(name: string): string {
   return many[0];
 }
 
-/** a repo-shaped tree the queue can run in: its own copy of queue.mjs, and ledgers with two open
- *  backlog items and nothing else (queue.mjs finds the ledgers beside itself, and asks git for HEAD) */
+/** a repo-shaped tree the queue can run in: its own copy of queue.mjs, and two open
+ *  backlog tickets and nothing else (queue.mjs finds the ledgers beside itself, and asks git for HEAD) */
 function fixtureRepo(): string {
   const root = mkdtempSync(join(tmpdir(), 'steward-1214-repo-'));
   mkdirSync(join(root, 'steward'));
   copyFileSync(join(STEWARD, 'queue.mjs'), join(root, 'steward', 'queue.mjs'));
   const led = join(root, 'client', 'ledgers');
   mkdirSync(led, { recursive: true });
-  writeFileSync(join(led, 'card-todo.ts'), 'export const CARD_TODO = [];\n');
-  writeFileSync(join(led, 'playtest-ledger.ts'), 'export const LEDGER = [];\n');
-  writeFileSync(join(led, 'backlog.ts'), `export const BACKLOG = [
-  { id: 'BL-901', status: 'open', size: 'S', title: 'the first open item' },
-  { id: 'BL-902', status: 'open', size: 'S', title: 'the second open item' },
-];\n`);
+  mkdirSync(join(led, 'open'));
+  for (const n of [901, 902]) {
+    writeFileSync(join(led, 'open', `BL-${n}.ts`), `export default { id: 'BL-${n}', size: 'S', title: 'open item ${n}' };\n`);
+  }
+  writeFileSync(join(led, 'settled.jsonl'), '');
   execFileSync('bash', ['-c', 'git init -q && git -c user.email=t@t -c user.name=t commit -q --allow-empty -m base'], { cwd: root });
   return root;
 }

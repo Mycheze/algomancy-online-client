@@ -10,9 +10,9 @@
  *   0. fix-master        master's OWN gate is red (state/master-gate.json, at this
  *                        sha): every branch is red until it is fixed, so it goes
  *                        first, and repairs wait for it
- *   1. triage #a-#b      report rows the ledger has no entry for yet, or a
- *                        verdict/marks snapshot the fetch just changed. FIRST,
- *                        because an unledgered row turns 70-playtest-ledger red
+ *   1. triage #a-#b      report rows with no `#N` row in client/ledgers/settled.jsonl
+ *                        yet, or a verdict/marks snapshot the fetch just changed. FIRST,
+ *                        because an unledgered row turns ledgers/tickets.test red
  *                        and every other item's gate with it. Not offered while a
  *                        triage branch is waiting on the owner (it already has them).
  *   1b. inbox <slug>     the owner's own asks: plain messages he posts in #steward
@@ -28,11 +28,10 @@
  *                        Once per digest; after the owner's own asks, before the worker's debt.
  *   3c. tidy             once a day, ahead of the long queues: at the bottom it never ran once
  *                        in its first week (2026-11-03..10), because something always sat above it
- *   4. report #N         playtest-ledger entries still live / partial ('agreed-fix'
- *                        is a CLOSED status: a player's take-back, no defect)
- *   5. CT-N              open card-todo entries, high severity first
- *   6. BL-N              the backlog's ready list (open, no asks, deps done), XL never
- *   7. already shipped   anything from 4-6 that shipped in the last day and is STILL open goes
+ *   4. CT-N              open card tickets (client/ledgers/open/CT-*.ts), high severity first;
+ *                        a report is worked through the ticket that carries it
+ *   5. BL-N              open backlog tickets that are ready (no asks, no open dep), XL never
+ *   6. already shipped   anything from 4-5 that shipped in the last day and is STILL open goes
  *                        last, and is left for a day after SHIP_LIMIT ships (see `shippedToday`)
  *
  * Excluded: anything in steward/hold.txt (the owner's "leave this alone"), and
@@ -46,21 +45,27 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '..');
 const LEDGERS = join(REPO, 'client', 'ledgers');
 const STATE = process.env.STEWARD_STATE || join(homedir(), 'algomancy-steward', 'state');
 const WHY = process.argv.includes('--why');
 
-const { CARD_TODO } = await import(join(LEDGERS, 'card-todo.ts'));
-const { LEDGER } = await import(join(LEDGERS, 'playtest-ledger.ts'));
-const { BACKLOG } = await import(join(LEDGERS, 'backlog.ts'));
-
 /** the one spelling of an item in file names, branch names and the journal: '#226' → 'report-226' (run-once.sh and review.sh agree) */
 const slug = i => String(i).replace(/^#/, 'report-').replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
 const readLines = p => (existsSync(p) ? readFileSync(p, 'utf8').split('\n') : []);
 const ls = p => (existsSync(p) ? readdirSync(p) : []);
+
+// open work is one file per ticket; settled.jsonl is append-only, last row per id wins
+const OPEN = [];
+for (const f of ls(join(LEDGERS, 'open')).filter(f => /^(CT|BL)-\d+\.ts$/.test(f)).sort()) {
+  OPEN.push((await import(pathToFileURL(join(LEDGERS, 'open', f)).href)).default);
+}
+const SETTLED = new Map();
+for (const l of readLines(join(LEDGERS, 'settled.jsonl'))) {
+  try { const r = JSON.parse(l); if (r.id) SETTLED.set(r.id, r); } catch { /* blank or torn */ }
+}
 
 /* the owner's hold list: "CT-346  reason…" — first token is the item */
 const hold = new Map(
@@ -150,8 +155,7 @@ if (masterRed) push('fix-master', `fix-master  (master ${head.slice(0, 8)} is re
 
 // 1. reports the ledger has not seen, and snapshots the fetch changed
 const snap = readLines(join(LEDGERS, 'playtest-issues.snapshot.jsonl')).filter(l => l.trim());
-const ledgered = new Set(LEDGER.map(e => e.id));
-const fresh = snap.map((_, i) => i).filter(i => !ledgered.has(i));
+const fresh = snap.map((_, i) => i).filter(i => !SETTLED.has(`#${i}`));
 const dirty = execFileSync('git', ['-C', REPO, 'status', '--porcelain', '--', 'client/ledgers/'], { encoding: 'utf8' })
   .split('\n').filter(l => /snapshot\.jsonl$/.test(l)).map(l => l.slice(3).replace('client/ledgers/', ''));
 // never cooled down or held: an unledgered row turns every other item's gate red —
@@ -206,29 +210,24 @@ for (const f of ls(join(STATE, 'retro')).filter(f => /^\d{4}-\d{2}-\d{2}\.md$/.t
 const lastTidy = journal.get('tidy');
 if (!lastTidy || Date.now() - Date.parse(lastTidy.ts) > 20 * 3600e3) out.push('tidy  (ledger hygiene, once a day)');
 
-// 4. reports agreed but not fixed
-for (const e of LEDGER) {
-  if (['live', 'partial'].includes(e.status)) push(`#${e.id}`, `report #${e.id}  [${e.status}] ${String(e.report).slice(0, 100)}`);
-}
-
-// 5. open CTs, high severity first
+// 4. open CTs, high severity first
 // severity first, then the area: card/engine correctness is "the queue that matters"
 const SEV = { blocker: 0, major: 1, minor: 2 };
 const AREA = { card: 0, attribute: 0, engine: 0, client: 1, coverage: 2 };
-const cts = CARD_TODO.filter(e => e.status === 'open')
+const cts = OPEN.filter(e => typeof e.id === 'number')
   .sort((a, b) => (SEV[a.severity] ?? 1) - (SEV[b.severity] ?? 1)
     || (AREA[a.area] ?? 1) - (AREA[b.area] ?? 1) || a.id - b.id);
 for (const e of cts) push(`CT-${e.id}`, `CT-${e.id}  [${e.area}/${e.severity}] ${e.title}`);
 
-// 6. the backlog's ready list
-const byId = new Map(BACKLOG.map(e => [e.id, e]));
+// 5. the backlog's ready list: a dep is met once it is not open
+const openIds = new Set(OPEN.map(e => (typeof e.id === 'number' ? `CT-${e.id}` : e.id)));
 const SIZE = { S: 0, M: 1, L: 2 };
-const ready = BACKLOG.filter(e => e.status === 'open' && !(e.asks && e.asks.length) && e.size !== 'XL'
-  && (e.deps ?? []).every(d => byId.get(d)?.status === 'done'))
+const ready = OPEN.filter(e => typeof e.id === 'string' && !(e.asks && e.asks.length) && e.size !== 'XL'
+  && (e.deps ?? []).every(d => !openIds.has(d)))
   .sort((a, b) => SIZE[a.size] - SIZE[b.size] || String(a.id).localeCompare(String(b.id), undefined, { numeric: true }));
 for (const e of ready) push(e.id, `${e.id}  [${e.size}] ${e.title}`);
 
-// 7. what already had its turn today
+// 6. what already had its turn today
 out.push(...shippedStillOpen);
 
 // nothing to do prints NOTHING: console.log of an empty join is a bare newline, which the

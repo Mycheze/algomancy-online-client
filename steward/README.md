@@ -51,8 +51,8 @@ clipped glow, an export that dropped the sideboard) ships. In code
   text (`steward/SKILL.md`), which ships up to 150 changed lines, so the
   daily retro can improve the instructions by itself (owner, 2026-11-06);
 - deletes a test, removes lines from an append-only file (`sets/index.ts`, the
-  CR `ledger.json`), loses non-rules rows from the bot corpus (lost rulings), or
-  guts a `*-closed.ts` ledger;
+  CR `ledger.json`, `client/ledgers/settled.jsonl`), or loses non-rules rows
+  from the bot corpus (lost rulings);
 - changes more than 600 lines outside tests, ledgers and generated rules.
 
 The agent may choose `stage` itself only for the reasons in the skill's §8 (a

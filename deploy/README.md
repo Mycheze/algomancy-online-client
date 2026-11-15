@@ -224,7 +224,7 @@ four ways and fails if any answers anything else.
 
 What the dashboard can change: a judge badge, the admin flag, and a report's
 👍/👎 triage mark. What it **cannot** change is a report's implementation
-status — that lives in `client/ledgers/playtest-ledger.ts`, which is committed
+status — that is the report's row in `client/ledgers/settled.jsonl`, which is committed
 source, so it is read-only here and shows the status of the build this box is
 running. The marks land in `var/report-marks.jsonl` (append-only) and come down
 with `npm --prefix client run reports`.

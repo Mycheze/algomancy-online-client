@@ -14,7 +14,7 @@ Everything happens in this directory, a scratch copy of the repo (call it MIRROR
 Do NOT read or write anything outside MIRROR, and inside MIRROR do NOT open:
 `data/comprehensive-rules/rules/`, `findings/`, `discrepancies/`, `verdicts/`,
 `build/harness/`, `build/verdicts/` (except to write your output), the generated
-documents `data/comprehensive-rules/*.md|*.html|*.txt`, or `client/ledgers/card-todo*.ts`.
+documents `data/comprehensive-rules/*.md|*.html|*.txt`, or `client/ledgers/open/` and `settled.jsonl`.
 They hold the drafter's reasoning and the answers; reading them voids your batch.
 Never run `npm run check` (the full gate). Do not use git.
 

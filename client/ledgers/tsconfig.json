@@ -19,5 +19,5 @@
     "typeRoots": ["../engine/node_modules/@types"],
     "skipLibCheck": true
   },
-  "include": ["*.ts"]
+  "include": ["*.ts", "open/*.ts"]
 }

@@ -112,7 +112,7 @@ export const CR_VERDICTS_DIR = join(CR_DIR, 'verdicts');
  *  per drafting unit, written by the draft/revise rounds */
 export const CR_DISCREPANCIES_DIR = join(CR_DIR, 'discrepancies');
 /** engine divergences and bugs the export found, one file per drafting unit
- *  (ids `F-U12-3`), each mapped to its CT ticket in ledgers/card-todo.ts.
+ *  (ids `F-U12-3`), each mapped to its CT ticket (ledgers/open/, or settled.jsonl once closed).
  *  Written by the drafter and by `cr/harness.mjs finalize` (the verifier's bugs) */
 export const CR_FINDINGS_DIR = join(CR_DIR, 'findings');
 /** intermediate extract output. Gitignored: rebuilt on every run */
@@ -191,8 +191,12 @@ export const CLIENT_DOCS_DIR = join(REPO_ROOT, 'client', 'docs');
 export const CLIENT_README = join(REPO_ROOT, 'client', 'README.md');
 /** the scripts that spawn the real server */
 export const SERVER_E2E_DIR = join(REPO_ROOT, 'client', 'server', 'e2e');
-/** every work queue (card-todo, backlog, playtest-ledger, …) and the tests that run their proofs */
+/** every work queue: the open tickets, the settled rows, the snapshots and the derived queues */
 export const LEDGERS_DIR = join(REPO_ROOT, 'client', 'ledgers');
+/** one file per open ticket, `CT-n.ts` / `BL-n.ts`, deleted when it closes */
+export const OPEN_TICKETS_DIR = join(LEDGERS_DIR, 'open');
+/** every settled report, ticket and verdict, append-only, last row per id wins */
+export const SETTLED_JSONL = join(LEDGERS_DIR, 'settled.jsonl');
 /** the league store: its `OutboxKind` union is every league message, which the
  * bell (ui/leaguenotes.ts, test 491) and the Discord bot (bot/paths.py
  * LEAGUE_STORE_TS) must each have a line for */

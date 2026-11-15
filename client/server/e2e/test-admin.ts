@@ -35,7 +35,7 @@ process.env['ALGO_REPORT_MARKS_FILE'] = MARKS;
 
 const { loadAccounts, register, setAdmin, admins } = await import('../accounts.ts');
 const { marks, setMark, reportRows, accountRows } = await import('../admin.ts');
-const { LEDGER } = await import('../../ledgers/playtest-ledger.ts');
+const { settled } = await import('../../ledgers/tickets.ts');
 const SNAPSHOT = join(
   dirname(fileURLToPath(import.meta.url)), '..', '..', 'ledgers', 'playtest-issues.snapshot.jsonl');
 
@@ -114,7 +114,7 @@ ok(rows.length === 2, 'both rows parse');
 ok(rows[0]!.id === 1 && rows[1]!.id === 0,
   'newest first, and the id is the LINE INDEX — the same number fetch-reports.mjs and the '
   + 'ledger key on, or a mark would point at the wrong report');
-ok(rows.every(r => 'status' in r && 'guards' in r),
+ok(rows.every(r => 'status' in r && 'ledgerNote' in r),
   'every row carries the ledger columns, even when the ledger has no entry for it');
 ok(accountRows().length === 3 && accountRows().every(a => !('hash' in a) && !('salt' in a)),
   'the account rows carry no password material — the shape is a projection, not a spread');
@@ -151,8 +151,8 @@ console.log('\n[the join survives two differently-numbered journals]');
   ok(row!.ledgerId === 166,
     `and ledger id 166, found through the snapshot by timestamp — not 0, which is a different `
     + 'report entirely');
-  const entry = LEDGER.find(e => e.id === 166);
-  ok(!!entry && row!.status === entry.status,
+  const entry = settled().get('#166');
+  ok(!!entry && row!.status === (entry.as === 'ticket' ? 'live' : entry.as),
     'so the status shown is the one the ledger really wrote about THIS report');
 
   // and a report the snapshot has never seen says so, rather than guessing
