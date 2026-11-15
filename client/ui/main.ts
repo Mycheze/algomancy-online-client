@@ -12290,12 +12290,13 @@ installReport(reportOpenChanged);
 // beside #app on every page that is not a board (ui/inbox.ts)
 // the app frame's toolbar (pages/frame.ts): who is signed in, and the bell's count
 setChromeSource(() => ({ signedIn: !!acct.currentUser(), alerts: inboxUnread(), alertsOpen: inboxListOpen() }));
-// a newer bundle waits while a reload would lose a form, the deck table,
-// a challenge run or a half-typed box
+// a newer bundle waits while a reload would interrupt a seated player's game
+// or lose a form, the deck table, a challenge run or a half-typed box
 installBuildCheck({
   busy: () => {
     const el = document.activeElement as HTMLInputElement | null;
-    return isReportOpen() || amend.isAmendOpen() || tt.tableOpen() !== null || params.get('challenge') === 'play'
+    const playing = !!NET && NET.joined && !NET.spectating && !NET.waiting && !!h.state && !gameIsOver();
+    return playing || isReportOpen() || amend.isAmendOpen() || tt.tableOpen() !== null || params.get('challenge') === 'play'
       || ((el?.tagName === 'TEXTAREA' || el?.tagName === 'INPUT') && !!el.value);
   },
 });
