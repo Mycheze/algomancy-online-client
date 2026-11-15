@@ -218,6 +218,23 @@ Done on 2026-11-03; kept here so it can be redone.
    systemctl --user daemon-reload && systemctl --user enable --now algomancy-steward.timer algomancy-steward-inbox.timer
    ```
    (`loginctl enable-linger bena` is already on, so it runs with nobody logged in.)
+6. **The fence** (2026-11-15; off until the config says `STEWARD_SANDBOX=bwrap`).
+   On the home box:
+   ```bash
+   sudo apt install -y bubblewrap && bwrap --ro-bind / / true && echo bwrap works
+   STEWARD_SANDBOX=bwrap ~/algomancy-steward/repo/steward/test-runner.sh     # every scenario, fenced; "fence" alone is the proof
+   echo STEWARD_SANDBOX=bwrap >> ~/.config/algomancy-steward/env
+   ```
+   Then `tail -f ~/algomancy-steward/logs/runner.log`. **A good tick** looks as
+   before — `gate (master) EXIT 0`, `claude exited 0`, a normal verdict — and
+   no `FENCE BROKEN`. **A failed one** says `FENCE BROKEN (agent|gate): bwrap: …`
+   and `paused`, with the same line in the night log; a fence that runs but is
+   too tight shows as `bwrap:` lines in `logs/run-*.err` or "Read-only file
+   system" in `logs/run-*.jsonl`. **Rollback:** delete the `STEWARD_SANDBOX`
+   line and say **resume** in the night log. Known costs: claude no longer
+   updates itself inside the fence (`claude update` by hand), the gate's
+   `/tmp` is RAM inside `MemoryMax=8G`, and the type-strip cache starts cold
+   every gate.
 
 ## Things that are not what they look like
 
@@ -243,14 +260,34 @@ Done on 2026-11-03; kept here so it can be redone.
 - **The agent never runs the full gate**; the runner does, once per item, on
   one pinned, frequency-governed core. The box must stay silent — that is the
   owner's one hard requirement for it — so the gate is slow there, and that is fine.
-- **The guard rails are rails, not a sandbox.** The agent runs as `bena` with
-  the box's keys on disk. What stops it pushing is a refusing
-  `GIT_SSH_COMMAND` and denied commands, plus the fact that the runner, not
-  the agent, decides what ships. The agent and the gate (which runs the
-  agent's tests) start from an allow-listed environment (`SAFE_ENV` in
-  `run-once.sh`): no Discord token, no ssh agent, and the gate gets the same
-  ssh guard; only the agent gets the Claude token. That keeps secrets out of
-  `env`, not out of reach: the real fix is running the agent as its own user.
+- **What the agent and the gate can reach.** Both start from an allow-listed
+  environment (`SAFE_ENV` in `run-once.sh`: no Discord token, no ssh agent;
+  only the agent gets the Claude token) with git over ssh refusing. Without
+  the fence that is all: they run as `bena`, and the box's keys, the config
+  file and every other process's environment are one `cat` away — rails, not a
+  sandbox. With **`STEWARD_SANDBOX=bwrap`** in the config, both run inside
+  bubblewrap (`fenced` in `run-once.sh`), and the UI build before the agent too:
+
+  | | the agent | the gate (and the UI builds) |
+  |---|---|---|
+  | `/usr`, `/etc`, the toolchain in `~/.local` (node, claude, uv's Python), `~/.gitconfig` | read | read |
+  | the rest of `/home` — `~/.ssh`, the config, `~/.claude*`, backups, other checkouts | **empty** | **empty** |
+  | the clone | write (its `.git/config`, `info/`, `hooks/` read-only) | write, but `.git` read-only |
+  | `node_modules`, `.venv` | read | read |
+  | `state/`, `logs/` · `bin/` · `outbox/` | read · read · write | — · read · — |
+  | `/tmp` | its own, empty | its own, empty |
+  | processes, `/sys`, `/run/user` (the ssh agent, the session bus) | only its own · none · none | same |
+  | network | yes (the Claude API) | **none** (loopback only) |
+
+  The fence is checked at the start of every tick: a fence that cannot hide
+  the config or `~/.ssh`, or cannot run node, git and claude, logs `FENCE
+  BROKEN`, says so in the night log and **pauses** — it never falls back to
+  running unfenced. Still open under it: the agent shares the box's network,
+  so it can reach services listening on the box's own loopback and abstract
+  sockets; the runner's own steps (the report fetch, `retro.mjs`, the
+  deploy's build on the VPS) run master's code unfenced; and the guard
+  (`fingerprint`) and the denied commands in `claude-settings.json` stay, as
+  the second line.
 - The worker keeps its state in `~/algomancy-steward/state`, outside the
   repo: `journal.jsonl` (append-only, one row per event, the agent's memory),
   `handoffs/`, `answers/`, `redgate/`, `outcomes/`, and the flags `paused`,

@@ -64,6 +64,49 @@ scrubbed() { # [NAME=value …] cmd …
   env -i "${e[@]}" "$@"
 }
 
+# The fence (STEWARD_SANDBOX=bwrap; unset = `scrubbed` alone, as before). The agent and the gate see
+# /usr and /etc read-only, an EMPTY /home but for the toolchain, their own processes only (not the
+# runner's /proc/*/environ), no /sys (the cap files are bena's), no /run/user (the session bus starts
+# units). They write the clone (the gate: not .git) and a private /tmp; the agent also the outbox, and
+# it alone has the network. STEWARD_FENCE_RO = more read-only paths (a toolchain elsewhere, e.g. nvm).
+fenced() { # agent|gate [NAME=value …] cmd …
+  local role="$1" d r; shift
+  [ -n "${STEWARD_SANDBOX:-}" ] || { scrubbed "$@"; return; }
+  [ "$STEWARD_SANDBOX" = bwrap ] || { echo "unknown STEWARD_SANDBOX=$STEWARD_SANDBOX" >&2; return 97; }
+  local -a e=() b=(--unshare-all --die-with-parent --new-session --ro-bind /usr /usr --ro-bind /etc /etc --proc /proc
+    --dev /dev --tmpfs /tmp --tmpfs /var/tmp --tmpfs /run --tmpfs /home --dir "$HOME")
+  while [[ "${1:-}" == [A-Za-z_]*=* ]]; do e+=("$1"); shift; done
+  for d in bin sbin lib lib32 lib64 libx32; do
+    if [ -L "/$d" ]; then b+=(--symlink "$(readlink "/$d")" "/$d"); elif [ -d "/$d" ]; then b+=(--ro-bind "/$d" "/$d"); fi
+  done
+  for d in "$HOME"/{.local/node,.local/bin,.local/share/claude,.local/share/uv,.gitconfig,.config/git} ${STEWARD_FENCE_RO:-}; do
+    b+=(--ro-bind-try "$d" "$d"); done
+  b+=(--bind "$REPO" "$REPO" --ro-bind "$BIN" "$BIN" --chdir "$REPO")
+  for d in "$REPO"/client/*/node_modules "$REPO"/.venv; do [ -e "$d" ] && r=$(readlink -f "$d") && b+=(--ro-bind "$r" "$r"); done
+  # a --reference clone (the test runner's) borrows its objects from another checkout
+  while read -r d; do [[ "$d" == /*/objects ]] && b+=(--ro-bind-try "$d" "$d"); done < <(cat "$REPO/.git/objects/info/alternates" 2>/dev/null)
+  if [ "$role" = agent ]; then
+    r=$(readlink -f /etc/resolv.conf); [[ "$r" == /run/* ]] && b+=(--ro-bind-try "${r%/*}" "${r%/*}")
+    b+=(--share-net --ro-bind "$REPO/.git/config" "$REPO/.git/config" --ro-bind-try "$REPO/.git/info" "$REPO/.git/info"
+      --ro-bind-try "$REPO/.git/hooks" "$REPO/.git/hooks" --ro-bind "$STATE" "$STATE" --ro-bind "$LOGS" "$LOGS" --bind "$OUTBOX" "$OUTBOX")
+  # the gate: .git read-only but for worktrees/ (the replay tool's tests check a game out at its own commit)
+  else mkdir -p "$REPO/.git/worktrees"; b+=(--ro-bind "$REPO/.git" "$REPO/.git" --bind "$REPO/.git/worktrees" "$REPO/.git/worktrees"); fi
+  scrubbed "${e[@]}" TMPDIR=/tmp PYTHONPYCACHEPREFIX=/tmp/pyc DISABLE_AUTOUPDATER=1 bwrap "${b[@]}" -- "$@" 9>&-
+}
+# Never unfenced when the fence is asked for: a fence that cannot hide the config, or cannot run node
+# and git, pauses the steward and says so.
+fence_check() {
+  [ -n "${STEWARD_SANDBOX:-}" ] && [ ! -f "$STATE/paused" ] || return 0   # paused: said once, nothing runs anyway
+  local r err
+  for r in agent gate; do
+    err=$(fenced $r sh -c '! test -e "$1" && ! test -e "$HOME/.ssh" && { ! test -L "$3" || "$3" -c 0; } &&
+      for c in node npm git "$2"; do command -v "$c" >/dev/null || exit 1; done' _ "$CONF" "$STEWARD_CLAUDE_BIN" "$REPO/.venv/bin/python" 2>&1) && continue
+    err="${err:-the config or ~/.ssh is visible inside, or node, npm, git, claude or the venv python is missing}"
+    log "FENCE BROKEN ($r): $err"; notify "⚠ the steward's fence is broken, so it is paused and nothing ran unfenced: $r: $err"
+    touch "$STATE/paused"; return 1
+  done
+}
+
 TS="$(date -u +%Y%m%dT%H%M%SZ)"
 log() { echo "[$(date -u +%FT%TZ)] $*" | tee -a "$LOGS/runner.log" >&2; }
 
@@ -313,8 +356,8 @@ gate() {
   local tag="$1" glog="$LOGS/gate-$TS-$1.log" rc
   log "gate ($tag) → $glog"
   # agent-written code: no secrets, no ssh agent, and git over ssh refuses (a rail, not a sandbox)
-  scrubbed GIT_SSH_COMMAND="$BIN/git-ssh-guard" npm --prefix "$REPO/client/ui" run build >/dev/null 2>&1
-  scrubbed GIT_SSH_COMMAND="$BIN/git-ssh-guard" timeout "$((STEWARD_GATE_MIN * 60))" bash -c "$STEWARD_GATE_CMD" >"$glog" 2>&1; rc=$?
+  fenced gate GIT_SSH_COMMAND="$BIN/git-ssh-guard" npm --prefix "$REPO/client/ui" run build >/dev/null 2>&1
+  fenced gate GIT_SSH_COMMAND="$BIN/git-ssh-guard" timeout "$((STEWARD_GATE_MIN * 60))" bash -c "$STEWARD_GATE_CMD" >"$glog" 2>&1; rc=$?
   echo "EXIT $rc" >>"$glog"
   log "gate ($tag) EXIT $rc"
   echo "$glog"; return $rc
@@ -577,7 +620,7 @@ work_one() {
   clean_tree origin/master
   governor_on || return 0
   deps
-  npm --prefix "$REPO/client/ui" run build >/dev/null 2>&1
+  fenced gate GIT_SSH_COMMAND="$BIN/git-ssh-guard" npm --prefix "$REPO/client/ui" run build >/dev/null 2>&1
 
   # once a day, from the summary hour: the retro digest of the last day's runs (steward/retro.mjs,
   # no Claude) — the queue then offers `retro <day>`, the agent's look at its own weak points
@@ -620,7 +663,7 @@ work_one() {
   # the agent gets the one secret the claude binary authenticates with, and no other
   local -a auth=(); [ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ] && auth=("CLAUDE_CODE_OAUTH_TOKEN=$CLAUDE_CODE_OAUTH_TOKEN")
   guard_before
-  ( cd "$REPO" && scrubbed "${auth[@]}" GIT_SSH_COMMAND="$BIN/git-ssh-guard" STEWARD_STATE="$STATE" STEWARD_OUTBOX="$OUTBOX" \
+  ( cd "$REPO" && fenced agent "${auth[@]}" GIT_SSH_COMMAND="$BIN/git-ssh-guard" STEWARD_STATE="$STATE" STEWARD_OUTBOX="$OUTBOX" \
       timeout "$cap" "$STEWARD_CLAUDE_BIN" -p "$prompt" --model "$STEWARD_MODEL" \
         --settings "$BIN/claude-settings.json" --permission-mode acceptEdits --add-dir "$OUTBOX" "$LOGS" \
         --output-format stream-json --verbose ) >"$rlog" 2>"$LOGS/run-$TS.err"; rc=$?
@@ -779,6 +822,7 @@ main() {
   find "$LOGS" -maxdepth 1 -type f \( -name 'run-*' -o -name 'gate-*' \) -mtime +30 -delete 2>/dev/null
   trust
   discord_sync
+  fence_check
 
   try_deploy
   [ -f "$STATE/paused" ] && { log "paused ($STATE/paused)"; exit 0; }
