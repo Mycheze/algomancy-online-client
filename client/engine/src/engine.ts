@@ -10570,33 +10570,43 @@ export class E {
    * Suspends via 'cast'/'mods'; resumable, because collectTargets re-runs from
    * the top after every answered decision.
    */
-  private collectModular(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
+  private collectModular(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[],
+    ask?: InlineCostAsk): void {
     if (item.modsDone || !item.card) return;
     if (item.kind !== 'spell' && item.kind !== 'spellUnit') return;
     if (!this.card(item.card).attrs.includes('Modular')) return;
     const seat = item.controller;
-    const options: DecisionOption[] = [];
-    for (const from of ['hand', 'bin'] as const) {
-      this.player(seat)[from].forEach((name, index) => {
-        // purpose 'mod': attaching a {Modular} mod is applying, not playing
-        // (CR 701.2b), so "spells cost more to PLAY" modifiers do not tax it — the
-        // same exemption every other mod path (augment/graft) already gets.
-        // CR 724.2: the cost is the WHOLE filter. Anything you can pay for is on
-        // the menu, whether or not it will do a thing when it gets there.
-        if (!this.canPayCard(seat, name, { purpose: 'mod' })) return;
-        options.push({ label: `${name} (${from})`, value: { modFrom: from, index }, card: name });
-      });
-    }
-    if (!options.length) { item.modsDone = true; return; }   // nothing to offer
-    options.push({ label: 'No more mods', value: { doneMods: true } });
-    this.suspend(
-      { type: 'cast', stage: 'mods', item, partIndex: 0, targetIndex: 0, then, moreItems },
-      {
+    for (let step = 0; !item.modsDone; step++) {
+      const options: DecisionOption[] = [];
+      for (const from of ['hand', 'bin'] as const) {
+        this.player(seat)[from].forEach((name, index) => {
+          // purpose 'mod': attaching a {Modular} mod is applying, not playing
+          // (CR 701.2b), so "spells cost more to PLAY" modifiers do not tax it — the
+          // same exemption every other mod path (augment/graft) already gets.
+          // CR 724.2: the cost is the WHOLE filter. Anything you can pay for is on
+          // the menu, whether or not it will do a thing when it gets there.
+          if (!this.canPayCard(seat, name, { purpose: 'mod' })) return;
+          options.push({ label: `${name} (${from})`, value: { modFrom: from, index }, card: name });
+        });
+      }
+      if (!options.length) { item.modsDone = true; return; }   // nothing to offer
+      options.push({ label: 'No more mods', value: { doneMods: true } });
+      const dec: Omit<Decision, 'id'> = {
         seat, kind: 'targets',
         prompt: `${item.label} is {Modular}: apply a mod from your hand or bin (you still pay its cost)`,
         options,
-      },
-    );
+      };
+      // without `ask` the cast window suspends here and re-enters from the top
+      if (!ask) this.suspend({ type: 'cast', stage: 'mods', item, partIndex: 0, targetIndex: 0, then, moreItems }, dec);
+      this.payModularMod(item, ask(0, step, dec));
+    }
+  }
+
+  /** CR 702.3b, 724.1: the {Modular} stage asked through a RESOLVING effect's
+   * chooser, for a Modular card played by another card's effect (Tides of the
+   * Cosmos). The collector and the payment are the cast window's own. */
+  collectInlineModular(item: StackItem, ask: InlineCostAsk): void {
+    this.collectModular(item, 'push', [], ask);
   }
 
   /**
@@ -11857,7 +11867,8 @@ export class E {
    * CR 702.3g — the AS-YOU-PLAY stage of the cast window.
    *
    * Three questions, in this order, all of them through the ordinary 'cast'
-   * suspension so a saved game replays them like any other cast-time answer:
+   * suspension (or, for a card played by an effect, that effect's chooser) so a
+   * saved game replays them like any other cast-time answer:
    *
    *  1. per offer, "pay it?" — a *may*, so Decline is always there;
    *  2. per copy bought, "choose new targets for the copy?";
@@ -11876,91 +11887,101 @@ export class E {
    * themselves are materialised in `commitItem`, once the original is on the
    * stack, so they land above it.
    */
-  private collectAsYouPlay(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[]): void {
+  private collectAsYouPlay(item: StackItem, then: 'push' | 'resolve', moreItems: StackItem[],
+    ask?: InlineCostAsk): void {
     // plays only: a triggered/activated item on the stack is not a card being
     // played, and a virus is a mod being applied (CR 701.2a), which is not a play.
     if (!CARD_PLAY_KINDS.has(item.kind) && item.kind !== 'spellToken') return;
     const offers = this.asYouPlayOffers(item);
     if (!offers.length && !item.asYouPlay) return;
     const st = (item.asYouPlay ??= { asked: [], copies: [] });
+    // `pi` is which copy a question is about (0 for the offers); without `ask`
+    // the cast window suspends and re-enters from the top, with it the answer
+    // is applied here and the loop goes on
+    let step = 0;
+    const put = (pi: number, dec: Omit<Decision, 'id'>): void => {
+      if (!ask) this.suspend({ type: 'cast', stage: 'asYouPlay', item, partIndex: pi, targetIndex: 0, then, moreItems }, dec);
+      this.applyAsYouPlay(item, ask(pi, step++, dec), pi);
+    };
     for (const o of offers) {
       if (st.asked.includes(o.key)) continue;
       // the label names the BODY that would pay, not the card the text is
       // printed on — an Ancient One wearing this face sacrifices itself
       const take = o.opt.label(this, o.self, item);
-      this.suspend(
-        { type: 'cast', stage: 'asYouPlay', item, partIndex: 0, targetIndex: 0, then, moreItems },
-        {
-          seat: o.self.controller, kind: 'payOrDecline',
-          prompt: `${o.via}, as you play ${item.label}: ${take}?`,
-          options: [
-            { label: take, value: { ayp: 'take', key: o.key } },
-            { label: 'Decline', value: { ayp: 'skip', key: o.key } },
-          ],
-        },
-      );
+      put(0, {
+        seat: o.self.controller, kind: 'payOrDecline',
+        prompt: `${o.via}, as you play ${item.label}: ${take}?`,
+        options: [
+          { label: take, value: { ayp: 'take', key: o.key } },
+          { label: 'Decline', value: { ayp: 'skip', key: o.key } },
+        ],
+      });
     }
     // "…and you may choose new targets for the copy" (CR 710.8a: declared here, so
     // the first response window sees a finished copy)
     for (let i = 0; i < st.copies.length; i++) {
       const c = st.copies[i]!;
-      if (c.done) continue;
-      const spec = item.card !== undefined ? this.card(item.card).spellEffect?.targets : undefined;
-      // ⚠ read off the FACE, not off the accepted option: `via` is all the
-      // ledger keeps, so a face declaring TWO options that disagree about
-      // `reaim` would collapse them. No card declares two; the day one does,
-      // the ledger has to carry the option index too.
-      const reaim = !!this.card(c.via).asYouPlay?.some(o => o.copySpell?.reaim);
-      if (!spec || !reaim) { c.done = true; continue; }
-      const counted = spec.count === 'X' ? (item.x ?? 0) : (spec.count ?? 1);
-      const max = counted + (spec.extraSlots ?? 0);
-      const min = targetMinimum(spec, counted);
-      const picked = c.targets ?? [];
-      const taken = new Set(picked.map(r => JSON.stringify(r)));
-      const chosen = picked
-        .map(r => this.resolveTargetRef(r))
-        .filter((r): r is ResolvedTarget => !!r);
-      const cands = max <= picked.length ? [] : this.targetCandidates(
-        specForSlot(spec, picked.length), item.region, item.id, item.controller,
-        undefined, item.x, chosen, null,
-      ).filter(cd => !taken.has(JSON.stringify(cd)));
-      if (c.aim === undefined) {
-        // a genuinely empty menu is not a choice — the originals ride, said out
-        // loud rather than silently (test/65: a guard that aborts must log)
-        if (!cands.length) {
-          this.ev('info', `${c.via}: no legal new target for the copy of ${item.card} — the original targets stand.`);
-          c.aim = 'keep'; c.done = true; continue;
-        }
-        this.suspend(
-          // `partIndex` carries WHICH COPY is being aimed, so the answer itself
-          // can be the plain value the base target stage already uses — a bare
+      while (!c.done) {
+        const spec = item.card !== undefined ? this.card(item.card).spellEffect?.targets : undefined;
+        // ⚠ read off the FACE, not off the accepted option: `via` is all the
+        // ledger keeps, so a face declaring TWO options that disagree about
+        // `reaim` would collapse them. No card declares two; the day one does,
+        // the ledger has to carry the option index too.
+        const reaim = !!this.card(c.via).asYouPlay?.some(o => o.copySpell?.reaim);
+        if (!spec || !reaim) { c.done = true; continue; }
+        const counted = spec.count === 'X' ? (item.x ?? 0) : (spec.count ?? 1);
+        const max = counted + (spec.extraSlots ?? 0);
+        const min = targetMinimum(spec, counted);
+        const picked = c.targets ?? [];
+        const taken = new Set(picked.map(r => JSON.stringify(r)));
+        const chosen = picked
+          .map(r => this.resolveTargetRef(r))
+          .filter((r): r is ResolvedTarget => !!r);
+        const cands = max <= picked.length ? [] : this.targetCandidates(
+          specForSlot(spec, picked.length), item.region, item.id, item.controller,
+          undefined, item.x, chosen, null,
+        ).filter(cd => !taken.has(JSON.stringify(cd)));
+        if (c.aim === undefined) {
+          // a genuinely empty menu is not a choice — the originals ride, said out
+          // loud rather than silently (test/65: a guard that aborts must log)
+          if (!cands.length) {
+            this.ev('info', `${c.via}: no legal new target for the copy of ${item.card} — the original targets stand.`);
+            c.aim = 'keep'; c.done = true; continue;
+          }
+          // `pi` carries WHICH COPY is being aimed, so the answer itself can be
+          // the plain value the base target stage already uses — a bare
           // boolean here, a bare TargetRef below.
-          { type: 'cast', stage: 'asYouPlay', item, partIndex: i, targetIndex: 0, then, moreItems },
-          {
+          put(i, {
             seat: item.controller, kind: 'payOrDecline',
             prompt: `${c.via}: choose new targets for the copy of ${item.card}?`,
             options: [
               { label: 'Choose new targets', value: true },
               { label: 'Keep the original targets', value: false },
             ],
-          },
-        );
-      }
-      if (c.aim === 'keep') { c.done = true; continue; }
-      if (!cands.length) { c.done = true; continue; }   // a later slot with nothing legal ends it
-      const options: DecisionOption[] = cands.map(cd =>
-        ({ label: this.targetLabel(cd), value: cd }));
-      if (picked.length >= min) options.push({ label: doneTargetsLabel(picked.length), value: { doneTargets: true } });
-      this.suspend(
-        { type: 'cast', stage: 'asYouPlay', item, partIndex: i, targetIndex: 0, then, moreItems },
-        {
+          });
+          continue;
+        }
+        if (c.aim === 'keep') { c.done = true; continue; }
+        if (!cands.length) { c.done = true; continue; }   // a later slot with nothing legal ends it
+        const options: DecisionOption[] = cands.map(cd =>
+          ({ label: this.targetLabel(cd), value: cd }));
+        if (picked.length >= min) options.push({ label: doneTargetsLabel(picked.length), value: { doneTargets: true } });
+        put(i, {
           seat: item.controller, kind: 'electricPath',
           prompt: `${c.via}: new target for the copy of ${item.card}`
             + (max > 1 ? ` (target ${picked.length + 1} of up to ${max})` : ''),
           options,
-        },
-      );
+        });
+      }
     }
+  }
+
+  /** CR 702.3g: the as-you-play stage asked through a RESOLVING effect's chooser,
+   * for a spell played by another card's effect (Tides of the Cosmos). The
+   * offers and the answers are the cast window's own; `commitItem` makes the
+   * copies when it pushes the item. */
+  collectInlineAsYouPlay(item: StackItem, ask: InlineCostAsk): void {
+    this.collectAsYouPlay(item, 'push', [], ask);
   }
 
   /**

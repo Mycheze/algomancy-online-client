@@ -382,8 +382,9 @@ export const inlinePlayGoesToStack = (g: E): boolean =>
  * everything the play has to settle before anybody may see it — X and the
  * other variable costs (CR 702.3a), its targets (CR 702.3c), its mode (CR 702.5),
  * the formation spot it is played into (CR 702.3e — the caller's, or the
- * played card's own, CR 602.7), the fixed bracketed costs (CR 702.4e) and the
- * played card's own "as I am played" naming (CR 702.3g). ONE function for BOTH branches of `playInline` (CT-332):
+ * played card's own, CR 602.7), the fixed bracketed costs (CR 702.4e), the
+ * played card's own "as I am played" naming (CR 702.3g), its {Modular} mods
+ * (CR 702.3b) and the as-you-play options other cards offer (CR 702.3g). ONE function for BOTH branches of `playInline` (CT-332):
  * the in-place branch used to hand-roll its own declaration and skipped the
  * bracketed costs entirely, so a "[Sacrifice a unit]" spell played where
  * nobody could respond was played free of the sacrifice.
@@ -395,13 +396,14 @@ export const inlinePlayGoesToStack = (g: E): boolean =>
  * formation spot are all fixed before the opponent sees the item, so nobody
  * responds to an undeclared spell.
  *
- * `withSpot`: the push branch declares the formation spot with the play; the
+ * `pushed`: the push branch declares the formation spot with the play; the
  * in-place branch leaves it to the caller's `E.placeInFormation` after the
  * spawn, as it always did — nobody can respond in between, so the two are the
- * same moment at the table.
+ * same moment at the table. Only the push branch asks the {Modular} mods
+ * (CR 702.3b) and the as-you-play options (CR 702.3g): both need the stack item.
  */
 const declareInlinePlay = (
-  g: E, ctx: EffectCtx, name: string, key: string, seat: Seat, opts: InlinePlayOpts, withSpot: boolean,
+  g: E, ctx: EffectCtx, name: string, key: string, seat: Seat, opts: InlinePlayOpts, pushed: boolean,
 ): StackItem => {
   const def = getCard(name);
   const eff = def.spellEffect;
@@ -430,6 +432,16 @@ const declareInlinePlay = (
   const ask = (which: string): InlineCostAsk => (pi, step, d) =>
     ctx.choose(`${key}:${which}${pi}.${step}`, { ...d, kind: 'targets' });
   g.collectInlineCastCosts(item, 'variable', ask('xcost'));
+  // CR 111.13a: no mana X is asked — every effect that plays a spell plays it for
+  // free, and a free X spell is played with X = 0.
+  // CR 702.3b, 724.1: a {Modular} card played by an effect is offered its
+  // mods, before the targets as from a hand. On the push branch only: a graft
+  // mod is an extra part, and the in-place branch runs the card's own part alone.
+  // the kind kept as asked: these stages ask 'targets', 'payOrDecline' and
+  // 'electricPath', every one of them a kind `ctx.choose` takes
+  const asked = (which: string): InlineCostAsk => (pi, step, d) =>
+    ctx.choose(`${key}:${which}${pi}.${step}`, d as Parameters<EffectCtx['choose']>[1]);
+  if (pushed) g.collectInlineModular(item, asked('mod'));
   if (eff?.targets && part) {
     // CR 702.3c: declared as the card is played, like every other target — by the
     // cast window's own collector (CT-308), so every slot, kind and count a
@@ -453,7 +465,7 @@ const declareInlinePlay = (
   // formation") — the same grid E.placeInFormation reads. With no source the
   // play joins the player's own formation.
   const fseat = ctx.sourceId === undefined ? seat : g.formationSeatOf(ctx.sourceId);
-  if (withSpot && opts.intoFormation && fseat !== null && (def.kind === 'unit' || def.kind === 'spellUnit')) {
+  if (pushed && opts.intoFormation && fseat !== null && (def.kind === 'unit' || def.kind === 'spellUnit')) {
     const slots = g.formationSlots(fseat, remembered);
     if (slots.length) {
       // BL-24: kind 'formationSlot', never 'electricPath' — an electricPath's
@@ -520,6 +532,11 @@ const declareInlinePlay = (
     g.ev('info', `${g.pname(seat)} gains ${def.gainDebt} debt — the [cost] of ${name}.`, { seat, card: name });
     g.gainDebt(seat, def.gainDebt);
   }
+  // CR 702.3g: LAST, as in the cast window — "As you play a nonunit spell,
+  // you may sacrifice me" (Maelstrom Charger) hears a play by an effect too.
+  // `commitItem` puts the copies above the pushed item; the in-place branch has
+  // no stack for a copy to go on, so it is asked on the push branch only.
+  if (pushed) g.collectInlineAsYouPlay(item, asked('ayp'));
   // The id is taken LAST, after every question: `ctx.choose` throws, the suspension rewinds
   // `nextId` to the part boundary and the part replays from the top, so an id
   // spent before a question is spent again on every attempt.

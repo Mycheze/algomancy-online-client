@@ -20,6 +20,10 @@
  * §4 is the guard that could have caught it: every stage of the hand-play cast
  * window (`E.collectTargets`) must be accounted for on the inline path.
  *
+ * CT-571, §5: the rest of the cast window on the same path — the as-you-play
+ * options another card offers (Maelstrom Charger, CR 702.3g) and a {Modular}
+ * card's mods (Spellbind, CR 702.3b); X is CR 111.13a's free play, X = 0.
+ *
  * Seeds 148100-148199.
  */
 import { test } from 'node:test';
@@ -193,22 +197,22 @@ function body(src: string, head: RegExp): string {
 
 /** stage → the text in `declareInlinePlay` that asks it, or why it is not a
  * question of a card being played by an effect, or the open ticket for it */
-const STAGES: Record<string, { inline: string } | { notACardPlay: string } | { gap: string }> = {
+const STAGES: Record<string, { inline: string } | { notACardPlay: string } | { free: string } | { gap: string }> = {
   gateCompoundCost: { notACardPlay: 'CR 111.6a: a compound ACTIVATION cost — abilities, not cards' },
   gateGraftCosts: { notACardPlay: 'CR 722.6a: a graft composite — a modded spell, which an inline play never carries' },
-  collectX: { gap: 'CT-571' },
+  collectX: { free: 'CR 111.13a: every effect that plays a spell plays it for free, and a free X spell is played with X = 0' },
   collectCastCosts: { inline: 'collectInlineCastCosts' },
-  collectModular: { gap: 'CT-571' },
+  collectModular: { inline: 'collectInlineModular' },
   collectPartTargets: { inline: 'collectInlineTargets' },
   collectModes: { inline: 'inlineMode(' },
   collectFormationSpot: { inline: 'def.playsIntoFormation' },
   payActivationCost: { notACardPlay: 'CR 705.3d: an activated ability\'s cost' },
   collectItemCosts: { notACardPlay: 'CR 705.3: an activated ability\'s cost' },
   collectAsPlayedNaming: { inline: 'namesAsPlayed' },
-  collectAsYouPlay: { gap: 'CT-571' },
+  collectAsYouPlay: { inline: 'collectInlineAsYouPlay' },
 };
 
-test('CT-564: every stage of the cast window is answered on the inline-play path, or names its ticket', () => {
+test('CT-564 CT-571: every stage of the cast window is answered on the inline-play path, or names its ticket', () => {
   const engine = readFileSync(join(SRC, 'engine.ts'), 'utf8');
   const water = readFileSync(join(SRC, 'cards/sets/batch-water-a.ts'), 'utf8');
   const stages = [...body(engine, /\n  collectTargets\(item: StackItem[^)]*\): void \{/).matchAll(/this\.((?:collect|gate|pay)\w+)\(/g)]
@@ -253,4 +257,118 @@ test('CT-564: every card printing its own play-time question asks it when Insidi
     if (c.playsIntoFormation) assert.ok(asked.includes('spot'), `${name}: asked for its spot (asked: ${asked.join(' / ')})`);
     if (c.namesAsPlayed) assert.ok(asked.includes(c.namesAsPlayed.prompt), `${name}: asked to name (asked: ${asked.join(' / ')})`);
   }
+});
+
+/* ═══ §5 THE REST OF THE CAST WINDOW — CT-571 ═══════════════════════════ */
+
+/** D (the defender, whose home the battle is in) holds priority with Tides of
+ * the Cosmos; the deck's top eight are `top`; Tides resolves and D picks
+ * `card` off its menu. */
+function tidesInto(h: Harness, top: string[], card: string, board: (D: Seat) => void = () => {}): { A: Seat; D: Seat; wh: number } {
+  toDeployment(h);
+  const A = h.state.initiative as Seat, D = (1 - A) as Seat;
+  const wh = spawn(h, A, 'Good Whale');
+  board(D);
+  giveResources(h, D, 'water', 11);
+  toNextBattle(h, A);
+  h.state.sharedDeck = [...top];
+  h.state.players[D]!.hand = ['Tides of the Cosmos', 'Curio Drifter'];
+  h.state.players[A]!.hand = [];
+  h.do({ type: 'declareAttack', seat: A, columns: [[wh]] });
+  if (h.state.priority !== D) pass(h);
+  assert.equal(h.state.priority, D);
+  h.do({ type: 'playCard', seat: D, handIndex: 0 });
+  // a Charger in the region offers to copy Tides itself, from hand: decline it
+  if (h.state.decision?.prompt.startsWith('Maelstrom Charger, as you play Tides')) decide(h, l => l === 'Decline');
+  pass(h);
+  if (h.state.priority !== null && h.state.stack.some(i => i.card === 'Tides of the Cosmos')) pass(h);
+  decide(h, l => l.startsWith(card));
+  decide(h, l => l === 'Done');
+  return { A, D, wh };
+}
+
+const TOP = ['Burgeon', 'Curio Drifter', 'Jelly', 'Ignis Sprite', 'Dune Drifter', 'Whispering Mantid',
+  'Lonely Forager', 'Rune Channeler', 'Rune Channeler', 'Good Whale'];
+
+test('CT-571: a spell played off Tides of the Cosmos is offered to Maelstrom Charger, and the copy goes above it with a new target', () => {
+  const h = new Harness(148160, ['Ben', 'Rashi']);
+  let chg = 0, own = 0;
+  const { D, wh } = tidesInto(h, TOP, 'Burgeon', d => {
+    chg = spawn(h, d, 'Maelstrom Charger');
+    own = spawn(h, d, 'Curio Drifter');
+  });
+  pick(h, { unit: wh });                         // Burgeon's target
+  decide(h, l => l.toLowerCase().includes('power'));
+  const d = h.state.decision;
+  assert.ok(d, 'THE TICKET: the Charger is asked');
+  assert.equal(d.seat, D);
+  assert.equal(d.prompt, 'Maelstrom Charger, as you play Burgeon: Sacrifice Maelstrom Charger — copy Burgeon?');
+  decide(h, l => l.startsWith('Sacrifice Maelstrom Charger'));
+  assert.ok(!ent(h, chg), 'the sacrifice is paid as the option is taken');
+  decide(h, l => l === 'Choose new targets');
+  pick(h, { unit: own });
+  const top = h.state.stack.at(-1)!, under = h.state.stack.at(-2)!;
+  assert.ok(top.copy && top.card === 'Burgeon', 'the copy is on top');
+  assert.deepEqual(top.parts[0]!.targets, [{ unit: own }], 'aimed at the new target');
+  assert.ok(!under.copy && under.card === 'Burgeon', 'above the original');
+  assert.deepEqual(under.parts[0]!.targets, [{ unit: wh }], 'which keeps its own');
+});
+
+test('CT-571: declining the Charger off Tides of the Cosmos copies nothing', () => {
+  const h = new Harness(148161, ['Ben', 'Rashi']);
+  let chg = 0;
+  const { wh } = tidesInto(h, TOP, 'Burgeon', d => { chg = spawn(h, d, 'Maelstrom Charger'); });
+  pick(h, { unit: wh });
+  decide(h, l => l.toLowerCase().includes('power'));
+  decide(h, l => l === 'Decline');
+  assert.ok(ent(h, chg), 'the Charger stays');
+  assert.equal(h.state.stack.filter(i => i.copy).length, 0, 'and nothing is copied');
+  assert.ok(h.state.stack.some(i => i.card === 'Burgeon'), 'Burgeon itself is on the stack');
+});
+
+test('CT-571: Spellbind played off Tides of the Cosmos is offered its {Modular} mods, and carries the one applied', () => {
+  const h = new Harness(148162, ['Ben', 'Rashi']);
+  const { D } = tidesInto(h, ['Spellbind', ...TOP.slice(1)], 'Spellbind');
+  const d = h.state.decision;
+  assert.ok(d, 'THE TICKET: the mods are offered');
+  assert.equal(d.seat, D);
+  assert.match(d.prompt, /^Spellbind is \{Modular\}: apply a mod/);
+  decide(h, l => l === 'Curio Drifter (hand)');
+  assert.ok(!h.state.players[D]!.hand.includes('Curio Drifter'), 'the mod left the hand as it was applied');
+  if (h.state.decision?.prompt.startsWith('Spellbind is {Modular}')) decide(h, l => l === 'No more mods');
+  const sb = h.state.stack.find(i => i.card === 'Spellbind');
+  assert.ok(sb, 'Spellbind is on the stack');
+  assert.deepEqual(sb.mods, [{ card: 'Curio Drifter', from: 'hand' }], 'riding with its mod');
+  assert.equal(sb.unstable, true, 'a modded Spellbind is {Unstable}');
+});
+
+test('CT-571: an X spell played off Tides of the Cosmos asks no X and is played at X = 0', () => {
+  const h = new Harness(148163, ['Ben', 'Rashi']);
+  tidesInto(h, ['Wildfire', ...TOP.slice(1)], 'Wildfire');
+  const prompts: string[] = [];
+  for (let g = 0; g < 6 && h.state.decision; g++) {
+    prompts.push(h.state.decision.prompt);
+    h.do({ type: 'decide', seat: h.state.decision.seat, choice: 0 });
+  }
+  assert.ok(!prompts.some(p => /choose X/.test(p)), `no X is asked (asked: ${prompts.join(' / ')})`);
+  const wf = h.state.stack.find(i => i.card === 'Wildfire');
+  assert.ok(wf, 'Wildfire is on the stack');
+  assert.ok(!wf.x, 'at X = 0');
+});
+
+test('CT-571: a card played in place by an effect is asked neither mods nor as-you-play options', () => {
+  const h = new Harness(148164);
+  toDeployment(h);
+  const A = h.state.deployPlayer!;
+  spawn(h, A, 'Maelstrom Charger');
+  h.state.players[A]!.hand = ['Curio Drifter'];
+  giveResources(h, A, 'water', 3);
+  const asked: string[] = [];
+  withE(h, e => {
+    playInline(e, {
+      controller: A, sourceName: 'rig', region: e.homeRegion(A), targets: [], event: null,
+      choose: (k: string) => { asked.push(k); throw new Error(`asked ${k}`); },
+    } as never, 'Spellbind', 'k', A, { from: 'deck' });
+  });
+  assert.deepEqual(asked, [], 'the in-place branch has no stack for a copy or a graft part');
 });
