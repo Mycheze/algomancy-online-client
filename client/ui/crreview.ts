@@ -35,6 +35,7 @@
  */
 import * as acct from './account.ts';
 import { esc } from './util.ts';
+import { statusMessage } from './components/status.ts';
 import { layoutMargin, locate, placer, sectionOf, targetResolver } from './cranchor.ts';
 import type { CrPlace, CrTab, CrTargetState } from './cranchor.ts';
 import { clearDecorations, detachedText, textMap, wrapHighlight } from './crdom.ts';
@@ -671,13 +672,24 @@ function sectionInView(): string | null {
   return null;
 }
 
+/** the column before the document is here: loading, or why it did not come.
+ * A failure is an error, not a dim note (BL-10, inventory 04 §L.7: "CR document
+ * load error uses dim `.crnote` … while comment errors use red `.crmsg`"), and
+ * it can be asked again without reloading the page. */
+export function docMissingHtml(err: string): string {
+  return err
+    ? `<div class="crcol">${statusMessage({ tone: 'error', boxed: true, className: 'crdocerr', text: `The rules document could not load: ${err}` })}
+       <p><button data-btn="cr-retry">Try again</button></p></div>`
+    : '<div class="crcol"><p class="crnote">Loading the document…</p></div>';
+}
+
 function paint(): void {
   const app = $app ?? document.getElementById('app');
   if (!app || !open) return;
   app.classList.add('crapp');
   const title = doc ? `<b>${esc(doc.title)}</b> <span class="crnote">${esc(doc.edition.name)}, effective ${esc(doc.edition.effective)}</span>` : '<b>Rules review</b>';
   const body = !doc
-    ? `<div class="crcol"><p class="crnote">${docErr ? esc(docErr) : 'Loading the document…'}</p></div>`
+    ? docMissingHtml(docErr)
     : `<nav class="crtoc${tocOpen ? ' open' : ''}" id="crtoc" aria-label="Contents">${tocHtml()}</nav>
        <div class="crcol"><div class="crdoc" id="crdoc">${columnHtml()}</div></div>
        <aside class="crmargin" id="crmargin" aria-label="Comments"></aside>`;
@@ -1050,6 +1062,7 @@ export function handleButton(btn: HTMLElement): boolean {
       document.getElementById('crtoc')?.classList.toggle('open', tocOpen);
       return true;
     case 'cr-refresh': void loadComments(true); return true;
+    case 'cr-retry': void loadDoc(); paint(); return true;   // loadDoc cleared docErr before its first await: Loading… now
     case 'cr-dl': {
       dlOpen = !dlOpen;
       const slot = document.getElementById('crdlslot');

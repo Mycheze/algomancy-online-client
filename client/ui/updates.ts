@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-15', kind: 'fix', text: 'If the rules review page cannot load the rules, it now says so in red with a Try again button, instead of a small grey line you could only get past by reloading the page.' },
   { date: '2026-11-15', kind: 'fix', text: 'When the judge cannot answer (it is busy, you reached the daily limit, or it could not be reached), the judge box at the table and in the lessons now says so in red, instead of looking like a ruling.' },
   { date: '2026-11-14', kind: 'new', text: 'Cube draft events: host a table of up to 12, draft packs around it with bots in the empty seats, build from what you drafted, then play a Swiss, round robin or open-play tournament. On the Draft tab, pick Cube draft under Alternate modes.' },
   { date: '2026-11-14', kind: 'change', text: 'The Draft tab is simpler: Mode is now Alternate modes at the bottom, and Cards, Banned and Game values fold away under More settings, which says when any of them is changed.' },

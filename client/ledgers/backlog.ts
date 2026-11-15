@@ -803,7 +803,15 @@ const OPEN: Entry[] = [
       + '`failed` on the guest sign-in miss and on a reply that is not ok, and its catch marks an unreachable judge. A '
       + 'failed turn is statusMessage tone error, boxed (red on the danger tint, role="alert", class judgefail). Left: '
       + '§L.7\'s other line, the rules review\'s document load error in the dim .crnote while its comment errors are red. '
-      + 'Guarded by 1382-judge-failure-is-an-error.test.ts. Reasoned, not looked at (no browser).',
+      + 'Guarded by 1382-judge-failure-is-an-error.test.ts. Reasoned, not looked at (no browser).\n\n'
+      + '2026-11-15 (steward): the rules review says its document did not load as an error (docs/23-ui-inventory/04 '
+      + '§L.7\'s other line: "CR document load error uses dim `.crnote` (crreview.ts:680) while comment errors use red '
+      + '`.crmsg`"). The page\'s whole column was the server\'s words ("could not reach the server") in a side note\'s '
+      + 'small grey, and only a page reload asked again. crreview.ts docMissingHtml draws it as statusMessage\'s boxed '
+      + 'error tone (role="alert", class crdocerr), "The rules document could not load: …", with a Try again button '
+      + '(cr-retry, loadDoc then a repaint, so Loading… shows while it asks). Loading stays the dim note. §L.7 is used '
+      + 'up: its scenario line was already red (.scnstatus.bad). Guarded by '
+      + '1383-rules-review-load-failure-is-an-error.test.ts. Reasoned, not looked at (no browser).',
   },
   // ── the leftovers of the 2026-11-02/03 rounds (Competitive Constructed, the design
   //    system, the new home, board-r1), filed 2026-11-03. Owner, that night: "put all
