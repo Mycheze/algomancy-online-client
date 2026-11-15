@@ -9,7 +9,9 @@
  *
  * Storage is one JSON file (server/accounts/accounts.json) rewritten on every
  * change. At two users and a few hundred games that is free, and it means the
- * whole store can be read, diffed and hand-fixed with a text editor.
+ * whole store can be read, diffed and hand-fixed with a text editor. It holds
+ * accounts, sessions and the game history; the stat sheets and ratings are a
+ * fold over that history, kept in memory and never written.
  *
  * Sessions live in the same file so a server restart does not log everyone out
  * (this box restarts on every deploy — see deploy/algomancy-game.service).
@@ -20,7 +22,7 @@ import type { CardName, Element, GameMode, Seat } from '../engine/src/types.ts';
 import type { CollectionDeck } from './collection.ts';
 import type { DeckShare } from './deckshare.ts';
 import {
-  ELEMENTS, favoriteElement, gameElements, gameSides, seatElements, zeroElements, type GameSummary, type SeatStats,
+  ELEMENTS, favoriteElement, gameElements, gameSides, seatElements, zeroElements, type SeatStats,
 } from './stats.ts';
 import { evaluateAchievements, type AchievementState } from './achievements.ts';
 import {
@@ -50,7 +52,7 @@ const DATA_FILE = accountsFile();
 /** Everything we count. Every field is a plain number/record so merging a
  * game into a profile is addition and nothing else — no derived state to keep
  * in sync, and a profile can always be REBUILT from the game log (see
- * rebuildProfiles). */
+ * foldProfiles). */
 export interface Profile {
   games: number;
   wins: number;
@@ -134,7 +136,7 @@ export interface Profile {
    *
    * ⚠ THE ONLY TWO FIELDS ON THIS INTERFACE THAT `foldSeat` DOES NOT WRITE.
    * Everything else here is addition on one account; a rating needs both
-   * players at once, so it is written by rebuildProfiles() out of
+   * players at once, so it is written by foldProfiles() out of
    * rating.ts's pairwise fold instead. See the header of rating.ts — the
    * split is the point, not an accident of where the code ended up.
    *
@@ -248,6 +250,8 @@ export interface Account {
   salt: string;
   hash: string;
   createdAt: string;
+  /** In memory only: a fold over the history (`foldProfiles`), never written
+   * to the file. Everything else on the account is primary and stored. */
   profile: Profile;
   /** achievement id → ISO timestamp it was unlocked */
   achievements: Record<string, string>;
@@ -256,9 +260,6 @@ export interface Account {
   /** friend requests: ids who asked me / ids I asked */
   incoming: string[];
   outgoing: string[];
-  /** game codes already folded in — makes recording idempotent, which matters
-   * because a finished game can be un-finished by an undo and finish again */
-  recorded: string[];
   /**
    * The saved deck collection (collection.ts). Optional and lazily seeded:
    * `undefined` is an account that has never opened the decks page and gets
@@ -269,12 +270,6 @@ export interface Account {
 
   /** External identities this account has proved it owns.
    *
-   * ⚠ TOP-LEVEL, NOT ON `profile`. `rebuildProfiles()` does
-   * `a.profile = emptyProfile()` and `recordLiveGame` calls it on EVERY
-   * finished game, so anything living on the profile is erased the first time
-   * somebody plays. Here it survives, and `loadAccounts`'s `{...a}` spread
-   * carries it through a restart without needing a migration.
-   *
    * A wrapper rather than a bare `discordId` so the next provider — or BL-17's
    * judge badges — does not add another top-level field.
    *
@@ -284,11 +279,9 @@ export interface Account {
   /**
    * BL-17, first slice — a TRUST MARK set by hand: the site's owner ("me"),
    * and/or a judge level. Nothing grants one by playing; only the tester-token
-   * route (`POST /api/admin/badge`, `deploy/badge.sh` on the box) writes it,
-   * and it is TOP-LEVEL for the same reason `linked` is — `rebuildProfiles`
-   * replaces `profile` on every finished game. It is copied onto every report
-   * the account files (report-fields.ts `ReportedBy`), which is what it is
-   * for: the owner, 2026-09-05, triaging the first live game's reports, asked
+   * route (`POST /api/admin/badge`, `deploy/badge.sh` on the box) writes it.
+   * It is copied onto every report the account files (report-fields.ts
+   * `ReportedBy`), which is what it is for: the owner, 2026-09-05, triaging the first live game's reports, asked
    * to know "what kind of account left the report". Shown on the profile.
    * The admin dashboard lists a badged account's unjudged reports first
    * (ui/pages/admin.ts reportOrder, 2026-11-07), and every game push carries
@@ -308,9 +301,6 @@ export interface Account {
    * people's accounts. Neither implies the other, and a future L3 judge with
    * no operator access must stay possible.
    *
-   * Top-level for the same reason `badge`, `linked` and `favorite` are:
-   * `rebuildProfiles` replaces `profile` on every finished game.
-   *
    * ⚠ NEVER GRANTED BY PLAYING, AND NEVER SELF-SERVICE. Two ways in, both
    * deliberate: the tester-token route (`deploy/admin.sh` on the box), which
    * is the BOOTSTRAP because the first admin has nobody to grant it, and an
@@ -324,8 +314,8 @@ export interface Account {
    * Decks friends have sent this account (deckshare.ts, owner 2026-11-10):
    * the bell's "<friend> sent you <deck>" lines, until opened or dismissed.
    * Ids only — the deck's name and visibility are read off the sender's
-   * collection every time. Top-level for the same reason `badge` is, and
-   * persisted, unlike a game invite: a deck outlives a restart.
+   * collection every time. Persisted, unlike a game invite: a deck outlives a
+   * restart.
    */
   deckShares?: DeckShare[];
 
@@ -334,9 +324,8 @@ export interface Account {
    * "Allow them to override and choose their favorite in the account stats
    * tab"). Absent means "whatever I have played most" — `favoriteOf` below is
    * the one reader, so every view (own, public, friend row, leaderboard)
-   * agrees. Top-level for the same reason `linked` and `badge` are:
-   * `rebuildProfiles` replaces `profile` on every finished game. A history
-   * row's per-game favourite is a different fact and is not this.
+   * agrees. A history row's per-game favourite is a different fact and is
+   * not this.
    */
   favorite?: Element;
 
@@ -360,9 +349,7 @@ export interface Account {
   /**
    * The league (docs/20-league.md): the player's weekly availability in their
    * own time zone, and the seasons they have finished with the honour each one
-   * earned. Top-level for the same reason `linked` and `badge` are —
-   * `rebuildProfiles` replaces `profile` on every finished game, and a trophy
-   * that vanished the next time you played would be worse than none.
+   * earned.
    *
    * ⚠ The availability is PRIVATE (privateView only): when somebody is free
    * is not something a stranger gets by typing their name into /api/player.
@@ -376,14 +363,22 @@ interface Session { tokenHash: string; userId: string; createdAt: string; lastSe
 
 interface Store {
   version: 1;
+  /** written without `profile` (persist) */
   accounts: Account[];
   sessions: Session[];
-  /** every game we have folded into a profile, newest last — the match
-   * history, and the raw material for rebuilding profiles from scratch */
+  /** every game played, newest last — the match history, and what every
+   * profile is folded from */
   history: RecordedGame[];
 }
 
-/** A game as it enters the record: the summary plus who the seats belonged to. */
+/** A game as it enters the record: the summary plus who the seats belonged to.
+ *
+ * The summary (mode, els, finished, winner, turns, diverged, seats) and
+ * matchMs, custom, single and amended are read again from the room file on
+ * every re-import. users, signedUp, deckIds, rated, concession, disputed, match
+ * and cube are PRIMARY: they may exist nowhere but here, so a re-import adds
+ * them and never clears them (history.ts keepPrimary). playedAt is the room
+ * file's mtime, which is also how a sync knows the file has not changed. */
 export interface RecordedGame {
   code: string;
   playedAt: string;
@@ -518,6 +513,8 @@ export const emptyProfile = (): Profile => ({
 // ── the store ─────────────────────────────────────────────────────────
 
 let store: Store = { version: 1, accounts: [], sessions: [], history: [] };
+/** game code → its position in store.history (a code is the row's identity) */
+let historyAt = new Map<string, number>();
 let dataFile = DATA_FILE;
 /** set while the file on disk could not be loaded: nothing may be written over it */
 let loadFailed = false;
@@ -542,6 +539,7 @@ export function loadAccounts(): void {
   } catch (err) {
     loadFailed = true;
     store = { version: 1, accounts: [], sessions: [], history: [] };
+    historyAt = new Map();
     throw err;
   }
   loadFailed = false;
@@ -559,17 +557,20 @@ export function loadAccounts(): void {
   }
   store = {
     version: 1,
-    accounts: (raw.accounts ?? []).map(a => ({
+    // an older build also stored `profile` and `recorded`: both are dropped
+    // here, so the fold below is the only source and the next write omits them
+    accounts: (raw.accounts ?? []).map(({ profile: _p, recorded: _r, ...a }: Account & { recorded?: unknown }) => ({
       ...a,
+      profile: emptyProfile(),
       // additive fields: an account written by an older build must still load
-      profile: { ...emptyProfile(), ...a.profile },
       achievements: a.achievements ?? {},
       friends: a.friends ?? [], incoming: a.incoming ?? [], outgoing: a.outgoing ?? [],
-      recorded: a.recorded ?? [],
-    })) as Account[],
+    })),
     sessions: sessions.filter(s => !sessionExpired(s, now)),
     history: raw.history ?? [],
   };
+  historyAt = new Map(store.history.map((g, i) => [g.code, i]));
+  foldProfiles();
   if (existsSync(dataFile)) {
     try { chmodSync(dataFile, FILE_MODE); } catch (err) { console.error('[accounts] could not chmod the store:', err); }
   }
@@ -594,7 +595,8 @@ function persist(): boolean {
     return false;
   }
   try {
-    writeStoreFile(dataFile, JSON.stringify(store, null, 1), FILE_MODE);
+    const accounts = store.accounts.map(({ profile: _p, ...a }) => a);
+    writeStoreFile(dataFile, JSON.stringify({ ...store, accounts }, null, 1), FILE_MODE);
     lastSeenFlushAt = Date.now();
     notePersist('accounts', null);
     return true;
@@ -625,6 +627,10 @@ export const gameHistory = (): RecordedGame[] => store.history;
  * can cache until something changes. In memory only — a counter, not state. */
 let historyRev = 0;
 export const historyRevision = (): number => historyRev;
+export const historyGame = (code: string): RecordedGame | undefined => {
+  const i = historyAt.get(code);
+  return i === undefined ? undefined : store.history[i];
+};
 export const accountById = (id: string | null | undefined): Account | undefined =>
   id ? store.accounts.find(a => a.id === id) : undefined;
 export const accountByName = (name: string): Account | undefined =>
@@ -709,7 +715,7 @@ export function registerGuest(): AuthResult {
     createdAt: new Date().toISOString(),
     profile: emptyProfile(),
     achievements: {},
-    friends: [], incoming: [], outgoing: [], recorded: [],
+    friends: [], incoming: [], outgoing: [],
     provisional: true,
   };
   account.key = account.username.toLowerCase();
@@ -795,7 +801,7 @@ function redeemSignupClaim(account: Account, ticket: string | undefined, now = D
   if (!claim) return 0;
   signupClaims.delete(ticket);
   if (claim.until <= now) return 0;
-  const game = store.history.find(g => g.code === claim.code);
+  const game = historyGame(claim.code);
   if (!game || game.users[claim.seat]) return 0;
   game.users[claim.seat] = account.id;
   game.signedUp = [...new Set([...(game.signedUp ?? []), claim.seat])].sort() as Seat[];
@@ -820,7 +826,7 @@ export function register(username: string, password: string, claim?: string): Au
     createdAt: new Date().toISOString(),
     profile: emptyProfile(),
     achievements: {},
-    friends: [], incoming: [], outgoing: [], recorded: [],
+    friends: [], incoming: [], outgoing: [],
   };
   store.accounts.push(account);
   // BL-28: a new account starts EMPTY, whatever games were played under its
@@ -1143,57 +1149,6 @@ function foldSeat(profile: Profile, game: RecordedGame, seat: Seat): void {
   if (!profile.lastPlayed || game.playedAt > profile.lastPlayed) profile.lastPlayed = game.playedAt;
 }
 
-/** What a recorded game unlocked, per account — the server pushes this to the
- * players so the client can celebrate. */
-export interface RecordOutcome {
-  game: RecordedGame;
-  unlocked: { userId: string; achievements: AchievementState[] }[];
-  /** false when the game was already in the record (idempotent no-op) */
-  recorded: boolean;
-}
-
-/**
- * Record a finished (or abandoned) game against whichever seats were logged
- * in. Idempotent by game code: recording the same code twice is a no-op, so
- * a re-finish after an undo, a double call, or a re-run of the seeder cannot
- * inflate anybody's stats.
- */
-export function recordGame(summary: GameSummary, users: [string | null, string | null]): RecordOutcome {
-  const accounts: [Account | undefined, Account | undefined] = [accountById(users[0]), accountById(users[1])];
-  const game: RecordedGame = {
-    code: summary.code,
-    playedAt: summary.playedAt,
-    recordedAt: new Date().toISOString(),
-    mode: summary.mode,
-    els: summary.els,
-    finished: summary.finished,
-    winner: summary.winner,
-    turns: summary.turns,
-    diverged: summary.skipped > 0,
-    users: [accounts[0]?.id ?? null, accounts[1]?.id ?? null],
-    names: [summary.seats[0].name, summary.seats[1].name],
-    seats: summary.seats,
-  };
-  const unlocked: { userId: string; achievements: AchievementState[] }[] = [];
-  let any = false;
-  for (const seat of [0, 1] as Seat[]) {
-    const account = accounts[seat];
-    if (!account) continue;
-    if (account.recorded.includes(game.code)) continue;
-    account.recorded.push(game.code);
-    foldSeat(account.profile, game, seat);
-    unlocked.push({ userId: account.id, achievements: refreshAchievements(account) });
-    any = true;
-  }
-  if (any) {
-    // one history row per game, even when both seats were logged in
-    if (!store.history.some(g => g.code === game.code)) { store.history.push(game); historyRev++; }
-    persist();
-    console.log(`[accounts] recorded ${game.code} (${game.names.join(' vs ')})${game.finished ? `, ${game.names[game.winner ?? 0]} won` : ', unfinished'}`);
-  }
-  return { game, unlocked, recorded: any };
-}
-
 /** Re-evaluate achievements, stamping newly-earned ones with now(). Returns
  * only what was JUST unlocked. Unlocks are sticky: an achievement never
  * un-earns, even if a rebuild changes the numbers under it. */
@@ -1211,27 +1166,34 @@ export function refreshAchievements(account: Account): AchievementState[] {
 }
 
 /**
- * Throw away every profile and rebuild it from `history`, oldest game first.
- * The escape hatch for the whole design: because a profile is a pure fold over
- * the game record, changing how a stat is counted (or adding one) never means
- * hand-editing anyone's numbers — reseed the history and rebuild.
+ * Fold every profile from `history`, oldest game first, in memory only — so
+ * changing how a stat is counted (or adding one) never means hand-editing
+ * anyone's numbers. Never incremental: Elo depends on game order, and a
+ * re-import, a sign-up claim or a match result changes the past. A newly
+ * earned achievement is stamped here; the next write stores the stamp.
  */
-export function rebuildProfiles(): void {
-  for (const a of store.accounts) {
-    a.profile = emptyProfile();
-    a.recorded = [];
-  }
+export function foldProfiles(): void {
+  const byId = new Map(store.accounts.map(a => [a.id, a]));
+  for (const a of store.accounts) a.profile = emptyProfile();
+  // a game counts once per account, even when both seats were theirs
+  const counted = new Set<string>();
   const games = [...store.history].sort((a, b) => a.playedAt.localeCompare(b.playedAt));
   for (const game of games) {
     for (const seat of [0, 1] as Seat[]) {
-      const account = accountById(game.users[seat]);
-      if (!account || account.recorded.includes(game.code)) continue;
-      account.recorded.push(game.code);
+      const account = byId.get(game.users[seat] ?? '');
+      if (!account || counted.has(`${account.id} ${game.code}`)) continue;
+      counted.add(`${account.id} ${game.code}`);
       foldSeat(account.profile, game, seat);
     }
   }
   applyRatings();
   for (const a of store.accounts) refreshAchievements(a);
+}
+
+/** foldProfiles, then save: for a caller that has just changed the history
+ * or something else the fold reads */
+export function rebuildProfiles(): void {
+  foldProfiles();
   persist();
 }
 
@@ -1268,9 +1230,8 @@ function applyRatings(): void {
 function matchRatingRows(): RatableGame[] {
   const decided = allMatches().filter(m => m.phase === 'over');
   if (!decided.length) return [];
-  const byCode = new Map(store.history.map(g => [g.code, g]));
   return decided
-    .map(m => matchRatingRow(m, code => byCode.get(code)?.concession))
+    .map(m => matchRatingRow(m, code => historyGame(code)?.concession))
     .filter((r): r is RatableGame => r !== null);
 }
 
@@ -1278,9 +1239,9 @@ function matchRatingRows(): RatableGame[] {
  * this, then rebuilds — that way seeding is order-independent). */
 export function stashHistory(game: RecordedGame): boolean {
   historyRev++;
-  const i = store.history.findIndex(g => g.code === game.code);
-  if (i >= 0) { store.history[i] = game; return false; }
-  store.history.push(game);
+  const i = historyAt.get(game.code);
+  if (i !== undefined) { store.history[i] = game; return false; }
+  historyAt.set(game.code, store.history.push(game) - 1);
   return true;
 }
 
@@ -1570,7 +1531,7 @@ export function recentGames(userId: string, limit = 25): MatchRow[] {
  * when the game is not in the history (nobody was signed in).
  */
 export function markGameDisputed(code: string, seat: Seat): boolean {
-  const g = store.history.find(x => x.code === code);
+  const g = historyGame(code);
   if (!g) return false;
   const seats = new Set<Seat>(g.disputed ?? []);
   seats.add(seat);

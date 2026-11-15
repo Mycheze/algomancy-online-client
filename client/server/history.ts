@@ -19,7 +19,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  gameHistory, rebuildProfiles, stashHistory, type RecordedGame, type RecordedMatchTag,
+  foldProfiles, historyGame, rebuildProfiles, stashHistory, type RecordedGame, type RecordedMatchTag,
 } from './accounts.ts';
 import { getMatch, sanitizeMatchLink } from './match-store.ts';
 import { MIN_GAME_ACTIONS, summarizeGame, type GameRecord, type GameSummary } from './stats.ts';
@@ -122,7 +122,6 @@ export function importGame(raw: SavedRoom, code: string, playedAt: string, opts:
   const input = summaryInput(raw, code, playedAt, opts);
   const names = input.names;
   const summary = opts.summary ?? summarizeGame(input);
-  const previous = gameHistory().find(g => g.code === code);
   const game: RecordedGame = {
     code,
     playedAt,
@@ -137,43 +136,28 @@ export function importGame(raw: SavedRoom, code: string, playedAt: string, opts:
     // does not carry one — every game before the timer existed, and every
     // hand-seeded fixture. See RecordedGame.matchMs for why absent beats 0.
     ...(typeof raw.matchMs === 'number' && raw.matchMs > 0 ? { matchMs: raw.matchMs } : {}),
-    // Seat ownership, best source first: what the room recorded while it was
-    // being played, then a previous import's answer (a sign-up ticket may
-    // have bound it since — BL-28 — and every claim already in the store is
-    // kept this way until the owner decides otherwise: legacy-claims.ts).
+    // Seat ownership: what the room recorded while it was being played
+    // (keepPrimary adds a previous import's answer).
     // ⚠ NEVER A NAME MATCH. This used to fall back to `accountByName(the
     // typed name)`, which bound a signed-out stranger's seat to whoever owned
     // the name they typed, at every import. A seat nobody was signed in on
     // stays null.
-    users: [0, 1].map(i => {
-      const seat = i as 0 | 1;
-      return raw.users?.[seat] ?? previous?.users[seat] ?? null;
-    }) as [string | null, string | null],
-    // BL-28: where a ticket binding came from survives a re-import, like the binding
-    ...(previous?.signedUp?.length ? { signedUp: previous.signedUp } : {}),
-    // Which saved deck each seat brought. Same "best source first" shape as
-    // `users`, and the same reason: a re-import must not lose an attribution
-    // the live room recorded. Omitted entirely when neither seat had one, so
-    // no draft or shared game grows a field of nulls.
-    ...(raw.deckIds?.[0] || raw.deckIds?.[1] || previous?.deckIds?.[0] || previous?.deckIds?.[1]
-      ? { deckIds: [
-          raw.deckIds?.[0] ?? previous?.deckIds?.[0] ?? null,
-          raw.deckIds?.[1] ?? previous?.deckIds?.[1] ?? null,
-        ] as [string | null, string | null] }
+    users: [raw.users?.[0] ?? null, raw.users?.[1] ?? null],
+    // Which saved deck each seat brought. Omitted entirely when neither seat
+    // had one, so no draft or shared game grows a field of nulls.
+    ...(raw.deckIds?.[0] || raw.deckIds?.[1]
+      ? { deckIds: [raw.deckIds[0] ?? null, raw.deckIds[1] ?? null] as [string | null, string | null] }
       : {}),
     names,
     seats: summary.seats,
     // BL-02: only a matchmade game is rated, and the flag comes from the
-    // SAVED FILE rather than from anything derivable. ⚠ `previous` is the
-    // fallback for the same reason `users` has one: a re-import must not
-    // quietly un-rate a game whose file predates a field. Omitted when false
-    // so no existing history row grows one.
-    ...(raw.rated ?? previous?.rated ? { rated: true } : {}),
-    // CR D8.5: the concession stamp, same "best source first" shape and the same
-    // reason — a re-import must not turn a walkover back into a full loss.
-    // Omitted when there is none, so no existing row grows a field.
+    // SAVED FILE rather than from anything derivable. Omitted when false so
+    // no existing history row grows one.
+    ...(raw.rated ? { rated: true } : {}),
+    // CR D8.5: the concession stamp. Omitted when there is none, so no
+    // existing row grows a field.
     ...((): { concession?: Concession } => {
-      const c = sanitizeConcession(raw.concession) ?? previous?.concession;
+      const c = sanitizeConcession(raw.concession);
       return c ? { concession: c } : {};
     })(),
     // BL-43: a custom game is recorded and TAGGED — shown in the match history
@@ -190,9 +174,9 @@ export function importGame(raw: SavedRoom, code: string, playedAt: string, opts:
     // owner, 2026-10-16: it counts for everything. No fold reads this field.
     ...(Array.isArray(raw.amendments) && raw.amendments.length ? { amended: raw.amendments.length } : {}),
     // BL-48: a disputed game is TAGGED and nothing more — the result stands
-    // until a person changes it. Same "best source first" as the concession.
+    // until a person changes it.
     ...((): { disputed?: Seat[] } => {
-      const seats = disputedSeatsOf(raw.disputes) ?? previous?.disputed;
+      const seats = disputedSeatsOf(raw.disputes);
       return seats?.length ? { disputed: seats } : {};
     })(),
     // docs/22 §2.6: a game of a Competitive match is recorded like any game —
@@ -200,20 +184,38 @@ export function importGame(raw: SavedRoom, code: string, playedAt: string, opts:
     // and TAGGED with its match, so the history says "Game 2 of 3" and the
     // rating fold leaves it to the match's one result (rating.ts isRated)
     ...((): { match?: RecordedMatchTag } => {
-      const tag = matchTagOf(raw.match) ?? previous?.match;
+      const tag = matchTagOf(raw.match);
       return tag ? { match: tag } : {};
     })(),
     // docs/25 §8: a game of a cube event's match is recorded and TAGGED with
     // the event — counted by no fold (foldSeat, isRated, the card stats),
-    // like a custom game. Read off the match record; the
-    // previous row keeps it across a re-import made without the match loaded.
+    // like a custom game. Read off the match record.
     ...((): { cube?: string } => {
-      const c = cubeTagOf(raw.match) ?? previous?.cube;
+      const c = cubeTagOf(raw.match);
       return c ? { cube: c } : {};
     })(),
   };
+  keepPrimary(game, historyGame(code));
   const isNew = stashHistory(game);
   return { code, game, isNew };
+}
+
+/**
+ * The primary facts of a history row (RecordedGame says which) survive a
+ * re-import: the file's value first, else the previous row's. A sign-up
+ * ticket's binding exists only on the row, every name claim already in the
+ * store is kept this way until the owner decides otherwise (legacy-claims.ts),
+ * and a file may predate a field or be re-read without its match loaded.
+ */
+function keepPrimary(game: RecordedGame, previous: RecordedGame | undefined): void {
+  if (!previous) return;
+  game.users = [game.users[0] ?? previous.users[0] ?? null, game.users[1] ?? previous.users[1] ?? null];
+  const decks: [string | null, string | null] =
+    [game.deckIds?.[0] ?? previous.deckIds?.[0] ?? null, game.deckIds?.[1] ?? previous.deckIds?.[1] ?? null];
+  if (decks[0] || decks[1]) game.deckIds = decks;
+  for (const k of ['signedUp', 'rated', 'concession', 'disputed', 'match', 'cube'] as const) {
+    if (game[k] === undefined && previous[k] !== undefined) Object.assign(game, { [k]: previous[k] });
+  }
 }
 
 /** The live room's fields recordLiveGame reads (rooms.ts Room has them all). */
@@ -380,12 +382,8 @@ export function matchLengths(games: readonly RecordedGame[]): {
  * which is what you want after changing how a stat is counted.
  */
 export function syncGamesDir(dir: string, opts: ImportOptions = {}): SyncReport {
-  let files: string[];
-  try {
-    files = readdirSync(dir).filter(f => f.endsWith('.json')).sort();
-  } catch {
-    return { added: 0, updated: 0, skipped: 0, rows: [] };
-  }
+  let files: string[] = [];
+  try { files = readdirSync(dir).filter(f => f.endsWith('.json')).sort(); } catch { /* no games yet */ }
   const report: SyncReport = { added: 0, updated: 0, skipped: 0, rows: [] };
   for (const f of files) {
     const code = f.replace(/\.json$/, '');
@@ -417,15 +415,14 @@ export function syncGamesDir(dir: string, opts: ImportOptions = {}): SyncReport 
       report.skipped++;
       continue;
     }
-    const known = gameHistory().find(g => g.code === code);
-    if (!opts.force && known && known.playedAt === playedAt) { report.skipped++; continue; }
+    if (!opts.force && historyGame(code)?.playedAt === playedAt) { report.skipped++; continue; }
     const row = importGame(raw, code, playedAt, opts);
     report.rows.push(row);
     if (row.isNew) report.added++; else report.updated++;
   }
-  if (report.added || report.updated) {
-    // BL-28: and none here either (every boot) — see importGame's `users`
-    rebuildProfiles();   // which saves
-  }
+  // BL-28: no name sweep here either (every boot) — see importGame's `users`.
+  // Always refolds: at boot this is the first fold with the matches loaded.
+  if (report.added || report.updated) rebuildProfiles();
+  else foldProfiles();
   return report;
 }

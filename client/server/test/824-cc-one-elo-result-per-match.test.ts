@@ -116,6 +116,10 @@ test('§2 ⭐ a rated Bo3 won 2-0 moves each rating once and counts one rated ga
   // one result at the provisional K, from 1000 each: 1000 ± 40 × 0.5
   assert.deepEqual([a.rating.constructed, b.rating.constructed], [1020, 980], '⭐ the rating moved once');
   assert.deepEqual([a.ratedGames.draft, a.rating.draft], [0, Rt.START_RATING], 'on the constructed ladder only');
+  // two restarts in main.ts's order — matches load after the accounts, and the
+  // second finds no file changed: the history sync still refolds
+  for (const _ of [1, 2]) { F.S.loadMatches(join(F.DIR, 'none')); A.loadAccounts(); F.S.loadMatches(); H.syncGamesDir(join(F.DIR, 'games')); }
+  assert.equal(A.accountById(ann)!.profile.rating.constructed, 1020, '⭐ and after a restart');
 
   const rows = A.gameHistory().filter(g => g.match?.id === m.id);
   assert.equal(rows.length, 2, 'each game is its own history row');

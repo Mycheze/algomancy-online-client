@@ -30,7 +30,7 @@ const {
   accountByName, acceptFriend, accountForToken, allAccounts, changePassword,
   gameHistory, leaderboard, loadAccounts, login, privateView, publicView,
   register, removeFriend, requestFriend, saveAccounts, stashHistory,
-  emptyProfile, recordGame,
+  emptyProfile, rebuildProfiles,
 } = await import('../accounts.ts');
 const { evaluateAchievements, ACHIEVEMENTS, GROUPS } = await import('../achievements.ts');
 const { summarizeGame } = await import('../stats.ts');
@@ -179,7 +179,6 @@ console.log('\n[profiles: the fold]');
   for (const g of [game('AAAA', 1, 0), game('BBBB', 2, 0), game('CCCC', 3, 0), game('DDDD', 4, 1)]) {
     stashHistory(g as never);
   }
-  const { rebuildProfiles } = await import('../accounts.ts');
   rebuildProfiles();
 
   eq(ben.profile.games, 4, 'every game is counted');
@@ -212,6 +211,20 @@ console.log('\n[profiles: the fold]');
   eq(privateView(ben, NEVER_ONLINE).history[0]?.result, 'loss', 'read from your own point of view');
   eq(privateView(rashi, NEVER_ONLINE).history[0]?.result, 'win', 'and mirrored for the other player');
   eq(leaderboard(NEVER_ONLINE)[0]?.username, 'Ben', 'the leaderboard ranks by wins');
+
+  // an older build also stored `profile` and `recorded`: the history decides
+  // what is shown, the next write leaves both out, and the unlock dates stay
+  const shown = JSON.stringify(publicView(ben));
+  const file = (): { accounts: Record<string, unknown>[] } => JSON.parse(readFileSync(STORE, 'utf8'));
+  const old = file();
+  const row = Object.assign(old.accounts.find(a => a['id'] === ben.id)!, { profile: { ...emptyProfile(), games: 99 }, recorded: ['AAAA'] });
+  writeFileSync(STORE, JSON.stringify(old));
+  loadAccounts();
+  ok(JSON.stringify(publicView(accountByName('Ben')!)) === shown, 'a stored profile is ignored: the fold is shown');
+  saveAccounts();
+  const saved = file().accounts.find(a => a['id'] === ben.id)!;
+  ok(!('profile' in saved) && !('recorded' in saved), 'and the next write stores neither');
+  eq(JSON.stringify(saved['achievements']), JSON.stringify(row['achievements']), 'the unlock dates are kept');
 }
 
 // ── 5. achievements ───────────────────────────────────────────────────
@@ -411,14 +424,16 @@ console.log('\n[achievements: one-game feats]');
     eq(rs.seats[1].bestSingleHit, want[1], 'and so does seat 1\'s');
   }
 
-  // …and the fold turns those per-game peaks into career maxima. Goes
-  // through recordGame, not a private helper, so this exercises the path the
-  // server actually uses.
+  // …and the fold turns those per-game peaks into career maxima, on the path
+  // every game takes: a history row, then the fold.
+  const fold = (code: string, seats: unknown[], user: string): void => {
+    stashHistory({ ...s, code, playedAt: '2026-08-10T12:00:00.000Z', winner: 0, finished: true,
+      diverged: false, users: [user, null], names: ['x', 'y'], seats } as never);
+    rebuildProfiles();
+  };
   register('Feats', 'password!');
   const feats = accountByName('Feats')!;
-  recordGame({ ...s, code: 'FUZZ-A', winner: 0, finished: true,
-    seats: [{ ...s.seats[0], name: 'Feats', won: true },
-      { ...s.seats[1], won: false }] } as never, [feats.id, null]);
+  fold('FUZZ-A', [{ ...s.seats[0], name: 'Feats', won: true }, { ...s.seats[1], won: false }], feats.id);
   eq(feats.profile.biggestUnit, s.seats[0].biggestUnit, 'the fold keeps the per-game max');
   eq(feats.profile.bestUnitsKilled, s.seats[0].unitsKilled, 'a per-game total becomes a career max');
   ok(feats.profile.bestElementsInAWin >= 1, 'a win records how many elements it was won with');
@@ -438,9 +453,8 @@ console.log('\n[achievements: one-game feats]');
   };
   register('Oldie', 'password!');
   const oldie = accountByName('Oldie')!;
-  recordGame({ ...s, code: 'FUZZ-OLD', winner: 0, finished: true,
-    seats: [{ ...(stripped(s.seats[0]) as object), name: 'Oldie', won: true },
-      { ...(stripped(s.seats[1]) as object), won: false }] } as never, [oldie.id, null]);
+  fold('FUZZ-OLD', [{ ...(stripped(s.seats[0]) as object), name: 'Oldie', won: true },
+    { ...(stripped(s.seats[1]) as object), won: false }], oldie.id);
   eq(oldie.profile.deckedWins, 0, 'a pre-counter game does not win "0 cards in your deck" for free');
   eq(oldie.profile.pacifistWins, 0, 'nor "no combat damage"');
   eq(oldie.profile.asceticWins, 0, 'nor "3 or fewer resources"');

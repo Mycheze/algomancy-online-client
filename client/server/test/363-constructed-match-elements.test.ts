@@ -22,7 +22,7 @@
  *
  * §1 ⭐ the summary of a real constructed game: two sides, no DRAFT_TRIO.
  * §2 ⭐ the rows already stored: Recent games labels mine vs theirs, the
- *    profile counts only your own colours, and the new row is stored right.
+ *    profile counts only your own colours.
  * §3 ⭐ the trio picker reads draft rows only.
  * §4    the two screens that print it: Recent games and the post-game line.
  */
@@ -191,13 +191,6 @@ test('§2b a draft row still reads its trio, with no sides', () => {
   const d = accounts.recentGames(MY).find(g => g.code === 'DRAFTD')!;
   assert.deepEqual(d.els, ['wood', 'light', 'dark']);
   assert.equal(d.sides, undefined);
-});
-
-test('§2c a newly recorded constructed game is stored with its real colours', () => {
-  const out = accounts.recordGame({ ...SUMMARY, code: 'LIVE' }, [MY, THEIR]);
-  assert.ok(out.recorded);
-  assert.deepEqual(out.game.els, ['wood', 'metal']);
-  assert.deepEqual(gameElements(out.game), ['wood', 'metal']);
 });
 
 /* ══ §3 — the trio picker ═══════════════════════════════════════════════ */
