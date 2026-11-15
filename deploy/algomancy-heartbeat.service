@@ -1,0 +1,14 @@
+# The daily "still alive" message (deploy/heartbeat.sh). Started by
+# algomancy-heartbeat.timer; `systemctl start algomancy-heartbeat` sends one now.
+[Unit]
+Description=Algomancy daily heartbeat
+OnFailure=algomancy-alert@%n.service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=bena
+WorkingDirectory=/home/bena/Documents/Algomancy
+EnvironmentFile=-/home/bena/Documents/Algomancy/.env
+ExecStart=/home/bena/Documents/Algomancy/deploy/heartbeat.sh

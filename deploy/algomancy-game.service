@@ -14,6 +14,7 @@
 # client/server/tester.env (see tester.env.example). Neither is required to
 # exist — an absent file is the feature being off, not an error.
 [Unit]
+OnFailure=algomancy-alert@%n.service
 # a crash loop (a bad env file, a port already bound) backs off instead of
 # restarting at RestartSec for ever
 StartLimitIntervalSec=120
@@ -35,6 +36,23 @@ Environment=PATH=/usr/local/bin:/usr/bin:/bin
 ExecStart=/usr/bin/node main.ts
 Restart=always
 RestartSec=2
+
+# Sandbox (2026-11-15). The process sees the whole disk READ-ONLY except var/
+# — every file this service writes is under var/ (statepaths.ts / bot/paths.py);
+# an ALGO_VAR_DIR elsewhere must be added to ReadWritePaths= too. No sudo or
+# setuid from inside (NoNewPrivileges), and no ssh keys.
+# ⚠ ProtectSystem=strict alone leaves /home WRITABLE (it is ProtectHome='s to
+# guard), so without ProtectHome=read-only the repo and ~ stay open.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/bena/Documents/Algomancy/var
+InaccessiblePaths=-/home/bena/.ssh
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
 
 [Install]
 WantedBy=multi-user.target

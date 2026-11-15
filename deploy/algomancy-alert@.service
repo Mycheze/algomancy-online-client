@@ -1,0 +1,15 @@
+# algomancy-alert@<unit>.service — post "<unit> failed" and its last ten
+# journal lines to ALGO_ALERT_WEBHOOK (.env). Started by OnFailure= in the game,
+# web, bot, backup and heartbeat units; by hand,
+# `systemctl start algomancy-alert@test.service` sends a test. No OnFailure=
+# here: an alert that cannot post shows in `systemctl status`, not in a loop.
+[Unit]
+Description=Algomancy failure alert for %i
+
+[Service]
+Type=oneshot
+User=bena
+# to read the failed unit's journal (bena is not in adm on the VPS)
+SupplementaryGroups=systemd-journal
+EnvironmentFile=-/home/bena/Documents/Algomancy/.env
+ExecStart=/home/bena/Documents/Algomancy/deploy/alert.sh %i

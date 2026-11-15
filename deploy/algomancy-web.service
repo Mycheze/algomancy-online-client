@@ -1,6 +1,7 @@
 # The rules bot's FastAPI app on :8000, loopback only: the game server proxies
 # /api/judge and /api/cardinfo to it. LLM_API_KEY (or DEEPSEEK_API_KEY) comes from .env.
 [Unit]
+OnFailure=algomancy-alert@%n.service
 # a crash loop (a bad env file, a port already bound) backs off instead of
 # restarting at RestartSec for ever
 StartLimitIntervalSec=300
@@ -16,6 +17,19 @@ EnvironmentFile=/home/bena/Documents/Algomancy/.env
 ExecStart=/home/bena/Documents/Algomancy/.venv/bin/python -u bot/app.py --host 127.0.0.1 --port 8000
 Restart=always
 RestartSec=10
+
+# Sandbox: read-only but var/ — the why is in algomancy-game.service and
+# deploy/README.md § Sandbox. Keep the three units' blocks identical.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/bena/Documents/Algomancy/var
+InaccessiblePaths=-/home/bena/.ssh
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
 
 [Install]
 WantedBy=multi-user.target

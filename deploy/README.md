@@ -15,7 +15,10 @@ directory is everything it takes to make one from a blank Ubuntu image.
 | `algomancy-web.service` | the rules bot's web app on :8000, **loopback only** — the game server proxies to it |
 | `algomancy-bot.service` | the Discord bot |
 | `algomancy-backup.service` + `.timer` | `backup-var.sh` once a day at 04:30, keeping 14 |
-| `backup-var.sh` | tar `var/` into `~/algomancy-backups/`, and rsync it off the box when `ALGO_BACKUP_REMOTE` is set |
+| `backup-var.sh` | tar `var/` into `~/algomancy-backups/` — gpg-encrypted, with the env files, when `ALGO_BACKUP_RECIPIENT` is set — and rsync it off the box when `ALGO_BACKUP_REMOTE` is set |
+| `algomancy-alert@.service` + `alert.sh` + `notify.sh` | a unit that fails posts "X failed on <host>" + its last ten journal lines to `ALGO_ALERT_WEBHOOK` (§ Alerts) |
+| `algomancy-heartbeat.service` + `.timer` + `heartbeat.sh` | 09:00 daily: backup age, disk, services, steward's last commit → the webhook; then pings `ALGO_HEARTBEAT_URL` |
+| `restore-drill.sh` | NOT for the VPS: where the private backup key is, unpack the newest pulled backup and check the account store (§ Backups) |
 
 Every path in the units is absolute and assumes the repo at
 `/home/bena/Documents/Algomancy` running as `bena`; `bootstrap-vps.sh` creates
@@ -254,10 +257,55 @@ to from the internet, so it **pulls**: on `benshomeserver.local`, as `bena`,
 15 5 * * * rsync -a algomancy-vps:algomancy-backups/ ~/algomancy-vps-backups/
 ```
 
-(`Host algomancy-vps` in that box's `~/.ssh/config` too.) Do the restore
-drill once before the data matters: `tar -xzf` one tarball into a scratch
-directory and compare mtimes with the live tree — `history.ts` keys a game's
-identity on its file mtime, so a copy that loses them re-imports every game.
+(`Host algomancy-vps` in that box's `~/.ssh/config` too.) The laptop pulls
+from the home box in turn — never `--delete`, so a copy wiped upstream is not
+wiped here:
+
+```
+# laptop, crontab -e (or by hand when it is on)
+0 12 * * * rsync -a benshomeserver.local:algomancy-vps-backups/ ~/algomancy-vps-backups/
+```
+
+Nothing prunes a pulled copy; on each box that holds one, add (rsync keeps the
+mtimes, so this is the backup's age):
+`30 5 * * * find ~/algomancy-vps-backups -name 'var-*.tar.gz*' -mtime +60 -delete`.
+No credential for either box is ever put on the VPS: both copies are pulls.
+
+### Encrypted backups (and `.env` in them)
+
+Since 2026-11-15, with `ALGO_BACKUP_RECIPIENT` set in `.env`, each tarball also
+holds `.env` and `client/server/tester.env` and is written only as
+`var-<stamp>.tar.gz.gpg`, encrypted to a key whose **private half is never on
+the VPS** — a break-in there cannot read old backups. Unset, it is the plain
+`var/` tarball, which never holds the env files. Once, on the laptop:
+
+```bash
+gpg --quick-generate-key 'Algomancy backups <you@example>' default default never
+gpg --list-keys 'Algomancy backups'                       # the 40-hex fingerprint
+gpg --export-secret-keys --armor <fingerprint> > algomancy-backup-key.asc
+#   → into the password manager (the file AND its passphrase), then shred the file.
+#   Without it every encrypted backup is noise.
+gpg --export --armor <fingerprint> | ssh algomancy-vps gpg --import
+echo 'ALGO_BACKUP_RECIPIENT=<fingerprint>' | ssh algomancy-vps 'cat >> ~/Documents/Algomancy/.env'
+ssh algomancy-vps sudo systemctl start algomancy-backup    # then: ls ~/algomancy-backups → a .gpg
+```
+
+**The drill**, where the private key is: `deploy/restore-drill.sh
+[~/algomancy-vps-backups]` decrypts the newest backup into a temp dir, checks
+`accounts.json` loads (prints the account count) and every line of
+`accounts.history.jsonl` parses, fails if that backup is over 48 hours old,
+prints one line and deletes the temp dir. Monthly, on the home box:
+
+```
+0 7 1 * * <checkout>/deploy/restore-drill.sh 2>&1 | logger -t algomancy-drill   # it needs only python3 and gpg
+```
+
+⚠ A cron job cannot type a passphrase, so that line needs the private key on
+the home box without one — and until the steward's agent is fenced off from
+`~` there, it could read that key. Until then run the drill by hand on the
+laptop once a month (gpg asks for the passphrase) and keep the key off the
+home box. Do it once before the data matters, too: `history.ts` keys a game's
+identity on its file mtime, so also compare a few mtimes with the live tree.
 
 ## Restore
 
@@ -265,7 +313,9 @@ identity on its file mtime, so a copy that loses them re-imports every game.
 tar -xzf ~/algomancy-backups/var-<stamp>.tar.gz -C /home/bena/Documents/Algomancy
 ```
 
-with all three services stopped first.
+with all three services stopped first. An encrypted one is decrypted where the
+key is and the result copied up: `gpg -d var-<stamp>.tar.gz.gpg | tar -xzf - -C
+<dir> var` (leave off `var` to get `.env` back too).
 
 The account store is two files in `var/accounts/`, restored together:
 `accounts.json` (accounts and sessions) and `accounts.history.jsonl` (the
@@ -273,3 +323,50 @@ match history, one line per write of a game). To roll the game server back to
 a build that kept the history inside `accounts.json`, stop it and run
 `node client/server/export-legacy-store.ts` first: it writes the history back
 in and moves the `.jsonl` aside, so rolling forward again migrates it.
+
+## Sandbox (the three services)
+
+Since 2026-11-15 the game, web and bot units run sandboxed: the whole disk is
+read-only to them except `var/` (`ProtectSystem=strict` + `ProtectHome=read-only`
++ `ReadWritePaths=`), `~/.ssh` does not exist for them, and `NoNewPrivileges` means no sudo or setuid from inside.
+⚠ `ProtectSystem=strict` alone does **not** cover `/home` — that is
+`ProtectHome=`'s job — so without the `ProtectHome=read-only` line the repo and
+`~` stay writable. Every runtime write was checked to be under `var/`
+(`client/server/statepaths.ts`, `bot/paths.py`; the deck-picture drawer
+`ui/site-icons.py` writes to `var/og-cache/`). Two things are expected and
+harmless: Python cannot refresh `bot/__pycache__` after a pull (it recompiles in
+memory at start), and `git rev-parse` (the engine version stamp) only reads. An
+`ALGO_VAR_DIR`, or an `ALGO_*_FILE`/`_DIR` override pointing outside `var/`,
+must be added to `ReadWritePaths=` too.
+
+**Install** (when nobody is in a game): `sudo cp deploy/algomancy-{game,web,bot}.service /etc/systemd/system/ && sudo systemctl daemon-reload && sudo systemctl restart algomancy-game algomancy-web algomancy-bot`.
+**Verify:** `systemctl is-active` on all three; `journalctl -u algomancy-game -u algomancy-web -u algomancy-bot --since -5min | grep -iE 'read-only|permission denied'` prints nothing; sign in, ask the judge, play two turns and see a file appear under `var/games/`. `systemd-analyze security algomancy-game` scores it.
+**Undo:** delete the sandbox block from the copies in `/etc/systemd/system/`, `daemon-reload`, restart.
+
+## Alerts
+
+Every unit here names `OnFailure=algomancy-alert@%n.service`. When one fails —
+a crash, even one `Restart=` recovers from; a backup that exits non-zero — the
+alert posts the unit, the host and its last ten journal lines to the Discord
+webhook in `ALGO_ALERT_WEBHOOK` (`.env`). Unset, nothing is posted and nothing
+fails. The JSON is built by the system `python3`, so log text cannot break it,
+and mentions are off. The alert runs as `bena` with the `systemd-journal` group
+for the journal; a plain `systemctl restart` is not a failure and is silent.
+
+**Install:** `echo 'ALGO_ALERT_WEBHOOK=<url>' >> .env`, then `sudo cp deploy/algomancy-*.service deploy/algomancy-*.timer /etc/systemd/system/ && sudo systemctl daemon-reload`.
+**Verify:** `sudo systemctl start algomancy-alert@test.service` — a message arrives.
+**Undo:** remove the `OnFailure=` lines (or just the variable from `.env`).
+
+## Heartbeat
+
+`heartbeat.sh`, daily at 09:00: one message with the newest local backup's age,
+free disk on `/`, the three services, and the date of the steward's last commit
+(`steward@algomancy.online`) on this checkout's `master` — so as of the last
+deploy pull. When all is well it then GETs `ALGO_HEARTBEAT_URL` (healthchecks.io
+or similar, period 1 day, grace 6 h), so a box too broken to run it is reported
+by its silence. It exits 1 if a service is not active or the newest backup is
+over 36 hours old, and its own `OnFailure=` alerts.
+
+**Install:** `ALGO_HEARTBEAT_URL=<ping url>` in `.env`, the copy above, `sudo systemctl enable --now algomancy-heartbeat.timer`.
+**Verify:** `sudo systemctl start algomancy-heartbeat` — a message, and the check turns green.
+**Undo:** `sudo systemctl disable --now algomancy-heartbeat.timer`.
