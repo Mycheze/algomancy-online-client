@@ -22,7 +22,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { forcedAction } from '../../engine/src/apply.ts';
@@ -147,7 +147,7 @@ test('CR D4.3a: a plain spawn after the glimpse is undoable back to the glimpse,
   assert.equal(room.actions.length, atGlimpse, 'and the glimpse, and the spawn before it, stand');
 });
 
-test('CR D4.3e: held until an undo asks, and then the same answer a restored room measures', async () => {
+test('CR D4.3e: held until an undo asks, and then the same answer a rebuild measures', () => {
   const { room, P } = deploying(R, 'R312G', 37406);
   spawnSprite(R, room, P);
   glimpse(R, room, P);
@@ -159,14 +159,11 @@ test('CR D4.3e: held until an undo asks, and then the same answer a restored roo
   assert.equal(room.seenPending.length, 0);
   assert.ok(room.segSeen.some(s => typeof s[P] === 'string'), 'the glimpse is on the record');
 
-  // a file from before resume points: its restore replays, and measures
-  const path = join(DIR, 'R312G.json');
-  const { live: _live, ...old } = JSON.parse(readFileSync(path, 'utf8')) as { live?: unknown };
-  writeFileSync(path, JSON.stringify(old));
-  const R2 = await fresh();
-  R2.restoreRooms();
-  assert.equal(JSON.stringify(R2.getRoom('R312G')!.segSeen), JSON.stringify(room.segSeen),
-    'measuring later gives the very record a rebuild measures');
+  // an undo rebuilds the step and measures every action in it at once
+  const settled = JSON.stringify(room.segSeen);
+  spawnSprite(R, room, P);
+  assert.deepEqual(R.undoForSeat(room, P), { ok: true });
+  assert.equal(JSON.stringify(room.segSeen), settled, 'measuring later gives the very record a rebuild measures');
 });
 
 test('CR D4.3f: the lock survives a restart, which seals the step — nothing played before it is taken back', async () => {

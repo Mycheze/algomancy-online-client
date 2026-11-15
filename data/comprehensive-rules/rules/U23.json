@@ -3301,7 +3301,7 @@
     "key": "annexd.undo.seen-cards.restart",
     "parent": "annexd.undo.seen-cards",
     "order": 6,
-    "text": "The lock survives a server restart and an undo.",
+    "text": "The lock survives an undo. A server restart seals the open step: nothing played before the restart can be undone.",
     "examples": [
       {
         "text": null,

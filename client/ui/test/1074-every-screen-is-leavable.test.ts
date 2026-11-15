@@ -41,7 +41,7 @@ test('1074 §1 the table menu goes home where there is no live seat to play', ()
 
 test('1074 §2 main.ts offers Home in exactly those cases, and it goes home', () => {
   // #324: "over" is gameIsOver() — the state's phase or a post-game payload (a time loss)
-  assert.match(MAIN, /const over = gameIsOver\(\);\s*const home = !NET \|\| spectating \|\| over \|\| !!NET\.frozen;/);
+  assert.match(MAIN, /const over = gameIsOver\(\);\s*const home = !NET \|\| spectating \|\| over;/);
   assert.match(MAIN, /const gameIsOver = \(\): boolean => h\.state\.phase === 'gameover' \|\| \(!!NET && !!postGame\);/);
   assert.match(MAIN, /entry\.kind === 'home'\s*\?\s*\(\): void => \{ goHome\(\); \}/);
   assert.match(MAIN, /function goHome\(\): void \{\s*location\.href = location\.pathname;/);

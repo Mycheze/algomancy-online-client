@@ -69,10 +69,10 @@ function callsOf(src: string, name: string): string[] {
 console.log('\n[BL-43: every re-deal passes the custom deal]');
 {
   const rooms = SRC('rooms.ts');
+  // (rebuild() starts from the room's own stored state: it deals nothing)
   const fresh = callsOf(rooms, 'fresh');
-  const rebuild = callsOf(rooms, 'rebuild');
-  ok(fresh.length >= 7 && rebuild.length >= 2, `non-vacuous: ${fresh.length} fresh() and ${rebuild.length} rebuild() calls found in rooms.ts`);
-  for (const call of [...fresh, ...rebuild]) ok(/\bdeal\b/.test(call), `rooms.ts passes the deal: ${call.replace(/\s+/g, ' ').slice(0, 90)}`);
+  ok(fresh.length >= 6, `non-vacuous: ${fresh.length} fresh() calls found in rooms.ts`);
+  for (const call of fresh) ok(/\bdeal\b/.test(call), `rooms.ts passes the deal: ${call.replace(/\s+/g, ' ').slice(0, 90)}`);
   for (const file of ['stats.ts', 'replay-room.ts']) {
     const calls = callsOf(SRC(file), 'dealScenario');
     ok(calls.length >= 1, `non-vacuous: ${file} deals`);

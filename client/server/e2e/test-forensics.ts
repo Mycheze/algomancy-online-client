@@ -4,11 +4,11 @@
  * only works if the file's claim — seed + actions reproduces this game — is
  * either true or says why not. Game UZRG rejected 79 of its 276 actions when
  * replayed on the engine it was played on, and nothing in the file explained
- * it.
+ * it. (A restart no longer replays the log: a live room resumes from its
+ * stored state, so the log is only ever read by the replay tools.)
  *
- * This drives the whole failure: a live room restored onto a changed engine,
- * the cascade one skip causes, the fork record that now marks it, and the
- * guarantee that an undo can never quietly cost somebody a move.
+ * This drives a clean log, the guarantee that an undo can never quietly cost
+ * somebody a move, the replay tool's refusals, and the engine stamps.
  *
  * Runs against a throwaway ALGO_GAMES_DIR — it never touches real games.
  */
@@ -27,8 +27,7 @@ process.env['ALGO_GAMES_DIR'] = DIR;
 
 const { apply, createGame, forcedAction, legalActions, sanitizeTrio, IllegalAction } =
   await import('../../engine/src/apply.ts');
-const { applyToRoom, clockRunning, createRoom, expiredSeat, getRoom, legalInRoom, restoreRooms,
-  undoActionAt, undoForSeat } = await import('../rooms.ts');
+const { applyToRoom, createRoom, getRoom, restoreRooms, undoActionAt } = await import('../rooms.ts');
 import type { Action, GameState } from '../../engine/src/types.ts';
 // The version stamp (see replay-room.ts) is resolved once per process and cached, so a test
 // that wants to pretend the engine moved has to be able to clear it. Imported
@@ -106,169 +105,6 @@ for (let i = 0; i < 200 && room.actions.length < 60; i++) {
 }
 ok(room.actions.length >= 60, `played a clean game (${room.actions.length} actions, turn ${room.state.turn})`);
 ok(replay(room.actions).skips.length === 0, 'every logged action replays');
-ok(room.forks.length === 0 && room.lost.length === 0, 'and the room declares no fork');
-ok(!('forks' in JSON.parse(readFileSync(FILE, 'utf8'))), 'the file carries no fork field');
-const cleanTurn = room.state.turn, cleanLen = room.actions.length;
-
-// ══ 2. a rules change under a LIVE room: the cascade ══════════════════
-console.log('\n[a rules change under a live room]');
-// simulate one action becoming illegal — which is all an engine change looks
-// like from rebuild()'s side: apply() throws IllegalAction at some index
-const raw = JSON.parse(readFileSync(FILE, 'utf8')) as { actions: Action[]; live?: unknown };
-const victim = raw.actions.findIndex(a => a.type === 'donePlanning');
-raw.actions[victim] = { type: 'activateResource', seat: raw.actions[victim]!.seat, index: 99 };
-delete raw.live;   // a file from before resume points: only its restore replays the log
-writeFileSync(FILE, JSON.stringify(raw));
-const cascade = replay(raw.actions).skips.length;
-ok(cascade > 1, `ONE action becoming illegal cascades into ${cascade} of ${cleanLen} rejections`);
-
-console.log('\n[the restore records the fork instead of degrading quietly]');
-restoreRooms();
-const r2 = getRoom('FORK')!;
-ok(!!r2, 'the live game SURVIVED the restart — it is not lost, which is the point');
-ok(r2.actions.length === cleanLen, 'nothing was pruned: the log is still the whole record');
-ok(r2.lost.length === cascade, `the room knows it lost ${r2.lost.length} actions`);
-ok(r2.state.turn < cleanTurn, `and that the game rolled back (turn ${cleanTurn} → ${r2.state.turn})`);
-ok(r2.forks.length === 1, 'exactly one fork was recorded');
-ok(r2.forks[0]!.lost.length === cascade && r2.forks[0]!.turn === r2.state.turn,
-  'the fork records what was lost and where the game resumed');
-ok(typeof r2.forks[0]!.at === 'string' && !Number.isNaN(Date.parse(r2.forks[0]!.at)),
-  'stamped with when it happened');
-const saved = JSON.parse(readFileSync(FILE, 'utf8')) as { forks?: unknown[] };
-ok(Array.isArray(saved.forks) && saved.forks.length === 1, 'and it is in the FILE, not just in memory');
-ok(r2.events.some(e => /could not be fully restored/.test(e.msg)),
-  'the players are told, in the game log they can actually see');
-
-/* ── CT-160: STOP RATHER THAN REBUILD ─────────────────────────────────────
- *
- * Everything above this line is CT-66's work: the fork is RECORDED, loudly, in
- * the file and in the game's own log. Visibility was treated as the fix and it
- * is not one. What used to happen next is what destroyed the corpus: play
- * carried straight on from the rebuilt board, and every action after it was
- * appended to a log that is two different games end to end — the first half
- * describing a board that no longer exists, the second describing one nobody
- * had played to. Measured on the deploy box 2026-08-30: 11 of 71 saved games
- * carry a fork, concentrated in the LARGEST ones, which is precisely where the
- * evidence value was (PUCG 379 actions / 25 lost, QJEY 417 / 23). Report #144
- * cannot be settled by replay because six of QJEY's lost actions are augments
- * — the mechanism under test.
- *
- * A FROZEN GAME IS STILL EVIDENCE. A REBUILT ONE IS NOT. So the room stops.
- *
- * This section used to be headed "play continues, and the boundary is marked"
- * and asserted the opposite of what it now asserts. That is the change.
- */
-console.log('\n[CT-160: the forked game is STOPPED, not continued]');
-ok(!!r2.frozen, 'the live forked room is FROZEN');
-ok(/stopped/i.test(r2.frozen ?? '') && /new game/i.test(r2.frozen ?? ''),
-  'and the reason is a sentence for a player: what happened, and what to do instead');
-ok(r2.events.some(e => /THE GAME HAS BEEN STOPPED HERE/.test(e.msg)),
-  'both seats are told IN THE GAME LOG, where they will actually read it');
-ok(legalInRoom(r2, 0).length === 0 && legalInRoom(r2, 1).length === 0,
-  'neither seat is offered a single action');
-// …and the BOARD is not the reason. This is the whole point of the ticket: the
-// rebuilt state is a perfectly playable game, which is exactly why continuing
-// on it looked harmless for as long as it did.
-ok(legalActions(r2.state, 0).length > 0 || legalActions(r2.state, 1).length > 0,
-  'while the rebuilt STATE is still full of legal moves — the freeze is about the LOG, not the board');
-const next = mundane(r2.state, 0) ?? mundane(r2.state, 1);
-ok(!!next, 'there is a move the old code would have accepted');
-for (const seat of [0, 1] as const) {
-  const mine = mundane(r2.state, seat);
-  if (!mine) { ok(true, `seat ${seat} has nothing to try (skipped)`); continue; }
-  let refused: unknown = null;
-  try { applyToRoom(r2, mine); } catch (err) { refused = err; }
-  ok(refused instanceof IllegalAction, `an action from seat ${seat} is REFUSED, not applied`);
-  ok(refused instanceof Error && refused.message === r2.frozen,
-    `and seat ${seat} is refused with the reason, not a generic "illegal"`);
-}
-ok(r2.actions.length === cleanLen, 'nothing was appended: the log is still exactly what was played');
-{
-  const after = JSON.parse(readFileSync(FILE, 'utf8')) as { actions: Action[]; forks: unknown[] };
-  ok(after.actions.length === cleanLen, 'and the FILE is still the record it was — one game, not two');
-  ok(Array.isArray(after.forks) && after.forks.length === 1,
-    'the fork record is untouched: freezing REPLACES continuing on a lie, not the record of it');
-}
-// an undo is a WRITE to the log — it splices and rebuilds — and takes a
-// different route to the state, so it is refused separately or not at all
-ok(undoForSeat(r2, 0).ok === false && undoForSeat(r2, 1).ok === false,
-  'an undo is refused too: it edits the very log the freeze exists to preserve');
-// CT-160 × BL-27 — CHECKED, NOT ASSUMED. BL-27 makes a bank reaching zero a
-// LOSS, and a frozen room refuses every move, so a frozen room whose clocks
-// went on running would hand somebody a loss for not moving in a game that
-// would not let them move. Two independent arms have to hold: clockRunning's
-// (nothing is billed) and expiredSeat's (nothing expires even if it were).
-// ⚠ THE SOCKETS ARE THE POINT OF THIS FIXTURE. `clockRunning` also stops both
-// clocks when a seat is missing, and a room in this file has no real sockets —
-// so without standing two in, both assertions below pass whether the frozen
-// arms exist or not, and the guard proves nothing. (Measured: with the frozen
-// arms deleted from BOTH clockRunning and expiredSeat, this section stayed
-// green until these two lines were added.)
-r2.sockets = [{} as never, {} as never];
-r2.clockMs = [0, 0];
-r2.clockRun = [true, true];
-ok(clockRunning(r2).every(x => x === false),
-  'a FROZEN room bills nobody — a stopped game is waiting on nobody');
-ok(expiredSeat(r2) === null,
-  'and nothing expires in one, even with both banks at zero: a loss for not moving, in a room '
-  + 'that refuses every move, would be absurd');
-
-console.log('\n[the negative control: a live game that rebuilt CLEANLY is NOT frozen]');
-{
-  // A guard that froze every restored room would pass every assertion above.
-  const alive = createRoom('ALIVE', SEED);
-  for (let i = 0; i < 200 && alive.actions.length < 30; i++) {
-    const a = mundane(alive.state, 0) ?? mundane(alive.state, 1);
-    if (!a) break;
-    act(alive, a);
-  }
-  const len = alive.actions.length;
-  restoreRooms();
-  const a2 = getRoom('ALIVE')!;
-  ok(a2.lost.length === 0, 'its log replays straight through (the premise of this control)');
-  ok(a2.frozen === null, 'so it is NOT frozen — an ordinary restart is not a fork');
-  ok(legalInRoom(a2, 0).length > 0 || legalInRoom(a2, 1).length > 0, 'and it is still offered moves');
-  const move = mundane(a2.state, 0) ?? mundane(a2.state, 1);
-  ok(!!move, 'the board has a move');
-  if (move) {
-    // caught rather than thrown: a guard that froze everything would otherwise
-    // kill this script here, and the remaining negative controls (the FINISHED
-    // game, the DRIFTED one) would never get to say what an over-eager freeze
-    // costs. A red check has to report, not crash.
-    let refused: unknown = null;
-    try { act(a2, move); } catch (err) { refused = err; }
-    ok(!refused && a2.actions.length === len + 1,
-      'which is accepted and logged, exactly as before this ticket');
-  }
-}
-
-console.log('\n[restarting again does not invent a second fork]');
-restoreRooms();
-const r3 = getRoom('FORK')!;
-ok(r3.forks.length === 1, 'the same loss under the same engine is ONE fork, not one per boot');
-ok(!!r3.frozen, 'and it comes back frozen — the freeze is recomputed from the log, not persisted');
-
-// ══ 3. a FINISHED game is left alone ══════════════════════════════════
-console.log('\n[a finished game is read-only forensics, not a fork]');
-// (the ~650 "replay skipped" warnings on a real boot are these; recording a
-// fork for each would rewrite hundreds of settled files every restart)
-const done = createRoom('DONE', SEED);
-act(done, { type: 'concede', seat: 1 });
-const doneRaw = JSON.parse(readFileSync(join(DIR, 'DONE.json'), 'utf8')) as { actions: Action[] };
-doneRaw.actions.unshift({ type: 'activateResource', seat: 0, index: 99 });
-writeFileSync(join(DIR, 'DONE.json'), JSON.stringify(doneRaw));
-restoreRooms();
-const d2 = getRoom('DONE')!;
-ok(d2.lost.length > 0, 'its log does not fully replay');
-ok(d2.forks.length === 0, 'but no fork is recorded — nobody is going to play into it');
-ok(!('forks' in (JSON.parse(readFileSync(join(DIR, 'DONE.json'), 'utf8')) as object)),
-  'and its file was not rewritten');
-// CT-160: the archive is the forensic evidence base and it has to stay
-// readable. Freezing is about not CONTINUING a broken game — a finished one
-// has nothing left to continue, so it restores exactly as it always did.
-ok(d2.frozen === null,
-  'and a FINISHED game is not frozen, however much of it no longer replays — the archive stays readable');
-ok(d2.actions.length === doneRaw.actions.length, 'with its whole log, unchanged');
 
 // ══ 4. an undo can never silently cost somebody a move ════════════════
 console.log('\n[undo measures, and rolls itself back]');
@@ -307,7 +143,6 @@ if (attacked) {
   ok(JSON.stringify(u.actions) === beforeLog,
     'and the log is put back exactly as it was — nothing was spliced out');
   ok(u.actions[theirPlay]!.type === 'playCard', 'the action it tried to remove is still there');
-  ok(u.forks.length === 0, 'no fork: nothing was lost, because nothing was dropped');
 }
 
 // ══ 5. an ordinary undo keeps the log a true record ═══════════════════
@@ -325,7 +160,6 @@ ok(accepted.length === 0, 'undoing the tail is accepted');
 ok(c.actions.length === beforeLen - 1, 'the action left the log');
 ok(JSON.stringify(c.state) !== beforeState, 'and the state moved back with it');
 ok(replay(c.actions).skips.length === 0, 'the log still replays with zero skips');
-ok(c.lost.length === 0 && c.forks.length === 0, 'and the room is still fork-free');
 
 /* ── the replay tool must REFUSE a file it cannot faithfully reproduce ──
  *
@@ -381,106 +215,15 @@ console.log('\n[the replay tool refuses a file it cannot reproduce]');
   ok(noTrio.code !== 0, 'a draft file with no recorded element trio is REFUSED, not guessed');
   ok(/els/.test(noTrio.err), 'and the refusal names the missing field rather than blaming the engine');
 
-  // THE CONTROL, and it took two goes to state correctly. A well-formed file
-  // must still be ANALYSED — that is what makes the two refusals above targeted
-  // rather than the tool having stopped working. It must NOT be "exit code 0":
-  // FORK.json is deliberately divergent, so a non-zero exit is the right answer
-  // for it, and asserting 0 made this control fail for the one reason that has
-  // nothing to do with what it is controlling for.
+  // THE CONTROL. A well-formed file must still be ANALYSED — that is what
+  // makes the two refusals above targeted rather than the tool having stopped
+  // working. Asserted on the report, not on the exit code, which says whether
+  // the replay is faithful — a different question.
   const fine = run(FILE);
   ok(/actions logged/.test(fine.err),
     'a well-formed game file is still analysed and reported on — the refusals are targeted');
   ok(!/cannot be replayed|recorded no element trio/.test(fine.err),
     'and it is not caught by either refusal');
-}
-
-/* ── CARD-TODO #67c: THE FORK THAT REFUSES NOTHING ─────────────────
- *
- * Everything above this line is about a restore that LOSES actions. The
- * quieter half had no record at all: an engine that ACCEPTS every logged
- * action while producing a different board leaves a skip list of length zero,
- * so `recordFork` declined to record anything and the file went on claiming to
- * be a straight-through account of a game it no longer describes. That is the
- * worse of the two, because a refusal at least announces itself.
- *
- * `LostAction.kind` has always had a `'changed'` arm for it and the restore
- * path only ever pushed `'lost'`. It is measured now, the same way
- * `undoActionAt` measures its own splice: `persist` writes each action's
- * REFERENCE KEY (what it referred to when it was taken) and a restore compares.
- *
- * THE FIXTURE. A different deal is what a rules change looks like from an
- * action log's side — the actions are all still legal (hand indices, resource
- * indices, "done" barriers), they simply name other cards. Re-seeding the file
- * is the cheapest honest way to produce exactly that: nothing is refused, and
- * everything means something else. If the re-seed ever starts REFUSING an
- * action, the first assertion below fails and says so rather than passing for
- * the wrong reason.
- */
-console.log('\n[a restart that changes the board without refusing an action]');
-const DRIFT_FILE = join(DIR, 'DRIFT.json');
-const drift = createRoom('DRIFT', SEED);
-for (let i = 0; i < 200 && drift.actions.length < 40; i++) {
-  const a = mundane(drift.state, 0) ?? mundane(drift.state, 1);
-  if (!a) break;
-  act(drift, a);
-}
-ok(drift.actions.length >= 40, `played a clean game (${drift.actions.length} actions)`);
-ok(drift.drifted.length === 0 && drift.forks.length === 0, 'nothing has drifted yet');
-{
-  const rawD = JSON.parse(readFileSync(DRIFT_FILE, 'utf8')) as { seed: number; refs?: unknown; posRefs?: unknown };
-  ok(Array.isArray(rawD.refs) && rawD.refs.length === drift.actions.length,
-    'the file records what each action MEANT when it was taken — one key per action');
-  ok(Array.isArray(rawD.posRefs) && rawD.posRefs.length === drift.actions.length,
-    '…and the position-keyed copy a restart compares (posRefs), one per action too');
-  rawD.seed = SEED + 1;                       // the same log, a different board
-  delete (rawD as { live?: unknown }).live;   // …in a file from before resume points
-  writeFileSync(DRIFT_FILE, JSON.stringify(rawD));
-}
-restoreRooms();
-const d3 = getRoom('DRIFT')!;
-ok(d3.lost.length === 0,
-  'the rebuild refused NOTHING — every logged action still replays (the premise of this case)');
-ok(d3.drifted.length > 0,
-  `and yet ${d3.drifted.length} of them no longer mean what they meant — the silent divergence`);
-ok(d3.drifted.every(l => l.kind === 'changed'),
-  "recorded under kind 'changed', which is the arm that had never been reachable");
-ok(d3.forks.length === 1, 'a fork IS recorded for a restore that refused nothing');
-ok(!!d3.forks[0]?.lost.some(l => l.kind === 'changed'),
-  'and the fork carries the changed entries, so the file admits to them');
-ok(d3.events.some(e => /refer to something else/.test(e.msg) && !/no longer replay/.test(e.msg)),
-  'the players are told the truth about it: not "actions were dropped", but "they mean something else"');
-// CT-160 — THE OTHER NEGATIVE CONTROL, and the finer of the two. This room is
-// LIVE, it FORKED, and it is still not frozen: nothing was refused, so the log
-// does still produce this board, straight through. It is one game recorded
-// honestly on rules that moved, and `forks` says exactly that. A refusal is
-// different in kind — there the log stops describing the board at that index.
-ok(d3.frozen === null,
-  'a live room that forked on DRIFT alone is not frozen: every action still replays, so the log is still one game');
-ok(legalInRoom(d3, 0).length > 0 || legalInRoom(d3, 1).length > 0,
-  'and it is still playable — drift is told, not stopped');
-{
-  const savedD = JSON.parse(readFileSync(DRIFT_FILE, 'utf8')) as { forks?: unknown[] };
-  ok(Array.isArray(savedD.forks) && savedD.forks.length === 1,
-    'and it is in the FILE, not just in memory');
-}
-restoreRooms();
-ok(getRoom('DRIFT')!.forks.length === 1,
-  'restoring again does not invent a second fork — the keys were rewritten with the record');
-
-console.log('\n[a file that never recorded what its actions meant is not accused of drift]');
-{
-  // The additive-field case, and the one that must stay silent: every game
-  // saved before the item-ref fix has no `refs`, and "I cannot tell" is not "it drifted".
-  // (Nor `posRefs`, the keys a restore actually compares since 2026-10-04 —
-  // a file with only the old, process-local `refs` is silent the same way.)
-  const old = JSON.parse(readFileSync(join(DIR, 'CLEAN.json'), 'utf8')) as { refs?: unknown; posRefs?: unknown };
-  delete old.refs;
-  delete old.posRefs;
-  writeFileSync(join(DIR, 'CLEAN.json'), JSON.stringify(old));
-  restoreRooms();
-  const c2 = getRoom('CLEAN')!;
-  ok(c2.drifted.length === 0, 'no keys on disk, no drift reported');
-  ok(c2.forks.length === 0, 'and no fork invented for a file that simply predates the field');
 }
 
 /* ── CT-66 (see replay-room.ts): the file names the engine that recorded it ──────────
@@ -533,9 +276,6 @@ console.log('\n[a redeploy under a LIVE game stamps the boundary, whether or not
   runningAt(ENGINE_2);
   restoreRooms();
   const v2 = getRoom('VLIVE')!;
-  ok(v2.lost.length === 0, 'this rebuild lost nothing — every logged action still replays');
-  ok(v2.frozen === null,
-    'CT-160: and it is NOT frozen — a redeploy that costs no action leaves a game that is still its own log');
   ok(v2.versions.length === 2, 'and the engine change is STILL stamped, because play continues under it');
   ok(v2.versions[1]!.sha === ENGINE_2, 'naming the new commit');
   ok(v2.versions[1]!.from === played,
@@ -545,37 +285,7 @@ console.log('\n[a redeploy under a LIVE game stamps the boundary, whether or not
 
   restoreRooms();
   ok(getRoom('VLIVE')!.versions.length === 2,
-    'and restarting again on the same commit does not add a third — idempotent, like recordFork');
-}
-
-console.log('\n[a FORK names the engine that refused, so the fork record reads standalone]');
-{
-  runningAt(ENGINE_1);
-  const f = createRoom('VFORK', SEED);
-  for (let i = 0; i < 200 && f.actions.length < 40; i++) {
-    const a = mundane(f.state, 0) ?? mundane(f.state, 1);
-    if (!a) break;
-    act(f, a);
-  }
-  const len = f.actions.length;
-  // one action becomes illegal, which is all an engine change looks like from
-  // rebuild()'s side
-  const fRaw = JSON.parse(readFileSync(join(DIR, 'VFORK.json'), 'utf8')) as { actions: Action[] };
-  const vict = fRaw.actions.findIndex(a => a.type === 'donePlanning');
-  fRaw.actions[vict] = { type: 'activateResource', seat: fRaw.actions[vict]!.seat, index: 99 };
-  delete (fRaw as { live?: unknown }).live;   // a file from before resume points
-  writeFileSync(join(DIR, 'VFORK.json'), JSON.stringify(fRaw));
-
-  runningAt(ENGINE_2);
-  restoreRooms();
-  const f2 = getRoom('VFORK')!;
-  ok(f2.forks.length === 1, 'the restore recorded a fork');
-  ok(f2.forks[0]!.engineVersion === ENGINE_2,
-    'and the fork names the engine that REFUSED those actions — not the one that wrote them');
-  const stamp = f2.versions[f2.versions.length - 1]!;
-  ok(stamp.sha === ENGINE_2 && stamp.from === f2.forks[0]!.logged,
-    'and the version stamp and the fork agree on where the join is, so nothing has to be inferred');
-  ok(len === f2.forks[0]!.logged, `both point at action ${len}`);
+    'and restarting again on the same commit does not add a third — idempotent');
 }
 
 console.log('\n[a file written before the stamp existed still loads — the deploy is additive]');

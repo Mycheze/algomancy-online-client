@@ -498,9 +498,9 @@ These are the conventions of this digital client: how it times, shows and confir
 
 <sub>Basis: Owner ruling, adopted 2026-10-04 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 374-undo-locks-on-reveal.test.ts, 434-cr-digital-1.test.ts · Example test: 374-undo-locks-on-reveal.test.ts::CR D4.3e: measured, not listed · Key: annexd.undo.seen-cards.measured</sub>
 
-<a id="rD4.3f"></a>**D4.3f** The lock survives a server restart and an undo.
+<a id="rD4.3f"></a>**D4.3f** The lock survives an undo. A server restart seals the open step: nothing played before the restart can be undone.
 
-<sub>Basis: Owner ruling, adopted 2026-10-04 (quoted from the retired ruling register) · Verified: confirmed in round 1; verifier ran 1 test, passed; 2 gate test files · Tests: 374-undo-locks-on-reveal.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 374-undo-locks-on-reveal.test.ts::CR D4.3f: the lock survives a restart · Key: annexd.undo.seen-cards.restart</sub>
+<sub>Basis: Owner ruling, adopted 2026-10-04 (quoted from the retired ruling register) · Verified: not verified (the text changed after verification); 2 gate test files · Tests: 374-undo-locks-on-reveal.test.ts, 434-cr-digital-1.test.ts · Demonstrated by test: 374-undo-locks-on-reveal.test.ts::CR D4.3f: the lock survives a restart · Key: annexd.undo.seen-cards.restart</sub>
 
 <a id="rD4.3g"></a>**D4.3g** The lock binds one player's own undo. An agreed rewind (see rule D4.5d) may take the game back past an action that showed a player hidden cards: the other player's agreement waives the lock.
 

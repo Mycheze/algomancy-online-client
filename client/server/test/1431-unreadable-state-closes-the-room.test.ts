@@ -41,3 +41,27 @@ test('a stored state of another schema, or one the engine throws on, closes its 
     assert.match(R2.closedNotice(code) ?? '', /server update/, 'and its link says so');
   }
 });
+
+test('a game file with no resume point for its log is closed as an update, never replayed', async () => {
+  const R = await load();
+  const spoil: Record<string, (file: { live?: { at: number } }) => void> = {
+    R1431C: file => { delete file.live; },
+    R1431D: file => { file.live!.at += 1; },
+  };
+  for (const [code, patch] of Object.entries(spoil)) {
+    const room = R.createRoom(code, 143102, ['Ann', 'Bo'], 'shared');
+    R.applyToRoom(room, R.legalInRoom(room, 0).find(a => a.type === 'recycleForResource')!);
+    const path = join(DIR, `${code}.json`);
+    const file = JSON.parse(readFileSync(path, 'utf8'));
+    patch(file);
+    writeFileSync(path, JSON.stringify(file));
+  }
+  const R2 = await load();
+  R2.restoreRooms();
+  for (const code of Object.keys(spoil)) {
+    assert.equal(R2.getRoom(code), undefined, `${code}: its log is not replayed into a room`);
+    const file = JSON.parse(readFileSync(join(DIR, `${code}.json`), 'utf8')) as { closed?: { reason: string }; actions: unknown[] };
+    assert.equal(file.closed?.reason, 'update', `${code}: it is closed by the update`);
+    assert.equal(file.actions.length, 1, `${code}: with its record`);
+  }
+});

@@ -2,8 +2,8 @@
  *
  * Driving a real game all the way to lethal would take a few hundred scripted
  * actions and would break every time a card changed, so the finished game here
- * is a SAVED one with its result stamped — exactly the shape rooms.ts writes at
- * game over, and the same path a restored game takes. What is actually under
+ * is a SAVED one with its result stamped — written by rooms.ts itself, so it is
+ * the shape it writes at game over, and the same path a restored game takes. What is actually under
  * test is everything downstream of "this game is decided": the payload the
  * post-game screen is built from, and the rematch handshake.
  */
@@ -19,6 +19,16 @@ process.env['ALGO_ACCOUNTS_FILE'] = join(SCRATCH, 'accounts.json');
 process.env['ALGO_GAMES_DIR'] = GAMES;
 
 const { resolveTrio } = await import('../trio.ts');
+const R = await import('../rooms.ts');
+
+/** A finished game, saved the way rooms.ts saves one (its resume point
+ * included), with the winner stamped at the time. */
+function savedFinished(code: string, seed: number, mode: 'shared' | 'draft', els: string[], actions: object[], winner: 0 | 1): void {
+  const room = R.createRoom(code, seed, ['Ben', 'Rashi'], mode, els as never);
+  for (const a of actions) R.applyToRoom(room, a as never);
+  const file = join(GAMES, `${code}.json`);
+  writeFileSync(file, JSON.stringify({ ...JSON.parse(readFileSync(file, 'utf8')), winner }));
+}
 
 let failures = 0;
 function ok(cond: unknown, label: string): void {
@@ -50,17 +60,12 @@ console.log('\n[trio: run it back]');
 
 // ── 2. the live server ────────────────────────────────────────────────
 
-/** A finished game, saved the way rooms.ts saves one: a real (short) log plus
- * the winner stamped at the time. */
+/** a real (short) log plus the winner stamped at the time */
 const FINISHED = 'OVER';
-writeFileSync(join(GAMES, `${FINISHED}.json`), JSON.stringify({
-  seed: 20260821, mode: 'shared', els: ['fire', 'water', 'earth'],
-  names: ['Ben', 'Rashi'], users: [null, null], winner: 0,
-  actions: [
-    ...Array.from({ length: 5 }, () => ({ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'fire' })),
-    ...Array.from({ length: 5 }, () => ({ type: 'recycleForResource', seat: 1, handIndex: 0, element: 'water' })),
-  ],
-}));
+savedFinished(FINISHED, 20260821, 'shared', ['fire', 'water', 'earth'], [
+  ...Array.from({ length: 5 }, () => ({ type: 'recycleForResource', seat: 0, handIndex: 0, element: 'fire' })),
+  ...Array.from({ length: 5 }, () => ({ type: 'recycleForResource', seat: 1, handIndex: 0, element: 'water' })),
+], 0);
 
 // CT-85 (see test-clock.ts): the server picks its own port and tells us which — see
 // test-util.ts. It used to be `freePort()` then PORT=<number>, which left the
@@ -158,11 +163,7 @@ try {
 
   console.log('\n[server: a draft rematch lands in a lobby that offers "run it back"]');
   const draftCode = 'DRFT';
-  writeFileSync(join(GAMES, `${draftCode}.json`), JSON.stringify({
-    seed: 777, mode: 'draft', els: ['water', 'metal', 'dark'],
-    names: ['Ben', 'Rashi'], users: [null, null], winner: 1,
-    actions: [],
-  }));
+  savedFinished(draftCode, 777, 'draft', ['water', 'metal', 'dark'], [], 1);
   // restart so the room is restored from that file
   await server.stop();
   // CT-85: this used to bind PORT + 1 — a port nothing had ever checked

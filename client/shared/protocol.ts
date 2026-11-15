@@ -122,8 +122,6 @@ type S<P, K extends keyof Payloads> = K extends keyof P ? P[K] : Payloads[K];
 export type GamePush<P = Payloads> = {
   view: GameState; legal: Action[]; peers: Pair<boolean>;
   scenario?: S<P, 'scenario'>; custom?: S<P, 'custom'>; single?: true;
-  /** why the server stopped this game */
-  frozen?: string;
   watchers?: number; badges?: Pair<S<P, 'badge'> | null>; clock?: S<P, 'clock'>;
   fix?: S<P, 'fix'>; match?: S<P, 'match'>;
   /** CR D4.6: in a Competitive game, "you can undo now" */
@@ -164,7 +162,7 @@ export type ServerMsg<P = Payloads> =
   | (WatchingHead & { waiting: true; view?: never })
   | (WatchingHead & {
     view: GameState; log: string[]; watchers?: number; badges?: Pair<S<P, 'badge'> | null>;
-    frozen?: string; clock?: S<P, 'clock'>; waiting?: never;
+    clock?: S<P, 'clock'>; waiting?: never;
   })
   | { t: 'me'; me: S<P, 'me'> }
   | ({ t: 'gameover'; me?: S<P, 'me'> } & S<P, 'gameOver'>)

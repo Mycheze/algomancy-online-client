@@ -51,8 +51,9 @@ test('1191 §1 the clock and the update read one list for one board', async () =
 function finishedRoom(mod: Rooms, dir: string, code: string, seed: number, lastActionAt: number): void {
   const room = mod.createRoom(code, seed, ['A', 'B'], 'draft', ['fire', 'water', 'earth']);
   play(mod, room, 2);
+  mod.applyToRoom(room, { type: 'concede', seat: 1 });
   const file = join(dir, `${code}.json`);
-  writeFileSync(file, JSON.stringify({ ...JSON.parse(readFileSync(file, 'utf8')), winner: 0, lastActionAt }));
+  writeFileSync(file, JSON.stringify({ ...JSON.parse(readFileSync(file, 'utf8')), lastActionAt }));
 }
 
 test('1191 §2 a restart leaves a long finished game on disk and brings back a recent one', async () => {
@@ -69,8 +70,12 @@ test('1191 §2 a restart leaves a long finished game on disk and brings back a r
 
     const after = await roomsAt(dir);
     after.restoreRooms(now);
+    const live = (code: string): unknown => (JSON.parse(readFileSync(join(dir, `${code}.json`), 'utf8')) as { live?: unknown }).live;
     assert.equal(after.getRoom('ONCB'), undefined, 'past the hour: not replayed');
-    assert.ok(after.getRoom('ONCC'), 'inside the hour: restored for its post-game');
+    assert.equal(live('ONCB'), undefined, 'and its file keeps the result, not the board');
+    assert.equal(after.getRoom('ONCC')?.winner, 0, 'inside the hour: restored for its post-game');
     assert.ok(after.getRoom('ONCD'), 'an unfinished game of the same age is restored');
+    after.dropRoom('ONCC');
+    assert.equal(live('ONCC'), undefined, 'a finished game forgotten from memory keeps the result, not the board');
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });

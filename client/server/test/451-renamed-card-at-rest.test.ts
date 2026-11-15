@@ -18,8 +18,8 @@
  *       card by the name the card prints and older rulings use
  *   §4  a saved REF spelled the old way is the same ref (zonedelta canonicalRef),
  *       including a zone delta whose entries re-sort under the new name
- *   §6  end to end: a game saved under the alias restores with no drift,
- *       replays as recorded, and its card ledger counts the card once
+ *   §6  end to end: a game saved under the alias replays as recorded, and
+ *       its card ledger counts the card once
  *
  * Counter Theif is the alias these cases are written with, and it is honest
  * about one thing: no engine ever wrote "Counter Theif" into a saved game (the
@@ -262,9 +262,9 @@ function tick(mod: Rooms, room: Room, a: Action): void {
   if (mod.segmentKey(room.state) !== was) mod.openSegment(room);
 }
 
-interface SavedFile extends LedgerFile { posRefs?: string[]; refs?: string[]; sigs?: string[] }
+interface SavedFile extends LedgerFile { refs?: string[]; sigs?: string[] }
 
-test('§6 a game saved under the alias restores with no drift, replays as recorded, and its ledger counts Counter Thief', async () => {
+test('§6 a game saved under the alias replays as recorded, and its ledger counts Counter Thief', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'algo-451-'));
   const A = await processAt(dir);
   const room = A.createRoom('CTRN', 45150, ['Rashi', 'Bena'], 'shared', undefined, undefined, 'sandbox');
@@ -274,27 +274,14 @@ test('§6 a game saved under the alias restores with no drift, replays as record
   const hand = room.state.players[0]!.hand;
   tick(A, room, { type: 'recycleForResource', seat: 0, handIndex: hand.indexOf(NOW), element: 'light' });
   const recycle = room.actions.length - 1;
-  assert.equal(room.lost.length, 0, 'premise: every action was accepted');
 
   // the file as it would read with every name in the alias spelling
   const path = join(dir, 'CTRN.json');
   const nowText = readFileSync(path, 'utf8');
   assert.ok(nowText.includes(NOW), 'premise: the game names the card');
-  // …and from before resume points, so the restore replays its log
-  const { live: _live, ...old } = JSON.parse(respell(nowText)) as SavedFile & { live?: unknown };
-  writeFileSync(path, JSON.stringify(old));
+  writeFileSync(path, respell(nowText));
   const file = JSON.parse(readFileSync(path, 'utf8')) as SavedFile;
-  assert.match(file.posRefs![recycle]!, new RegExp(`0:"${OLD}"`), 'premise: the recycle names the alias');
-
-  // restore: the comparison that used to call this "changed"
-  const B = await processAt(dir);
-  B.restoreRooms();
-  const back = B.getRoom('CTRN');
-  assert.ok(back, 'the room came back');
-  assert.equal(back.lost.length, 0, 'nothing refused');
-  assert.notEqual(back.segPosRefs[recycle], file.posRefs![recycle], 'premise: the raw text DID differ');
-  assert.deepEqual(back.drifted, [], 'no action reported as changed');
-  assert.equal(back.forks.length, 0, 'no fork recorded');
+  assert.match(file.refs![recycle]!, new RegExp(`0:"${OLD}"`), 'premise: the recycle names the alias');
 
   // the replay viewer's comparison: this engine's fingerprints vs the recorded
   // ones (the state only ever holds the canonical name, so they agree)

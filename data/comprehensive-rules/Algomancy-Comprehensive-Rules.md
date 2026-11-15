@@ -10936,13 +10936,13 @@ Generated from the records and the verdicts. Nothing here is a rule.
 
 | verdict | rules |
 |---|---|
-| confirmed | 1838 |
+| confirmed | 1837 |
 | partial | 10 |
 | contradicted | 0 |
 | unsupported | 0 |
 | untested | 1 |
 | not verified | 5 |
-| text changed | 17 |
+| text changed | 18 |
 
 ### Engine-only rules (awaiting the owner's sign-off)
 

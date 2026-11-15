@@ -48,7 +48,7 @@ import { engineVersion } from './engine-version.ts';
 // inside checkouts of arbitrary past commits. Importing FROM it is free.
 import { digest, signature } from './replay-probe.ts';
 import { capital, cutParts, cutText, describe, type CutItem, type CutPlan } from './rewind-cuts.ts';
-import { canonicalRef, zoneDelta } from './zonedelta.ts';
+import { zoneDelta } from './zonedelta.ts';
 // CR D4.3e: what an action showed each seat of the hidden cards (the undo floor)
 import { lastSeen, NOTHING_SEEN, SEEN_REFUSAL, seenBy, type Seen } from './seen.ts';
 import { cardFact, cardOpen, sanitizeFact, sanitizeOpen, type CardFact, type CardOpen } from './cardledger.ts';
@@ -284,22 +284,10 @@ export const MAX_DEFERRED = 8;
 // (moved to view.ts — the browser's solo game, Learn to Play, offers the same list)
 export { legalForSeat };
 
-/**
- * CT-160 — what the server OFFERS a seat, asked of the ROOM rather than of the
- * state.
- *
- * `legalForSeat` above takes a GameState and cannot see a freeze, which is not
- * an oversight: a frozen room's STATE is perfectly legal to act on, and that is
- * the whole trouble — the board is fine, the log that produced it is not. So
- * the freeze is a property of the room, and every site that publishes a legal
- * list to a client (or drives the scripted opponent off one) asks here.
- *
- * Offering nothing is not the enforcement — `applyToRoom` is, and a client
- * that ignores this list is still refused by name. This is so the board goes
- * quiet at once rather than inviting a click the server will bounce.
- */
+/** What the server OFFERS a seat, asked of the ROOM rather than of the state:
+ * every site that publishes a legal list to a client (or drives the scripted
+ * opponent off one) asks here. */
 export function legalInRoom(room: Room, seat: Seat): Action[] {
-  if (room.frozen) return [];
   // BL-27: and a game decided by something the board cannot show — a loss on
   // time, or a stamped result the replay never reached. The state still offers
   // a full hand of moves; the game is over anyway.
@@ -474,11 +462,7 @@ export function takeDeferred(room: Room): Action[] {
  * ⚠ PROCESS-LOCAL. The counter starts at 1 in every server process and counts
  * in whatever order this process happens to meet actions (every room it
  * restores, in directory order). So a tag means something only between two
- * rebuilds in ONE process, which is the undo comparison and nothing else. It
- * was once also persisted (the file's `refs`) and compared after a restart,
- * where a new process numbered the same action `t1` instead of `t76` and every
- * restart posted "restored onto changed rules" into live games. What a file
- * records is the POSITION-based key instead — see `Room.segPosRefs`. */
+ * rebuilds in ONE process, which is the undo comparison and nothing else. */
 const ACTION_TAG = new WeakMap<object, string>();
 let actionTagSeq = 0;
 function tagOf(a: Action): string {
@@ -560,17 +544,11 @@ function entityRefs(a: Action): EntityId[] {
 /** id → "which action created it, and the how-many-th entity of that action" —
  * the identity that survives a renumbering. `floors[j]` is `nextId` as action
  * `j` was applied, so the creator of `id` is the last action whose floor is at
- * or below it. Ids below the first floor came out of the deal.
- *
- * `label` is how the creating action is named. `'tag'` (its object identity,
- * `tagOf`) survives a SPLICE — the same action object sits one index lower
- * afterwards — and is what the undo comparison needs. `'pos'` (its index in
- * the log) survives a RESTART — a new process numbers tags afresh, but index 7
- * is index 7 — and is what a file records (`posRefs`) and `driftedAgainst`
- * reads. Each is wrong for the other job. */
+ * or below it. Ids below the first floor came out of the deal. The creating
+ * action is named by its object identity (`tagOf`), which survives a SPLICE —
+ * the same action object sits one index lower afterwards. */
 function symbolizer(
   actions: readonly Action[], floors: readonly number[], upto: number, nextId: number,
-  label: 'tag' | 'pos' = 'tag',
 ): (id: EntityId) => string {
   return (id: EntityId): string => {
     if (id >= nextId) return `∅${id}`;              // names nothing (the rebuild will refuse it)
@@ -579,7 +557,7 @@ function symbolizer(
       if (floors[j]! <= id) at = j; else break;     // floors is non-decreasing
     }
     if (at < 0) return `deal#${id}`;
-    return `${label === 'pos' ? at : tagOf(actions[at]!)}#${id - floors[at]!}`;
+    return `${tagOf(actions[at]!)}#${id - floors[at]!}`;
   };
 }
 
@@ -688,53 +666,6 @@ function referenceKey(s: GameState, after: GameState, a: Action, sym: (id: Entit
 }
 
 // zoneCards / zoneDelta moved to zonedelta.ts — the card ledger reads them too
-
-// ── the log's contract, and what happens when it breaks ───────────────
-//
-// A room file is a claim: **seed + actions reproduces this game**. It is the
-// forensic record the whole playtest loop runs on, so when the claim stops
-// being true that has to be LOUD.
-//
-// It stops being true like this. `rebuild()` is deliberately tolerant: an
-// action the (possibly newer) engine now rejects is skipped rather than
-// killing the room, because losing a live game to a rules tweak is worse than
-// a slightly wrong log. But the skipped action STAYS in `actions`, and one
-// skip cascades — the state the rest of the log was written against no longer
-// exists, so action after action is refused too. Measured on a synthetic
-// 60-action game: ONE action becoming illegal cost 28 of the 60, and rolled
-// the game back from turn 4 to turn 2. Play then continues from the rolled-
-// back board, appending to a log that is now two different games end to end,
-// with nothing to mark the join.
-//
-// Note what is NOT wrong: the skip is deterministic, so `rebuild(seed,
-// actions)` still equals the state the players are sitting in. The file is not
-// self-contradictory — it is FORKED, and says nothing about it. That silence
-// is the bug, and it is what makes a review months later report 79 rejections
-// with no way to tell "the rules changed under this game" from "the server
-// wrote a log it cannot honour".
-//
-// The fix is to make the file say so. We do NOT prune the skipped actions,
-// even though pruning would restore the literal contract, because those
-// actions are the evidence: a forked game is precisely the one you most want
-// to inspect, `history.ts` counts the RAW log length so a real game is never
-// demoted to a stub, and a rules commit can be reverted — a recorded fork can
-// then be re-evaluated, a pruned one is gone. So the contract becomes
-// explicit and checkable instead: **seed + actions, minus the forks this file
-// declares, reproduces this game.** replay-room.ts verifies exactly that.
-
-/* `LostAction` and `Fork` — the two shapes this file WRITES into the saved
- * game — are declared in `./types.ts` and re-exported from the import block at
- * the top. They live there so `replay-room.ts`, which reads them back off
- * disk, can name the same interface instead of restating it structurally; see
- * that file's header for the `ws` problem that forced the restatement. */
-
-/** Two skip sets describe the same fork iff they lost the same indices IN THE
- *  SAME WAY. The CARD-TODO #67c fix added the second half: a restore can now report an action
- *  index as 'changed' (it still replays, it just means something else) where a
- *  previous one reported it as 'lost', and those are different facts about the
- *  same game — collapsing them would leave the file claiming the first. */
-const sameLoss = (a: LostAction[], b: LostAction[]): boolean =>
-  a.length === b.length && a.every((x, i) => x.i === b[i]!.i && x.kind === b[i]!.kind);
 
 export interface Room {
   code: string;
@@ -853,52 +784,11 @@ export interface Room {
   state: GameState;
   actions: Action[];
   /**
-   * Every restore that could NOT faithfully rebuild this game. Persisted.
-   *
-   * The log's contract is "seed + actions reproduces this game". A tolerant
-   * restore breaks it silently: an action the current engine refuses is
-   * skipped but LEFT in `actions`, so the file goes on claiming to be a
-   * straight-through record of a game it no longer describes. This is the
-   * file admitting otherwise — see recordFork().
+   * Every restore that could NOT faithfully rebuild this game, from when a
+   * restore replayed the log. Persisted, carried as it stands; nothing writes
+   * a new one (a restart resumes from the file's `live` block).
    */
   forks: Fork[];
-  /**
-   * CT-160 — WHY THIS GAME HAS BEEN STOPPED, in the words both players read.
-   * `null` for every ordinary room. DERIVED, never persisted.
-   *
-   * A restore that cannot replay part of the log rebuilds the board WITHOUT
-   * the actions it refused (rebuild() is deliberately tolerant, and one skip
-   * cascades — a measured 28 of 60 on the fixture in test-forensics.ts, which
-   * rolled that game from turn 4 back to turn 2). CT-66 made that visible with
-   * `forks`; visibility was treated as the fix and it is not one. Play then
-   * CONTINUED from the rebuilt board, appending to a log that is two different
-   * games end to end, and it is the continuing — not the rebuild — that
-   * destroys the file as evidence. A frozen game is still evidence; a rebuilt
-   * one is not.
-   *
-   * So a LIVE room whose rebuild refused anything is frozen here instead, and
-   * `applyToRoom` refuses every action from every source (see there — it is
-   * the one choke point, which is why the freeze is checked there and not at
-   * the six call sites).
-   *
-   * ⚠ ONLY LIVE ROOMS. A finished game restores exactly as it always did: its
-   * skips are read-only forensics, nobody is going to play into it, and the
-   * saved corpus has to stay readable. Same condition as recordFork().
-   *
-   * ⚠ ONLY REFUSALS, not drift. A drifted log still replays straight
-   * through — every action applies, the board is a board that log really does
-   * produce — so it is one game, recorded honestly, on rules that moved.
-   * `forks` says so and the players are told. A refusal is different in kind:
-   * the log stops describing the board at that index, and everything appended
-   * after it is fiction.
-   *
-   * NOT PERSISTED, on purpose. The freeze is a statement about THIS engine's
-   * reading of the log, and it is recomputed by every restore for free. A
-   * deploy that rolls the engine back to one the log replays on lifts it — the
-   * log was never edited, so it is a true record again, and a persisted flag
-   * would strand the room for good on the strength of a build that is gone.
-   */
-  frozen: string | null;
   /**
    * which engine recorded which stretch of this log (see replay-room.ts). Persisted.
    *
@@ -919,37 +809,6 @@ export interface Room {
    * which is a true statement about it rather than a failure.
    */
   versions: VersionStamp[];
-  /**
-   * Actions the most recent rebuild could not apply. DERIVED (never
-   * persisted): it is `forks` restated for the CURRENT engine, and it is what
-   * undoActionAt() measures against to guarantee an undo never loses a play.
-   */
-  lost: LostAction[];
-  /**
-   * CARD-TODO #67c — actions the most recent RESTORE replayed happily while they came to
-   * mean something else. DERIVED (never persisted), always `kind: 'changed'`,
-   * and deliberately NOT part of `lost`.
-   *
-   * `lost` is the refusals, and it is undoActionAt()'s baseline for "an undo
-   * must never cost anybody a move"; padding it with actions that still apply
-   * would raise that baseline and silence a real loss. So drift travels beside
-   * it, and the two meet again in `recordFork`, which writes both into the
-   * file under the `kind` that says which is which.
-   *
-   * WHY IT EXISTS. A restore that refuses nothing used to leave no trace at
-   * all — an engine that ACCEPTS every logged action while producing a
-   * different board is invisible to a skip list, and it is the worse of the
-   * two cases, because the log goes on reading as a faithful record. It is
-   * measured the way undoActionAt() measures its own splice: every action's
-   * REFERENCE KEY (see referenceKey) is compared against the key the same
-   * action had when it was played, which persist() writes into the file. A key
-   * that moved is an action whose author would not recognise it any more.
-   *
-   * ⚠ Only ever computed when the rebuild refused NOTHING. Once one action is
-   * refused, every key after it is measured against a board the log stopped
-   * describing, and calling that "drift" would bury the refusal in noise.
-   */
-  drifted: LostAction[];
   /** full authoritative event history, for per-seat redacted log resync */
   events: EngineEvent[];
   /** connected client per seat (null = nobody there) */
@@ -1067,25 +926,9 @@ export interface Room {
    * ⚠ Its entity names are PROCESS-LOCAL tags (`tagOf`), so it is never
    * compared across a restart. It is still written to the file as `refs`,
    * because the card ledger (cardledger.ts) reads each key's zone-delta tail,
-   * which has no tags in it. What the restart comparison reads is
-   * `segPosRefs`.
+   * which has no tags in it.
    */
   segRefs: string[];
-  /**
-   * The same keys with every entity named by the POSITION of the action that
-   * created it (`symbolizer(..., 'pos')`: `7#0` is "the first entity action 7
-   * created") instead of by a process-local tag. DERIVED, parallel to
-   * `actions`, and PERSISTED as the file's `posRefs`.
-   *
-   * This is what the restart comparison (`driftedAgainst`) reads. A key
-   * written by the process that played the game and one recomputed by a fresh
-   * process after a restart agree exactly when the action still means what it
-   * meant — which tags could never promise, because a new process numbers them
-   * from 1 in whatever order it restores rooms (game KEMX, 2026-10-04: refs
-   * `t76#1`, rebuilt `t3#1`, a fork recorded for nothing). Recomputed by every
-   * rebuild, so after an undo splice it describes the new log.
-   */
-  segPosRefs: string[];
   /**
    * BL-38 — WHAT THE BOARD LOOKED LIKE AFTER EACH ACTION. Parallel to
    * `actions`, PERSISTED, and the one array in this room that is a RECORD
@@ -1572,11 +1415,6 @@ export function sanitizeClock(v: unknown): number | null {
  * not silently drain anybody), and a finished game stops both clocks. */
 export function matchRunning(room: Room): boolean {
   if (roomWaiting(room)) return false;
-  // CT-160: a stopped game is waiting on nobody. Its state still offers plenty
-  // of legal actions — that is exactly why the freeze has to be asked about
-  // here too, or both banks drain for as long as the two of them sit staring
-  // at a board that will not accept a move.
-  if (room.frozen) return false;
   if (room.state.winner !== null || room.state.phase === 'gameover') return false;
   // BL-27: …and a game decided WITHOUT the state saying so — a loss on time,
   // or a stamped result whose replay stopped short. Without this arm the very
@@ -1870,9 +1708,6 @@ export function clockSnapshot(room: Room): ClockSnapshot | null {
  * Every negative arm is a requirement of the entry, not defensive padding:
  *
  *   clockStart === null   BL-26. Nothing expires in a room with no clock.
- *   frozen                CT-160. A stopped game is waiting on nobody, and
- *                         handing one of them a loss for not moving — in a
- *                         room that refuses every move — would be absurd.
  *   already decided       a concede, a real win, or an expiry that already
  *                         fired. Idempotent: the sweep runs every second.
  *   roomWaiting           there is no game yet.
@@ -1883,7 +1718,6 @@ export function clockSnapshot(room: Room): ClockSnapshot | null {
  */
 export function expiredSeat(room: Room): Seat | null {
   if (room.clockStart === null) return null;
-  if (room.frozen) return null;
   if (decidedWinner(room) !== null) return null;
   if (roomWaiting(room)) return null;
   // THE CHEAP GATE, and the reason a once-a-second sweep over every room in
@@ -2310,16 +2144,14 @@ interface Rebuilt {
   segSeen: Seen[];
   segIdFloor: number[];
   segRefs: string[];
-  segPosRefs: string[];
   /**
    * BL-38 — the board fingerprint after each action, AS THIS ENGINE SEES IT.
    * Parallel to `actions`; `''` for an action this rebuild refused (the board
    * did not move, and a fingerprint of the unmoved board would read as a match).
    *
-   * ⚠ This is the rebuilding engine's answer, NOT the record. `restoreRooms`
-   * keeps the file's own `sigs` and uses these only to fill entries a
-   * pre-BL-38 file never carried; `undoActionAt` uses them for the spliced
-   * tail, which is new history and has no record yet. Nothing else may.
+   * ⚠ This is the rebuilding engine's answer, NOT the record. `undoActionAt`
+   * uses them for the spliced tail, which is new history and has no record
+   * yet. Nothing else may.
    */
   sigs: string[];
   /** CARD STATS — this engine's card facts per action (null where refused).
@@ -2330,39 +2162,28 @@ interface Rebuilt {
   skipped: LostAction[];
 }
 
-/** Re-run seed + actions, accumulating the full event history (the engine's
- * own replay() returns only the creation events, so we accumulate here) and the
- * hidden-segment bookkeeping. Tolerant: an action the (possibly newer) engine
- * now rejects is skipped with a warning instead of killing the whole room — a
- * personal server should never eat a live game over a rules tweak.
- *
- * `from`: start at a base of `prior` (the same room) instead of the deal, and
- * carry its bookkeeping for the actions before the base unchanged. */
-function rebuild(seed: number, names: [string, string], actions: Action[], mode: GameMode, els: Element[], decks?: [CardName[], CardName[]], scenario?: string, deal?: DraftDeal, rules?: GameRules,
-  from?: { base: Resume; prior: Room }): Rebuilt {
-  const b = from?.base, p = from?.prior, at = b?.at ?? 0;
-  let { state, events } = b && p ? { state: named(b.state, names), events: p.events.slice(0, b.ev) }
-    : fresh(seed, names, mode, els, decks, scenario, deal, rules);
-  const all = [...events];
-  // SEED THE SEGMENT FROM THE INITIAL STATE: createGame already ends inside
-  // turn 1's planning, and turn-1 planning has no preceding action — a
-  // "snapshot after an action" pattern would miss the very first segment of
-  // every game (and serve a stale, placeholder-named opponent all through it).
+/** Re-run the room's actions from `b`, one of its bases, accumulating the full
+ * event history and the hidden-segment bookkeeping; the bookkeeping for the
+ * actions before the base is carried unchanged. Tolerant: an action that no
+ * longer applies after an undo's splice is skipped and reported in `skipped`,
+ * which undoActionAt measures. */
+function rebuild(p: Room, b: Resume): Rebuilt {
+  const { actions, names } = p, at = b.at;
+  let state = named(b.state, names);
+  const all = p.events.slice(0, b.ev);
   let segKey = segmentKey(state);
-  let bases = b && p ? p.bases.filter(x => x.at <= b.at)
-    : [point(0, all.length, state, segKey ? 0 : -1, segKey ? structuredClone(state) : null, [[], []], [[], []])];
+  let bases = p.bases.filter(x => x.at <= b.at);
   const seg0 = bases.at(-1)!.seg;
   let { start: segStartIndex, snapshot: segSnapshot } = seg0;
   let heldEvents: [EngineEvent[], EngineEvent[]] = [[...seg0.held[0]], [...seg0.held[1]]];
   let heldFrames: [HeldFrame[], HeldFrame[]] = [[...seg0.frames[0]], [...seg0.frames[1]]];
-  const segSeen: Seen[] = p ? p.segSeen.slice(0, at) : [];
-  const segIdFloor: number[] = p ? p.segIdFloor.slice(0, at) : [];
-  const segRefs: string[] = p ? p.segRefs.slice(0, at) : [];
-  const segPosRefs: string[] = p ? p.segPosRefs.slice(0, at) : [];
-  const ccMarks: CcUndoMark[] = p ? p.ccMarks.slice(0, at) : [];
-  const sigs: string[] = p ? p.sigs.slice(0, at) : [];
-  const cardLog: (CardFact | null)[] = p ? p.cardLog.slice(0, at) : [];
-  const skipped: LostAction[] = p ? p.lost.filter(l => l.i < at) : [];
+  const segSeen: Seen[] = p.segSeen.slice(0, at);
+  const segIdFloor: number[] = p.segIdFloor.slice(0, at);
+  const segRefs: string[] = p.segRefs.slice(0, at);
+  const ccMarks: CcUndoMark[] = p.ccMarks.slice(0, at);
+  const sigs: string[] = p.sigs.slice(0, at);
+  const cardLog: (CardFact | null)[] = p.cardLog.slice(0, at);
+  const skipped: LostAction[] = [];
   // CR D4.3e: the OPEN segment's applied actions, measured once the loop knows
   // which segment that is (it is the only one an undo can walk)
   let inSegment: { i: number; before: GameState; a: Action; after: GameState; events: EngineEvent[] }[] = [];
@@ -2372,7 +2193,6 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
     // recorded BEFORE the action runs, and before its own floor is pushed:
     // every id it can name was allocated by an earlier action
     const sym = symbolizer(actions, segIdFloor, i, before.nextId);
-    const posSym = symbolizer(actions, segIdFloor, i, before.nextId, 'pos');
     segIdFloor.push(before.nextId);
     // hold only while the open segment is still the one this action is in:
     // the forced battle drain runs public actions after the key has moved on
@@ -2384,14 +2204,10 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
       r = apply(state, a);
     } catch (err) {
       if (err instanceof IllegalAction) {
-        // NOT just a warning: the caller records this into the file, because
-        // a log that quietly stopped describing its own game is the thing we
-        // most need to be able to see afterwards
         skipped.push({ i, type: a.type, seat: a.seat, why: err.message, kind: 'lost' });
         segSeen.push(NOTHING_SEEN);   // keep the index alignment with `actions`
         ccMarks.push(blankMark(a.seat));
         segRefs.push(`refused:${err.message}`);
-        segPosRefs.push(`refused:${err.message}`);
         sigs.push('');            // no board moved, so there is nothing to fingerprint
         cardLog.push(null);
         continue;
@@ -2399,7 +2215,6 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
       throw err;
     }
     segRefs.push(referenceKey(before, r.state, a, sym, before.rngState !== r.state.rngState));
-    segPosRefs.push(referenceKey(before, r.state, a, posSym, before.rngState !== r.state.rngState));
     state = r.state;
     sigs.push(digest(signature(state)));
     cardLog.push(cardFact(before, state, a, r.events));
@@ -2443,66 +2258,7 @@ function rebuild(seed: number, names: [string, string], actions: Action[], mode:
       segSeen[x.i] = seenBy(x.before, x.a, x.after, x.events, { frozen: segSnapshot, holding: true, names });
     }
   }
-  return { bases, state, events: all, segKey, segSnapshot, heldEvents, heldFrames, segStartIndex, segSeen, segIdFloor, segRefs, segPosRefs, ccMarks, sigs, cardLog, skipped };
-}
-
-/**
- * WHAT THIS REBUILD QUIETLY CHANGED (see `Room.drifted`).
- *
- * `saved` is the per-action reference keys the file recorded as the game was
- * played (its `posRefs`); `refs` is what the same actions mean under the
- * engine that has just replayed them (`segPosRefs`). Every index where the two
- * disagree is an action that still applies and no longer refers to what its
- * author was looking at — another unit, another card at that hand index,
- * another roll of the dice.
- *
- * BOTH SIDES ARE POSITION-KEYED, and that is the whole of the 2026-10-04 fix.
- * The comparison used to read the file's `refs`, whose entities are named by
- * `tagOf` — a counter that restarts at 1 in every process and counts in
- * restore order — so every unit made mid-game read as "changed" after every
- * restart, and every restart posted "restored onto changed rules" into live
- * games (memory note drift-tags-are-process-local; game KEMX). `refs` is still
- * written, for the card ledger, and is never read here.
- *
- * Returns [] and says nothing when there is no honest comparison to make:
- *
- *  · the file predates the field (`saved` absent) — silence, never a fork.
- *    An old file is not evidence of drift; it is evidence of nothing. That now
- *    includes every file written before `posRefs` existed: its `refs` are in
- *    another process's numbering and cannot be compared at all.
- *  · the lengths disagree — the file is not describing this action list at
- *    all (a still-waiting room whose strays were dropped, a hand edit), and a
- *    per-index comparison would be meaningless rather than wrong.
- *  · the rebuild refused something — see the ⚠ on `Room.drifted`.
- *
- * ⚠ THE KEY FORMAT IS THE COMPARISON. `referenceKey` writes what an action
- * meant, and changing HOW it writes it would move every key in every file at
- * once and report every game as drifted. That is a real hazard and it is
- * deliberately not solved here: a stamp saying which format a file's keys are
- * in belongs to the saved-game versioning work (CARD-TODO #66), which is the
- * consumer of this signal. Until then, a change to referenceKey's spelling
- * must be treated as a change to this file's on-disk format — and the escape,
- * when one is needed, is the one taken for `posRefs`: a NEW field name, so
- * every file written under the old spelling falls silent instead of forking.
- */
-function driftedAgainst(saved: unknown, refs: string[], actions: Action[], skipped: LostAction[]): LostAction[] {
-  if (skipped.length) return [];
-  if (!Array.isArray(saved) || saved.length !== actions.length) return [];
-  const out: LostAction[] = [];
-  for (let i = 0; i < actions.length; i++) {
-    if (saved[i] === refs[i]) continue;
-    // a ref that spells a card by its alias (registerAlias — e.g. one written
-    // before a card was renamed) names the same card, so it is the same action
-    // (zonedelta.ts canonicalRef; both sides, see there)
-    const fresh = refs[i];
-    if (typeof saved[i] === 'string' && typeof fresh === 'string' && canonicalRef(saved[i]) === canonicalRef(fresh)) continue;
-    const a = actions[i]!;
-    out.push({
-      i, type: a.type, seat: a.seat, kind: 'changed',
-      why: 'it still replays, but it now refers to a different unit, card or outcome',
-    });
-  }
-  return out;
+  return { bases, state, events: all, segKey, segSnapshot, heldEvents, heldFrames, segStartIndex, segSeen, segIdFloor, segRefs, ccMarks, sigs, cardLog, skipped };
 }
 
 export function getRoom(code: string): Room | undefined {
@@ -2527,6 +2283,8 @@ export function dropRoom(code: string, keepFile = true): boolean {
   const room = rooms.get(code);
   if (!room) return false;
   rooms.delete(code);
+  // a finished game's resume point goes with it: the file is the record now
+  if (keepFile && decidedWinner(room) !== null && !room.closed) persist(room, true, false);
   if (!keepFile) {
     try { unlinkSync(join(GAMES_DIR, `${code}.json`)); } catch { /* never written, or already gone */ }
   }
@@ -2795,8 +2553,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     rematch: [false, false], rematchRoom: null,
     amendments: [], proposal: null, fixCooldown: [0, 0], fixRun: null,   // BL-46: nothing fixed yet
     disputes: [],   // BL-48: nobody has disputed it
-    state, actions: [], events, sockets: [null, null], watchers: new Set(), forks: [], lost: [], drifted: [],
-    frozen: null,
+    state, actions: [], events, sockets: [null, null], watchers: new Set(), forks: [],
     // stamped a line below, by resetSegment(), which is where EVERY
     // fresh action log gets its first version stamp — a new room and a re-deal
     // are the same event as far as "which engine is recording this" goes.
@@ -2804,7 +2561,7 @@ export function createRoom(code: string, seed: number, names: [string, string] =
     // and dead code is exactly what a red-check cannot see through.
     versions: [],
     segKey: null, segSnapshot: null, heldEvents: [[], []], heldFrames: [[], []], bases: [], closing: null, segStartIndex: -1, segSeen: [], seenPending: [],
-    segIdFloor: [], segRefs: [], segPosRefs: [], sigs: [], cardLog: [], cardOpen: null, deferred: [[], []], ccMarks: [],
+    segIdFloor: [], segRefs: [], sigs: [], cardLog: [], cardOpen: null, deferred: [[], []], ccMarks: [],
     // BL-26: both banks START at the room's own setting — the ONE site that is
     // allowed to read the constant, and it reads it through the argument
     // default rather than directly. A clockless room's `clockMs` is never
@@ -3013,20 +2770,7 @@ export function joinableRoom(code: string, mode: GameMode = 'shared', els?: Elem
 /** Apply an action to the room's authoritative state and record it. Throws
  * whatever the engine throws (IllegalAction) — caller reports it to the actor. */
 export function applyToRoom(room: Room, action: Action): EngineEvent[] {
-  // CT-160 — THE ONE DOOR. A frozen game accepts nothing, and this is the
-  // only place that has to know it: every route an action can take to the
-  // state goes through here (main.ts's `action` handler, its `drainForced`
-  // drain of the steps a board owes itself, its deferred-queue drain, the
-  // scripted opponent, undoActionAt's rebuild-and-reapply). Guarding the call
-  // sites instead would be five guards and a sixth site added later.
-  //
-  // `concede` is refused too, and that is deliberate rather than an oversight
-  // of CR 104.4a. Conceding APPENDS to the log and stamps a winner — on a game whose
-  // log already stopped describing its board, and into the stats fold. There
-  // is no move that makes a forked file honest again; the players start a new
-  // room.
-  if (room.frozen) throw new IllegalAction(room.frozen);
-  // BL-27 — and a game that is over without the BOARD saying so. The engine
+  // BL-27 — a game that is over without the BOARD saying so. The engine
   // refuses everything once `state.winner` is set, but a loss on time never
   // touches the state (and neither does a stamped result whose replay stopped
   // short), so without this the loser could go on playing a game they had
@@ -3051,7 +2795,6 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   // the reference key is taken against the state the action is applied to,
   // with the floors of every action BEFORE it (rebuild() does the same)
   const sym = symbolizer(room.actions, room.segIdFloor, room.actions.length, before.nextId);
-  const posSym = symbolizer(room.actions, room.segIdFloor, room.actions.length, before.nextId, 'pos');
   // inside a hidden step, the closing action's resolutions are kept as frames
   // for the playback (E.frames — rules-inert, a clone per resolution)
   const r = apply(room.state, action, holding ? { frames: true } : {});
@@ -3064,7 +2807,6 @@ export function applyToRoom(room: Room, action: Action): EngineEvent[] {
   room.lastActionAt = Date.now();   // 2026-10-04: the idle sweep's clock
   room.segIdFloor.push(before.nextId);
   room.segRefs.push(referenceKey(before, r.state, action, sym, before.rngState !== r.state.rngState));
-  room.segPosRefs.push(referenceKey(before, r.state, action, posSym, before.rngState !== r.state.rngState));
   // BL-38: the record. Taken here, by the engine that just applied the action,
   // because this is the only moment at which anybody knows for certain what
   // the board looked like — every later answer is a reconstruction.
@@ -3142,7 +2884,6 @@ function resetSegment(room: Room): void {
   room.ccMarks = [];
   room.segIdFloor = [];
   room.segRefs = [];
-  room.segPosRefs = [];
   // BL-38: a fingerprint is a claim about THIS log, and this is a different
   // one — same rule as `forks` and `versions` below.
   room.sigs = [];
@@ -3151,14 +2892,6 @@ function resetSegment(room: Room): void {
   // the previous action log is gone, so any fork recorded against it is too:
   // a fork is a claim about THIS log, and this is a different one
   room.forks = [];
-  room.lost = [];
-  room.drifted = [];
-  // CT-160: and so is the freeze, for the same reason — it is a claim about a
-  // log that has just been discarded. (Unreachable in practice: a re-deal only
-  // happens on a room whose log was empty. Left in so the invariant "every
-  // claim about `actions` is dropped with `actions`" has no exception to
-  // remember.)
-  room.frozen = null;
   // BL-46: an agreed fix is a claim about the discarded log too
   room.amendments = [];
   room.proposal = null;
@@ -3282,8 +3015,8 @@ export function spliceable(room: Room, index: number, seat: Seat): boolean {
  * spawn was refused because the opponent had cached a card after it.
  *
  * Only the COMPARISON renumbers (undoActionAt, the old key's side). What a key
- * writes is unchanged — the files' `refs`/`posRefs` keep the uid, and the card
- * ledger and `driftedAgainst` read them as they always have. A uid inside the
+ * writes is unchanged — the file's `refs` keep the uid, and the card ledger
+ * reads them as it always has. A uid inside the
  * spliced block is left alone: that card was cached by the action being taken
  * back, so the rebuilt key cannot name it and the compare still refuses.
  */
@@ -3429,7 +3162,7 @@ export function undoActionAt(room: Room, index: number): LostAction[] {
       ? tail.map(a => renumberAction(a, lo, hi))
       : tail);
   const rb = rebuildRoom(room, index);
-  const lost = rb.skipped.length > room.lost.length ? rb.skipped : [];
+  const lost = rb.skipped;
   // …and the actions that survive but no longer mean what they meant. Compared
   // by ACTION OBJECT position: original j > index sits at j-1 in the splice.
   const changed: LostAction[] = [];
@@ -3549,7 +3282,7 @@ export function segmentFloor(room: Room): number {
  */
 export function ccFloor(room: Room, seat: Seat): number {
   const len = room.actions.length;
-  if (!room.state.sequential || room.frozen || decidedWinner(room) !== null) return len;
+  if (!room.state.sequential || decidedWinner(room) !== null) return len;
   settleSeen(room);
   let floor = ccUndoFloor(room.ccMarks, seat, room.state);
   if (floor >= len) return len;
@@ -3564,11 +3297,6 @@ export const ccUndoOpen = (room: Room, seat: Seat): boolean =>
 
 export function undoForSeat(room: Room, seat: Seat): UndoOutcome {
   settleSeen(room);
-  // CT-160: an undo is a WRITE to the log — it splices an action out and
-  // rebuilds. `applyToRoom` would not stop it (undoActionAt replays through
-  // rebuild(), not through it), and editing a log that has already stopped
-  // describing its board is the one thing freezing exists to prevent.
-  if (room.frozen) return { ok: false, why: room.frozen };
   // BL-46: an AGREED FIX stands. A rewind's cut is a hard floor — both
   // players agreed to the board it left, and nothing of the cut is in the log
   // to measure against. An agreed EDIT is never undone itself (the walk
@@ -3801,7 +3529,6 @@ export function amendFloor(room: Room): number {
 export function fixesRefusal(room: Room): string | null {
   if (roomWaiting(room)) return 'the game has not started';
   if (decidedWinner(room) !== null || room.state.phase === 'gameover') return 'the game is over';
-  if (room.frozen) return room.frozen;
   // two people agreeing is the whole of the safety: a scripted opponent
   // cannot agree to anything, and test mode has tools of its own
   if (room.state.sandbox) return 'test mode has its own tools for this';
@@ -4354,8 +4081,7 @@ function sanitizeVersions(raw: unknown): VersionStamp[] {
  *
  * Idempotent by construction: the stamp only appends when the running SHA
  * differs from the last one recorded, so restarting ten times on one commit
- * writes one stamp, not ten — the same discipline `recordFork` uses, and for
- * the same reason (the deploy box restarts a lot).
+ * writes one stamp, not ten (the deploy box restarts a lot).
  *
  * A room whose file predates the field gets its FIRST stamp here, with
  * `from` = however many actions are already logged. That is the truthful
@@ -4373,119 +4099,10 @@ function stampVersion(room: Room): boolean {
   return true;
 }
 
-/**
- * CT-160 — STOP RATHER THAN REBUILD.
- *
- * A LIVE room whose rebuild REFUSED a logged action is frozen: from here on it
- * accepts nothing (applyToRoom, undoForSeat) and offers nothing (legalInRoom).
- * Returns true when this call is what froze it.
- *
- * The condition is exactly `recordFork`'s, minus drift:
- *
- *   live (`decidedWinner === null`)   a finished game is archive, and the
- *                                     archive must stay readable. Nobody is
- *                                     going to play into it, so there is
- *                                     nothing to stop.
- *   `lost.length > 0`                 a REFUSAL is where the log stops
- *                                     describing the board. Drift is a
- *                                     different animal: every action still
- *                                     applies, so the log does still produce
- *                                     this board — on rules that moved, which
- *                                     `forks` says out loud and the players
- *                                     are told. That game is one game.
- *
- * The reason is a sentence, not a boolean, because it is the message BOTH
- * players get — once in the game log (recordFork writes it there) and again by
- * name every time either of them clicks anything.
- */
-function freezeForFork(room: Room): boolean {
-  if (room.frozen) return false;
-  if (decidedWinner(room) !== null) return false;
-  if (!room.lost.length) return false;
-  room.frozen = `This game has been STOPPED. The rules changed under it while it was being `
-    + `played: ${room.lost.length} of its ${room.actions.length} logged moves no longer happen `
-    + `the way they were recorded, so the board was rebuilt without them and it is not the `
-    + `board this game was played on. Continuing would record new moves onto a game nobody `
-    + `played. Nothing is lost — the whole log is saved exactly as it stands. Start a new game.`;
-  console.warn(`[rooms] ${room.code} FROZEN: ${room.lost.length} of ${room.actions.length} `
-    + `logged actions no longer replay; the room accepts no further actions`);
-  return true;
-}
-
-/**
- * A restore could not faithfully rebuild this game: write that into the file,
- * and tell the players.
- *
- * Only for rooms still being PLAYED. A finished game's skips are read-only
- * forensics — `stats.ts` already reports it as diverged, `replay-room.ts`
- * spells it out, and recording a fork for each of them would rewrite hundreds
- * of settled files on every boot (the ~650 skip warnings at startup are these,
- * and they are normal). A LIVE room is different: play is about to continue
- * into that log, and the join has to be marked before it happens.
- *
- * Idempotent across restarts — restoring the same room under the same engine
- * loses the same actions, and that is one fork, not one per boot.
- */
-function recordFork(room: Room): boolean {
-  // EITHER kind of divergence. A restore that refused nothing and still
-  // produced a different board is a fork too — the quieter one, and the one
-  // the file had no way of admitting to before.
-  const entries = [...room.lost, ...room.drifted];
-  if (!entries.length) return false;
-  const previous = room.forks[room.forks.length - 1];
-  if (previous && sameLoss(previous.lost, entries)) return false;   // already known
-  room.forks.push({
-    at: new Date().toISOString(),
-    logged: room.actions.length,
-    lost: entries.map(l => ({ ...l })),
-    turn: room.state.turn,
-    phase: room.state.phase,
-    // WHICH engine refused these actions, and therefore which engine the
-    // rest of this log was recorded against. Without it the fork block says a
-    // game broke without saying what broke it.
-    engineVersion: engineVersion(),
-  });
-  // and say it OUT LOUD, in the game's own log, where both players see it on
-  // their next join. Degrading quietly is the whole failure mode here — and a
-  // silent change of meaning degrades more quietly than a refusal, so it gets
-  // its own sentence rather than being counted in with the losses.
-  const msg = room.lost.length
-    ? `⚠ This game could not be fully restored: ${room.lost.length} of ${room.actions.length} `
-      + `logged actions no longer replay under the current rules, so it has been rebuilt without `
-      + `them and stands at turn ${room.state.turn}. Everything before this line describes a `
-      + `different board.`
-      // CT-160: and it goes no further. Before this, the sentence above was the
-      // whole response and play carried straight on from the rebuilt board —
-      // which is what made the REST of the log fiction. `freezeForFork` runs
-      // just before this, so a live room's note ends by saying what will
-      // actually happen when either player clicks.
-      + (room.frozen
-        ? ` THE GAME HAS BEEN STOPPED HERE: no further moves will be accepted, because they `
-          + `would be recorded onto a board this game was never played on. The log is kept `
-          + `intact. Start a new game to keep playing.`
-        : '')
-    : `⚠ This game was restored onto changed rules: all ${room.actions.length} logged actions still `
-      + `replay, but ${room.drifted.length} of them now refer to something else (another unit, `
-      + `another card, another roll), so the board at turn ${room.state.turn} is not the one they `
-      + `were taken on. Everything before this line describes a different board.`;
-  room.events.push({
-    type: 'note',
-    msg,
-    data: { lost: room.lost.length, changed: room.drifted.length, logged: room.actions.length },
-  } as unknown as EngineEvent);
-  console.warn(`[rooms] ${room.code} FORKED on restore: ${room.lost.length} of ${room.actions.length} `
-    + `actions could not be replayed`
-    + (room.drifted.length ? `, ${room.drifted.length} changed meaning` : '')
-    + `; the game resumes at turn ${room.state.turn} ${room.state.phase}`);
-  return true;
-}
-
-/** rebuild() for a room that already knows its own seed/mode/els/decks, from
- * its latest base at or before `from` — the first action that changes. */
+/** rebuild() from the room's latest base at or before `from` — the first
+ * action that changes. */
 function rebuildRoom(room: Room, from: number): Rebuilt {
-  return rebuild(room.seed, room.names, room.actions, room.mode, room.els,
-    room.mode === 'constructed' ? decksFor(room) : undefined, room.scenario, room.custom?.deal, room.rules,
-    { base: room.bases.filter(b => b.at <= from).at(-1) ?? room.bases[0]!, prior: room });
+  return rebuild(room, room.bases.filter(b => b.at <= from).at(-1) ?? room.bases[0]!);
 }
 
 /** Adopt a rebuild's results wholesale (state + event history + the derived
@@ -4505,20 +4122,12 @@ function assignRebuild(room: Room, rb: Rebuilt): void {
   room.ccMarks = rb.ccMarks;
   room.segIdFloor = rb.segIdFloor;
   room.segRefs = rb.segRefs;
-  // …and the file's restart keys with them: after an undo splice they must
-  // describe the NEW log, or the next restart compares against a shifted one
-  room.segPosRefs = rb.segPosRefs;
-  room.lost = rb.skipped;
   // BL-38: `sigs` is deliberately NOT adopted here. Every other field above is
   // a derivation and is supposed to be replaced by the newest rebuild; `sigs`
   // is the record, and a rebuild is exactly the event it has to survive. The
   // two callers that legitimately extend it (restoreRooms filling a pre-BL-38
   // file, undoActionAt recording a spliced tail) do so themselves, by name,
   // where the reason is visible.
-  // Drift is a claim about the FILE this room was restored from, and this
-  // rebuild has just superseded it (a persist() follows every one of these and
-  // rewrites the keys). Only restoreRooms() sets it.
-  room.drifted = [];
 }
 
 /**
@@ -4730,7 +4339,7 @@ export function lastActionOf(raw: { lastActionAt?: unknown; actions?: unknown; v
  * the day of each restart. Every other write is a move (or a seat, a deck, a
  * name — something history should re-read), and dates the file as before.
  */
-function persist(room: Room, keepDate = false): void {
+function persist(room: Room, keepDate = false, live = true): void {
   // ⚠ SANDBOX ROOMS ARE PERSISTED TOO — BL-06's call, and test-sandbox.ts
   // asserts a played one rebuilds byte-identically across a restart. What
   // bounds the disk is main.ts's cap: the fifty-first sandbox evicts the
@@ -4797,22 +4406,11 @@ function persist(room: Room, keepDate = false): void {
       // (0 / null), which is why the post-game screen omits the line rather
       // than printing 0:00 for every game ever played before today.
       matchMs: room.matchMs, startedAt: room.startedAt,
-      // WHAT EACH ACTION MEANT WHEN IT WAS TAKEN (referenceKey), so a
-      // later restore can tell that the log still replays and no longer
-      // describes the same game — see driftedAgainst(). Parallel to `actions`.
-      // Additive: a file without it is compared against nothing and reports no
-      // drift, which is the only honest answer for a file that never recorded
-      // what its actions meant.
-      //
-      // `posRefs` is the one a restore compares: entities named by the log
-      // position of the action that made them, which a new process computes
-      // the same way. `refs` (process-local tags) stays for the card ledger,
-      // which reads only each key's zone-delta tail; nothing compares it.
+      // WHAT EACH ACTION MEANT WHEN IT WAS TAKEN (referenceKey), parallel to
+      // `actions`. Process-local tags; the card ledger reads only each key's
+      // zone-delta tail.
       ...(room.segRefs.length === room.actions.length && room.actions.length
         ? { refs: room.segRefs }
-        : {}),
-      ...(room.segPosRefs.length === room.actions.length && room.actions.length
-        ? { posRefs: room.segPosRefs }
         : {}),
       // BL-38: WHAT THE BOARD LOOKED LIKE AFTER EACH ACTION, recorded as it was
       // played. This is what lets a replay say "this is the game" rather than
@@ -4848,9 +4446,8 @@ function persist(room: Room, keepDate = false): void {
       // constructed: decks are part of the replay config (additive field)
       ...(room.mode === 'constructed' ? { decks: room.decks, deckIds: room.deckIds } : {}),
       // where a restart resumes this game: the log is never replayed to load it.
-      // Only while it is being played — and never for a frozen one, whose state
-      // is not the game's
-      ...(room.closed || room.frozen || decidedWinner(room) !== null ? {} : { live: liveBlock(room) }),
+      // A finished game keeps it while it is in memory (its post-game screen)
+      ...(room.closed || !live ? {} : { live: liveBlock(room) }),
     }));
     renameSync(tmp, path);
     if (was !== null) pinMtime(path, was);
@@ -4867,17 +4464,15 @@ function liveBlock(room: Room): object {
   return { schema: STATE_SCHEMA, at: p.at, state: p.state, events: room.events, seg: { start: p.seg.start, snapshot: p.seg.snapshot, held } };
 }
 
-/** A file's `live` block back as a resume point and its event history: null
- * when there is none for this log (the old replay loads it), 'update' when
- * this engine cannot take the state it holds. */
-function resumeOf(raw: unknown, actions: number): { base: Resume; events: EngineEvent[] } | 'update' | null {
+/** A file's `live` block back as a resume point and its event history, or
+ * null when it has none this engine can take for this log. */
+function resumeOf(raw: unknown, actions: number): { base: Resume; events: EngineEvent[] } | null {
   const l = raw as { schema?: unknown; at?: unknown; state?: GameState; events?: unknown; seg?: { start?: unknown; snapshot?: GameState | null; held?: unknown } } | null;
-  if (!l || typeof l !== 'object') return null;
-  if (l.schema !== STATE_SCHEMA) return 'update';
+  if (!l || typeof l !== 'object' || l.schema !== STATE_SCHEMA) return null;
   const seg = l.seg, events = l.events as EngineEvent[];
   if (l.at !== actions || !l.state || !Array.isArray(events) || !seg || !Number.isInteger(seg.start) || !Array.isArray(seg.held)) return null;
   const state = l.state;
-  try { legalActions(state, 0); legalActions(state, 1); } catch { return 'update'; }
+  try { legalActions(state, 0); legalActions(state, 1); } catch { return null; }
   const idx = seg.held as unknown[];
   const held = [idx[0], idx[1]].map(h => (Array.isArray(h) ? h : [])
     .map(i => events[i as number]).filter((e): e is EngineEvent => !!e)) as [EngineEvent[], EngineEvent[]];
@@ -4918,9 +4513,8 @@ function staleFixRunOf(code: string, raw: { fixRun?: unknown; amendments?: unkno
   return { code, users: [user(u[0]), user(u[1])], from: run.from, at: run.at, fixes };
 }
 
-/** Restore all persisted rooms by replaying their action logs. Best-effort:
- * a room whose replay throws (e.g. an engine change made an old log invalid)
- * is skipped with a warning rather than crashing startup. */
+/** Restore all persisted rooms from their resume points. Best-effort: a room
+ * whose file throws is skipped with a warning rather than crashing startup. */
 export function restoreRooms(now = Date.now()): void {
   let files: string[];
   try {
@@ -4954,8 +4548,6 @@ export function restoreRooms(now = Date.now()): void {
         /** per-action reference keys, as of when the game was played
          * (process-local tags — never compared; the card ledger reads them) */
         refs?: unknown;
-        /** the same keys, position-named — what a restore compares */
-        posRefs?: unknown;
         /** BL-38: per-action board fingerprints, as of when the game was played */
         sigs?: unknown;
         /** CARD STATS: per-action card facts and the opening, as played */
@@ -5023,6 +4615,18 @@ export function restoreRooms(now = Date.now()): void {
         pinMtime(path, lastActionAt);
         closedCount++;
       };
+      // a finished game not loaded keeps its result; its run of fixes is filed
+      // and its resume point dropped — the file is the record now
+      const leaveFile = (): void => {
+        stale++;
+        if (!strayRun && raw.live === undefined) return;
+        if (strayRun) staleFixRuns.push(strayRun);
+        const { fixRun: _filed, live: _live, ...kept } = raw;
+        const tmp = `${path}.tmp`;
+        writeFileSync(tmp, JSON.stringify(kept));
+        renameSync(tmp, path);
+        pinMtime(path, mtimeMs);   // CT-196: filing a run is not a move
+      };
       if (now - lastActionAt > RESTORE_WINDOW_MS || (stampedOver && now - lastActionAt > FORGET_AFTER_MS)) {
         // a week without a move. An UNFINISHED one is closed; a finished one
         // keeps its result and is simply not loaded.
@@ -5030,15 +4634,7 @@ export function restoreRooms(now = Date.now()): void {
           closeFile({ reason: 'idle', at: now, afterMs: idleWindowMs(Array.isArray(raw.actions) ? raw.actions.length : 0) });
           continue;
         }
-        stale++;
-        if (strayRun) {
-          staleFixRuns.push(strayRun);
-          const { fixRun: _filed, ...kept } = raw;
-          const tmp = `${path}.tmp`;
-          writeFileSync(tmp, JSON.stringify(kept));
-          renameSync(tmp, path);
-          pinMtime(path, mtimeMs);   // CT-196: filing a run is not a move
-        }
+        leaveFile();
         continue;
       }
       const concession = sanitizeConcession(raw.concession);
@@ -5098,24 +4694,18 @@ export function restoreRooms(now = Date.now()): void {
       const unresolved = (mode === 'constructed' && (!decks[0] || !decks[1]))
         || (!!lobby && !lobby.result);
       const actions = unresolved ? [] : raw.actions;
-      // a live game resumes where it stood; only a file without a resume point
-      // is replayed. The actions before it are sealed, so their bookkeeping is padding
-      const resumed = raw.live === undefined ? null : resumeOf(raw.live, actions.length);
-      if (resumed === 'update') {
+      // a game resumes where it stood, from its `live` block — the log is never
+      // replayed to load it. Without one this engine can take, a game being
+      // played is closed by the update; a finished one stays on disk with its result
+      const resumed = resumeOf(raw.live, actions.length);
+      if (!resumed) {
+        if (stampedOver) { leaveFile(); continue; }
         closeFile({ reason: 'update', at: now, afterMs: 0 });
         console.warn(`[rooms] ${code} closed: its stored state does not load on this engine`);
         continue;
       }
-      const b = resumed?.base;
-      const { bases, state, events, segKey, segSnapshot, heldEvents, heldFrames, segStartIndex, segSeen,
-        segIdFloor, segRefs, segPosRefs, ccMarks, skipped }: Rebuilt = b ? {
-        bases: [b], state: b.state, events: resumed!.events, segKey: segmentKey(b.state), segSnapshot: b.seg.snapshot,
-        segStartIndex: b.seg.start, heldEvents: [[...b.seg.held[0]], [...b.seg.held[1]]], heldFrames: [[...b.seg.frames[0]], [...b.seg.frames[1]]],
-        segSeen: actions.map(() => NOTHING_SEEN), segIdFloor: actions.map(() => 0), ccMarks: actions.map(a => blankMark(a.seat)),
-        segRefs: sanitizeSigs(raw.refs, actions.length), segPosRefs: sanitizeSigs(raw.posRefs, actions.length), sigs: [], cardLog: [], skipped: [],
-      } : rebuild(
-        raw.seed, names, actions, mode, els,
-        mode === 'constructed' ? decksFor({ decks, league, match }) : undefined, scenario, custom?.deal, rules);
+      // the actions before the resume point are sealed, so their bookkeeping is padding
+      const { base: b, events } = resumed, { state } = b;
       // BL-26 — THE ADDITIVE CASE, and the only place CLOCK_START_MS is still
       // read outside creation. A file written before the setting existed has
       // no `clockStart`, and 60:00 is not a guess for it: it is the bank that
@@ -5149,28 +4739,23 @@ export function restoreRooms(now = Date.now()): void {
         disputes: sanitizeDisputes(raw.disputes),
         // …and so does a run of fixes not yet filed — main.ts files it at boot
         fixRun: sanitizeFixRun(raw.fixRun, raw.amendments),
-        // the replay may not reach the ending this game actually had
+        // a loss on time never reaches the state
         winner: state.winner ?? savedWinner,
         // CR D8.5: the concession stamp survives the restart with the result
         ...(concession ? { concession } : {}),
         state, actions, events,
-        sockets: [null, null], watchers: new Set(), segKey, segSnapshot, heldEvents, heldFrames, bases, closing: null, segStartIndex, segSeen, seenPending: [],
-        segIdFloor, segRefs, segPosRefs, ccMarks, deferred: [[], []],
+        sockets: [null, null], watchers: new Set(), segKey: segmentKey(state), segSnapshot: b.seg.snapshot,
+        heldEvents: [[...b.seg.held[0]], [...b.seg.held[1]]], heldFrames: [[...b.seg.frames[0]], [...b.seg.frames[1]]],
+        bases: [b], closing: null, segStartIndex: b.seg.start, seenPending: [],
+        segSeen: actions.map(() => NOTHING_SEEN), segIdFloor: actions.map(() => 0), ccMarks: actions.map(a => blankMark(a.seat)),
+        segRefs: sanitizeSigs(raw.refs, actions.length), deferred: [[], []],
         // BL-38: the file's own record, kept verbatim, and an empty slot for
-        // every action it has none for. The rebuild above computed its own
-        // fingerprints and they are deliberately NOT used here — see
-        // sanitizeSigs for what happens to the feature if they are.
+        // every action it has none for — see sanitizeSigs
         sigs: sanitizeSigs(raw.sigs, actions.length),
         // CARD STATS: the file's record, verbatim; null where it has none
         cardLog: sanitizeCardLog(raw.cardLog, actions.length),
         cardOpen: actions.length ? sanitizeOpen(raw.cardOpen) : null,
-        forks: Array.isArray(raw.forks) ? raw.forks : [], lost: skipped,
-        // CT-160: recomputed a few lines below, once the room exists to ask
-        // decidedWinner() about
-        frozen: null,
-        // and what this rebuild changed WITHOUT refusing anything
-        // (position keys on both sides: `raw.refs` is another process's tags)
-        drifted: b ? [] : driftedAgainst(raw.posRefs, segPosRefs, actions, skipped),
+        forks: Array.isArray(raw.forks) ? raw.forks : [],
         versions: sanitizeVersions(raw.versions),
         clockStart,
         // Nobody is connected right after a restart, so no clock runs yet —
@@ -5205,28 +4790,12 @@ export function restoreRooms(now = Date.now()): void {
         // loop cannot know whether a tab is about to come back for it.
         lastActionAt, unattendedSince: null,
       });
-      // a LIVE room whose log could not be fully replayed has just forked:
-      // record it in the file and in the game's own log before play resumes
+      // a LIVE room now continues under THIS engine: a rules change still
+      // changes what the actions after it mean, so the boundary is stamped
       const restored = rooms.get(code)!;
-      // CT-160: BEFORE recordFork, because a live room that lost actions is
-      // stopped here rather than continued, and the note recordFork writes
-      // into the game's own log has to say so. Freezing does not replace the
-      // record — it replaces continuing on top of it.
-      freezeForFork(restored);
-      let dirty = decidedWinner(restored) === null && recordFork(restored);
-      // and a LIVE room now continues under THIS engine, whether or not
-      // anything was lost. A rules change that costs no action still changes
-      // what the actions after it mean, so the boundary is stamped on any
-      // engine change — the loss-free case is the one that used to leave no
-      // trace at all.
-      // …and a replayed one is written with its resume point, so it is never replayed again
-      if (decidedWinner(restored) === null && (stampVersion(restored) || (!b && !restored.frozen))) dirty = true;
       // CT-196: a restart is not a move — the stamp is written, the date kept
-      if (dirty) persist(restored, true);
-      console.log(`[rooms] restored ${code} (${raw.actions.length} actions`
-        + `${skipped.length ? `, ${skipped.length} unreplayable` : ''}`
-        + `${restored.drifted.length ? `, ${restored.drifted.length} changed meaning` : ''}`
-        + `${restored.frozen ? ', FROZEN' : ''})`);
+      if (decidedWinner(restored) === null && stampVersion(restored)) persist(restored, true);
+      console.log(`[rooms] restored ${code} (${raw.actions.length} actions)`);
     } catch (err) {
       console.error(`[rooms] could not restore ${code}:`, err instanceof Error ? err.message : err);
     }

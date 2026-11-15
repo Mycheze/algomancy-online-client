@@ -131,12 +131,6 @@ console.log('\n[it stops when the match stops]');
   advance(room, 60_000);
   ok(near(room.matchMs, atEnd), 'and nothing is billed after the result');
   room.state.winner = null;
-
-  // CT-160: a frozen room is waiting on nobody
-  room.frozen = 'this game was rebuilt and cannot be trusted';
-  settleClock(room);
-  ok(!matchRunning(room), 'CT-160: a frozen room is not a running match either');
-  room.frozen = null;
 }
 
 // ══ 4 — the save/restore round trip ═══════════════════════════════════

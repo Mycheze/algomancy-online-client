@@ -1576,7 +1576,6 @@ function pushWatchers(room: Room): void {
         names: room.names, peers: peersOf(room),
         watchers: room.watchers.size,
         ...seatBadges(room),
-        ...(room.frozen ? { frozen: room.frozen } : {}),
         ...(clockSnapshot(room) ? { clock: clockSnapshot(room) } : {}),
       };
   for (const ws of room.watchers) send(ws, payload);
@@ -1636,7 +1635,6 @@ function scenarioInfo(room: Room): unknown {
 
 /** Is the bot in charge of seat 1 right now? */
 function botDrives(room: Room): boolean {
-  if (room.frozen) return false;   // CT-160: nothing plays into a stopped game
   if (!room.scenario) return false;
   if (SCENARIOS[room.scenario]?.needsLiveOpponent) return false;
   if (room.sockets[OPPONENT]) return false;   // a human took the seat
@@ -1733,11 +1731,6 @@ function baseView(room: Room, seat: Seat) {
     // nothing however legal its state still is — the board is fine, the log
     // that produced it is not.
     legal: legalInRoom(room, seat),
-    // CT-160: and WHY it is offering nothing, so a client can say so rather
-    // than painting a board that ignores every click. Additive and `undefined`
-    // for every ordinary room; both seats get the same sentence, and it is the
-    // same one `applyToRoom` refuses by.
-    ...(room.frozen ? { frozen: room.frozen } : {}),
     peers: peersOf(room),
     // BL-29: how many people are watching. Additive and absent when nobody is,
     // so a normal game's payload is byte-for-byte what it was. ⚠ The seats are
@@ -1764,11 +1757,6 @@ function baseView(room: Room, seat: Seat) {
 /** Drain the forced steps a state owes (an empty board "attacks"/"blocks" by
  * itself), appending their events to `into`. */
 function drainForced(room: Room, into: import('../engine/src/types.ts').EngineEvent[]): void {
-  // CT-160: a frozen game must not advance ITSELF. `applyToRoom` would refuse
-  // these anyway, but it refuses by throwing, and this drain runs on paths
-  // whose catch is written for a player's illegal move — so the freeze is
-  // stated here as a stop rather than discovered as an exception.
-  if (room.frozen) return;
   for (let guard = 0; guard < 8; guard++) {
     const f = forcedAction(room.state);
     if (!f) break;
@@ -3200,11 +3188,6 @@ wss.on('connection', (ws, req) => {
       if (!conn) return send(ws, { t: 'error', msg: 'join a room first' });
       const action = msg.action as Action | undefined;
       if (roomWaiting(conn.room)) return send(ws, { t: 'error', msg: 'the game has not started — waiting for both decks' });
-      // CT-160: a stopped game, refused up front and by name. `applyToRoom`
-      // enforces it regardless — this is here so the refusal arrives BEFORE
-      // `arrivalVerdict` can park the action in the deferral queue, where it
-      // would sit silently waiting for a decision that is never going to close.
-      if (conn.room.frozen) return send(ws, { t: 'error', msg: conn.room.frozen });
       if (!action || typeof action !== 'object') return send(ws, { t: 'error', msg: 'no action' });
       if (action.seat !== conn.seat) {
         return send(ws, { t: 'error', msg: `you are seat ${conn.seat}, not seat ${action.seat}` });

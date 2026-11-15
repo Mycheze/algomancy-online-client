@@ -264,10 +264,6 @@ class NetBackend implements Backend {
   seat: Seat = 0;
   room: string;
   legal: Action[] = [];
-  /** CT-160: why the server has stopped this game (null = it has not). The
-   * server offers no legal actions and refuses every one sent, so this is the
-   * only thing left to draw. */
-  frozen: string | null = null;
   peers: [boolean, boolean] = [false, false];
   joined = false;
   /** a reconnect re-sent the join of a room this client was IN, and the
@@ -799,11 +795,6 @@ class NetBackend implements Backend {
     if (m.t === 'update' || m.t === 'joined' || m.t === 'watching') this.watchers = ('watchers' in m ? m.watchers : undefined) ?? 0;
     // BL-17: the same "absent ⇒ nobody" reading, for the same reason
     if (m.t === 'update' || m.t === 'joined' || m.t === 'watching') this.badges = ('badges' in m ? m.badges : undefined) ?? [null, null];
-    // CT-160: a fact about the ROOM, not about the update it rode on — so it
-    // is set here rather than in applyUpdate, which both 'joined' and 'update'
-    // reach by different routes. Only ever set: a room does not un-freeze
-    // while the player is sitting in it.
-    if ('frozen' in m && m.frozen) this.frozen = m.frozen;
     // every scenario push carries the whole brief (the action index and
     // the opponent's presence move), so this is a set rather than a set-once.
     if ('scenario' in m && m.scenario) scn.setScenario(m.scenario);
@@ -6480,11 +6471,6 @@ function watchAgainHtml(): string {
 }
 
 function promptHtml(): string {
-  // CT-160: a stopped game says so and says nothing else. Above every other
-  // prompt because there is nothing left to prompt for.
-  if (NET?.frozen) {
-    return `<div class="promptbar pending"><span class="who">⚠ Game stopped:</span> ${esc(NET.frozen)}</div>`;
-  }
   // 2026-10-03: a playback is showing. Nothing on the board is yours to act on
   // until it ends, so the bar says what you are watching and how to stop.
   if (playbackNow) return playbackBarHtml(playbackNow);
@@ -10225,9 +10211,9 @@ document.addEventListener('keydown', primeAudio);
  * answer its "go back and do it", so a click on the board is their Go back.
  */
 let actNudge = 0;
-/** the bar is up and on screen (a playback or a stopped game paints over it) */
+/** the bar is up and on screen (a playback paints over it) */
 function actBarUp(): boolean {
-  return inGame && !!ui.confirmAct && !playbackNow && !NET?.frozen;
+  return inGame && !!ui.confirmAct && !playbackNow;
 }
 /** an input the bar refused: say so on the bar (two alternating classes, so
  * every refusal restarts the animation) */
@@ -12045,7 +12031,7 @@ function boardMenuItems(): MenuItem[] {
   // the way home, wherever there is no live seat to play (ui/inspect.ts says why)
   // #324: a game lost on time is over though its state is not (gameIsOver)
   const over = gameIsOver();
-  const home = !NET || spectating || over || !!NET.frozen;
+  const home = !NET || spectating || over;
   const toEvent = !!cube.backTo(NET?.match?.cube?.event);   // docs/25 §8
   return boardMenuEntries(h.state, NET ? NET.seat : null, { fixes: !!NET && amend.fixesOn(), reveals: revealCount(), bestOf3, spectating, home, over }).map(entry => ({
     label: entry.kind === 'home' && toEvent ? '↩ Back to the event' : entry.label,

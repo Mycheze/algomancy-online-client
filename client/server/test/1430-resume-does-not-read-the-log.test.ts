@@ -44,7 +44,6 @@ test('a restart resumes the stored board even when the log no longer replays, an
   const back = R2.getRoom('R1430')!;
   assert.equal(digest(signature(back.state)), digest(signature(room.state)), 'the board as it stood');
   assert.equal(back.state.winner, null, 'not the board the log would give');
-  assert.equal(back.frozen, null);
   assert.equal(back.segKey, 'haste', 'inside the step the last action opened');
   assert.equal(back.segStartIndex, back.actions.length, 'which starts here');
   assert.deepEqual(back.heldEvents, [[], []], 'holding nothing yet');

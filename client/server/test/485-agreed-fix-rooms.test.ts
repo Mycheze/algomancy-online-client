@@ -180,7 +180,6 @@ test('§3 a rewind cuts the log and every claim about the cut actions', () => {
   assert.deepEqual(room.amendments.at(-1)!.removed, before.slice(pick.to), 'the actions taken back are archived on the room');
   assert.deepEqual(room.sigs, sigs.slice(0, pick.to), 'the fingerprints of the cut actions go with them');
   assert.equal(room.cardLog.length, pick.to);
-  assert.equal(room.segPosRefs.length, pick.to);
   assert.deepEqual(room.passAll, [null, null], 'the standing passes are dropped');
   assert.deepEqual(room.passAllCovered, [null, null]);
   assert.deepEqual(room.deferred, [[], []], 'the parked actions are dropped');
@@ -324,9 +323,6 @@ test('§6 a fixed game survives a restart and replays FAITHFUL, sigs and all', a
   assert.equal(JSON.stringify(back.actions), want.actions);
   assert.equal(sig(back), want.sig, 'the same board');
   assert.equal(JSON.stringify(back.amendments), want.amendments, 'the fixes, the reasons and the archived rewind');
-  assert.deepEqual(back.lost, [], 'nothing refused');
-  assert.deepEqual(back.drifted, [], 'nothing changed meaning');
-  assert.equal(back.frozen, null);
 
   // and the forensic tool agrees, fingerprint by fingerprint
   const raw = JSON.parse(readFileSync(join(DIR, 'FX6.json'), 'utf8')) as RoomFile;
@@ -442,8 +438,6 @@ test('§7 a fix in the hidden deploy step, and both hidden-step fixes survive a 
   for (const [code, room, shown] of [['FXA', plan, planShown], ['FXB', dep, depShown]] as const) {
     const back = R2.getRoom(code)!;
     assert.equal(sig(back), sig(room), `${code}: the same board after a restart`);
-    assert.deepEqual(back.lost, [], `${code}: nothing refused`);
-    assert.deepEqual(back.drifted, [], `${code}: nothing changed meaning`);
     assert.deepEqual([shownTo(back, 0), shownTo(back, 1)], [...shown], `${code}: each seat is shown exactly what it was shown before`);
     const raw = JSON.parse(readFileSync(join(DIR, `${code}.json`), 'utf8')) as RoomFile;
     const an = analyze(raw);

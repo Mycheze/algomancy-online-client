@@ -6,8 +6,9 @@
  * the one played, and nothing else would notice. This is the only net, in the
  * shape of test-custom-rules.ts's scan for `custom?.deal`.
  *
- *   §1 every fresh() / rebuild() in rooms.ts passes `rules`, and dealScenario
- *      hands it to createGame
+ *   §1 every fresh() in rooms.ts passes `rules` (rebuild() starts from the
+ *      room's own stored state and deals nothing), and dealScenario hands it
+ *      to createGame
  *   §2 EVERY deal call in server/ and ui/ is classified: a site that deals a
  *      saved room (must pass rules), or one that never deals a CC room (its
  *      reason written down). A new deal site fails here until somebody decides.
@@ -44,7 +45,7 @@ function callsOf(src: string, name: string): string[] {
   }
   return out;
 }
-const DEALS = ['createGame', 'dealScenario', 'fresh', 'rebuild', 'replay'];
+const DEALS = ['createGame', 'dealScenario', 'fresh', 'replay'];
 const passesRules = (call: string): boolean => /\brules\b/.test(call);
 
 /** files that deal a SAVED ROOM (a CC game among them) — each call must pass rules */
@@ -63,8 +64,8 @@ const NEVER_CC: Record<string, string> = {
 
 test('§1 rooms.ts passes rules at every fresh() and rebuild(); dealScenario hands it on', () => {
   const rooms = SRC('server/rooms.ts');
-  const calls = [...callsOf(rooms, 'fresh'), ...callsOf(rooms, 'rebuild')];
-  assert.ok(calls.length >= 9, `non-vacuous: ${calls.length} calls`);
+  const calls = callsOf(rooms, 'fresh');
+  assert.ok(calls.length >= 6, `non-vacuous: ${calls.length} calls`);
   for (const call of calls) assert.ok(passesRules(call), `rooms.ts forgets rules: ${call.replace(/\s+/g, ' ').slice(0, 120)}`);
   const sc = callsOf(SRC('server/scenarios.ts'), 'createGame');
   assert.equal(sc.length, 1);
@@ -80,7 +81,7 @@ test('§2-§3 every deal site in server/ and ui/ is classified, and the pending 
       const calls = DEALS.flatMap(n => callsOf(src, n))
         // replay() is the engine's; an unrelated `replay(` (a method, a local) is not a deal
         .filter(c => !/^replay\(/.test(c) || /\bseed\b|\.seed\b/.test(c))
-        .filter(c => !/^(fresh|rebuild)\(/.test(c) || file === 'server/rooms.ts');
+        .filter(c => !/^fresh\(/.test(c) || file === 'server/rooms.ts');
       if (!calls.length) continue;
       found.add(file);
       if (ROOM_DEALERS.includes(file)) {

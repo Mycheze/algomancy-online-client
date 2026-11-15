@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:41812721c99ad510",
+ "generated_from": "sha256:1da4578f2a17bd08",
  "rules": [
   {
    "num": "100.1",
@@ -39494,7 +39494,7 @@
    "sectionTitle": "Undo",
    "chapterTitle": "Annex D — Digital Play Conventions",
    "parent": "D4.3",
-   "text": "The lock survives a server restart and an undo.",
+   "text": "The lock survives an undo. A server restart seals the open step: nothing played before the restart can be undone.",
    "see": [],
    "examples": [],
    "basis": "owner",
@@ -39503,7 +39503,7 @@
    "discrepancies": [],
    "openQuestion": false,
    "untested": false,
-   "verdict": "confirmed"
+   "verdict": "stale"
   },
   {
    "num": "D4.3g",
