@@ -272,7 +272,11 @@ notes before editing. Then:
   `node --test` given a path that does not exist runs nothing for it and still
   exits 0 (2026-11-08, report #344: `cd server && node --test … test/800-cc-drift-guard.test.ts`
   — 800 lives in `engine/test` — "800 unchanged", red gate, a repair run).
-  Find a file first: `ls client/*/test/800-* client/ledgers/800-*`.
+  Find a file first: `ls client/*/test/800-* client/ledgers/800-*`. The
+  opposite trap: `node --test $(ls … 2>/dev/null)` whose `ls` matches nothing
+  runs **the whole suite** (2026-11-14, BL-10: `test/*backlog*` in engine/,
+  10 minutes burned). Never feed `node --test` a substitution; name the files.
+  The backlog's test is `client/ledgers/backlog.test.ts` (`npm test` there).
 - The reproducer is green now. Run every test file you touched or that covers
   the code you changed (`node --test <file>` from its package), plus
   `npm --prefix client/ui run typecheck` and
