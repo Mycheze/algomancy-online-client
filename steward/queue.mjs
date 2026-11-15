@@ -157,7 +157,12 @@ const dirty = execFileSync('git', ['-C', REPO, 'status', '--porcelain', '--', 'c
 // never cooled down or held: an unledgered row turns every other item's gate red —
 // but a triage branch waiting on the owner already carries them (2026-11-03: the
 // queue offered the same seven rows again on every tick of the night)
-const triageWaits = existsSync(join(STATE, 'redgate', 'triage.json')) || WAITING.has(journal.get('triage')?.outcome);
+// NOT 'rejected': a rejection archives and deletes the branch, so nothing is waiting any more —
+// its rows are unledgered again and the next triage takes them, with the new ones. (2026-11-13: the
+// owner answered a triage "reject — this is fine! but …", and with 'rejected' counted as waiting no
+// report reached the queue for two days: 13 rows, the night worker idle on "queue empty".)
+const triageWaits = existsSync(join(STATE, 'redgate', 'triage.json'))
+  || (journal.get('triage')?.outcome !== 'rejected' && WAITING.has(journal.get('triage')?.outcome));
 if (triageWaits && (fresh.length || dirty.length)) excluded.push(`triage: a triage branch is waiting on the owner (${journal.get('triage')?.outcome ?? 'gate-red'})`);
 else if (fresh.length) out.push( `triage #${fresh[0]}-#${fresh.at(-1)}  (${fresh.length} new report row${fresh.length > 1 ? 's' : ''})`);
 else if (dirty.length) out.push(`triage snapshots  (${dirty.join(', ')} changed on the fetch)`);
