@@ -38,6 +38,7 @@ import { noteLine, type LeagueNote } from './leaguenotes.ts';
 import { cubeNoteLine } from './cubenotes.ts';
 import type { CubeNote } from '../server/cube-types.ts';
 import { matchLink, myMatchLine, type MyMatch } from './match.ts';
+import { servedBuild } from './build.ts';
 import {
   inboxLayerHtml, inviteRowsHtml as inviteRowsPageHtml, roomFriendsBodyHtml, roomFriendsHtml as roomFriendsPanelHtml,
   type DeckShareCardView, type FriendStatus, type InviteCardView, type InboxListView, type NoteCardView, type RoomFriendsView, type RoomFriendView as RoomFriend,
@@ -334,7 +335,7 @@ function poll(): void {
   inFlight = true;
   const room = deps.room();
   fetch(`/api/inbox${room ? `?room=${encodeURIComponent(room)}` : ''}`, { headers: deps.authHeaders() })
-    .then(r => r.json())
+    .then(r => { servedBuild(r.headers?.get('x-algo-build')); return r.json(); })
     .then((r: { ok?: boolean; invites?: InviteView[]; requests?: RequestView[]; friends?: RoomFriend[];
       league?: LeagueNote[]; times?: TimeAsk[]; decks?: DeckShareView[]; cube?: CubeNote[] }) => {
       if (!r.ok) return;

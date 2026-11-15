@@ -142,6 +142,7 @@ const QUESTION_ROOM = 'QUESTION';
 const asQuestion = (): boolean => replayActive() && NET?.room === QUESTION_ROOM;
 import { FakeSocket } from './fakesocket.ts';
 import * as Wire from '../shared/protocol.ts';
+import { installBuildCheck, servedBuild } from './build.ts';
 import type { Building, ClientMsg, PlaybackFrame } from '../shared/protocol.ts';
 import { Harness } from '../engine/src/harness.ts';
 import * as dk from './decks.ts';
@@ -823,6 +824,7 @@ class NetBackend implements Backend {
       if (this.boot === null) this.boot = m.boot;
       else if (this.boot !== m.boot) { this.stopReconnecting(); location.reload(); return; }
     }
+    if ((m.t === 'watching' || m.t === 'joined') && servedBuild(m.build)) { this.stopReconnecting(); return; }
     if (m.t === 'watching') {
       this.joined = true;
       this.waiting = m.waiting ? { have: [false, false] } : null;
@@ -12288,6 +12290,15 @@ installReport(reportOpenChanged);
 // beside #app on every page that is not a board (ui/inbox.ts)
 // the app frame's toolbar (pages/frame.ts): who is signed in, and the bell's count
 setChromeSource(() => ({ signedIn: !!acct.currentUser(), alerts: inboxUnread(), alertsOpen: inboxListOpen() }));
+// a newer bundle waits while a reload would lose a form, the deck table,
+// a challenge run or a half-typed box
+installBuildCheck({
+  busy: () => {
+    const el = document.activeElement as HTMLInputElement | null;
+    return isReportOpen() || amend.isAmendOpen() || tt.tableOpen() !== null || params.get('challenge') === 'play'
+      || ((el?.tagName === 'TEXTAREA' || el?.tagName === 'INPUT') && !!el.value);
+  },
+});
 installInbox({
   token: acct.token,
   authHeaders: () => acct.authHeaders(),

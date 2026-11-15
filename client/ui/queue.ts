@@ -28,6 +28,7 @@
  */
 import { playCue } from './audio.ts';
 import { alertTab } from './tabalert.ts';
+import { servedBuild } from './build.ts';
 import { sendMsg, type Body, type ClientMsg, type ServerMsg } from '../shared/protocol.ts';
 
 // ── types off the wire ────────────────────────────────────────────────
@@ -214,7 +215,7 @@ export function startCountsPoll(): void {
   const tick = (): void => {
     if (ws) return;
     fetch('/api/queue')
-      .then(r => r.json())
+      .then(r => { servedBuild(r.headers?.get('x-algo-build')); return r.json(); })
       .then((r: { ok?: boolean; counts?: QueueCounts; open?: OpenGame[] }) => {
         if (!r.counts) { missed(); return; }
         const before = JSON.stringify([counts, openGames, unreachable()]);

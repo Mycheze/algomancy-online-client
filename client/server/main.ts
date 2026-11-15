@@ -38,6 +38,7 @@ import type { HeldFrame, SegmentClose } from './view.ts';
 import { playbackBudget, PLAYBACK_MAX_MS } from './playback-budget.ts';   // how long a seat watching a playback is off the clock
 import { seatMsg, type SeatMsg } from './seatmsg.ts';   // CT-179: every 'joined' and 'update' is built there
 import { parseClientMsg, type ServerMsg } from '../shared/protocol.ts';
+import { bundleBuild } from './build-stamp.ts';
 import { defaultDecks, importDeckPaste, importDeckUrl } from './decks.ts';
 import { metaList, minRankedGames, publicDeckCounts, sharedDeck } from './publicdecks.ts';
 import {
@@ -134,6 +135,8 @@ import { fixReportFields, reportKind, reportSeverity, reportedBy, reporterLabel,
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const UI_DIR = join(HERE, '..', 'ui');
+/** the UI bundle served now: on every join and watch, and on every /api/ answer (ui/build.ts) */
+const servedBuild = (): string | null => bundleBuild(join(UI_DIR, 'bundle.js'));
 const GAMES_DIR = gamesDir();
 /**
  * Where the 🐛 button's reports land. Overridable for the same reason
@@ -631,6 +634,9 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   const url = new URL(req.url ?? '/', `http://${req.headers.host}`);
   let path = decodeURIComponent(url.pathname);
   if (path === '/' || path === '') path = '/index.html';
+  // a page left open across a deploy learns of it from whatever it asks next
+  const build = path.startsWith('/api/') ? servedBuild() : null;
+  if (build) res.setHeader('x-algo-build', build);
 
   // accounts, stats, achievements and friends live in their own module; it
   // answers true when the request was one of its own
@@ -1559,9 +1565,9 @@ function touchWatchers(room: Room): void {
 function pushWatchers(room: Room): void {
   if (!room.watchers.size) return;
   const payload: ServerMsg = roomWaiting(room)
-    ? { t: 'watching', room: room.code, boot: BOOT_ID, waiting: true, names: room.names, peers: peersOf(room) }
+    ? { t: 'watching', room: room.code, boot: BOOT_ID, build: servedBuild(), waiting: true, names: room.names, peers: peersOf(room) }
     : {
-        t: 'watching', room: room.code, boot: BOOT_ID,
+        t: 'watching', room: room.code, boot: BOOT_ID, build: servedBuild(),
         view: spectatorView(room.state),
         // the FULL log: a watcher sees everything, which is what omniscient
         // means, and a redacted one would be the seat-by-seat view the owner
@@ -2354,9 +2360,9 @@ function summarizeRoom(room: Room): import('./accounts.ts').RecordedGame {
 function joinedMsgFor(room: Room, s: Seat): SeatMsg {
   const waiting = waitingInfo(room, s);
   return waiting
-    ? seatMsg('joined', { room: room.code, seat: s, boot: BOOT_ID, waiting, peers: peersOf(room), names: room.names })
+    ? seatMsg('joined', { room: room.code, seat: s, boot: BOOT_ID, build: servedBuild(), waiting, peers: peersOf(room), names: room.names })
     : seatMsg('joined', {
-      room: room.code, seat: s, boot: BOOT_ID, ...baseView(room, s), log: visibleLog(room, s), names: room.names,
+      room: room.code, seat: s, boot: BOOT_ID, build: servedBuild(), ...baseView(room, s), log: visibleLog(room, s), names: room.names,
       building: room.building[other(s)],
     });
 }
@@ -2459,7 +2465,7 @@ function carryOutFix(room: Room, p: Proposal, by: Seat): void {
     // must drop its standing pass, its half-built formation and its queue of
     // paced updates about a board that no longer exists (`rewound`)
     forEachSeat(s => sendToSeat(room, s, seatMsg('joined', {
-      room: room.code, seat: s, boot: BOOT_ID,
+      room: room.code, seat: s, boot: BOOT_ID, build: servedBuild(),
       ...baseView(room, s),
       log: visibleLog(room, s),
       names: room.names, building: null, rewound: true as const,
@@ -3032,11 +3038,11 @@ wss.on('connection', (ws, req) => {
         const waiting = waitingInfo(room, s);
         return waiting
           ? seatMsg('joined', {
-            room: code, seat: s, boot: BOOT_ID,
+            room: code, seat: s, boot: BOOT_ID, build: servedBuild(),
             waiting, peers: peersOf(room), names: room.names,
           })
           : seatMsg('joined', {
-            room: code, seat: s, boot: BOOT_ID,
+            room: code, seat: s, boot: BOOT_ID, build: servedBuild(),
             ...baseView(room, s),
             log: visibleLog(room, s),
             names: room.names,
@@ -3177,7 +3183,7 @@ wss.on('connection', (ws, req) => {
         settleClock(room);
         console.log(`[ws] ${room.code}: trio ${result.els.join('+')} (${lobby.method})`);
         forEachSeat(s => sendToSeat(room, s, seatMsg('joined', {
-          room: room.code, seat: s, boot: BOOT_ID,
+          room: room.code, seat: s, boot: BOOT_ID, build: servedBuild(),
           ...baseView(room, s),
           log: visibleLog(room, s),
           names: room.names, building: null,

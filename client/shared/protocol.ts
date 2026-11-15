@@ -134,11 +134,12 @@ export type GamePush<P = Payloads> = {
 export type LobbyPush<P = Payloads> = { waiting: S<P, 'waiting'>; peers: Pair<boolean>; names: Pair<string>; view?: never };
 
 /** `room` and `boot` are absent only from a server inside the page. `boot`
- * names the server PROCESS, so a reconnect can tell it was restarted. `both`,
+ * names the server PROCESS, so a reconnect can tell it was restarted; `build`
+ * the UI bundle it serves now (null: unstamped). `both`,
  * CR D2.1: this connection acts for BOTH seats — one screen, both hands, no
  * redaction; only a server inside the page serving both halves sends it. */
-type JoinedHead = { t: 'joined'; room?: string; seat: Seat; boot?: string; both?: true };
-type WatchingHead = { t: 'watching'; room: string; boot?: string; names: Pair<string>; peers: Pair<boolean> };
+type JoinedHead = { t: 'joined'; room?: string; seat: Seat; boot?: string; build?: string | null; both?: true };
+type WatchingHead = { t: 'watching'; room: string; boot?: string; build?: string | null; names: Pair<string>; peers: Pair<boolean> };
 
 export type ServerMsg<P = Payloads> =
   | { t: 'error'; msg: string }
