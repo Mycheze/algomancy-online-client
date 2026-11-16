@@ -348,5 +348,12 @@ export default {
     + 'which said "Light vs Dark"; every printed deck is "Light & Dark (…)" and so are the home page, the rules and the '
     + 'updates. cardindex.ts names it once (LIGHT_AND_DARK) for both the label and releaseOf. Typing either name still '
     + 'finds the 166 cards. Left on purpose: §3.10\'s "colourless" chip beside the `is:colorless` flag, which is query '
-    + 'syntax (1241 left syntax untouched). Guarded by the census 1483-expansion-named-as-printed.test.ts.',
+    + 'syntax (1241 left syntax untouched). Guarded by the census 1483-expansion-named-as-printed.test.ts.\n\n'
+    + '2026-11-16 (steward): the Learn to play tip on spell tokens says how the question is asked now (docs/23-ui-inventory/04 '
+    + '§L.13\'s class, words that name what the screen draws). BL-78 moved the ride-along question from the prompt bar to a '
+    + 'dialog and rewrote the interface guide (tutorial.ts), but the tip-ride nudge (lessons.ts CLIENT_TIPS) still ended "If you '
+    + 'attack without picking one, the bar asks first." It now says a dialog shows the tokens, with **Bring all** and **Bring '
+    + 'none**. Swept ui/, server/, the CR records and the bot for the same sentence: the one site. Checked on the way, §L.12 '
+    + '(.lhl sets position: relative on what it lights): none of the tips\' targets is absolute, fixed or sticky, so nothing '
+    + 'moves today. Guarded by 1245-learn-words-match-their-buttons.test.ts §4 (the button names read off ridePickerHtml).',
 } satisfies BacklogTicket;

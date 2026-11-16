@@ -12,6 +12,9 @@
  *    lobby", a screen it never went to (close() hands the page back to
  *    whatever was under it). No title in ui/, pages/ or components/ names
  *    the lobby.
+ * §4 the spell-token tip says how the question is asked today: a dialog of the
+ *    tokens, with Bring all and Bring none, not "the bar asks first". It
+ *    names those buttons as the dialog draws them.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -20,6 +23,9 @@ import { fileURLToPath } from 'node:url';
 import { learnMenuHtml, learnMenuView } from '../pages/learn.ts';
 import { LEARN_ELEMENTS } from '../lessondeck.ts';
 import type { LearnProgress } from '../learn.ts';
+import { CLIENT_TIPS } from '../lessons.ts';
+import { pageBody } from '../lessonflow.ts';
+import { ridePickerHtml } from '../ride-picker.ts';
 
 const UI = fileURLToPath(new URL('..', import.meta.url));
 const read = (f: string): string => readFileSync(UI + f, 'utf8');
@@ -60,4 +66,17 @@ test('1245 §3 the rules review Close button does not promise the lobby', () => 
   assert.ok(files.length > 50, 'positive control: the sources were read');
   const bad = files.flatMap(f => [...read(f).matchAll(/title(?:="|: ')[^"']*\blobby\b[^"']*/gi)].map(m => `${f}: ${m[0]}`));
   assert.deepEqual(bad, []);
+});
+
+test('BL-10 1245 §4 the spell-token tip says a dialog asks, naming its buttons as the dialog draws them', () => {
+  const tip = CLIENT_TIPS.find(t => t.id === 'tip-ride');
+  assert.ok(tip, 'positive control: the spell-token tip exists');
+  const body = tip!.pages.map(p => pageBody(p, null)).join('\n');
+  assert.doesNotMatch(body, /\bbar asks\b/, 'the question is no longer in the bar');
+  assert.match(body, /\bdialog\b/);
+  const html = ridePickerHtml({ who: 'Ann', side: 'attack', picked: 0, tokens: [{ id: 1, card: 'Poison', on: false }] }, () => '<i></i>');
+  const labels = [...html.matchAll(/<button data-btn="ride(?:all|none)"[^>]*>([^<]+)<\/button>/g)]
+    .map(m => m[1]!.replace(/\s*\d+\s*$/, '').trim());
+  assert.deepEqual(labels.sort(), ['Bring all', 'Bring none'], 'positive control: the dialog draws both');
+  for (const l of labels) assert.ok(body.includes(`**${l}**`), `the tip names **${l}**`);
 });

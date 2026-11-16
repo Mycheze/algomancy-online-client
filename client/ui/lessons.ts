@@ -188,7 +188,7 @@ export const CLIENT_TIPS: readonly Lesson[] = [
     when: c => canDo(c, 'declareAttack') && ridableTokens(c.state, c.seat).length > 0,
     pages: [{
       title: 'Your tokens can come too',
-      body: 'A spell token stays in your region unless it comes with an attack. Click a token while you build your formation and it rides along with your units, ready to cast over there. If you attack without picking one, the bar asks first.',
+      body: 'A spell token stays in your region unless it comes with an attack. Click a token while you build your formation and it rides along with your units, ready to cast over there. If you attack without picking one, a dialog shows your tokens first: click the ones to bring, or choose **Bring all** or **Bring none**.',
       highlight: ['[data-act="token"]', '[data-btn="confirmattack"]'],
     }],
   },
