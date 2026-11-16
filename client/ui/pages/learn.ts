@@ -25,10 +25,22 @@ export interface LearnMenuView {
   savedTips: boolean;
   /** every lesson, in order, and whether it has been shown already */
   lessons: { n: string; title: string; seen: boolean }[];
+  /** the game a new start would throw away, as its button names it ("Fire", "Fire tips"), or null */
+  inProgress: string | null;
+  /** the button pressed once that asks to be pressed again (asksTwice), or null */
+  armed: string | null;
+}
+
+const cap = (e: string): string => `${e[0]!.toUpperCase()}${e.slice(1)}`;
+
+/** A press that throws a game in progress away asks twice, as giving up a
+ * challenge run does: there is one saved game, and every new start replaces it. */
+export function asksTwice(progress: LearnProgress | null, lmenu: string): boolean {
+  return (lmenu === 'fresh' || lmenu === 'start' || lmenu === 'tips') && !!progress?.game;
 }
 
 /** Gather the menu: the progress saved in this browser, and the element picked. */
-export function learnMenuView(progress: LearnProgress | null, el: LearnElement): LearnMenuView {
+export function learnMenuView(progress: LearnProgress | null, el: LearnElement, armed: string | null = null): LearnMenuView {
   const seen = new Set(progress?.seen ?? []);
   return {
     el,
@@ -36,6 +48,8 @@ export function learnMenuView(progress: LearnProgress | null, el: LearnElement):
     saved: !!(progress?.game && progress.element === el),
     savedTips: !!(progress?.game && progress.element === el && progress.tips),
     lessons: ALL_LESSONS.map(l => ({ n: l.n, title: l.title, seen: seen.has(l.id) })),
+    inProgress: progress?.game ? `${cap(progress.element)}${progress.tips ? ' tips' : ''}` : null,
+    armed: armed && asksTwice(progress, armed) ? armed : null,
   };
 }
 
@@ -47,14 +61,16 @@ export function learnMenuView(progress: LearnProgress | null, el: LearnElement):
 export function learnMenuHtml(v: LearnMenuView): string {
   const { el, saved, savedTips } = v;
   // the element as its button says it: "Continue your Fire game" beside the Fire button
-  const cap = (e: string): string => `${e[0]!.toUpperCase()}${e.slice(1)}`;
   const elName = cap(el);
   const els = v.elements.map(e =>
     `<button class="learnel el-${e} ${e === el ? 'on' : ''}" aria-pressed="${e === el}" data-lmenu="el" data-el="${e}">${elIcon(e)}${cap(e)}</button>`).join('');
   const lessons = v.lessons.map((l, i) =>
     `<li><button class="learnread" data-lmenu="read" data-i="${i}">${esc(l.n)}. ${esc(l.title)}</button>${l.seen ? ' <span class="learnseen">✓</span>' : ''}</li>`).join('');
   const go = (label: string, lmenu: string, variant: 'primary' | 'secondary' = 'primary'): string =>
-    button({ label, variant, className: 'learngobtn', attrs: { 'data-lmenu': lmenu } });
+    v.armed === lmenu
+      ? button({ label: lmenu === 'fresh' ? 'Press again to start over' : `Press again to end your ${v.inProgress} game`,
+        variant: 'danger', className: 'learngobtn', attrs: { 'data-lmenu': lmenu } })
+      : button({ label, variant, className: 'learngobtn', attrs: { 'data-lmenu': lmenu } });
   return sheet({
     open: true, id: 'learnscrim', title: 'Learn to play', width: 'md', className: 'learnscrim learnsheet',
     bodyHtml: `<p class="learnblurb">A real game, with a lesson at each new moment. About twenty minutes.</p>

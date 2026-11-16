@@ -202,5 +202,7 @@ body.lessonreading .arrowlayer { z-index: 85; }
 .learnsheet .ui-sheet__body { display: flex; flex-direction: column; gap: var(--space-5); }
 .learnsheet .learngo .learngobtn { flex: 1 1 0; min-height: var(--icon-button-min-h); font-size: var(--text-14); font-weight: 700; }
 .learnsheet .learngo .ui-button--secondary { flex: 0 0 auto; font-weight: 400; }
+/* armed (asksTwice), a secondary keeps its width rule, so the second press lands where the first did */
+.learnsheet .learngo .ui-button--danger:is([data-lmenu="fresh"], [data-lmenu="tips"]) { flex: 0 0 auto; }
 .learnsheet .learnlist { border-top: 1px solid var(--color-border); padding-top: var(--space-4); }
 .learnsheet .learnlist summary { padding: var(--space-2) 0; }

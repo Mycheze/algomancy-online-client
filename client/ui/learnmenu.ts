@@ -13,25 +13,28 @@ import { ALL_LESSONS } from './lessons.ts';
 import { openLesson } from './lessonlayer.ts';
 import { isLearnElement, type LearnElement } from './lessondeck.ts';
 import { loadProgress, type LearnProgress } from './learn.ts';
-import { learnMenuHtml, learnMenuView } from './pages/learn.ts';
+import { asksTwice, learnMenuHtml, learnMenuView } from './pages/learn.ts';
 
 let open = false;
 let layer: HTMLElement | null = null;
 let picked: LearnElement = 'fire';
+/** the start pressed once over a game in progress; any other press clears it */
+let arming: string | null = null;
 
 /** the menu for this progress and element: pages/learn.ts draws it */
-export const menuHtml = (progress: LearnProgress | null, el: LearnElement): string =>
-  learnMenuHtml(learnMenuView(progress, el));
+export const menuHtml = (progress: LearnProgress | null, el: LearnElement, armed: string | null = null): string =>
+  learnMenuHtml(learnMenuView(progress, el, armed));
 
 function paint(): void {
   if (!layer) return;
-  layer.innerHTML = open ? menuHtml(loadProgress(), picked) : '';
+  layer.innerHTML = open ? menuHtml(loadProgress(), picked, arming) : '';
 }
 
 export function openLearnMenu(): void {
   const p = loadProgress();
   if (p && isLearnElement(p.element)) picked = p.element;
   open = true;
+  arming = null;
   paint();
 }
 
@@ -50,7 +53,12 @@ export function installLearnMenu(): void {
     if (target.id === 'learnscrim' || target.closest('[data-sheet-dismiss]')) { open = false; paint(); return; }
     const btn = target.closest('[data-lmenu]') as HTMLElement | null;
     const go = (fresh: boolean, tips = false): void => { location.search = `?learn=play&el=${picked}${fresh ? '&new=1' : ''}${tips ? '&tips=1' : ''}`; };
-    switch (btn?.dataset['lmenu']) {
+    const k = btn?.dataset['lmenu'] ?? '';
+    if (asksTwice(loadProgress(), k) && arming !== k) { arming = k; paint(); return; }
+    const wasArmed = arming !== null;
+    arming = null;
+    if (!btn) { if (wasArmed) paint(); return; }
+    switch (k) {
       case 'close': open = false; paint(); return;
       case 'el': if (isLearnElement(btn.dataset['el'])) picked = btn.dataset['el']; paint(); return;
       case 'start': case 'continue': go(false); return;

@@ -361,5 +361,15 @@ export default {
     + 'two blurbs outside a home card — the Single Card Duel room\'s "Thirty copies of whatever you pick…" (pages/waiting.ts) '
     + 'and the home\'s Single Card Duel sheet (pages/home.ts) — were drawn in the full text colour and size. `.cardsub` (06-home.css) now owns the '
     + 'muted 12px; margins stay scoped. §18.2\'s queue blurb no longer exists. Guarded by 1485-blurb-is-quiet-everywhere.test.ts. '
-    + 'Reasoned, not looked at (no browser).',
+    + 'Reasoned, not looked at (no browser).\n\n'
+    + '2026-11-16 (steward): a Learn to play start that throws a game away asks twice (docs/23-ui-inventory/04 §L.11: '
+    + '"`Start over` in the learn menu wipes progress with no confirm at all"). There is one saved lesson game and every '
+    + 'new start replaces it, so the class was three buttons: Start over, Client tips only, and Start with another element '
+    + 'picked (which threw the other element\'s game away unseen). Each, with a game in progress, arms first (pages/learn.ts '
+    + 'asksTwice; learnmenu.ts `arming`, the challenge run\'s press-again pattern): danger style, "Press again to start over" '
+    + 'or "Press again to end your Fire game"; any other press, Esc or closing disarms. An armed secondary keeps its width '
+    + '(32-learn.css), so the second press lands where the first did. Stories "Start over, pressed once" and "Another element, '
+    + 'Start pressed once". Guarded by 1486-learn-start-over-asks-twice.test.ts (§3 drives the layer through a fake '
+    + 'document). Left: §L.11\'s native window.confirm for the rules review\'s Delete and Discard. Reasoned, not looked at '
+    + '(no browser).',
 } satisfies BacklogTicket;
