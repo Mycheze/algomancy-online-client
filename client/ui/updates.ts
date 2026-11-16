@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-16', kind: 'fix', text: 'In a Single Card Duel room and on the home page\'s Single Card Duel sheet, the "Thirty copies…" line under the heading is now the same small grey note as on the other cards, not full-size text.' },
   { date: '2026-11-16', kind: 'fix', text: 'The Learn to play tip on bringing spell tokens into an attack now describes the new dialog, with Bring all and Bring none, instead of saying the bar asks.' },
   { date: '2026-11-16', kind: 'change', text: 'When one combat or one effect takes both players to 0 or less on exactly the same total, the game is now a draw instead of a loss for the initiative player. In a match, a drawn game counts for nobody and you play another.' },
   { date: '2026-11-15', kind: 'fix', text: 'The card search\'s Printed deck filter now calls the expansion Light & Dark, the name printed on its decks.' },

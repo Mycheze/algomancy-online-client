@@ -355,5 +355,11 @@ export default {
     + 'attack without picking one, the bar asks first." It now says a dialog shows the tokens, with **Bring all** and **Bring '
     + 'none**. Swept ui/, server/, the CR records and the bot for the same sentence: the one site. Checked on the way, §L.12 '
     + '(.lhl sets position: relative on what it lights): none of the tips\' targets is absolute, fixed or sticky, so nothing '
-    + 'moves today. Guarded by 1245-learn-words-match-their-buttons.test.ts §4 (the button names read off ridePickerHtml).',
+    + 'moves today. Guarded by 1245-learn-words-match-their-buttons.test.ts §4 (the button names read off ridePickerHtml).\n\n'
+    + '2026-11-16 (steward): a card\'s blurb is the same quiet line wherever it is drawn (docs/23-ui-inventory/05 §18.2: '
+    + '"`.cardsub` styled only under `.homecard` and `.singleduel`"). Its colour and size were `.homecard .cardsub`\'s, so the '
+    + 'two blurbs outside a home card — the Single Card Duel room\'s "Thirty copies of whatever you pick…" (pages/waiting.ts) '
+    + 'and the home\'s Single Card Duel sheet (pages/home.ts) — were drawn in the full text colour and size. `.cardsub` (06-home.css) now owns the '
+    + 'muted 12px; margins stay scoped. §18.2\'s queue blurb no longer exists. Guarded by 1485-blurb-is-quiet-everywhere.test.ts. '
+    + 'Reasoned, not looked at (no browser).',
 } satisfies BacklogTicket;

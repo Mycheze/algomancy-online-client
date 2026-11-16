@@ -32,7 +32,9 @@
    someone else's, so it does not need the same weight */
 .homecard.offer { border-color: var(--color-border-strong); }
 .homecard h2 { margin: 0; font-size: var(--text-16); color: var(--text); letter-spacing: .02em; }
-.homecard .cardsub { margin: 0; color: var(--dim); font-size: var(--text-12); line-height: 1.5; }
+/* a card's or a room's one-line blurb: the same quiet line wherever it is drawn; margins stay with each place */
+.cardsub { color: var(--dim); font-size: var(--text-12); line-height: 1.5; }
+.homecard .cardsub { margin: 0; }
 .homecard .spacer { flex: 1 1 auto; min-height: 2px; }
 .homecard .cta { padding: var(--space-5) var(--space-5); font-size: var(--text-14); font-weight: 700; }
 .homecard .joinrow input { font-size: var(--text-16); padding: var(--space-4) var(--space-4); }
