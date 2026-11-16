@@ -2262,6 +2262,7 @@ export interface GameState {
    * finishes it) instead of stranding the game — found by the fuzzer. */
   turnEnding?: boolean;
   initiative: Seat;
+  /** null while the game goes on, and in a drawn game (phase 'gameover', CR 104.1b) */
   winner: Seat | null;
   nextId: number;
   /** CR 113.2: the minor half of a `Stamp`, ticked by every one-shot timestamp

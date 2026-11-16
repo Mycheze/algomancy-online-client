@@ -40,7 +40,7 @@ export interface MatchGame {
   code: string;
   initiative: Seat;
   winner: Seat | null;
-  /** 'played' a real win · 'conceded' a concede (game or match) · 'time' a
+  /** 'played' a real win, or a draw when `winner` is null (CR 104.1b) · 'conceded' a concede (game or match) · 'time' a
    *  flag · 'closed' the room closed with no result */
   how: 'played' | 'conceded' | 'time' | 'closed';
   at: number;

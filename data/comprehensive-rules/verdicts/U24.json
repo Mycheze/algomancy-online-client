@@ -4824,7 +4824,7 @@
     "quote_spans": [
       {
         "file": "client/engine/src/engine.ts",
-        "text": "if (this.s.winner !== null || this.s.lesson) return;"
+        "text": "if (this.s.phase === 'gameover' || this.s.lesson) return;"
       }
     ],
     "basis_ok": true,

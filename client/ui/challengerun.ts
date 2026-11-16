@@ -176,7 +176,8 @@ export class ChallengeRun {
   failedWhy(): string {
     const why = runFailed(this.acc);
     if (why) return why;
-    return this.state.winner === 1 ? 'You lost before the goal was met.' : 'The dummy died before the goal was met.';
+    return this.state.winner === 1 ? 'You lost before the goal was met.'
+      : this.state.winner === null ? 'The game was drawn before the goal was met.' : 'The dummy died before the goal was met.';
   }
   /** the log to upload: both seats, cut at the action that met the goal */
   actions(): Action[] { const all = this.server.save.actions; return this.metAt === null ? all : all.slice(0, this.metAt); }

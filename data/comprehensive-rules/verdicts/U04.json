@@ -2925,7 +2925,7 @@
     "quote_spans": [
       {
         "file": "client/engine/src/engine.ts",
-        "text": "if (p.life <= 0 && this.s.winner === null) {"
+        "text": "if (p.life <= 0 && this.s.phase !== 'gameover') {"
       }
     ],
     "basis_ok": true,

@@ -42,7 +42,7 @@ import { bundleBuild } from './build-stamp.ts';
 import { defaultDecks, importDeckPaste, importDeckUrl } from './decks.ts';
 import { metaList, minRankedGames, publicDeckCounts, sharedDeck } from './publicdecks.ts';
 import {
-  applyToRoom, arrivalVerdict, clockSnapshot, createLeagueRoom, createMatch, createRematch, createRoom, decidedWinner, deferAction,
+  applyToRoom, arrivalVerdict, clockSnapshot, createLeagueRoom, createMatch, createRematch, createRoom, decidedWinner, deferAction, gameDecided,
   deferrableRefusal, dropRoom, getRoom,
   allRooms, expireOnTime,
   joinRefusal, joinableRoom, legalInRoom, openSegment, renameSeat, sanitizeClock,
@@ -272,7 +272,7 @@ function markOnline(userId: string, delta: 1 | -1): void {
 function playingNow(): Set<string> {
   const out = new Set<string>();
   for (const room of allRooms()) {
-    if (roomWaiting(room) || decidedWinner(room) !== null) continue;
+    if (roomWaiting(room) || gameDecided(room)) continue;
     forEachSeat(s => { const u = room.users[s]; if (u && room.sockets[s]) out.add(u); });
   }
   return out;
@@ -288,7 +288,7 @@ function inviteRoom(room: Room): InviteRoom {
     seatOf: id => room.users[0] === id ? 0 : room.users[1] === id ? 1 : null,
     // a seat somebody claimed — an account bound to it, or anybody connected
     // — is not free, and neither is any seat of a decided game
-    free: s => !room.users[s] && !room.sockets[s] && decidedWinner(room) === null,
+    free: s => !room.users[s] && !room.sockets[s] && !gameDecided(room),
     here: s => !!room.sockets[s],
   };
 }
@@ -395,7 +395,7 @@ function previewCtx(req: import('node:http').IncomingMessage): PreviewCtx {
         label: v.label,
         host: room.users[0] ? room.names[0] : null,
         open: v.free(0) || v.free(1),
-        finished: decidedWinner(room) !== null,
+        finished: gameDecided(room),
       };
     },
     deck: id => {
@@ -657,7 +657,7 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // served to its players (nor anybody but an admin) until the match is over
   if (await replayRoutes(req, res, path, {
     liveRoom: code => !!getRoom(code),
-    playing: code => { const r = getRoom(code); return !!r && decidedWinner(r) === null; },
+    playing: code => { const r = getRoom(code); return !!r && !gameDecided(r); },
     matchOpen: raw => !!matchStillOpen(raw),
   })) return;
   // docs/22 §5.6 — the "Your matches" row: this account's open matches, so a
@@ -1406,7 +1406,7 @@ const roomCounts = (room: Room): boolean => !!room.rated || !!room.league || !!r
 function watchRefusal(room: Room, ws: WebSocket, userId: string | null): string | null {
   if (!roomCounts(room)) return null;
   const openMatch = matchStillOpen(room.match);
-  if (decidedWinner(room) !== null && !openMatch) return null;
+  if (gameDecided(room) && !openMatch) return null;
   const addr = sockAddr.get(ws);
   const known = seatAddrs.get(room);
   const seatAt = (s: Seat): (string | null | undefined)[] =>
@@ -1633,7 +1633,7 @@ function botDrives(room: Room): boolean {
   if (!room.scenario) return false;
   if (SCENARIOS[room.scenario]?.needsLiveOpponent) return false;
   if (room.sockets[OPPONENT]) return false;   // a human took the seat
-  return decidedWinner(room) === null && !roomWaiting(room);
+  return !gameDecided(room) && !roomWaiting(room);
 }
 
 /**
@@ -1669,7 +1669,7 @@ function scriptedOpponent(room: Room, into: import('../engine/src/types.ts').Eng
         err instanceof Error ? err.message : err);
       return;
     }
-    if (decidedWinner(room) !== null) return;
+    if (gameDecided(room)) return;
   }
   console.warn(`[scenario] ${room.code}: scripted opponent hit its 60-step cap`);
 }
@@ -1818,7 +1818,7 @@ function landActionInner(room: Room, seat: Seat, action: Action): void {
     deferAction(room, action);
     return;
   }
-  const hadWinner = room.state.winner !== null;
+  const wasOver = room.state.phase === 'gameover';
   // the committed declaration supersedes every in-progress one
   room.building = [null, null];
   // CR D2.1d: the engine now takes most of what arrives during an opponent's
@@ -1937,7 +1937,7 @@ function landActionInner(room: Room, seat: Seat, action: Action): void {
     }
   }
   // the transition into a decided game — record it once
-  if (!hadWinner && room.state.winner !== null) recordFinishedGame(room);
+  if (!wasOver && room.state.phase === 'gameover') recordFinishedGame(room);
 }
 
 /** Lobby state, attached to every message while the room is not a game yet.
@@ -2174,7 +2174,7 @@ function recordFinishedGame(room: Room): void {
         recordPending.delete(room);
         // a game taken back out of its ending meanwhile gets no post-game screen
         // over its live board (its record still stands, as it always did)
-        if (decidedWinner(room) === null) {
+        if (!gameDecided(room)) {
           if (row) keepPostgameRow(room, row.game, asOf);
           return;
         }
@@ -3042,7 +3042,7 @@ wss.on('connection', (ws, req) => {
       // screen for that room now, so send it rather than a dead board
       // (CT-533: unless its record is still being summarized in the worker —
       // it goes out to this seat when the record lands)
-      if (!roomWaiting(room) && decidedWinner(room) !== null && !recordPending.has(room)) {
+      if (!roomWaiting(room) && gameDecided(room) && !recordPending.has(room)) {
         sendGameOver(room, seat, { row: null, unlocked: [], account });
       }
       // let the other seat know a peer arrived (fresh view refreshes presence;
@@ -3105,7 +3105,7 @@ wss.on('connection', (ws, req) => {
       if (room.rematchRoom) {
         return send(ws, { t: 'rematch', rematch: [...room.rematch], room: room.rematchRoom });
       }
-      if (decidedWinner(room) === null) {
+      if (!gameDecided(room)) {
         return send(ws, { t: 'error', msg: 'the game is not over yet' });
       }
       // docs/22 §5.5: in a match, Continue follows the match; a rematch is a
@@ -3675,7 +3675,7 @@ const finishedSeen = new Map<string, number>();
 function sweepFinished(): void {
   const now = Date.now();
   for (const room of allRooms()) {
-    const idle = decidedWinner(room) !== null && !room.sockets[0] && !room.sockets[1] && !room.watchers.size;
+    const idle = gameDecided(room) && !room.sockets[0] && !room.sockets[1] && !room.watchers.size;
     if (!idle) { finishedSeen.delete(room.code); continue; }
     const first = finishedSeen.get(room.code);
     if (first === undefined) { finishedSeen.set(room.code, now); continue; }
@@ -3774,7 +3774,7 @@ function openLeagueRoom(req: {
     return openLeagueMatch(req, () => { const c = freshRoomCode(); reserveRoomCode(c); return c; });
   }
   const old = req.existing ? getRoom(req.existing) : undefined;
-  if (old && old.league?.match === req.match && !old.closed && old.winner === null && decidedWinner(old) === null) {
+  if (old && old.league?.match === req.match && !old.closed && old.winner === null && !gameDecided(old)) {
     return { code: old.code, users: [...old.users] };
   }
   // which of them takes seat 0 is a coin flip, as in the queue

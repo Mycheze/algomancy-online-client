@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:6ecadc5e55c33653",
+ "generated_from": "sha256:4b2f123f6cef0583",
  "rules": [
   {
    "num": "100.1",
@@ -1067,7 +1067,7 @@
     "608"
    ],
    "examples": [
-    "Both players are at 1 life and Penance brings each of them to 0. Neither is eliminated until the effect has finished, and then both are at 0 together (104.1b).",
+    "Both players are at 1 life and Penance brings each of them to 0. Neither is eliminated until the effect has finished, and then both are at 0 together: the game is a draw (104.1b).",
     "A player at 0 is not out until the rest of the effect has happened: the effect finishes, and then the game ends.",
     "Both players have more rot than life as deployment begins. The initiative player's rot is dealt first and that player loses before the other player's rot is dealt."
    ],
@@ -1089,13 +1089,14 @@
    "sectionTitle": "Ending the Game",
    "chapterTitle": "1. Game Concepts",
    "parent": "104.1",
-   "text": "If both players are at 0 or less when the life totals are checked, the player with the higher life total wins; totals below 0 count, so a player at -1 beats a player at -3. If the totals are equal, the initiative player loses.",
+   "text": "If both players are at 0 or less when the life totals are checked, the player with the higher life total wins; totals below 0 count, so a player at -1 beats a player at -3. If the totals are equal, the game is a draw: it is over, and neither player wins.",
    "see": [
     "104.1a"
    ],
    "examples": [
     "An unblocked attacker and a Piercing blocker, in the same combat damage sub-step, bring both players to 0 or less. The player left on the higher total wins.",
-    "Both players are at 1 and one effect makes each lose 1. Both are at 0, the totals are equal, and the initiative player loses."
+    "The initiative player attacks; one unblocked attacker deals 3 to a defender at 3, and a Piercing blocker deals 4 to the attacking player at 4, in the same combat damage sub-step. Both players are at 0 and the game is a draw.",
+    "Both players are at 1 and one effect makes each lose 1. Both are at 0, the totals are equal, and the game is a draw."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -1277,7 +1278,7 @@
    "sectionTitle": "Ending the Game",
    "chapterTitle": "1. Game Concepts",
    "parent": "104.5",
-   "text": "In constructed, the player who ran out of cards loses the game, whatever the life totals. A Single Card Duel is constructed for this rule (D8.2). A player who runs out of cards during an effect has not lost until that effect has finished, as with a life total of 0 (104.1a). When it has finished, each player who ran out of cards and each player at 0 or less has lost; if that is both players, 104.1b decides the game on the life totals.",
+   "text": "In constructed, the player who ran out of cards loses the game, whatever the life totals. A Single Card Duel is constructed for this rule (D8.2). A player who runs out of cards during an effect has not lost until that effect has finished, as with a life total of 0 (104.1a). When it has finished, each player who ran out of cards and each player at 0 or less has lost. If that is both players, the higher life total wins; equal totals at 0 or less are a draw (104.1b), and equal totals above 0 go against the initiative player.",
    "see": [
     "104.1a",
     "104.1b",
@@ -1287,8 +1288,9 @@
     "A constructed player at 25 life has to draw with an empty deck and an empty recycle pile while the opponent is at 3. The player who had to draw loses.",
     "The card step at the start of a turn is a draw too: from an empty deck and pile it ends the game.",
     "In constructed, a player resolves an effect that takes the opponent from 1 to 0 and then has to draw from an empty deck and an empty recycle pile. When the effect has finished both players have lost, and the caster, on the higher life total, wins.",
-    "The same effect brings both players to 0 and decks the caster: both have lost, the totals are equal, and the initiative player loses.",
-    "A player runs out of cards during an effect and nobody is at 0: the effect finishes, and then that player loses."
+    "The same effect brings both players to 0 and decks the caster: both have lost, the totals are equal at 0, and the game is a draw.",
+    "A player runs out of cards during an effect and nobody is at 0: the effect finishes, and then that player loses.",
+    "One effect makes both players draw with both decks and recycle piles empty, and both are on 7 life. Both have lost on equal totals above 0, so it is not a draw: the initiative player loses. On 0 each, the same effect is a draw."
    ],
    "basis": "mixed",
    "scope": "game",
@@ -1306,7 +1308,7 @@
    "sectionTitle": "Ending the Game",
    "chapterTitle": "1. Game Concepts",
    "parent": "104.5",
-   "text": "With a shared deck (live draft), running out of cards ends the game, and the player with the higher life total wins, even if that is the player who had to draw. If the life totals are equal, the initiative player loses. A shared deck that runs out during an effect ends the game once that effect has finished (104.1a), and the life totals are compared then, a player at 0 or less included.",
+   "text": "With a shared deck (live draft), running out of cards ends the game, and the player with the higher life total wins, even if that is the player who had to draw. If the life totals are equal, the initiative player loses, unless both are at 0 or less: then the game is a draw (104.1b). A shared deck that runs out during an effect ends the game once that effect has finished (104.1a), and the life totals are compared then, a player at 0 or less included.",
    "see": [
     "104.1b"
    ],

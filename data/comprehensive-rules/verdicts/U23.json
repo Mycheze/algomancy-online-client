@@ -4887,7 +4887,7 @@
       },
       {
         "file": "client/server/rooms.ts",
-        "text": "if (decidedWinner(room) !== null || room.state.phase === 'gameover') return 'the game is over';"
+        "text": "if (gameDecided(room)) return 'the game is over';"
       },
       {
         "file": "client/server/rooms.ts",

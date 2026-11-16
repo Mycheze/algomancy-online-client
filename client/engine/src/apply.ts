@@ -797,7 +797,7 @@ function doExchangePrismite(e: E, seat: Seat, index: number, element: ResourceKi
  * needs no special case for it.
  */
 function doConcede(e: E, seat: Seat): void {
-  e.need(e.s.winner === null, 'the game is already over');
+  e.need(e.s.phase !== 'gameover', 'the game is already over');
   e.ev('info', `${e.pname(seat)} concedes.`, { seat });
   e.concede(seat);
 }

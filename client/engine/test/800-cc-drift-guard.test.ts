@@ -24,6 +24,11 @@
  * game now plays differently; that is a rules change for every saved game and
  * needs its own round.
  *
+ * Re-blessed ONE entry on 2026-11-16 (CT-565, CR 104.1b): two players on the
+ * same total at 0 or less now draw. `ref:2027-01-10-doubleko` ends that way:
+ * replayed on both engines, its 149 steps are identical but the last, whose
+ * game-over is a draw instead of "Dummy wins the tie at 0". Nothing else moved.
+ *
  * Re-blessed ELEVEN fuzz entries on 2026-11-10 (the designer's new printings).
  * Measured before the re-bless, by comparing every step with the previous
  * engine: `shared:1`–`shared:6` and `constructed:201`, `204`, `205`, `206` are

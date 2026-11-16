@@ -167,55 +167,61 @@
   },
   {
     "key": "concepts.ending.deck-out.constructed",
-    "textHash": "68a21916eeba1e1d",
+    "textHash": "ace9ea4541008539",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U01-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.deckedOut",
+        "loc": "client/engine/src/engine.ts:deckedOut",
         "agrees": true,
-        "note": "constructed: the drawing seat loses"
+        "note": "constructed: the seat that drew from empty deck+pile loses at once outside an effect; inside a lifeBatch it is deferred to checkLifeTotals"
       },
       {
-        "loc": "client/engine/src/engine.ts:E.judgeDeckOutWithLife",
+        "loc": "client/engine/src/engine.ts:judgeDeckOutWithLife",
         "agrees": true,
-        "note": "decked seats and seats at 0 all lose; two losers decided by totals, initiative on tie"
+        "note": "losers = decked seats + seats at <=0; one loser loses; two: higher life wins, equal at <=0 is a draw (endInDraw), equal above 0 goes against the initiative player"
       },
       {
-        "loc": "client/engine/src/types.ts:singleCard",
+        "loc": "client/engine/src/apply.ts (CR D8.2) / types.ts",
         "agrees": true,
         "note": "Single Card Duel is mode 'constructed' only"
       }
     ],
     "tests_run": [
       {
-        "file": "656-deck-out.test.ts",
-        "pattern": "CR 104.5 / CT-385: in constructed a draw from an empty deck",
+        "file": "client/engine/test/656-deck-out.test.ts",
+        "pattern": "CR 104.5 / CT-385: in constructed a draw from an empty deck and an empty recycle pile loses",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "656-deck-out.test.ts",
+        "file": "client/engine/test/656-deck-out.test.ts",
         "pattern": "CR 104.5 / CT-385: in constructed the card step from an empty deck and pile ends the game",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "684-deck-out-judged-with-life.test.ts",
-        "pattern": "CR 104.5, 104.1b / CT-418: one effect takes the opponent to 0",
+        "file": "client/engine/test/684-deck-out-judged-with-life.test.ts",
+        "pattern": "CR 104.5, 104.1b / CT-418: one effect takes the opponent to 0 and decks the caster",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "684-deck-out-judged-with-life.test.ts",
-        "pattern": "CR 104.5, 104.1b / CT-418: both players brought to 0",
+        "file": "client/engine/test/684-deck-out-judged-with-life.test.ts",
+        "pattern": "CR 104.5, 104.1b / CT-418 / CT-565: both players brought to 0 and the caster decked",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "684-deck-out-judged-with-life.test.ts",
+        "file": "client/engine/test/684-deck-out-judged-with-life.test.ts",
         "pattern": "CR 104.5a / CT-418: a deck-out inside an effect with nobody at 0",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/684-deck-out-judged-with-life.test.ts",
+        "pattern": "CR 104.5, 104.1b / CT-565: both players run out of cards in one effect on equal totals above 0",
         "passed": true,
         "asserts_claim": true
       }
@@ -225,42 +231,64 @@
       {
         "ref": "RQ 1356616873655140546",
         "supports": "yes",
-        "note": ""
+        "note": "answers 'What happens if the deck becomes empty?'"
       },
       {
         "ref": "RQ 1402038431659593859",
         "supports": "yes",
-        "note": "answers 'What Happens if I cant draw, because my deck is empty?'"
+        "note": "replies to 'What Happens if I cant draw, because my deck is empty?'"
       },
       {
         "ref": "RQ 1402046171094057041",
         "supports": "yes",
-        "note": "cube draft is constructed; context only"
+        "note": "cube draft decks count as constructed for deck-out; background only"
       },
       {
-        "ref": "owner 2026-10-24 'Follow Caleb'",
+        "ref": "owner 'Constructed is lose when draw with nothing. Same woth single card. But challenges are excempt'",
         "supports": "yes",
-        "note": ""
+        "note": "Single Card Duel treated as constructed"
       },
       {
-        "ref": "owner 2026-10-25 'Constructed is lose when draw with nothing. Same woth single card...'",
+        "ref": "owner 'Check both at the end'",
         "supports": "yes",
-        "note": "Single Card Duel counts as constructed"
+        "note": "deck-out inside an effect judged with life totals when the effect finishes"
       },
       {
-        "ref": "owner 2026-10-25 'Check both at the end'",
+        "ref": "owner 'Highest total, tie: INT loses'",
         "supports": "yes",
-        "note": ""
+        "note": "higher total wins; tie against initiative -- now limited to ties above 0 by the CT-565 call"
+      },
+      {
+        "ref": "owner 'B - make it a draw. Nyar is right. But this is the only case (now) where a draw can happen.'",
+        "supports": "yes",
+        "note": "equal totals at 0 or less is a draw, and the only draw, so equal totals above 0 keep the initiative tie-break"
+      },
+      {
+        "ref": "owner 'Both players go to the same \"losing\" life total (0 or below) at the same moment, from the same effect'",
+        "supports": "yes",
+        "note": "scopes the draw to equal totals at 0 or less"
       }
     ],
     "quote_spans": [
       {
         "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "In constructed you lose if you draw on an empty deck"
+      },
+      {
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
         "text": "in constructed you lose"
       },
       {
-        "file": "client/engine/src/types.ts",
-        "text": "   * CR D8.2, mode 'constructed' ONLY: a SINGLE CARD DUEL — both decks are thirty"
+        "file": "client/ledgers/rules-questions.snapshot.jsonl",
+        "text": "yeah cube draft is constructed"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "if ((shared || losers.size > 1) && a.life === b.life && a.life <= 0) {"
+      },
+      {
+        "file": "client/engine/src/engine.ts",
+        "text": "const byLife = (): Seat => (a.life < b.life ? a.seat : b.life < a.life ? b.seat : this.initiative);"
       }
     ],
     "basis_ok": true,
@@ -333,43 +361,50 @@
   },
   {
     "key": "concepts.ending.deck-out.shared-deck",
-    "textHash": "9d4509653433cd7a",
+    "textHash": "cdff52141c366e9b",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U01-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.deckedOut",
+        "loc": "client/engine/src/engine.ts:deckedOut",
         "agrees": true,
-        "note": "mode != constructed: loser = lower life, initiative on tie"
+        "note": "shared: loser = lower life, tie -> initiative"
       },
       {
-        "loc": "client/engine/src/engine.ts:E.judgeDeckOutWithLife",
+        "loc": "client/engine/src/engine.ts:judgeDeckOutWithLife",
         "agrees": true,
-        "note": "shared: decided on life totals at the end of the effect"
+        "note": "inside an effect: judged at batch end; equal at 0 or less -> draw"
       }
     ],
     "tests_run": [
       {
-        "file": "656-deck-out.test.ts",
-        "pattern": "CR 104.5 / CT-385: with a shared deck (live draft) the game ends and the higher life total wins",
+        "file": "client/engine/test/656-deck-out.test.ts",
+        "pattern": "CR 104.5 / CT-385: with a shared deck (live draft)",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "656-deck-out.test.ts",
+        "file": "client/engine/test/656-deck-out.test.ts",
         "pattern": "CR 104.5 / CT-385: a live-draft deck-out with the life totals tied",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "684-deck-out-judged-with-life.test.ts",
-        "pattern": "CR 104.5b / CT-418: with a shared deck the deck-out inside an effect",
+        "file": "client/engine/test/684-deck-out-judged-with-life.test.ts",
+        "pattern": "CR 104.5b / CT-418",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U01-2.test.ts",
+        "test": "probe U01-2a: shared deck runs out inside an effect with both players on 0 -- a draw",
+        "passed": true,
+        "demonstrates": "yes: the 'unless both are at 0 or less: then a draw' clause"
+      }
+    ],
     "source_checks": [
       {
         "ref": "RQ 1387479757406474313",
@@ -379,29 +414,20 @@
       {
         "ref": "RQ 1402046319643856916",
         "supports": "yes",
-        "note": "'don't make sense to make a player lose since its a shared deck'"
-      },
-      {
-        "ref": "owner 2026-10-24 'Follow Caleb'",
-        "supports": "yes",
         "note": ""
       },
       {
-        "ref": "owner 2026-10-25 'INT player loses'",
+        "ref": "owner 'INT player loses'",
         "supports": "yes",
         "note": "the tie"
       },
       {
-        "ref": "owner 2026-10-25 'Check both at the end'",
+        "ref": "owner CT-418, CT-565",
         "supports": "yes",
-        "note": "during an effect"
+        "note": "judged at the end of the effect; equal at 0 or less is a draw"
       }
     ],
     "quote_spans": [
-      {
-        "file": "client/ledgers/rules-questions.snapshot.jsonl",
-        "text": "The game ends, highest life total wins"
-      },
       {
         "file": "client/ledgers/rules-questions.snapshot.jsonl",
         "text": "in live draft the game just ends if you run out of cards (don't make sense to make a player lose since its a shared deck)"
@@ -472,88 +498,77 @@
   },
   {
     "key": "concepts.ending.elimination.immediate",
-    "textHash": "fa405a303ff0e1d0",
+    "textHash": "891745d1fabf746e",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U01-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.lifeBatch",
+        "loc": "client/engine/src/engine.ts:lifeBatch/checkLifeTotals",
         "agrees": true,
-        "note": "life changes of one resolving part are applied, then checkLifeTotals"
+        "note": "one resolving part (line ~13581) and one combat sub-step are a batch; checked when it ends"
       },
       {
-        "loc": "client/engine/src/engine.ts:E.resolveParts (lifeBatch around def.run)",
+        "loc": "client/engine/src/engine.ts:combatSubStep lifeBatch (Lethal killPlayer inside)",
         "agrees": true,
-        "note": "one resolving part = one batch"
+        "note": "Lethal kills are in the same batch"
       },
       {
-        "loc": "client/engine/src/engine.ts:combat face damage lifeBatch",
-        "agrees": true,
-        "note": "both seats' combat losses and Lethal kills inside one batch"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:E.deckedOut",
-        "agrees": true,
-        "note": "inside a batch the deck-out is deferred to checkLifeTotals"
-      },
-      {
-        "loc": "client/engine/src/engine.ts:E.rotDamage",
+        "loc": "client/engine/src/engine.ts:rotDamage",
         "agrees": true,
         "note": "NOT a life batch; initiative seat first, checked at once"
       },
       {
-        "loc": "client/engine/src/engine.ts:E.canPayLife",
+        "loc": "client/engine/src/engine.ts:deckedOut/deckedInBatch",
         "agrees": true,
-        "note": "life > n: a life cost equal to your life is refused"
+        "note": "a deck-out in a batch waits for the batch end"
+      },
+      {
+        "loc": "client/engine/src/engine.ts:canPayLife",
+        "agrees": true,
+        "note": "life > n required"
       }
     ],
     "tests_run": [
       {
-        "file": "654-simultaneous-loss.test.ts",
-        "pattern": "CR 104.1a / CT-409: Penance takes both players from 1 to 0",
+        "file": "client/engine/test/654-simultaneous-loss.test.ts",
+        "pattern": "CR 104.1a / CT-409 / CT-565: Penance takes both players from 1 to 0",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "654-simultaneous-loss.test.ts",
-        "pattern": "CR 104.1a / CT-409: with one player at 0 the other still wins, and an effect finishes",
+        "file": "client/engine/test/654-simultaneous-loss.test.ts",
+        "pattern": "CR 104.1a / CT-409: with one player at 0 the other still wins",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "654-simultaneous-loss.test.ts",
+        "file": "client/engine/test/654-simultaneous-loss.test.ts",
         "pattern": "CR 104.1a / CT-409: rot is not simultaneous",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "654-simultaneous-loss.test.ts",
-        "pattern": "CR 104.1a / CT-409: an unblocked attacker and a Piercing blocker",
+        "file": "client/engine/test/37-attrs-wight.test.ts",
+        "pattern": "CR 802.22b {Blessed}",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "37-attrs-wight.test.ts",
-        "pattern": "CR 802.22b {Blessed}: without the attribute the same shot is lethal",
+        "file": "client/engine/test/684-deck-out-judged-with-life.test.ts",
+        "pattern": "",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "684-deck-out-judged-with-life.test.ts",
-        "pattern": "CR 104.5",
+        "file": "client/engine/test/412-cr-general.test.ts",
+        "pattern": "",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "412-cr-general.test.ts",
-        "pattern": "cr:concepts.ending.elimination.immediate",
-        "passed": true,
-        "asserts_claim": true
-      },
-      {
-        "file": "415-cr-costs-life-timestamps.test.ts",
-        "pattern": "cr:concepts.costs.unpayable.life — with Arbiter of Vitality out, at exactly 9 life Glararr is still unpayable",
+        "file": "client/engine/test/415-cr-costs-life-timestamps.test.ts",
+        "pattern": "cr:concepts.costs.unpayable.life",
         "passed": true,
         "asserts_claim": true
       }
@@ -561,59 +576,51 @@
     "probes": [
       {
         "file": "client/engine/test/zz-probe-U01-1.test.ts",
-        "test": "probe U01-1: a Lethal kill lands in the same combat sub-step batch as the other face damage",
+        "test": "probe U01-1: a Lethal kill and a Piercing blow in one combat sub-step are checked together (both at 0 = draw)",
         "passed": true,
-        "demonstrates": "yes: non-initiative attacker's pierce-taken total 0 and the defender's Lethal-kill 0 are compared together; the tie goes against the initiative defender, which could only happen if the Lethal kill is inside the sub-step batch"
+        "demonstrates": "yes: Lethal kill and pierce damage in one sub-step are checked together; both at 0 is a draw, not an early loss for the player listed first"
       }
     ],
     "source_checks": [
       {
         "ref": "RQ 1348854126699614248",
         "supports": "yes",
-        "note": "'die at the exact same time' -- simultaneous deaths compared"
+        "note": "Caleb, answering 'both players die in the same combat step'"
       },
       {
         "ref": "RQ 1542923825904099349",
         "supports": "yes",
-        "note": "Caleb answering both players with more rot than life"
+        "note": "answer to both players having more rot than life"
       },
       {
         "ref": "RQ 1542924008620564610",
         "supports": "yes",
-        "note": "'But rot isn't simultaneous'"
+        "note": "rot is not simultaneous"
       },
       {
-        "ref": "owner 2026-10-25 'Highest total, tie: INT loses'",
-        "supports": "yes",
-        "note": ""
+        "ref": "owner CT-409",
+        "supports": "partial",
+        "note": "the 'tie: INT loses' half is superseded by CT-565 (draw), but this record does not rely on the tie half"
       },
       {
-        "ref": "owner 2026-10-25 'Check both at the end'",
+        "ref": "owner CT-418 'Check both at the end'",
         "supports": "yes",
-        "note": "deck-out during an effect judged at its end with the totals"
+        "note": "a deck-out during an effect"
       },
       {
         "ref": "owner register@72de434 life cost",
         "supports": "yes",
-        "note": "words taken as given: a life cost that would kill cannot be paid"
+        "note": "a life cost that would kill you may not be paid"
       }
     ],
     "quote_spans": [
       {
         "file": "client/ledgers/rules-questions.snapshot.jsonl",
-        "text": "both players would need to die at the exact same time for this to happen, which is quite rare."
-      },
-      {
-        "file": "client/ledgers/rules-questions.snapshot.jsonl",
-        "text": "initiative takes their deployment first and dies"
-      },
-      {
-        "file": "client/ledgers/rules-questions.snapshot.jsonl",
-        "text": "But rot isn't simultaneous"
+        "text": "in situations of simultaneous damage, nyar is right whoever takes more loses. But rot isn't simultaneous"
       },
       {
         "file": "client/engine/src/engine.ts",
-        "text": "    return n <= 0 || (!this.lifeLocked(seat) && this.player(seat).life > n);"
+        "text": "return n <= 0 || (!this.lifeLocked(seat) && this.player(seat).life > n);"
       }
     ],
     "basis_ok": true,
@@ -621,27 +628,33 @@
   },
   {
     "key": "concepts.ending.elimination.simultaneous",
-    "textHash": "f29f1d7eb6a45e92",
+    "textHash": "a1b0925e89516748",
     "verdict": "confirmed",
     "round": 4,
     "verifier": "U01-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.checkLifeTotals",
+        "loc": "client/engine/src/engine.ts:checkLifeTotals/endInDraw",
         "agrees": true,
-        "note": "a.life < b.life ? a : b.life < a.life ? b : initiative"
+        "note": "higher total wins, negatives count, equal totals are a draw (winner null)"
       }
     ],
     "tests_run": [
       {
         "file": "client/engine/test/654-simultaneous-loss.test.ts",
-        "pattern": "CR 104.1a / CT-409: an unblocked attacker and a Piercing blocker",
+        "pattern": "CR 104.1a / CT-409: an unblocked attacker and a Piercing blocker bring both players to 0",
         "passed": true,
         "asserts_claim": true
       },
       {
         "file": "client/engine/test/654-simultaneous-loss.test.ts",
-        "pattern": "CR 104.1a / CT-409: the engine decides a double loss by total",
+        "pattern": "CR 104.1b / CT-565",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/654-simultaneous-loss.test.ts",
+        "pattern": "CR 104.1a / CT-409 / CT-565: the engine decides a double loss by total",
         "passed": true,
         "asserts_claim": true
       },
@@ -657,34 +670,30 @@
       {
         "ref": "RQ 1348854126699614248",
         "supports": "yes",
-        "note": "answers 'Does whoever has the least negative life win?'"
+        "note": "higher life total wins"
       },
       {
         "ref": "RQ 1294403184575647765",
         "supports": "yes",
-        "note": ""
+        "note": "tiebreak is the final life total"
       },
       {
         "ref": "RQ 1366515001786892349",
         "supports": "yes",
-        "note": ""
+        "note": "verbatim within 'Yeah that could cause a draw, although right now the higher life total wins draws'"
       },
       {
         "ref": "RQ 1426602231070851253",
         "supports": "yes",
-        "note": "'yeah' to 'life totals can go below 0 to find a winner'"
+        "note": "'yeah' answers 'life totals can go below 0 to find a winner if both players take lethal damage at the same time?'"
       },
       {
-        "ref": "owner chat 2026-10-25 (CT-409)",
+        "ref": "owner CT-565",
         "supports": "yes",
-        "note": "tie: initiative loses"
+        "note": "equal totals at 0 or less: a draw"
       }
     ],
     "quote_spans": [
-      {
-        "file": "client/ledgers/rules-questions.snapshot.jsonl",
-        "text": "But yes currently the rule is player with the highest life total wins"
-      },
       {
         "file": "client/ledgers/rules-questions.snapshot.jsonl",
         "text": "So life totals can go below 0 to find a winner if both players take lethal damage at the same time?"
@@ -794,7 +803,7 @@
     "quote_spans": [
       {
         "file": "client/engine/src/engine.ts",
-        "text": "if (p.life <= 0 && this.s.winner === null) {"
+        "text": "if (p.life <= 0 && this.s.phase !== 'gameover') {"
       }
     ],
     "basis_ok": true,

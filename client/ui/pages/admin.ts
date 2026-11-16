@@ -404,7 +404,7 @@ function roomsHtml(rooms: RoomRow[]): string {
       <td>${esc(r.code)}</td>
       <td>${esc(r.mode)}${r.rated ? ' <span class="stchip">rated</span>' : ''}</td>
       <td>${seat(0)} vs ${seat(1)}</td>
-      <td>${r.winner !== null ? 'over' : `turn ${r.turn} · ${esc(r.phase)}`}</td>
+      <td>${r.winner !== null || r.phase === 'gameover' ? 'over' : `turn ${r.turn} · ${esc(r.phase)}`}</td>
       <td class="num">${r.actions}</td>
       <td class="num">${r.minutes}m</td>
       <td class="num">${r.watchers}</td>

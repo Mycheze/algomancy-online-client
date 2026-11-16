@@ -252,7 +252,7 @@ export function postGameHtml(v: PostGameView): string {
   const me = o.seat;
   const won = o.winner === me;
   const drew = o.winner === null;
-  const title = drew ? 'Game over' : won ? 'You win!' : `${esc(o.names[o.winner!] ?? 'Your opponent')} wins`;
+  const title = drew ? 'A draw' : won ? 'You win!' : `${esc(o.names[o.winner!] ?? 'Your opponent')} wins`;
   const sub = `${esc(v.modeLabel)} · ${o.turns} turn${o.turns === 1 ? '' : 's'}`
     + (o.matchMs ? ` · ${matchLength(o.matchMs)}` : '');
 

@@ -35,7 +35,7 @@ import type { CardName, Seat } from '../engine/src/types.ts';
 import { checkMatchDeck, checkSwap, type MatchConfig } from '../engine/src/matchdeck.ts';
 import { matchDeckForPlay, type DeckPile } from './collection.ts';
 import {
-  closeMatchRoom, createRoom, decidedWinner, getRoom, roomWaiting, setRoomDeck,
+  closeMatchRoom, createRoom, decidedWinner, gameDecided, getRoom, roomWaiting, setRoomDeck,
   setRoomHeld, setSeatUser, settleClock, touchRoom, type Room,
 } from './rooms.ts';
 import {
@@ -206,11 +206,18 @@ export function matchGameDecided(room: Room, now = Date.now()): Match | undefine
   if (!m || !matchOpen(m) || m.phase !== 'game' || m.room !== room.code) return m;
   if (m.games.some(g => g.code === room.code)) return m;
   const winner = decidedWinner(room);
-  if (winner === null) return m;
+  if (!gameDecided(room)) return m;
   settleClock(room);
   m.banks = [...room.clockMs] as [number, number];
   const how = howDecided(room);
   m.games.push({ code: room.code, initiative: room.state.initiative, winner, how, at: now });
+  // CR 104.1b: a drawn game scores for nobody and another game is played; the
+  // player who did not have the initiative in it chooses
+  if (winner === null) {
+    if (m.concedeBy !== undefined) finish(m, other(m.concedeBy), 'conceded', now, m.concedeBy, room);
+    else nextGame(m, room, other(room.state.initiative), now);
+    return m;
+  }
   const score = matchScore(m);
   const need = m.bestOf === 3 ? 2 : 1;
   if (m.concedeBy !== undefined) {
@@ -221,13 +228,13 @@ export function matchGameDecided(room: Room, now = Date.now()): Match | undefine
   } else if (score[winner]! >= need) {
     finish(m, winner, 'games', now, undefined, room);
   } else {
-    nextGame(m, room, winner, now);
+    nextGame(m, room, other(winner), now);
   }
   return m;
 }
 
 /** game k+1's room, created now: waiting on both decks, the banks carried */
-function nextGame(m: Match, from: Room, winner: Seat, now: number): Room {
+function nextGame(m: Match, from: Room, chooser: Seat, now: number): Room {
   const code = hooks.code();
   const next = createRoom(code, (Math.random() * 1e9) >>> 0, [...m.names] as [string, string], 'constructed',
     undefined, undefined, undefined, m.clockStart, undefined, false, {
@@ -239,10 +246,11 @@ function nextGame(m: Match, from: Room, winner: Seat, now: number): Room {
   m.room = code;
   // §8 answer 3: the configurations carry over as they are (game 3 starts
   // from game 2's); the loser of the game just played chooses
-  m.between = { code, chooser: other(winner), initiative: null, ready: [false, false], until: null, locked: false };
+  m.between = { code, chooser, initiative: null, ready: [false, false], until: null, locked: false };
   delete m.pause;
   saveMatch(m);
-  console.log(`[match] ${m.id}: game ${m.games.length} to ${m.names[winner]} (${matchScore(m).join('-')}) → game ${m.games.length + 1} in ${code}`);
+  const last = m.games.at(-1)?.winner;
+  console.log(`[match] ${m.id}: game ${m.games.length} ${last === 0 || last === 1 ? `to ${m.names[last]}` : 'drawn'} (${matchScore(m).join('-')}) → game ${m.games.length + 1} in ${code}`);
   hooks.moved(m, from, next);
   // both seats may already be standing in it (a restart, a fast click)
   openWindowIfPresent(m, next, now);
@@ -442,7 +450,7 @@ export function concedeMatch(room: Room, seat: Seat, now = Date.now()): MatchOut
   // which seat of the MATCH this is: seats never move between its games
   if (m.users[seat] !== null && room.users[seat] !== m.users[seat]) return no('you are not playing this match');
   const live = m.phase === 'game' ? getRoom(m.room) : undefined;
-  if (live && !roomWaiting(live) && decidedWinner(live) === null) {
+  if (live && !roomWaiting(live) && !gameDecided(live)) {
     m.concedeBy = seat;
     saveMatch(m);
     try { hooks.concede(live, seat); } catch (err) { console.error(`[match] ${m.id}: the concede could not land:`, err); }
@@ -494,7 +502,7 @@ export function reconcileMatches(now = Date.now()): void {
   for (const m of allMatches()) {
     if (!matchOpen(m) || m.phase !== 'game') continue;
     const room = getRoom(m.room);
-    if (room && decidedWinner(room) !== null) matchGameDecided(room, now);
+    if (room && gameDecided(room)) matchGameDecided(room, now);
   }
   sweepMatches(now);
 }

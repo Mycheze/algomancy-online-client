@@ -3363,7 +3363,7 @@ export class E {
    * Caleb". The game-over carries `deckedOut: <seat>`.
    */
   deckedOut(seat: Seat): void {
-    if (this.s.winner !== null || this.s.lesson) return;
+    if (this.s.phase === 'gameover' || this.s.lesson) return;
     // CR 104.5, 104.1b / CT-418 (owner, 2026-10-25, "Check both at the end"): inside one
     // effect (a `lifeBatch`) the deck-out waits for the effect to finish, as a 0
     // life total does, and `checkLifeTotals` judges both together. The draw has
@@ -5433,7 +5433,7 @@ export class E {
     this.fireEvent('lifeLost', ev);   // "when a player loses life" triggers (region-scoped in battle, CR 101.6)
     // CR 104.1a / CT-409: inside one effect the loss waits for the effect's other
     // life changes (`lifeBatch`); anywhere else it is checked at once.
-    if (p.life <= 0 && this.s.winner === null) {
+    if (p.life <= 0 && this.s.phase !== 'gameover') {
       if (this.lifeBatchDepth === 0) this.checkLifeTotals();
     }
   }
@@ -5476,14 +5476,12 @@ export class E {
   /**
    * CR 104.1a / CT-409: end the game if a life total is at 0 or less.
    *
-   * Two players down at once — the owner, 2026-10-25: "Highest total, tie: INT
-   * loses"; Caleb, rules-questions 2025-03-10: "currently the rule is player
-   * with the highest life total wins". The higher total wins (negative numbers
-   * count), and on an exact tie the initiative player loses. The game-over
-   * event then carries `alsoAtZero: <winner>` — the winner fell too.
+   * Two players down at once (CR 104.1b): the higher total wins, negative
+   * numbers counting, and two equal totals are a draw (`endInDraw`). The
+   * game-over event then carries `alsoAtZero: <winner>` — the winner fell too.
    */
   checkLifeTotals(): void {
-    if (this.s.winner !== null) return;
+    if (this.s.phase === 'gameover') return;
     const decked = [...this.deckedInBatch];
     this.deckedInBatch.clear();
     if (decked.length) { this.judgeDeckOutWithLife(decked); return; }
@@ -5493,7 +5491,8 @@ export class E {
     if (down.length === 1) loser = down[0]!.seat;
     else {
       const [a, b] = down as [PlayerState, PlayerState];
-      loser = a.life < b.life ? a.seat : b.life < a.life ? b.seat : this.initiative;
+      if (a.life === b.life) this.endInDraw(`*** Both players fell to 0 or less on the same total (${a.life}) — the game is a draw. ***`, {});
+      loser = a.life < b.life ? a.seat : b.seat;
     }
     const winner = other(loser);
     this.s.winner = winner;
@@ -5504,11 +5503,22 @@ export class E {
     } else {
       const w = this.player(winner).life, l = this.player(loser).life;
       this.ev('gameOver',
-        `*** Both players fell to 0 or less — ${this.pname(winner)} wins `
-        + (w > l ? `on the higher life total (${w} to ${l}). ***`
-          : `the tie at ${w}: it goes against the initiative player. ***`),
+        `*** Both players fell to 0 or less — ${this.pname(winner)} wins on the higher life total (${w} to ${l}). ***`,
         { winner, alsoAtZero: winner });
     }
+    throw new GameEnded();
+  }
+
+  /**
+   * CR 104.1b: both players have lost at the same moment on the same total at
+   * 0 or less — the game is over and nobody won. A drawn game is the one state
+   * with phase 'gameover' and `winner` null; its event carries `draw: true`.
+   */
+  private endInDraw(msg: string, data: Record<string, unknown>): never {
+    this.s.winner = null;
+    this.s.phase = 'gameover';
+    this.s.resolving = null;   // nothing is resolving any more — the game is over
+    this.ev('gameOver', msg, { winner: null, draw: true, ...data });
     throw new GameEnded();
   }
 
@@ -5523,10 +5533,12 @@ export class E {
    *   · constructed: the losers are every decked seat and every seat at 0 or
    *     less. One loser loses. Two losers are a double loss, decided as CR 104.1b
    *     decides two players at 0: the higher life total wins (negative totals
-   *     count), and on equal totals the initiative player loses.
+   *     count); equal totals at 0 or less are a draw, and equal totals above 0
+   *     (both decked) go against the initiative player.
    *   · a shared deck (live draft): a deck-out ends the game on the higher life
    *     total whoever drew (CR 104.5b), so that is the answer here too — it
-   *     already covers a player at 0.
+   *     already covers a player at 0, and both on one total at 0 or less is a
+   *     draw (CR 104.1b).
    * Outside an effect (the card step) `deckedOut` still ends the game at once.
    */
   private judgeDeckOutWithLife(decked: Seat[]): void {
@@ -5535,6 +5547,13 @@ export class E {
     const shared = this.s.mode !== 'constructed';
     const losers = new Set<Seat>(shared ? [] : decked);
     if (!shared) for (const p of this.s.players) if (p.life <= 0) losers.add(p.seat);
+    // CR 104.1b: both lost at once on the same total at 0 or less is a draw.
+    if ((shared || losers.size > 1) && a.life === b.life && a.life <= 0) {
+      this.endInDraw(shared
+        ? `*** The deck has run out — the game ends with both players on ${a.life}: the game is a draw. ***`
+        : `*** Both players lost at once (out of cards or at 0 life) on the same total (${a.life}) — the game is a draw. ***`,
+      { deckedOut: decked[0]! });
+    }
     const loser: Seat = shared || losers.size > 1 ? byLife() : [...losers][0]!;
     const winner = other(loser);
     this.s.winner = winner;
@@ -5560,7 +5579,7 @@ export class E {
    * loseLife's ending exactly (winner, phase, event, GameEnded) so nothing
    * downstream has to tell the two apart. */
   concede(seat: Seat): void {
-    if (this.s.winner !== null) return;
+    if (this.s.phase === 'gameover') return;
     this.s.winner = other(seat);
     this.s.phase = 'gameover';
     this.s.resolving = null;   // nothing is resolving any more
@@ -5577,7 +5596,7 @@ export class E {
    */
   killPlayer(seat: Seat, why: string): void {
     const p = this.player(seat);
-    if (p.life <= 0 || this.s.winner !== null) return;
+    if (p.life <= 0 || this.s.phase === 'gameover') return;
     this.ev('info', `${why} — ${p.name} is killed outright.`, { seat, why });
     this.loseLife(seat, p.life, why);
   }

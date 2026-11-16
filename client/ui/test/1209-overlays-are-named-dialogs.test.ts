@@ -214,7 +214,7 @@ test('§3 the six the inventory named, by their own markup', () => {
   });
   assert.match(postGameHtml(v(0)), /^<div class="overlay pgover"><div class="pgbox won" role="dialog" aria-label="You win!">/);
   assert.match(postGameHtml(v(1)), /<div class="pgbox lost" role="dialog" aria-label="Bo &lt;b&gt; wins">/, 'a name is escaped');
-  assert.match(postGameHtml(v(null)), /<div class="pgbox " role="dialog" aria-label="Game over">/);
+  assert.match(postGameHtml(v(null)), /<div class="pgbox " role="dialog" aria-label="A draw">/);
   // the board's rules reader was already one, and the census follows into it
   assert.match(helpBoxHtml(), /^<div class="overlaybox helpbox[^"]*" role="dialog" aria-label="[^"]+">/);
 });

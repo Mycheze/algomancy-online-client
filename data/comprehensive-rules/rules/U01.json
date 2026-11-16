@@ -1721,8 +1721,8 @@
     "text": "A player brought to 0 or less by an effect is not eliminated until that effect has finished: every life change one resolution of one effect makes (the unit damage is dealt in, 112.8) is applied first, and only then are the life totals checked. All the life changes of one combat damage sub-step are applied together in the same way, Lethal kills included (802.24a), and checked after all of them. A player who runs out of cards during such an effect or sub-step has not lost until it has finished either, and is judged with the life totals then (104.5a, 104.5b). Any other life change, such as rot damage, is checked the moment it happens; rot is dealt one player at a time, in initiative order, and is never simultaneous (112.13). A life cost that would by itself bring its payer to 0 cannot be paid at all (111).",
     "examples": [
       {
-        "text": "Both players are at 1 life and Penance brings each of them to 0. Neither is eliminated until the effect has finished, and then both are at 0 together (104.1b).",
-        "test": "654-simultaneous-loss.test.ts::CR 104.1a / CT-409: Penance takes both players from 1 to 0 and the initiative player loses the tie"
+        "text": "Both players are at 1 life and Penance brings each of them to 0. Neither is eliminated until the effect has finished, and then both are at 0 together: the game is a draw (104.1b).",
+        "test": "654-simultaneous-loss.test.ts::CR 104.1a / CT-409 / CT-565: Penance takes both players from 1 to 0 and the game is a draw"
       },
       {
         "text": "A player at 0 is not out until the rest of the effect has happened: the effect finishes, and then the game ends.",
@@ -1797,15 +1797,19 @@
     "key": "concepts.ending.elimination.simultaneous",
     "parent": "concepts.ending.elimination",
     "order": 2,
-    "text": "If both players are at 0 or less when the life totals are checked, the player with the higher life total wins; totals below 0 count, so a player at -1 beats a player at -3. If the totals are equal, the initiative player loses.",
+    "text": "If both players are at 0 or less when the life totals are checked, the player with the higher life total wins; totals below 0 count, so a player at -1 beats a player at -3. If the totals are equal, the game is a draw: it is over, and neither player wins.",
     "examples": [
       {
         "text": "An unblocked attacker and a Piercing blocker, in the same combat damage sub-step, bring both players to 0 or less. The player left on the higher total wins.",
         "test": "654-simultaneous-loss.test.ts::CR 104.1a / CT-409: an unblocked attacker and a Piercing blocker bring both players to 0 in one combat step, and the higher total wins"
       },
       {
-        "text": "Both players are at 1 and one effect makes each lose 1. Both are at 0, the totals are equal, and the initiative player loses.",
-        "test": "654-simultaneous-loss.test.ts::CR 104.1a / CT-409: the engine decides a double loss by total, then against the initiative player"
+        "text": "The initiative player attacks; one unblocked attacker deals 3 to a defender at 3, and a Piercing blocker deals 4 to the attacking player at 4, in the same combat damage sub-step. Both players are at 0 and the game is a draw.",
+        "test": "654-simultaneous-loss.test.ts::CR 104.1b / CT-565 / #403: an unblocked attacker and a Piercing blocker bring both players to exactly 0 in one combat step, and the game is a draw"
+      },
+      {
+        "text": "Both players are at 1 and one effect makes each lose 1. Both are at 0, the totals are equal, and the game is a draw.",
+        "test": "654-simultaneous-loss.test.ts::CR 104.1a / CT-409 / CT-565: the engine decides a double loss by total, and equal totals are a draw"
       }
     ],
     "see": [
@@ -1835,9 +1839,14 @@
       ],
       "owner": [
         {
-          "quote": "Highest total, tie: INT loses",
-          "adopted": "2026-10-25",
-          "from": "owner, chat 2026-10-25 (CT-409: one effect brings both players to 0 life or less)"
+          "quote": "B - make it a draw. Nyar is right. But this is the only case (now) where a draw can happen.",
+          "adopted": "2026-11-16",
+          "from": "owner, chat 2026-11-16 (CT-565: both players brought to the same total at 0 or less at the same moment: keep 'the initiative player loses', or make it a draw?)"
+        },
+        {
+          "quote": "Both players go to the same \"losing\" life total (0 or below) at the same moment, from the same effect",
+          "adopted": "2026-11-16",
+          "from": "owner, chat 2026-11-16 (CT-565, the same answer)"
         }
       ],
       "tests": [
@@ -1847,7 +1856,7 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The designer decides by the higher final total (2024-10-11, 2025-03-11, 2025-04-28) and lets totals go below 0 (2025-10-11, \"yeah\" to \"So life totals can go below 0 to find a winner…\"). He never addresses an exact tie; the tie rule is the owner's (2026-10-25, \"Highest total, tie: INT loses\"). The game-over event carries alsoAtZero.",
+    "notes": "The designer decides by the higher final total (2024-10-11, 2025-03-11, 2025-04-28) and lets totals go below 0 (2025-10-11, \"yeah\" to \"So life totals can go below 0 to find a winner…\"). He never addresses an exact tie. The tie was the owner's \"Highest total, tie: INT loses\" (2026-10-25) until his CT-565 answer (2026-11-16) made it a draw, on a judge's report (#403); he added that this is the only draw, and that rot is different (rot is never simultaneous, 104.1a). A drawn game is phase 'gameover' with no winner; its game-over event carries draw: true.",
     "sourceHashes": {
       "RQ 1294403184575647765": "947f5fd256ab57d83eb74e389a32e76c479399b75c228f4cbf25e022e9490b5e",
       "RQ 1348854126699614248": "1128ac26d0faef75a906ab34da44312c52450197dc9cd14dd0d4e8978c91c6bf",
@@ -2132,7 +2141,7 @@
     "key": "concepts.ending.deck-out.constructed",
     "parent": "concepts.ending.no-deck-out",
     "order": 1,
-    "text": "In constructed, the player who ran out of cards loses the game, whatever the life totals. A Single Card Duel is constructed for this rule (D8.2). A player who runs out of cards during an effect has not lost until that effect has finished, as with a life total of 0 (104.1a). When it has finished, each player who ran out of cards and each player at 0 or less has lost; if that is both players, 104.1b decides the game on the life totals.",
+    "text": "In constructed, the player who ran out of cards loses the game, whatever the life totals. A Single Card Duel is constructed for this rule (D8.2). A player who runs out of cards during an effect has not lost until that effect has finished, as with a life total of 0 (104.1a). When it has finished, each player who ran out of cards and each player at 0 or less has lost. If that is both players, the higher life total wins; equal totals at 0 or less are a draw (104.1b), and equal totals above 0 go against the initiative player.",
     "examples": [
       {
         "text": "A constructed player at 25 life has to draw with an empty deck and an empty recycle pile while the opponent is at 3. The player who had to draw loses.",
@@ -2147,12 +2156,16 @@
         "test": "684-deck-out-judged-with-life.test.ts::CR 104.5, 104.1b / CT-418: one effect takes the opponent to 0 and decks the caster -- both lost, and the higher life total (the caster) wins"
       },
       {
-        "text": "The same effect brings both players to 0 and decks the caster: both have lost, the totals are equal, and the initiative player loses.",
-        "test": "684-deck-out-judged-with-life.test.ts::CR 104.5, 104.1b / CT-418: both players brought to 0 and the caster decked in one effect -- equal totals, the initiative player loses"
+        "text": "The same effect brings both players to 0 and decks the caster: both have lost, the totals are equal at 0, and the game is a draw.",
+        "test": "684-deck-out-judged-with-life.test.ts::CR 104.5, 104.1b / CT-418 / CT-565: both players brought to 0 and the caster decked in one effect -- equal totals, the game is a draw"
       },
       {
         "text": "A player runs out of cards during an effect and nobody is at 0: the effect finishes, and then that player loses.",
         "test": "684-deck-out-judged-with-life.test.ts::CR 104.5a / CT-418: a deck-out inside an effect with nobody at 0 -- the decked player still loses, once the effect has finished"
+      },
+      {
+        "text": "One effect makes both players draw with both decks and recycle piles empty, and both are on 7 life. Both have lost on equal totals above 0, so it is not a draw: the initiative player loses. On 0 each, the same effect is a draw.",
+        "test": "684-deck-out-judged-with-life.test.ts::CR 104.5, 104.1b / CT-565: both players run out of cards in one effect on equal totals above 0 -- not a draw, the initiative player loses"
       }
     ],
     "see": [
@@ -2180,6 +2193,11 @@
       ],
       "owner": [
         {
+          "quote": "Highest total, tie: INT loses",
+          "adopted": "2026-10-25",
+          "from": "owner, chat 2026-10-25 (CT-409: one effect brings both players to 0 life or less)"
+        },
+        {
           "quote": "Follow Caleb",
           "adopted": "2026-10-24",
           "from": "owner, chat 2026-10-24 (CT-385: follow the designer on running out of cards?)"
@@ -2193,6 +2211,16 @@
           "quote": "Check both at the end",
           "adopted": "2026-10-25",
           "from": "owner, chat 2026-10-25 (CT-418: one effect brings your opponent to 0 and then makes you draw from an empty deck and an empty recycle pile; who wins?)"
+        },
+        {
+          "quote": "Both players go to the same \"losing\" life total (0 or below) at the same moment, from the same effect",
+          "adopted": "2026-11-16",
+          "from": "owner, chat 2026-11-16 (CT-565, the same answer)"
+        },
+        {
+          "quote": "B - make it a draw. Nyar is right. But this is the only case (now) where a draw can happen.",
+          "adopted": "2026-11-16",
+          "from": "owner, chat 2026-11-16 (CT-565: both players brought to the same total at 0 or less at the same moment: keep 'the initiative player loses', or make it a draw?)"
         }
       ],
       "tests": [
@@ -2203,7 +2231,7 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The designer for constructed (2025-04-01, 2025-08-04); the owner for Single Card Duel (\"Same woth single card\", 2026-10-25). CT-418 (2026-10-25): the deck-out inside an effect waits for the effect and is judged with the life totals; the owner, asked \"Constructed: one effect brings your opponent to 0 and then makes you draw from an empty deck … Who should win?\": \"Check both at the end\". No designer word on a deck-out and a life loss in one effect was found (pm-engine searched the export). Outside an effect (the card step, a bare draw) the deck-out still ends the game at once.",
+    "notes": "The designer for constructed (2025-04-01, 2025-08-04); the owner for Single Card Duel (\"Same woth single card\", 2026-10-25). CT-418 (2026-10-25): the deck-out inside an effect waits for the effect and is judged with the life totals; the owner, asked \"Constructed: one effect brings your opponent to 0 and then makes you draw from an empty deck … Who should win?\": \"Check both at the end\". No designer word on a deck-out and a life loss in one effect was found (pm-engine searched the export). Outside an effect (the card step, a bare draw) the deck-out still ends the game at once. CT-565 (2026-11-16): equal totals at 0 or less are now a draw, as in 104.1b (the owner: both players at the same losing total from the same effect); equal totals above 0, both decked, keep the owner's tie rule. Two decked players on equal totals above 0 are not the owner's draw case (\"the only case (now) where a draw can happen\" is the same losing total, 0 or below), so his general tie call (\"Highest total, tie: INT loses\") still decides it.",
     "sourceHashes": {
       "RQ 1356616873655140546": "37dcd0764727290b18383b946f8c3f942c3a12dfd2335b013351f00be49de75b",
       "RQ 1402038431659593859": "6473b7ce0a1a6290de113756afa7488745cf32d1482f13da299bfa7de3b0dfe8",
@@ -2214,7 +2242,7 @@
     "key": "concepts.ending.deck-out.shared-deck",
     "parent": "concepts.ending.no-deck-out",
     "order": 2,
-    "text": "With a shared deck (live draft), running out of cards ends the game, and the player with the higher life total wins, even if that is the player who had to draw. If the life totals are equal, the initiative player loses. A shared deck that runs out during an effect ends the game once that effect has finished (104.1a), and the life totals are compared then, a player at 0 or less included.",
+    "text": "With a shared deck (live draft), running out of cards ends the game, and the player with the higher life total wins, even if that is the player who had to draw. If the life totals are equal, the initiative player loses, unless both are at 0 or less: then the game is a draw (104.1b). A shared deck that runs out during an effect ends the game once that effect has finished (104.1a), and the life totals are compared then, a player at 0 or less included.",
     "examples": [
       {
         "text": "In a live draft the shared deck runs out when a player at 12 life has to draw against an opponent at 9. The game ends, and the player at 12 wins.",
@@ -2261,6 +2289,11 @@
           "quote": "Check both at the end",
           "adopted": "2026-10-25",
           "from": "owner, chat 2026-10-25 (CT-418: one effect brings your opponent to 0 and then makes you draw from an empty deck and an empty recycle pile; who wins?)"
+        },
+        {
+          "quote": "Both players go to the same \"losing\" life total (0 or below) at the same moment, from the same effect",
+          "adopted": "2026-11-16",
+          "from": "owner, chat 2026-11-16 (CT-565, the same answer)"
         }
       ],
       "tests": [
@@ -2271,7 +2304,7 @@
     "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The designer for the result (2025-06-25, 2025-08-04). He does not address equal totals; the tie is the owner's (2026-10-25, \"INT player loses\"), the same tie rule as 104.1b. A player suggested a drawn game (2025-08-04); Caleb did not answer it, so it is not a ruling. The 656 title still says \"(provisional)\": the owner has since settled it.",
+    "notes": "The designer for the result (2025-06-25, 2025-08-04). He does not address equal totals; the tie is the owner's (2026-10-25, \"INT player loses\"), the same tie rule as 104.1b. A player suggested a drawn game (2025-08-04); Caleb did not answer it, so it is not a ruling. The 656 title still says \"(provisional)\": the owner has since settled it. CT-565 (2026-11-16): two equal totals at 0 or less (one effect brought both there as the deck ran out) are a draw, the owner's draw case.",
     "sourceHashes": {
       "RQ 1387479757406474313": "fc6dfda41930f536b34c28f8c1f743bc447164f776b31766a4ca49ffa721e1b1",
       "RQ 1402046319643856916": "ba54cf966c1e44fc212aa317b7c5ea45d224cd144432260ab1834cabe36915c6"

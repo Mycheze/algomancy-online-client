@@ -247,7 +247,7 @@
       },
       {
         "file": "client/server/match.ts",
-        "text": "    nextGame(m, room, winner, now);"
+        "text": "    nextGame(m, room, other(winner), now);"
       },
       {
         "file": "client/server/match.ts",

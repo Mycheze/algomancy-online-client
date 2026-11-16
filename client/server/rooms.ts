@@ -943,7 +943,7 @@ export function clockSnapshot(room: Room): ClockSnapshot | null {
  */
 export function expiredSeat(room: Room): Seat | null {
   if (room.clockStart === null) return null;
-  if (decidedWinner(room) !== null) return null;
+  if (gameDecided(room)) return null;
   if (roomWaiting(room)) return null;
   // The cheap gate: `clockRun` is the cached running set, kept by settleClock at every event
   // that could change it, so this is two subtractions. Settle (which runs `legalActions`) only
@@ -1003,9 +1003,13 @@ export function roomWaiting(room: Room): boolean {
   return room.mode === 'constructed' && (!room.decks[0] || !room.decks[1]);
 }
 
-/** Is this game decided, and by whom: the live state first, then the stamp (an old log may no
- * longer replay to its ending). Anything asking "is this game over" wants this. */
+/** Who won: the live state first, then the stamp (an old log may no longer replay to its
+ * ending). null while the game goes on, and in a drawn game: "is it over" is `gameDecided`. */
 export const decidedWinner = (room: Room): Seat | null => room.state.winner ?? room.winner;
+
+/** Is this game over: won, lost on time, or drawn (CR 104.1b — phase 'gameover', no winner). */
+export const gameDecided = (room: Room): boolean =>
+  room.state.phase === 'gameover' || decidedWinner(room) !== null;
 
 /** Decided by something the state does not know: a stamped result its replay no longer reaches,
  * or a loss on time (the clock is not game state, and must not become it). So `legalInRoom`
@@ -1388,7 +1392,7 @@ export function dropRoom(code: string, keepFile = true): boolean {
   if (!room) return false;
   rooms.delete(code);
   // a finished game's resume point goes with it: the file is the record now
-  if (keepFile && decidedWinner(room) !== null && !room.closed) persist(room, true, false);
+  if (keepFile && gameDecided(room) && !room.closed) persist(room, true, false);
   if (!keepFile) {
     try { unlinkSync(join(GAMES_DIR, `${code}.json`)); } catch { /* never written, or already gone */ }
   }
@@ -1459,7 +1463,7 @@ export const roomAttended = (room: Room): boolean =>
 export function idleDue(room: Room, now: number): boolean {
   if (roomAttended(room)) { room.unattendedSince = null; return false; }
   room.unattendedSince ??= now;
-  if (decidedWinner(room) !== null) return false;
+  if (gameDecided(room)) return false;
   // docs/22 §2.5: a PAUSED match's waiting room is held for as long as the
   // pause may last (server/match.ts voids it at 7 days). Injected, because
   // match.ts imports this module and this module must not import it.
@@ -2090,7 +2094,7 @@ export function segmentFloor(room: Room): number {
  * either seat a hidden card (seen.ts: both players watch a CC step live). */
 export function ccFloor(room: Room, seat: Seat): number {
   const len = room.actions.length;
-  if (!room.state.sequential || decidedWinner(room) !== null) return len;
+  if (!room.state.sequential || gameDecided(room)) return len;
   settleSeen(room);
   let floor = ccUndoFloor(room.ccMarks, seat, room.state);
   if (floor >= len) return len;
@@ -2286,7 +2290,7 @@ export function amendFloor(room: Room): number {
  * anything is offered: the menu entry is drawn only where this is null. */
 export function fixesRefusal(room: Room): string | null {
   if (roomWaiting(room)) return 'the game has not started';
-  if (decidedWinner(room) !== null || room.state.phase === 'gameover') return 'the game is over';
+  if (gameDecided(room)) return 'the game is over';
   // two people agreeing is the whole of the safety: a scripted opponent
   // cannot agree to anything, and test mode has tools of its own
   if (room.state.sandbox) return 'test mode has its own tools for this';
@@ -2595,7 +2599,7 @@ export function disputeRefusal(room: Room, seat: Seat | null): string | null {
   if (seat !== 0 && seat !== 1) return 'only a player in this game can dispute it';
   const no = disputesRefusal(room);
   if (no) return no;
-  if (roomWaiting(room) || decidedWinner(room) === null) return 'the game is not over';
+  if (roomWaiting(room) || !gameDecided(room)) return 'the game is not over';
   if (room.disputes.some(d => d.seat === seat)) return 'you have already disputed this game';
   return null;
 }
@@ -3351,7 +3355,7 @@ export function restoreRooms(now = Date.now()): void {
       // changes what the actions after it mean, so the boundary is stamped
       const restored = rooms.get(code)!;
       // a restart is not a move: the stamp is written, the date kept
-      if (decidedWinner(restored) === null && stampVersion(restored)) persist(restored, true);
+      if (!gameDecided(restored) && stampVersion(restored)) persist(restored, true);
       console.log(`[rooms] restored ${code} (${raw.actions.length} actions)`);
     } catch (err) {
       console.error(`[rooms] could not restore ${code}:`, err instanceof Error ? err.message : err);

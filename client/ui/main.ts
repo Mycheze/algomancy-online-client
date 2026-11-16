@@ -6512,9 +6512,9 @@ function promptHtml(): string {
     // (a cube match's gohome goes back to its event, and says so: handleButton, docs/25 §8)
     const home = cube.homeButtonHtml(NET?.match?.cube?.event);
     if (NET) return `<div class="promptbar"><span class="who">${winner === NET.seat && !asQuestion() && !NET.spectating ? 'You win! 🎉'
-        : won === null ? 'Game over.' : `${esc(won)} wins.`}</span>
+        : won === null ? (s.phase === 'gameover' ? 'A draw.' : 'Game over.') : `${esc(won)} wins.`}</span>
       ${postGame ? '<button data-btn="pg-reopen">Post-game summary</button>' : ''}${home}</div>`;
-    return `<div class="promptbar"><span class="who">${won === null ? 'Game over.' : `${esc(won)} wins!`}</span>${home}</div>`;
+    return `<div class="promptbar"><span class="who">${won === null ? (s.phase === 'gameover' ? 'A draw.' : 'Game over.') : `${esc(won)} wins!`}</span>${home}</div>`;
   }
   // Playtest 2026-08-20: "when a decision is pending for the other player I
   // get the window for priority and it asks me to pass, but I can't." The

@@ -507,7 +507,7 @@ function gamesHtml(m: MatchSummary, seat: Seat, names: [string, string]): string
   const games = m.games ?? [];
   if (m.bestOf !== 3 || !games.length) return '';
   const line = games.map((g, i) => {
-    const who = g.winner === null ? 'no result'
+    const who = g.winner === null ? (g.how === 'played' ? 'a draw' : 'no result')
       : g.winner === seat ? 'you won' : `${esc(names[g.winner] || 'your opponent')} won`;
     const note = g.how === 'conceded' ? ' (conceded)' : g.how === 'time' ? ' (on time)' : '';
     return `Game ${i + 1}: ${who}${g.winner === null ? '' : note}`;

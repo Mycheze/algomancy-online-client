@@ -5,13 +5,15 @@
  * same combat step: "both players would need to die at the exact same time for
  * this to happen, which is quite rare. But yes currently the rule is player with
  * the highest life total wins". The owner, 2026-10-25, choosing between the
- * readings: "Highest total, tie: INT loses".
+ * readings: "Highest total, tie: INT loses". On an exact tie the owner later
+ * chose a draw: "B - make it a draw. Nyar is right. But this is the only case
+ * (now) where a draw can happen" (CT-565, report #403).
  *
  * So every life change of one effect is applied before anyone loses (CR 104.1a):
  * one resolving effect part (the same unit CR 112.8 deals damage in and CR 708.9
  * creates tokens in), one combat-damage sub-step, one rot step. Then, if both
  * players are at 0 or less, the higher total wins (negative numbers count) and
- * on an exact tie the initiative player loses.
+ * an exact tie is a draw (CR 104.1b): phase 'gameover', no winner.
  *
  * Before the fix the first `loseLife` to reach 0 ended the game on the spot, so
  * the winner was whoever the effect happened to list second.
@@ -41,7 +43,7 @@ function battle(seed: number): { h: Harness; A: Seat; D: Seat } {
 }
 
 for (const first of ['defender', 'attacker'] as const) {
-  test(`CR 104.1a / CT-409: Penance takes both players from 1 to 0 and the initiative player loses the tie (${first} targeted first)`, () => {
+  test(`CR 104.1a / CT-409 / CT-565: Penance takes both players from 1 to 0 and the game is a draw (${first} targeted first)`, () => {
     const { h, A, D } = battle(65401);
     h.state.players[A]!.life = 1;
     h.state.players[D]!.life = 1;
@@ -50,14 +52,14 @@ for (const first of ['defender', 'attacker'] as const) {
     const order = first === 'defender' ? [D, A] : [A, D];
     pick(h, { player: order[0] });
     pick(h, { player: order[1] });
-    const init = h.state.initiative;
     pass(h);
     assert.equal(h.state.phase, 'gameover');
     assert.equal(h.state.players[A]!.life, 0, 'both losses were applied');
     assert.equal(h.state.players[D]!.life, 0, 'both losses were applied');
-    assert.equal(h.state.winner, other(init), 'a tie goes against the initiative player, whichever target came first');
+    assert.equal(h.state.winner, null, 'equal totals at 0: nobody wins, whichever target came first');
     const ev = over(h)!;
-    assert.equal((ev.data as Record<string, unknown>)['alsoAtZero'], other(init), 'the game-over says the winner fell too');
+    assert.equal((ev.data as Record<string, unknown>)['draw'], true, 'the game-over says it is a draw');
+    assert.throws(() => h.do({ type: 'concede', seat: A }), /over/, 'a drawn game cannot be conceded afterwards');
   });
 }
 
@@ -103,6 +105,33 @@ test('CR 104.1a / CT-409: an unblocked attacker and a Piercing blocker bring bot
   assert.equal(h.state.winner, D, '0 beats -1: the initiative player used to lose here by list order alone');
 });
 
+test('CR 104.1b / CT-565 / #403: an unblocked attacker and a Piercing blocker bring both players to exactly 0 in one combat step, and the game is a draw', () => {
+  // The reported game: the initiative player attacked, and one combat damage
+  // sub-step took both players to 0.
+  const h = new Harness(65405);
+  toDeployment(h);
+  const A = h.state.initiative, D = other(A);
+  const a0 = spawn(h, A, 'The Foretold');
+  const a1 = spawn(h, A, 'The Foretold');
+  const whale = spawn(h, D, 'Good Whale');
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: [[a0], [a1]] });
+  pass(h); pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: { 1: [whale] } });
+  h.state.players[A]!.life = 4;   // takes 4 pierced: ends on 0
+  h.state.players[D]!.life = 3;   // takes 3: ends on 0
+  pass(h); pass(h);
+  throughDamageWindows(h);
+  assignDefault(h);
+  assert.equal(h.state.phase, 'gameover');
+  assert.deepEqual([h.state.players[A]!.life, h.state.players[D]!.life], [0, 0]);
+  assert.equal(h.state.winner, null, 'the initiative player used to lose this tie');
+  const ev = over(h)!;
+  assert.equal((ev.data as Record<string, unknown>)['draw'], true);
+  assert.match(ev.msg, /draw/);
+  assert.equal(h.events.filter(e => e.type === 'gameOver').length, 1, 'the game ends once');
+});
+
 test('CR 104.1a / CT-409: with one player at 0 the other still wins, and an effect finishes before the game ends CT-417', () => {
   // Inside one effect a player at 0 is not yet out: the rest of the effect
   // runs (here Penance still draws), and then the game ends.
@@ -120,11 +149,10 @@ test('CR 104.1a / CT-409: with one player at 0 the other still wins, and an effe
   assert.equal((over(h)!.data as Record<string, unknown>)['alsoAtZero'], undefined, 'nobody else fell');
 });
 
-test('CR 104.1a / CT-409: the engine decides a double loss by total, then against the initiative player', () => {
+test('CR 104.1a / CT-409 / CT-565: the engine decides a double loss by total, and equal totals are a draw', () => {
   const h = new Harness(65409);
   toDeployment(h);
-  const init = h.state.initiative;
-  for (const [l0, l1, want] of [[-3, -1, 1], [-1, -3, 0], [0, 0, other(init)], [-2, -2, other(init)]] as const) {
+  for (const [l0, l1, want] of [[-3, -1, 1], [-1, -3, 0], [0, 0, null], [-2, -2, null]] as const) {
     const e = new E(structuredClone(h.state));
     e.s.players[0]!.life = 1;
     e.s.players[1]!.life = 1;
@@ -140,6 +168,7 @@ test('CR 104.1a / CT-409: the engine decides a double loss by total, then agains
     }
     assert.ok(ended, 'the batch ended the game once, at its end');
     assert.equal(e.s.winner, want, `${l0} vs ${l1}`);
+    assert.equal(e.s.phase, 'gameover', `${l0} vs ${l1}`);
   }
 });
 

@@ -59,7 +59,7 @@ test('972 §1 a win, a loss, a draw', () => {
   assert.match(won, /Ignis Sprite ×3/);
   assert.match(won, /Recorded to your profile\./);
   assert.match(postGameHtml(view({ winner: 1 })), /<div class="pgbox lost" role="dialog" aria-label="Bo wins">[\s\S]*Bo wins/);
-  assert.match(postGameHtml(view({ winner: null })), /<div class="pgbox " role="dialog" aria-label="Game over">[\s\S]*Game over/);
+  assert.match(postGameHtml(view({ winner: null })), /<div class="pgbox " role="dialog" aria-label="A draw">[\s\S]*A draw/, 'CT-565: a drawn game says so');
   assert.doesNotMatch(postGameHtml(view({}, { elements: null })), / · <!--SLOT/, 'no elements: no separator');
 });
 

@@ -1734,3 +1734,5 @@
 {"id":"#404","on":"2026-11-15","as":"fixed","to":["BL-77"]}
 {"id":"BL-78","on":"2026-11-15","as":"done"}
 {"id":"#406","on":"2026-11-15","as":"fixed","to":["BL-78"]}
+{"id":"CT-565","on":"2026-11-16","as":"done","note":"The owner chose a draw: two players brought to the same total at 0 or less at the same moment draw (CR 104.1b); the draw is phase gameover with no winner, end to end through rooms, matches and the end screen. The records follow in BL-79."}
+{"id":"#403","on":"2026-11-16","as":"fixed","to":["CT-565"]}

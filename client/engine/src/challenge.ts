@@ -512,8 +512,8 @@ function isGraftCause(effectKey: string | undefined): boolean {
  *    The dummy WON by an effect it controls when the item resolving as the
  *    game ended is the dummy's (a concession is not an effect). The dummy
  *    DIED in one blow when the action that killed it took life from it once.
- *  · bothFell: the game-over says the winner fell too (`alsoAtZero`, CR 104.1a):
- *    one effect took both players to 0 or less.
+ *  · bothFell: the game-over says the winner fell too (`alsoAtZero`, CR 104.1a)
+ *    or the game is a draw (CR 104.1b): one effect took both players to 0 or less.
  *  · failed (oneShot): the dummy lost life and lived, or took two losses in
  *    the action that killed it — "if it takes any amount of damage that
  *    isn't lethal, you lose".
@@ -552,7 +552,7 @@ function foldTallies(next: RunAcc, before: GameState, action: Action, after: Gam
       // CR 104.1a / CT-409: the engine stamps `alsoAtZero` when one effect took
       // both players to 0 or less (a loss is only checked once an effect has
       // finished, so two players down at once means the same effect)
-      if (d['alsoAtZero'] !== undefined && d['conceded'] === undefined) next.bothFell = true;
+      if ((d['alsoAtZero'] !== undefined || d['draw'] === true) && d['conceded'] === undefined) next.bothFell = true;
     }
   }
   // mana: open → expended, resource by resource, within one turn

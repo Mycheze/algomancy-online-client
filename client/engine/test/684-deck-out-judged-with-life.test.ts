@@ -8,7 +8,7 @@
  *
  * The rule: a decked player and a player at 0 or less have each lost at the same
  * moment. One loser loses; two losers are decided as a double KO is (CR 104.1b):
- * the higher life total wins, and on equal totals the initiative player loses.
+ * the higher life total wins, and equal totals at 0 or less are a draw.
  * With a shared deck the deck-out is decided on life totals anyway (CR 104.5b).
  * A deck-out outside any effect (the card step) still ends the game at once
  * (test 656).
@@ -61,13 +61,30 @@ test('CR 104.5, 104.1b / CT-418: one effect takes the opponent to 0 and decks th
   assert.equal((ev.data as { deckedOut?: number }).deckedOut, A, 'the game-over still says who ran out');
 });
 
-test('CR 104.5, 104.1b / CT-418: both players brought to 0 and the caster decked in one effect -- equal totals, the initiative player loses', () => {
+test('CR 104.5, 104.1b / CT-418 / CT-565: both players brought to 0 and the caster decked in one effect -- equal totals, the game is a draw', () => {
   const h = constructed(68401);
   const A: Seat = 0, B = other(A);
   const { g, ended } = penance(h, A, [A, B], [1, 1]);
   assert.ok(ended);
   assert.deepEqual(g.s.players.map(p => p.life), [0, 0]);
-  assert.equal(g.s.winner, other(g.s.initiative as Seat), 'the tie goes against the initiative player');
+  assert.equal(g.s.phase, 'gameover');
+  assert.equal(g.s.winner, null, 'the tie at 0 is a draw');
+  const ev = g.events.find(e => e.type === 'gameOver')!;
+  assert.equal((ev.data as { draw?: boolean }).draw, true);
+});
+
+test('CR 104.5, 104.1b / CT-565: both players run out of cards in one effect on equal totals above 0 -- not a draw, the initiative player loses', () => {
+  const h = constructed(68404);
+  for (const life of [7, 0]) {
+    const g = new E(structuredClone(h.state));
+    for (const s of [0, 1] as Seat[]) { g.deckOf(s).length = 0; g.recycleOf(s).length = 0; g.player(s).life = life; }
+    let ended = false;
+    try { g.lifeBatch(() => { g.draw(0, 1); g.draw(1, 1); }); } catch (sig) { if (!(sig instanceof GameEnded)) throw sig; ended = true; }
+    assert.ok(ended, `${life}: the game ended when the effect finished`);
+    assert.equal(g.s.phase, 'gameover');
+    assert.equal(g.s.winner, life > 0 ? other(g.s.initiative as Seat) : null,
+      life > 0 ? 'above 0 the tie goes against the initiative player' : 'at 0 it is a draw');
+  }
 });
 
 test('CR 104.5a / CT-418: a deck-out inside an effect with nobody at 0 -- the decked player still loses, once the effect has finished', () => {
