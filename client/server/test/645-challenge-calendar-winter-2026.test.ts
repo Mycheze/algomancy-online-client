@@ -99,15 +99,18 @@ test('§2 each reference run does what its goal says BL-49', () => {
   for (const x of spree.steps) if (x.a.type === 'activateResource' && x.a.seat === PLAYER) perTurn.set(x.before.turn, (perTurn.get(x.before.turn) ?? 0) + 1);
   assert.ok(Math.max(...perTurn.values()) > 2, `activations per turn: ${[...perTurn.values()].join(' ')}`);
   assert.ok((spree.steps.at(-1)!.acc.manaSpent ?? 0) >= 50);
-  // Double Knockout (CR 104.1a / CT-409): both players on 0 or less after one
-  // action, from one effect, and only on that action
+  // Double Knockout (CR 104.1a, 104.1b / CT-409, CT-565): both players on 0 or
+  // less after one action, from one effect, and only on that action; this run
+  // leaves both on the same total, so the game is a draw
   const ko = walk('2027-01-10-doubleko');
   const last = ko.steps.at(-1)!;
   assert.ok(last.after.players[PLAYER]!.life <= 0 && last.after.players[DUMMY]!.life <= 0, 'both fell');
   assert.ok(last.before.players[PLAYER]!.life > 0 && last.before.players[DUMMY]!.life > 0, 'in the one action');
   assert.equal(last.acc.bothFell, true);
   const over = last.events.find(e => e.type === 'gameOver')!;
-  assert.equal((over.data as { alsoAtZero?: number }).alsoAtZero, last.after.winner, 'the game-over says the winner fell too');
+  assert.equal(last.after.players[PLAYER]!.life, last.after.players[DUMMY]!.life, 'one total');
+  assert.equal((over.data as { draw?: boolean }).draw, true, 'the game-over says it is a draw');
+  assert.equal(last.after.winner, null, 'and nobody won');
   assert.ok(ko.steps.slice(0, -1).every(x => x.after.phase !== 'gameover'));
 });
 

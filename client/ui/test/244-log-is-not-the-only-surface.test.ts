@@ -706,7 +706,10 @@ test('[CR D7.4] the derivation itself is alive: every filter it uses matches som
   // message string, not a closure. The four literal Deadly/Pure/Unaware sites
   // became `msg:` fields, said by ONE `ev('info', d.msg, d.data)` in checkDeaths.
   // Nothing went quiet: every one of those lines is still printed before its death.
-  assert.equal(sites.length, 230,`the engine and apply make ${sites.length} announcements`);
+  // 230 → 231 with CT-565 (owner 2026-11-16, "make it a draw"): E.endInDraw's
+  // game-over for two players on the same total at 0 or less (CR 104.1b). The
+  // game-over screen shows the draw, so it is not log-only.
+  assert.equal(sites.length, 231,`the engine and apply make ${sites.length} announcements`);
   assert.ok(sites.some(s => s.keys.includes('unit')), 'positive control: sites with a unit key exist');
   assert.ok(sites.some(s => !s.keys.length), 'and sites with no data at all');
   assert.ok(sites.some(s => ABSENCE.test(s.msg)), 'positive control: ABSENCE matches');
