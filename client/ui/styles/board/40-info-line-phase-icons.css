@@ -59,8 +59,8 @@
    line allows. The label is master's (the plain zone label), BESIDE the
    thumbs rather than above them: above, it took 16px of a one-line height
    and the thumbs came out smaller than the old block's (audit, board round 8).
-   The bin is the pile that fills up, so its slot is the wider: three thumbs
-   side by side, where the cache has room for two and a "+N" (owner). */
+   The bin is the pile that fills up, so its slot is the wider: three thumbs'
+   width, where the cache has room for two and a "+N" (owner). */
 .linfo .regionbin, .linfo .regioncache { border-left: 0; padding: 0 3px; width: auto; max-width: none; min-width: 0;
   height: 100cqh; display: grid; grid-template-columns: auto auto; grid-template-rows: auto minmax(0, 1fr);
   grid-template-areas: "lbl fan" "hint fan"; column-gap: 6px; align-items: start; }
@@ -75,11 +75,21 @@
 .linfo .regioncache .cthumb { position: relative; }
 .linfo .regioncache .cchip { position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%); margin: 0;
   white-space: nowrap; z-index: 2; }
-.linfo .regionbinthumbs { height: calc(var(--binth) * 1.4 + 6px); width: calc(3 * var(--binslot, var(--binth)) + 12px); }
+/* the bin is a pile: up to six thumbs (main.ts BIN_PILE, its count in the
+   inline --n), each a step right of the one under it, the step never more
+   than 0.6 of a thumb so they always overlap, and never so wide that the
+   newest leaves the slot. The tops are staggered so it reads as a heap. */
+.linfo .regionbinthumbs { height: calc(var(--binth) * 1.4 + 6px);
+  --binw: calc(3 * var(--binslot, var(--binth)) + 12px); width: var(--binw);
+  --binstep: min(var(--binth) * 0.6, (var(--binw) - var(--binth)) / max(1, var(--n, 1) - 1)); }
 .linfo .regionbinthumbs:has(> .binempty), .linfo .regioncache > .binempty { height: auto; align-self: start; margin-top: 2px; }
-.linfo .regionbinthumbs .card { width: var(--binth); }
-.linfo .regionbinthumbs .card:nth-child(2) { left: calc(50% - var(--binth) / 2); top: 0; }
-.linfo .regionbinthumbs .card:nth-child(3) { left: calc(100% - var(--binth)); top: 0; }
+.linfo .regionbinthumbs .card { width: var(--binth); left: calc(var(--i, 0) * var(--binstep)); }
+.linfo .regionbinthumbs .card:nth-child(1) { --i: 0; top: 2px; }
+.linfo .regionbinthumbs .card:nth-child(2) { --i: 1; top: 4px; }
+.linfo .regionbinthumbs .card:nth-child(3) { --i: 2; top: 0; }
+.linfo .regionbinthumbs .card:nth-child(4) { --i: 3; top: 5px; }
+.linfo .regionbinthumbs .card:nth-child(5) { --i: 4; top: 1px; }
+.linfo .regionbinthumbs .card:nth-child(6) { --i: 5; top: 3px; }
 /* "playable as mods" under the label, beside the thumbs */
 .linfo .binmodhint { grid-area: hint; align-self: end; width: 74px; margin: 0; line-height: 1.2; }
 /* a spectator sees the top seat's whole hand: a stretch of the line after the

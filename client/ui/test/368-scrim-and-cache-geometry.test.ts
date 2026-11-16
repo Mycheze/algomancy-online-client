@@ -696,3 +696,61 @@ test('CT-566: the cache shows its newest two live cards and folds the rest into 
   assert.deepEqual([...cache.matchAll(/data-cslot="0:(\d+)"/g)].map(m => Number(m[1])), [1, 2], 'the newest two');
   assert.match(cache, /<span class="cmore">\+1<\/span>/, 'the oldest folds into +1');
 });
+
+/* ═══ CT-572 the bin is an overlapping pile ════════════════════════════ */
+
+/** seat 0's bin eight deep (more than the pile draws), seat 1's two */
+function pileMarkup(hasmods: boolean): string {
+  const h = new Harness(36803);
+  h.state.players[0]!.bin.push('Good Whale', 'Rune Channeler', 'Curio Drifter', 'Wildfire',
+    'Hooba-Bot', 'Wisp', 'Fireball', 'Prismatic Observer');
+  h.state.players[1]!.bin.push('Good Whale', 'Wisp');
+  store.setItem('algoLayout', '2');
+  const html = ui.join(h.state, 0, legalActions(h.state, 0));
+  return hasmods ? html.replaceAll('class="regionbin"', 'class="regionbin hasmods"') : html;
+}
+
+test('CT-572: the bin draws its newest six, oldest first, so the newest is on top #414', () => {
+  const html = pileMarkup(false);
+  const at = html.indexOf('data-animzone="bin:0"');
+  assert.ok(at >= 0, 'my bin is on my line');
+  const pile = html.slice(at, html.indexOf('<div class="lcache">', at));
+  assert.match(pile, /<div class="regionbinthumbs" style="--n: 6">/, 'the pile tells the stylesheet how many it holds');
+  assert.deepEqual([...pile.matchAll(/data-prev="([^"]+)"/g)].map(m => m[1]),
+    ['Curio Drifter', 'Wildfire', 'Hooba-Bot', 'Wisp', 'Fireball', 'Prismatic Observer']);
+});
+
+test('CT-572: every bin thumb overlaps the one under it and the newest stays inside the slot, at every line height #414', () => {
+  const fails: string[] = [];
+  for (const hasmods of [false, true]) {
+    const { all } = tree(pileMarkup(hasmods), APP_CLASSES.regions);
+    const inLine = (e: El): boolean => { for (let a = e.parent; a; a = a.parent) if (a.classes.has('linfo')) return true; return false; };
+    const piles = all.filter(e => e.classes.has('regionbinthumbs') && inLine(e));
+    const thumbs = (pile: El): El[] => all.filter(e => e.parent === pile && e.classes.has('card'));
+    // not blind: one deep pile and one of two were drawn
+    assert.deepEqual(piles.map(p => thumbs(p).length).sort(), [2, 6]);
+    for (const vw of [1440, 1000]) {
+      for (const cqh of LINE_HEIGHTS) {
+        const env: Env = { vw, vh: 900, cqh };
+        for (const pile of piles) {
+          const cards = thumbs(pile);
+          const where = `${cards.length}-card pile, ${vw}px window, ${cqh}px line${hasmods ? ', mod hint' : ''}`;
+          const slot = px(resolved(pile, 'width', env) ?? '', env);
+          const w = px(resolved(cards[0]!, 'width', env) ?? '', env);
+          const lefts = cards.map(c => px(resolved(c, 'left', env) ?? '', env));
+          if (slot === null || w === null || lefts.includes(null)) { fails.push(`${where}: slot ${slot}, thumb ${w}, lefts ${lefts} not definite`); continue; }
+          const ls = lefts as number[];
+          if (ls[0] !== 0) fails.push(`${where}: the bottom card starts at ${ls[0]}px`);
+          ls.forEach((l, k) => {
+            if (k === 0) return;
+            const step = l - ls[k - 1]!;
+            if (!(step > 0)) fails.push(`${where}: thumb ${k + 1} is not right of thumb ${k} (step ${step}px)`);
+            if (!(step < w)) fails.push(`${where}: thumb ${k + 1} does not overlap thumb ${k} (step ${step.toFixed(1)}px, thumb ${w.toFixed(1)}px)`);
+          });
+          if (ls.at(-1)! + w > slot + 0.01) fails.push(`${where}: the newest card ends at ${(ls.at(-1)! + w).toFixed(1)}px, past the ${slot.toFixed(1)}px slot`);
+        }
+      }
+    }
+  }
+  assert.deepEqual(fails, []);
+});

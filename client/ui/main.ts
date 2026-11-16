@@ -4169,6 +4169,10 @@ interface RegionParts {
   handZone: string;
 }
 
+/** the info line's bin is a pile of at most this many of its newest cards;
+ * the stylesheet places a card for each (.linfo .regionbinthumbs) */
+const BIN_PILE = 6;
+
 function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
   const s = h.state;
   const pl = s.players[p]!;
@@ -4291,30 +4295,22 @@ function regionParts(p: Seat, opts: { omitHand?: boolean } = {}): RegionParts {
   // CARD-TODO #64's prescribed fix was exactly that shape, and test/176 now
   // fails loudly if anyone writes it again.
   //
-  /* CR D6.6d/CT-169 — WHICH THREE THUMBS.
-   *
-   * It was the last three, full stop: `pl.bin.slice(-3)`. A targeted card any
-   * deeper than that was not on screen for either player, and the opponent
-   * cannot reach the dialog's contents by hovering a strip that does not show
-   * them. So a targeted card DISPLACES the oldest of the three and is drawn
-   * LAST — the fan positions siblings left-to-right and paints later ones on
-   * top (style.css .regionbinthumbs), so "last" is literally "surfaced to the
-   * top of the bin", which is what the report asked for.
-   *
-   * Still exactly three, deliberately: the strip is a 72px fan with three
-   * hand-placed slots, and a fix that made the panel grow would move every
-   * region's layout for a case that lasts one priority window.
+  /* CR D6.6d — WHICH THUMBS. The strip is an overlapping pile of the newest
+   * BIN_PILE cards, oldest first. A targeted card DISPLACES the oldest and is
+   * drawn LAST: the pile paints later siblings on top, so "last" is "surfaced
+   * to the top of the bin". The pile never grows past BIN_PILE: its slot is a
+   * fixed width (.linfo .regionbinthumbs), and `--n` spreads the cards across it.
    */
   const binAim = binTargets(p);   // CT-537: and by what
   const binTgt = [...binAim.keys()].sort((a, b) => a - b);
   const binShown = [
-    ...pl.bin.map((_n, i) => i).filter(i => !binTgt.includes(i)).slice(-Math.max(0, 3 - binTgt.length)),
-    ...binTgt.slice(-3),
+    ...pl.bin.map((_n, i) => i).filter(i => !binTgt.includes(i)).slice(-Math.max(0, BIN_PILE - binTgt.length)),
+    ...binTgt.slice(-BIN_PILE),
   ];
   const binMini = `<div class="regionbin${binUsable ? ' hasmods' : ''}" data-btn="binopen" data-p="${p}"
       data-animzone="bin:${p}" title="open ${esc(pl.name)}'s bin">
       <div class="zonelabel">bin (${pl.bin.length})</div>
-      <div class="regionbinthumbs">${binShown.map(i => {
+      <div class="regionbinthumbs" style="--n: ${binShown.length}">${binShown.map(i => {
         const tgt = binTgt.includes(i);
         return cardHtml(pl.bin[i]!, {
           anim: binView === p ? undefined : binKeys[i],

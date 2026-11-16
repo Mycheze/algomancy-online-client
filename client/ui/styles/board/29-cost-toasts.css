@@ -67,11 +67,11 @@ button.commitbtn:disabled { opacity: .45; cursor: default; }
    silently gone. `.card.playable.cached` settled this shape already: a ring
    that rides OUTSIDE the outline stacks with it. */
 .card[data-bintgt] { border-radius: 4px; box-shadow: 0 0 0 3px var(--target); }
-/* the fan overlaps its three thumbs, so the marked one has to sit above the
+/* the pile overlaps its thumbs, so the marked one has to sit above the
    siblings its shadow would otherwise slide under */
 .regionbinthumbs .card[data-bintgt] { z-index: 2; }
 .badge.tgtnow { background: var(--target); color: #241d05; font-weight: 700; }
-/* the fan is three 46px thumbs; a full-size chip on one would cover the art it
+/* the pile's thumbs are small; a full-size chip on one would cover the art it
    is there to let you look at */
 .regionbinthumbs .badge { font-size: 8px; padding: 0 2px; letter-spacing: 0; }
 

@@ -79,6 +79,9 @@ function payXLife(seed = 1900): Harness {
  * controller's bin. The ZSPG shape, built from the same card family the game
  * used (`what: 'binCard'`, CR 110.1a's declared bin target).
  */
+/** main.ts BIN_PILE: how many of the newest bin cards the info line's pile draws */
+const BIN_PILE = 6;
+
 function binTargeted(seed = 1902): { h: Harness; buried: string } {
   const h = new Harness(seed);
   toDeployment(h);
@@ -88,7 +91,9 @@ function binTargeted(seed = 1902): { h: Harness; buried: string } {
   // CT-234 (CR 703.7): the attack puts seat 1 in seat 0's region, so the
   // trigger waits on a stack two players share instead of draining on its own
   h.do({ type: 'declareAttack', seat: 1, columns: [[atk]] });
-  h.state.players[0]!.bin.push('Hooba-Bot', 'Wisp', 'Fireball', 'Prismatic Observer', 'Good Whale');
+  // deeper than the pile the info line draws, so the buried card is hidden
+  h.state.players[0]!.bin.push('Hooba-Bot', 'Wisp', 'Fireball', 'Prismatic Observer', 'Good Whale',
+    'Rune Channeler', 'Curio Drifter');
   withE(h, e => { e.destroy(e.entity(bw)!, 'dies'); });
   return { h, buried: 'Hooba-Bot' };
 }
@@ -275,10 +280,10 @@ test('CR D6.6d the premise: a stack item really aims at a card the bin strip hid
   const i = new E(h.state).binIndexOf((binTargets[0] as { bin: { seat: 0; card: string } }).bin);
   assert.equal(bin[i], buried, 'the engine resolves the ref to the buried card');
   // the hiding, stated as a fact about the strip rather than assumed: the
-  // panel draws the last three, and this card is not one of them
-  assert.ok(bin.length > 3, `the fixture bin is only ${bin.length} deep — nothing would be hidden`);
-  assert.ok(!bin.slice(-3).includes(buried),
-    'the targeted card is among the last three, so the strip would have shown it anyway');
+  // panel draws the last BIN_PILE, and this card is not one of them
+  assert.ok(bin.length > BIN_PILE, `the fixture bin is only ${bin.length} deep — nothing would be hidden`);
+  assert.ok(!bin.slice(-BIN_PILE).includes(buried),
+    'the targeted card is among the newest, so the strip would have shown it anyway');
 });
 
 // ═══ §6 IT SURFACES ═══════════════════════════════════════════════════
@@ -302,8 +307,8 @@ test('CR D6.6d a targeted bin card surfaces onto the region strip, on top #154 C
   // the targeted card must be LAST
   const order = [...after.matchAll(/data-prev="([^"]+)"/g)].map(m => m[1]);
   assert.equal(order[order.length - 1], buried, 'the targeted card is not the topmost thumb');
-  // …and the strip is still a three-slot fan: it displaces, it does not grow
-  assert.equal(order.length, 3, `the strip grew to ${order.length} thumbs — style.css places three`);
+  // …and the pile still holds BIN_PILE: it displaces, it does not grow
+  assert.equal(order.length, BIN_PILE, `the strip drew ${order.length} thumbs — the stylesheet places ${BIN_PILE}`);
   // hoverable, which is the affordance the report asked for by name
   assert.ok(after.includes(`data-prev="${buried}"`), 'the thumb carries the hover handle');
 });
@@ -336,7 +341,7 @@ test('CR D6.6d the premise: either seat can already open the other seats bin, an
   ui.join(viewFor(h.state, 1), 1, []);
   assert.ok(ui.has({ btn: 'binopen', p: 0 }),
     'the opponent really cannot reach the other seats bin dialog — the CT-169 premise would be right');
-  assert.equal(viewFor(h.state, 1).players[0]!.bin.length, 6, 'and viewFor redacts no bin');
+  assert.equal(viewFor(h.state, 1).players[0]!.bin.length, 8, 'and viewFor redacts no bin');
   // …but the DECISION is theirs to not see, which is exactly why the surfacing
   // has to be derived from the public stack and never from `state.decision`
   assert.equal(viewFor(h.state, 1).decision, null);
