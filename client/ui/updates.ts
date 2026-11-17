@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-17', kind: 'fix', text: 'Card stats and the Metagame lists now say "Updating…" and dim the old numbers while a new filter or sort loads. Clicking quickly no longer leaves numbers from the filter you clicked before.' },
   { date: '2026-11-17', kind: 'fix', text: 'After a game played as a guest, the Keep this game? box no longer lets you type a username longer than 20 characters, which was then refused only once you pressed Keep it.' },
   { date: '2026-11-17', kind: 'change', text: 'On the rules review page, deleting a comment, or clicking away from one you are writing, now asks you to press or click again on the page itself instead of opening a browser pop-up.' },
   { date: '2026-11-17', kind: 'fix', text: 'Spellbind now offers only grafts and augments as mods. A card with neither, such as Umbral Decay, can no longer be applied to it, as a judge ruled.' },

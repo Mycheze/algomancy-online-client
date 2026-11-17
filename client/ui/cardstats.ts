@@ -103,13 +103,19 @@ function query(): string {
   return q.toString();
 }
 
+/** the number of the latest load: a reply to an older one is dropped, so the
+ * numbers on screen always answer the filters lit above them */
+let asked = 0;
+
 function load(): void {
+  const ask = ++asked;
   loading = true;
   msg = '';
   const q = query();
   fetch(`/api/cardstats${q ? `?${q}` : ''}`, { headers: mine ? acct.authHeaders(false) : {} })
     .then(r => r.json() as Promise<CsResult | { ok: false; error: string; games?: number; floor?: number }>)
     .then(r => {
+      if (ask !== asked) return;
       loading = false;
       if (r.ok) data = r;
       else {
@@ -122,7 +128,7 @@ function load(): void {
       }
       repaint();
     })
-    .catch(() => { loading = false; say('could not reach the server', 'error'); repaint(); });
+    .catch(() => { if (ask !== asked) return; loading = false; say('could not reach the server', 'error'); repaint(); });
 }
 
 /** The state the page is drawn from — pages/cardstats.ts cardStatsView()

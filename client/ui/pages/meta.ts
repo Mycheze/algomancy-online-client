@@ -27,7 +27,7 @@ import { cardStatsHtml, cardStatsView, paintCardStats, type CardStatsView } from
 import type { CardStatsState } from '../cardstats.ts';
 import { button, segmented, statusMessage } from '../components/index.ts';
 import { deckPreviewHtml, deckPreviewView } from './decks.ts';
-import { frameChromeView, frameHtml, paintFrame, type FrameBack, type FrameChrome } from './frame.ts';
+import { frameChromeView, frameHtml, paintFrame, staleAttrs, updatingHtml, type FrameBack, type FrameChrome } from './frame.ts';
 
 type Sort = MetaState['sort'];
 
@@ -119,12 +119,12 @@ function ladderHtml(v: MetaView): string {
   const rest = all.filter(c => !rankOf.has(c.card));
   return metaFrame(v, 'metapage', `
     <div class="framebar">
-      <span class="dim">${ladder ? `${ladder.duels} duel${ladder.duels === 1 ? '' : 's'} · ${ladder.cards.length} card${ladder.cards.length === 1 ? '' : 's'} rated` : ''}</span>
+      ${ladder && v.loading ? updatingHtml() : `<span class="dim">${ladder ? `${ladder.duels} duel${ladder.duels === 1 ? '' : 's'} · ${ladder.cards.length} card${ladder.cards.length === 1 ? '' : 's'} rated` : ''}</span>`}
       <span class="framespacer"></span>
       <input id="meta-q" class="dksearch metaq" spellcheck="false" aria-label="Find a card" placeholder="find a card" value="${esc(v.ladderText)}">
     </div>
     ${v.msg ? statusMessage({ tone: v.msgTone, text: v.msg }) : ''}
-    <div class="framelist" data-scroll="meta-ladder">
+    <div class="framelist" data-scroll="meta-ladder"${staleAttrs(v.loading && !!ladder)}>
       ${v.loading && !ladder ? '<p class="hint metaempty">loading…</p>' : ''}
       ${ladder && !ladder.cards.length ? '<p class="hint metaempty">No duels yet. Somebody has to go first.</p>' : ''}
       ${ladder && ladder.cards.length && !all.length ? '<p class="hint metaempty">No rated card matches that.</p>' : ''}
@@ -225,13 +225,14 @@ function listHtml(v: MetaView): string {
         ${v.els.length || v.text ? '<button data-btn="meta-clear">Clear</button>' : ''}
       </div>
       <span class="framespacer"></span>
+      ${v.loading && rows ? updatingHtml() : ''}
       ${segmented({
         ariaLabel: 'Sort', size: 'sm',
         options: SORTS.map(([s, label]) => ({ label, value: s, on: v.sort === s, dataBtn: 'meta-sort', attrs: { 'data-sort': s } })),
       })}
     </div>
     ${v.msg ? statusMessage({ tone: v.msgTone, text: v.msg }) : ''}
-    <div class="framelist" data-scroll="meta-decks">
+    <div class="framelist" data-scroll="meta-decks"${staleAttrs(v.loading && !!rows)}>
       ${v.loading && !rows ? '<p class="hint metaempty">loading…</p>' : ''}
       ${rows && !all.length
         ? `<p class="hint metaempty">${rows.length

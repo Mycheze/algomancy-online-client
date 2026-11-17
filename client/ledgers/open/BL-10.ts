@@ -387,5 +387,15 @@ export default {
     + 'so does every username box in ui/ — sign-in and create-account, both post-game keep-it forms, the profile\'s '
     + 'claim and Add a friend, the league organiser\'s Add player (which had no cap). Left on purpose: item 22\'s '
     + 'league Discord name (40), which is not a username. Guarded by ui/test/1493-username-boxes-stop-at-the-limit.test.ts '
-    + '(§3 a census of every username <input> in ui/) and server/test/1494-username-limit-is-shared.test.ts.',
+    + '(§3 a census of every username <input> in ui/) and server/test/1494-username-limit-is-shared.test.ts.\n\n'
+    + '2026-11-17 (steward): a page asking again says so, and only the latest answer lands (docs/23-ui-inventory/03 '
+    + '§6.7: "No loading indicator on a refetch"). The pages drew "loading…" only with nothing to show; a refetch left '
+    + 'the old numbers under the new filters, unmarked. The class was every load that replaces what is on screen: card '
+    + 'stats (format, played, rated only, both signed in, my games), the metagame\'s deck list (a re-sort) and the card '
+    + 'ladder (reopened). Each draws pages/frame.ts updatingHtml() ("Updating…", role="status") where the old answer\'s '
+    + 'counts were, and staleAttrs() on its table or list (data-stale aria-busy, opacity .5 in 49-frame.css). Found on '
+    + 'the way, same class: a reply to an older ask painted over a newer one (two quick clicks), so cardstats.ts load '
+    + 'numbers its asks and meta.ts ask() tracks each of its three loads (list, one deck, ladder) apart — which also '
+    + 'stops the ladder\'s answer from clearing the list\'s loading. Guarded by 1495-refetch-says-it-is-updating.test.ts '
+    + '(fake fetch, replies released out of order). Reasoned, not looked at (no browser).',
 } satisfies BacklogTicket;

@@ -19,7 +19,7 @@ import { artUrl } from '../assets.ts';
 import { esc, elIcon } from '../util.ts';
 import type { CardStatsState, CsCard, Mode, Range, Wr } from '../cardstats.ts';
 import { segmented, statusMessage, toggle } from '../components/index.ts';
-import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
+import { frameChromeView, frameHtml, paintFrame, staleAttrs, updatingHtml, type FrameChrome } from './frame.ts';
 
 const ELEMENTS = ['fire', 'water', 'earth', 'wood', 'metal', 'light', 'dark'];
 
@@ -202,7 +202,7 @@ function headerHtml(v: CardStatsView): string {
       ${seg('Played', 'meta-cs-range', v.range, [['all', 'ever'], ['30', 'last 30 days'], ['7', 'last 7 days']] as [Range, string][])}
     </div>
     <div class="framebar csline">
-      ${d ? `<span class="hint">
+      ${d && v.loading ? updatingHtml() : d ? `<span class="hint">
         <b>${d.games}</b> game${d.games === 1 ? '' : 's'} · ${d.seatGames} seats${span ? ` · ${span}` : ''}
         · <b>${full}</b> of ${d.seatGames} seats have every draw on record
         <span class="dim" title="Hands and draws are read from each game's own record. An older game that no longer replays on today's rules still says what was played and drafted, but not what was drawn, so it counts toward Played and not toward GIH.">(why?)</span>
@@ -234,7 +234,7 @@ function tableHtml(v: CardStatsView): string {
       <span class="framespacer"></span>
       ${minGamesHtml(v)}
     </div>
-    <div class="dkwork cswork">
+    <div class="dkwork cswork"${staleAttrs(v.loading)}>
       <div class="dkworkmain cstablewrap" data-scroll="cs-table">
         <table class="cstable">
           <thead><tr><th class="cscard">Card <span class="dim">${rows.length}</span></th>${head}</tr></thead>
@@ -432,7 +432,7 @@ function gameHtml(v: CardStatsView): string {
  * box with the pinned card beside it, the other sections as one column. */
 export function cardStatsHtml(v: CardStatsView): string {
   const body = v.data ? (v.section === 'cards' ? tableHtml(v)
-    : `<div class="csscroll" data-scroll="cs-${esc(v.section)}">${v.section === 'elements' ? elementsHtml(v)
+    : `<div class="csscroll" data-scroll="cs-${esc(v.section)}"${staleAttrs(v.loading)}>${v.section === 'elements' ? elementsHtml(v)
       : v.section === 'highlights' ? highlightsHtml(v) : gameHtml(v)}</div>`) : '';
   return frameHtml({
     page: 'cspage', title: 'Metagame',

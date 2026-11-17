@@ -54,6 +54,7 @@ export const Elements = { args: view({ section: 'elements' }) };
 export const Highlights = { args: view({ section: 'highlights', minGames: 3 }) };
 export const Games = { args: view({ section: 'game' }) };
 export const Loading = { args: view({ data: null, loading: true }) };
+export const Updating = { name: 'A filter changed: the old numbers dimmed, Updating…', args: view({ loading: true }) };
 export const NotEnoughGames = {
   name: 'Not enough games',
   args: view({ data: null, mode: 'draft', range: '7', msgTone: 'note', msg: 'Only 2 games match these filters. Card stats need at least 5, so nobody\'s hand from one game is on show — widen the filters.' }),

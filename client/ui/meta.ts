@@ -70,7 +70,22 @@ let rows: PublicDeck[] | null = null;
 let minGames = 5;
 let one: PublicDeck | null = null;
 let wantId: string | null = null;
-let loading = false;
+/** the page's three loads; the one the screen on view is waiting for is `loading` (state()) */
+type Load = 'list' | 'one' | 'ladder';
+const asks: Record<Load, number> = { list: 0, one: 0, ladder: 0 };
+const pending = new Set<Load>();
+/** Start a load. The function it returns is true only for a reply to the
+ * latest ask of its kind: an older reply is dropped, so a quick re-sort or a
+ * second deck opened is not overwritten by the answer to the one before. */
+function ask(kind: Load): () => boolean {
+  const n = ++asks[kind];
+  pending.add(kind);
+  return () => {
+    if (n !== asks[kind]) return false;
+    pending.delete(kind);
+    return true;
+  };
+}
 let msg = '';
 /** how `msg` reads: a result (ok), a refusal (error), a step on its way (note) — set only through say() */
 let msgTone: StatusTone = 'error';
@@ -162,29 +177,29 @@ function syncUrl(): void {
 const authHeaders = (): Record<string, string> => acct.authHeaders();
 
 function loadList(): void {
-  loading = true;
+  const latest = ask('list');
   fetch(`/api/deck/meta?sort=${encodeURIComponent(sort)}`)
     .then(r => r.json() as Promise<{ ok: boolean; decks?: PublicDeck[]; minGames?: number; error?: string }>)
     .then(r => {
-      loading = false;
+      if (!latest()) return;
       if (r.ok && r.decks) { rows = r.decks; minGames = r.minGames ?? minGames; loaded(); }
       else missed(r.error ?? 'could not load the metagame list');
       paint();
     })
-    .catch(() => { loading = false; missed('could not reach the server'); paint(); });
+    .catch(() => { if (!latest()) return; missed('could not reach the server'); paint(); });
 }
 
 function loadOne(id: string): void {
-  loading = true;
+  const latest = ask('one');
   fetch(`/api/deck/shared?id=${encodeURIComponent(id)}`)
     .then(r => r.json() as Promise<{ ok: boolean; deck?: PublicDeck; error?: string }>)
     .then(r => {
-      loading = false;
+      if (!latest()) return;
       if (r.ok && r.deck) { one = r.deck; msg = ''; }
       else { one = null; say('That deck is not shared, or the link is wrong.', 'error'); }
       paint();
     })
-    .catch(() => { loading = false; missed('could not reach the server'); paint(); });
+    .catch(() => { if (!latest()) return; missed('could not reach the server'); paint(); });
 }
 
 // ── CR D8.2f: the card ladder ─────────────────────────────────────────────
@@ -196,16 +211,16 @@ export interface CardStanding {
 let ladder: { cards: CardStanding[]; rankedAfter: number; duels: number } | null = null;
 
 function loadLadder(): void {
-  loading = true;
+  const latest = ask('ladder');
   fetch('/api/cardladder')
     .then(r => r.json() as Promise<{ ok: boolean; cards?: CardStanding[]; rankedAfter?: number; duels?: number }>)
     .then(r => {
-      loading = false;
+      if (!latest()) return;
       if (r.ok && r.cards) { ladder = { cards: r.cards, rankedAfter: r.rankedAfter ?? 5, duels: r.duels ?? 0 }; loaded(); }
       else missed('could not load the card ladder');
       paint();
     })
-    .catch(() => { loading = false; missed('could not reach the server'); paint(); });
+    .catch(() => { if (!latest()) return; missed('could not reach the server'); paint(); });
 }
 
 export function openLadder(): void {
@@ -289,7 +304,7 @@ export interface MetaState {
 }
 
 const state = (): MetaState => ({
-  view, rows, minGames, one, loading, msg, msgTone, sort, els, text, ladderText, focus, deckGroup, statsOpen, descOpen, exporting, backTo, ladder,
+  view, rows, minGames, one, loading: pending.has(view === 'deck' ? 'one' : view === 'ladder' ? 'ladder' : 'list'), msg, msgTone, sort, els, text, ladderText, focus, deckGroup, statsOpen, descOpen, exporting, backTo, ladder,
 });
 
 /** Whichever export format is showing, as text. A shared deck has no

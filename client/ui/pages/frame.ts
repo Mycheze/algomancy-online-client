@@ -172,6 +172,17 @@ export const CLIENT_INFO = iconButton({ label: 'Algomancy Online (Unofficial Cli
   icon: 'info', layout: 'inline', className: 'frameinfo',
   attrs: { 'data-legal': 'about' }, title: 'about this client: the game, the notice, buying it, privacy' });
 
+/* ── asking again ─────────────────────────────────────────────────────── */
+
+/** What a page says while it asks again for what it already shows: the line
+ * stands where the counts of the old answer were, which no longer describe it. */
+export const UPDATING = 'Updating…';
+export const updatingHtml = (): string => `<span class="hint frameupdating" role="status">${UPDATING}</span>`;
+
+/** The attributes of a region whose answer is being asked for again: busy,
+ * and dimmed (49-frame.css) until the new answer is painted over it. */
+export const staleAttrs = (stale: boolean): string => (stale ? ' data-stale aria-busy="true"' : '');
+
 /* ── painting ─────────────────────────────────────────────────────────── */
 
 /** the shell's main region's key among the carried scrolls */

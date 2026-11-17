@@ -43,6 +43,7 @@ export default {
 
 export const PublishedDecks = { name: 'Published decks' };
 export const Loading = { args: view({ rows: null, loading: true }) };
+export const Updating = { name: 'Re-sorting: the old list dimmed, Updating…', args: view({ loading: true }) };
 export const EmptyList = { name: 'Nothing published yet', args: view({ rows: [] }) };
 export const Filtered = { name: 'Filtered to nothing', args: view({ els: ['metal'], text: 'zzz' }) };
 export const LoadError = { name: 'Load error', args: view({ rows: null, msg: 'could not reach the server' }) };
