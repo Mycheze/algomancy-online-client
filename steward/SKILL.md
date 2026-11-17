@@ -305,6 +305,25 @@ any branch that does it, and a staged triage blocks every report behind it. The
 same holds when you could not reproduce what a judge says happened — a ticket
 saying what you tried.
 
+**A judge outranks us on what the rules ARE, not on what happened.** Judges are
+people at a table: they can miss a static ability on the board, a counter from
+an earlier turn, an effect still in force, which seat paid what. So before a
+judge's call changes the engine, replay the game and read the board at that
+moment against their report:
+
+- It matches, and nothing they left out bears on it → their call stands: record
+  it and fix the engine.
+- Something they did not mention changes the answer — another card in play, an
+  earlier effect — and a source says how that interaction works → still a
+  ticket, never a close. The CT names the card, quotes its text and the source,
+  and its work run ends `needs-human` with a Discord-ready question for the
+  judge ("Did you account for <card>? It reads: …"). The judge or the owner
+  closes it; you do not.
+- You cannot tell → the same, with what you checked.
+
+What you may never do is discount the judge's reading of a rule because our CR
+or the owner's past call reads it otherwise — that is what the ladder settles.
+
 **The "of course, you fool" test.** Before you write a question, write down the
 answer you expect the owner to give and the one source that would make him
 say *"obviously"*. If you can name that source, it is not a question — cite it
