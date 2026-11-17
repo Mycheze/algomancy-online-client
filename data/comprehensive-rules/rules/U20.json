@@ -5173,11 +5173,15 @@
     "key": "attr.modular.anything",
     "parent": "attr.modular",
     "order": 2,
-    "text": "Any card in the player's hand or bin whose cost they can pay may be applied to a Modular card, including a card that will do nothing as a mod there. No other condition restricts what may be applied.",
+    "text": "Only a graft or an augment in the player's hand or bin whose cost they can pay may be applied to a Modular card. A card that is neither cannot be applied, whatever attributes its own type line has.",
     "examples": [
       {
+        "text": "Umbral Decay, an {Afflicting} spell with no graft and no augment, cannot be applied to Spellbind.",
+        "test": "91-modular.test.ts::CR 724.2: Umbral Decay is not offered to Spellbind"
+      },
+      {
         "text": null,
-        "test": "91-modular.test.ts::CR 724.2: the {Modular} menu offers every card you can pay for"
+        "test": "91-modular.test.ts::CR 724.2: the {Modular} menu offers every graft and augment you can pay for"
       },
       {
         "text": null,
@@ -5186,35 +5190,40 @@
     ],
     "see": [],
     "sources": {
-      "printed": [],
-      "designer": [],
-      "ours": [],
-      "owner": [
+      "printed": [
         {
-          "quote": "> \"I think it's legal to apply ANYTHING to a Modular card. But many cards wont",
-          "adopted": "2026-08-23",
-          "from": "register@72de434"
-        },
-        {
-          "quote": "So **the cost is the whole filter**: every card in your hand and bin whose cost",
-          "adopted": "2026-08-23",
-          "from": "register@72de434"
-        },
-        {
-          "quote": "**A mod that does nothing is a legal play.** That is the half of the ruling that",
-          "adopted": "2026-08-23",
-          "from": "register@72de434"
+          "ref": "card: Spellbind",
+          "quote": "You can apply mods to a modular card from your hand and/or bin as it is played. You still pay their costs."
         }
       ],
+      "designer": [],
+      "ours": [],
+      "owner": [],
       "engine": [],
       "tests": [
         "91-modular.test.ts"
+      ],
+      "judge": [
+        {
+          "quote": "It doesn't have a graft to be able to graft onto Spellbind.",
+          "by": "Nyar",
+          "level": 2,
+          "adopted": "2026-11-17",
+          "from": "report #389"
+        },
+        {
+          "quote": "And also the Afflicting Attribute does not have an Augment so it also should not be able to be applied.",
+          "by": "Nyar",
+          "level": 2,
+          "adopted": "2026-11-17",
+          "from": "report #389"
+        }
       ]
     },
-    "basis": "owner",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "The owner ruling of 2026-08-23 (“{Modular} takes ANY mod you can…”) rests on Caleb (2025-02-07, 2025-04-24) per its header; the verbatim \"apply ANYTHING\" line is not attributed in the text, so the basis is the ruling.",
+    "notes": "Nyar (judge level 2, report #389) reverses the owner's 2026-08-23 call that any payable card may be applied; a judge outranks the owner.",
     "sourceHashes": {}
   },
   {

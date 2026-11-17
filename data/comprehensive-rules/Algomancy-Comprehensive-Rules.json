@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:43b8817571f553e9",
+ "generated_from": "sha256:694ec6b0bfa80d6b",
  "rules": [
   {
    "num": "100.1",
@@ -28416,10 +28416,12 @@
    "sectionTitle": "Modular",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "724",
-   "text": "Any card in the player's hand or bin whose cost they can pay may be applied to a Modular card: a graft, an augment, a Virus, or a card that can do nothing on a spell.",
+   "text": "Only a graft or an augment may be applied to a Modular card: a card in the player's hand or bin that has a graft, or that can be applied as an augment (a Virus is one), and whose cost they can pay. A card that is neither cannot be applied to it.",
    "see": [],
-   "examples": [],
-   "basis": "owner",
+   "examples": [
+    "Umbral Decay has no graft, and its {Afflicting} is its own attribute, not an augment, so it cannot be applied to Spellbind. Fester, a graft card, can."
+   ],
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -28435,14 +28437,14 @@
    "sectionTitle": "Modular",
    "chapterTitle": "7. Spells, Abilities and Effects",
    "parent": "724.2",
-   "text": "A mod that does nothing on a spell is still a legal choice, and its cost is still paid.",
+   "text": "An augment that does nothing on a spell, such as one whose only ability is augment text, may still be applied to a Modular card, and its cost is still paid.",
    "see": [
     "721.4b"
    ],
    "examples": [
     "Sparkwraith's augment text applied to Spellbind is accepted and does nothing."
    ],
-   "basis": "owner",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],
@@ -34454,10 +34456,12 @@
    "sectionTitle": "Attributes",
    "chapterTitle": "8. Keywords",
    "parent": "802.26",
-   "text": "Any card in the player's hand or bin whose cost they can pay may be applied to a Modular card, including a card that will do nothing as a mod there. No other condition restricts what may be applied.",
+   "text": "Only a graft or an augment in the player's hand or bin whose cost they can pay may be applied to a Modular card. A card that is neither cannot be applied, whatever attributes its own type line has.",
    "see": [],
-   "examples": [],
-   "basis": "owner",
+   "examples": [
+    "Umbral Decay, an {Afflicting} spell with no graft and no augment, cannot be applied to Spellbind."
+   ],
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],

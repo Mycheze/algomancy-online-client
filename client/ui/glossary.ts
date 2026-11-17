@@ -301,7 +301,7 @@ const KEYWORD_RULES: GlossEntry[] = [
   // delete effects), not just the two the row happened to list.
   { term: 'Afflicting', cites: ['attr.afflicting.any-kill', 'printed'], text: 'When an afflicting source kills one or more units — however it killed them: damage, −1/−1 counters, a stat swap, an outright delete — those units’ controllers each gain a rot. One rot per controller, however many of their units died.' },
   { term: 'Lethal', cites: ['printed'], text: 'Any combat damage from a lethal unit kills a player outright.' },
-  { term: 'Modular', cites: ['effects.modular.any-card', 'printed'], text: 'You may apply mods from your hand and/or bin to this card as it is played, paying their costs; they ride on the stack with it.' },
+  { term: 'Modular', cites: ['effects.modular.any-card', 'printed'], text: 'You may apply mods (grafts and augments) from your hand and/or bin to this card as it is played, paying their costs; they ride on the stack with it.' },
   // The combat half was implemented on 2026-08-20; this entry still said the
   // attribute did nothing at all.
   //

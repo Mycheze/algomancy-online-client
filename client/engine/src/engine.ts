@@ -22,7 +22,7 @@ import type {
 } from './types.ts';
 import {
   affinityPips, binIndexOfNth, binNthAt, CARD_PLAY_KINDS, costAmount, costXMin, effectByKey, getCard,
-  isEntityTarget, isGraftable, isPlayedSpellKind, isSpellEffect, isTriggered, mixedAllegiance, requiresTargets, slotRestrict, slotWhat, specForSlot,
+  isAugment, isEntityTarget, isGraftable, isPlayedSpellKind, isSpellEffect, isTriggered, mixedAllegiance, requiresTargets, slotRestrict, slotWhat, specForSlot,
   stopMinimum, targetMinimum, zoneTriggersFor,
   type AsYouPlayOption,
   type Ability, type CardBehavior,
@@ -10559,16 +10559,10 @@ export class E {
    * the stack with the spell where everyone can see them, and a copy of the
    * spell would copy them.
    *
-   * CR 724.2 — WHAT IS OFFERED IS EVERY CARD YOU CAN PAY FOR. Owner ruling,
-   * 2026-08-23: "I think it's legal to apply ANYTHING to a Modular card. But
-   * many cards wont do anything at all since it requires being in play (which
-   * a spell never is). Same with viruses, they should also be allowed to be
-   * applied to the modular card, even if they might not do anything."
-   *
-   * So the ONLY filter is the printed one — "You still pay their costs". No
-   * graft gate, no augment-capability gate, viruses included. A mod that does
-   * nothing is a legal, deliberate, wasteful play, and it is not the engine's
-   * business to prevent it.
+   * CR 724.2 — WHAT IS OFFERED IS EVERY GRAFT AND EVERY AUGMENT YOU CAN PAY FOR,
+   * and nothing else: a card with no [Switch] half and no [Augment] is not a mod
+   * at all, so it cannot be applied as one (Nyar, judge level 2: "It doesn't have
+   * a graft to be able to graft onto Spellbind"). A Virus is an augment.
    *
    * What a mod on a spell can actually do, in full:
    *   · a GRAFT ([Switch] effect) joins the item as an extra part, exactly the
@@ -10578,13 +10572,9 @@ export class E {
    *   · text-box [Augment] abilities and statics donate NOTHING, because a
    *     spell has no body for them to live on (Caleb 2025-04-24: "spells
    *     cannot gain static abilities like that, so the only useful thing you
-   *     can do is give them attributes"). That is the owner's "many cards wont
-   *     do anything at all", and it needs no code — only the test that keeps a
-   *     deliberate no-op from being mistaken for an unimplemented one.
-   *
-   * Nothing in the pool is structurally excluded: every card in a hand or a
-   * bin is a `unit` / `spell` / `spellUnit`, and resource faces are not deck
-   * cards at all (see registry.DECK_LIST).
+   *     can do is give them attributes"). Such an augment is still a legal mod
+   *     (CR 724.2a); it needs no code, only the test that keeps a deliberate
+   *     no-op from being mistaken for an unimplemented one.
    *
    * Suspends via 'cast'/'mods'; resumable, because collectTargets re-runs from
    * the top after every answered decision.
@@ -10602,9 +10592,8 @@ export class E {
           // purpose 'mod': attaching a {Modular} mod is applying, not playing
           // (CR 701.2b), so "spells cost more to PLAY" modifiers do not tax it — the
           // same exemption every other mod path (augment/graft) already gets.
-          // CR 724.2: the cost is the WHOLE filter. Anything you can pay for is on
-          // the menu, whether or not it will do a thing when it gets there.
-          if (!this.canPayCard(seat, name, { purpose: 'mod' })) return;
+          // CR 724.2: a graft or an augment, and one you can pay for
+          if (!E.isModularMod(name) || !this.canPayCard(seat, name, { purpose: 'mod' })) return;
           options.push({ label: `${name} (${from})`, value: { modFrom: from, index }, card: name });
         });
       }
@@ -10619,6 +10608,11 @@ export class E {
       if (!ask) this.suspend({ type: 'cast', stage: 'mods', item, partIndex: 0, targetIndex: 0, then, moreItems }, dec);
       this.payModularMod(item, ask(0, step, dec));
     }
+  }
+
+  /** CR 724.2: a card is a {Modular} mod iff it is a graft or an augment. */
+  static isModularMod(name: string): boolean {
+    return isGraftable(name) || isAugment(name);
   }
 
   /** CR 702.3b, 724.1: the {Modular} stage asked through a RESOLVING effect's
@@ -10686,6 +10680,7 @@ export class E {
     const zone = this.player(seat)[modFrom];
     const name = zone[index];
     this.need(name !== undefined, 'no card there to apply');
+    this.need(E.isModularMod(name), 'only a graft or an augment can be applied to a {Modular} card');
     this.need(this.canPayCard(seat, name, { purpose: 'mod' }), 'cannot pay for that mod');
     // CT-344: the hand through its choke point. CR 405.7 (CT-366): the bin through
     // ITS choke point too, so 'leftBin' fires — a Rotling paid as a {Modular}
@@ -10699,8 +10694,7 @@ export class E {
     // CR 724.4: only a GRAFT brings an EFFECT with it — `graft:${name}` is the key
     // of its [Switch] half, and a card without one has no such effect to look
     // up (effectByKey throws). An augment's payload reaches the spell by the
-    // OTHER channel instead (stackModAttrs), and a card with neither simply
-    // rides along doing nothing, which the owner's ruling explicitly allows.
+    // OTHER channel instead (stackModAttrs).
     if (isGraftable(name)) item.parts.push({ effectKey: `graft:${name}`, targets: [] });
     // CR 724.5, 803.8e — Manual p.35: "As long as a card is modded, it has the unstable
     // attribute, meaning when it dies or is erased, it and all of its mods are

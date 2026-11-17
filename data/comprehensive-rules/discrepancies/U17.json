@@ -142,7 +142,7 @@
     "kind": "a-sources-disagree",
     "rule": "effects.graft.applying.deployment-only",
     "tier": 4,
-    "summary": "Graft 101 says grafting is done only in deployment, whatever the card's speed. Spellbind's printed {Modular} reminder and the owner ruling of 2026-08-23 (“{Modular} takes ANY mod you can…”) let any card, a graft card included, be applied to a Modular card as it is played, and Spellbind is a {Battle} card; the engine applies a graft card to Spellbind in battle.",
+    "summary": "Graft 101 says grafting is done only in deployment, whatever the card's speed. Spellbind's printed {Modular} reminder and a judge's call (Nyar, report #389: a graft card can be grafted onto Spellbind) let a graft card be applied to a Modular card as it is played, and Spellbind is a {Battle} card; the engine applies a graft card to Spellbind in battle.",
     "sides": [
       {
         "source": "RAQ 1355115946032889914#0",
@@ -151,10 +151,6 @@
       {
         "source": "card: Spellbind",
         "quote": "You can apply mods to a modular card from your hand and/or bin as it is played."
-      },
-      {
-        "source": "owner ruling, adopted 2026-08-23",
-        "quote": "> \"I think it's legal to apply ANYTHING to a Modular card. But many cards wont"
       }
     ],
     "resolution": "The specific printed permission wins over the general statement: Graft 101 is read as being about grafting onto a unit, and the rule lists Modular as an exception (722.3a). Question for the owner only if he reads Graft 101 as forbidding a graft card on Spellbind in battle."

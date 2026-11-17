@@ -2288,27 +2288,33 @@
   },
   {
     "key": "attr.modular.anything",
-    "textHash": "4f88db99f0deb5ff",
+    "textHash": "bfeb1940ec877298",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U20-r1",
+    "round": 4,
+    "verifier": "U20-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:payModularMod",
+        "loc": "client/engine/src/engine.ts:E.isModularMod / collectModular / payModularMod",
         "agrees": true,
-        "note": ""
+        "note": "offer = hand+bin cards that are isGraftable||isAugment and canPayCard; payModularMod refuses a forged non-mod"
       }
     ],
     "tests_run": [
       {
-        "file": "91-modular.test.ts",
-        "pattern": "R105: the {Modular} menu offers every card you can pay for",
+        "file": "client/engine/test/91-modular.test.ts",
+        "pattern": "CR 724.2: the {Modular} menu",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "91-modular.test.ts",
-        "pattern": "R105: a card in the BIN is offered beside the hand",
+        "file": "client/engine/test/91-modular.test.ts",
+        "pattern": "CR 724.2: Umbral Decay",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/91-modular.test.ts",
+        "pattern": "CR 724.2: a card in the BIN",
         "passed": true,
         "asserts_claim": true
       }
@@ -2316,20 +2322,28 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R105",
+        "ref": "report #389 (Nyar, level 2)",
         "supports": "yes",
-        "note": ""
+        "note": "playtest-issues.snapshot.jsonl row 390 (0-based #389), by Nyar judge 2: both quotes verbatim; says a card with neither a graft nor an [Augment] may not be applied to Spellbind, which is the record's rule."
+      },
+      {
+        "ref": "tests 91-modular",
+        "supports": "yes",
+        "note": "Hand/bin and 'whose cost they can pay' (and viruses being offered) are not in the judge's words; they rest on the bound tests (which pass and assert them) and on Spellbind's printed reminder text, which the record does not cite."
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "So **the cost is the whole filter**: every card in your hand and bin whose cost"
+        "file": "client/ledgers/playtest-issues.snapshot.jsonl",
+        "text": "It doesn't have a graft to be able to graft onto Spellbind. And also the Afflicting Attribute does not have an Augment so it also should not be able to be applied."
+      },
+      {
+        "file": "client/engine/test/91-modular.test.ts",
+        "text": "assert.ok(!isGraftable('Umbral Decay') && !isAugment('Umbral Decay'), 'the premise: neither a graft nor an augment');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "attr.modular.attributes",

@@ -4518,27 +4518,33 @@
   },
   {
     "key": "effects.modular.any-card",
-    "textHash": "5b16ab13de9f2cd7",
+    "textHash": "d922ae0518748b7c",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U17-r1",
+    "round": 4,
+    "verifier": "U17-r4",
     "engine": [
       {
-        "loc": "engine.ts:collectModular",
+        "loc": "client/engine/src/engine.ts:E.isModularMod / collectModular / payModularMod",
         "agrees": true,
-        "note": "offers every hand/bin card whose cost is payable"
+        "note": "offer = hand+bin cards that are isGraftable||isAugment and canPayCard; payModularMod refuses a forged non-mod"
       }
     ],
     "tests_run": [
       {
-        "file": "91-modular.test.ts",
-        "pattern": "R105: the {Modular} menu offers every card you can pay for",
+        "file": "client/engine/test/91-modular.test.ts",
+        "pattern": "CR 724.2: the {Modular} menu",
         "passed": true,
         "asserts_claim": true
       },
       {
-        "file": "91-modular.test.ts",
-        "pattern": "R105: a card in the BIN is offered beside the hand, and an unaffordable one is not",
+        "file": "client/engine/test/91-modular.test.ts",
+        "pattern": "CR 724.2: Umbral Decay",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/91-modular.test.ts",
+        "pattern": "CR 724.2: a card in the BIN",
         "passed": true,
         "asserts_claim": true
       }
@@ -4546,29 +4552,28 @@
     "probes": [],
     "source_checks": [
       {
-        "ref": "R105",
+        "ref": "report #389 (Nyar, level 2)",
         "supports": "yes",
-        "note": ""
+        "note": "playtest-issues.snapshot.jsonl row 390 (0-based #389), by Nyar judge 2: both quotes verbatim; says a card with neither a graft nor an [Augment] may not be applied to Spellbind, which is the record's rule."
       },
       {
-        "ref": "R105",
+        "ref": "tests 91-modular",
         "supports": "yes",
-        "note": ""
+        "note": "Hand/bin and 'whose cost they can pay' (and viruses being offered) are not in the judge's words; they rest on the bound tests (which pass and assert them) and on Spellbind's printed reminder text, which the record does not cite."
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "> \"I think it's legal to apply ANYTHING to a Modular card. But many cards wont"
+        "file": "client/ledgers/playtest-issues.snapshot.jsonl",
+        "text": "It doesn't have a graft to be able to graft onto Spellbind. And also the Afflicting Attribute does not have an Augment so it also should not be able to be applied."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "So **the cost is the whole filter**: every card in your hand and bin whose cost"
+        "file": "client/engine/test/91-modular.test.ts",
+        "text": "assert.deepEqual(offered, ['Fester', 'Oracle of the Flame'], 'the grafts in the bin, and not Umbral Decay');"
       }
     ],
     "basis_ok": true,
-    "problem": "",
-    "carried": "demoted-example 2026-10-11"
+    "problem": ""
   },
   {
     "key": "effects.modular.any-card.cost",
@@ -4611,37 +4616,50 @@
   },
   {
     "key": "effects.modular.any-card.no-op",
-    "textHash": "7cb199bf77f24978",
+    "textHash": "75f05475341054fd",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U17-r1",
+    "round": 4,
+    "verifier": "U17-r4",
     "engine": [
       {
-        "loc": "engine.ts:payModularMod",
+        "loc": "client/engine/src/engine.ts:payModularMod",
         "agrees": true,
-        "note": "charged and attached though it donates nothing"
+        "note": "isAugment admits a text-only augment; payCard charges it; no part or attribute is added"
       }
     ],
     "tests_run": [
       {
-        "file": "91-modular.test.ts",
-        "pattern": "R105: an [Augment]-TEXT mod is accepted and does nothing",
+        "file": "client/engine/test/91-modular.test.ts",
+        "pattern": "CR 724.4b: an [Augment]-TEXT",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/91-modular.test.ts",
+        "pattern": "CR 724.3: ",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [],
+    "probes": [
+      {
+        "file": "client/engine/test/zz-probe-U17-1.test.ts",
+        "test": "probe U17-1b: a no-op [Augment]-text mod (Sparkwraith) is applied and its cost is paid",
+        "passed": true,
+        "demonstrates": "yes: Sparkwraith is attached, adds no part, and its r is paid (open mana drops by 2 across Spellbind + mod)"
+      }
+    ],
     "source_checks": [
       {
-        "ref": "R105",
+        "ref": "owner register@72de434",
         "supports": "yes",
-        "note": ""
+        "note": "'A mod that does nothing is a legal play.' The cost clause is not in the quote; it rests on the probe and Spellbind's printed 'You still pay their costs' (not cited)."
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "**A mod that does nothing is a legal play.** That is the half of the ruling that"
+        "file": "client/engine/test/91-modular.test.ts",
+        "text": "assert.deepEqual(it.mods, [{ card: 'Sparkwraith', from: 'hand' }], 'it really is attached');"
       }
     ],
     "basis_ok": true,

@@ -1,13 +1,12 @@
-/* CR 724.2, 724.5 — {Modular} takes ANY mod you can pay for, and a modded card is Unstable.
+/* CR 724.2, 724.5 — {Modular} takes any graft or augment you can pay for, and a modded card is Unstable.
  *
- * Owner ruling, 2026-08-23, on CARD-TODO #19:
+ * What may be applied is a judge's call (Nyar, level 2, report #389):
  *
- *   "I think it's legal to apply ANYTHING to a Modular card. But many cards
- *    wont do anything at all since it requires being in play (which a spell
- *    never is). Same with viruses, they should also be allowed to be applied
- *    to the modular card, even if they might not do anything"
+ *   "I was able to mod umbral decay to my Spellbind. It doesn't have a graft to
+ *    be able to graft onto Spellbind. And also the Afflicting Attribute does not
+ *    have an Augment so it also should not be able to be applied."
  *
- * and, on what the card is FOR:
+ * and, on what the card is FOR (the owner):
  *
  *   "A modded Spellbind should also have unstable. It basically works as a
  *    'flashback' for graft cards. You pay 1 to put it on the stack, then add
@@ -16,19 +15,19 @@
  *
  * Three things had to become true, and only the first is visible in a menu:
  *
- *  1. the OFFER is every card in hand and bin whose cost you can pay — no
- *     graft gate, no augment-capability gate, viruses included;
+ *  1. the OFFER is every graft and every augment in hand and bin whose cost
+ *     you can pay, viruses included — and no other card;
  *  2. a mod's type-line [Augment] attribute is DONATED to the resolving effect
- *     (CR 721.4b's channel, a different timing) — without this the widened offer
- *     donates nothing and the fix looks done while changing nothing. Graftable
+ *     (CR 721.4b's channel, a different timing) — without this an augment on
+ *     the menu donates nothing and looks applied while changing nothing. Graftable
  *     cards and attribute-granting cards are DISJOINT in the pool (137 and 22,
  *     overlap zero), so before this, donation through {Modular} was impossible;
  *  3. the carrier is {Unstable} (Manual p.35), so the whole pile is ERASED and
  *     a mod applied from the bin can never be flashed back twice.
  *
- * [Augment] TEXT still does nothing on a spell — "many cards wont do anything
- * at all" — and that is asserted here as a DELIBERATE no-op, because an
- * unasserted no-op is how a dead card survives a green suite.
+ * [Augment] TEXT still does nothing on a spell (CR 724.4b), and that is
+ * asserted here as a DELIBERATE no-op, because an unasserted no-op is how a
+ * dead card survives a green suite.
  *
  * Seeds 9100-9199.
  */
@@ -36,7 +35,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Harness } from '../src/harness.ts';
 import { E } from '../src/engine.ts';
-import { getCard, isGraftable } from '../src/cards/dsl.ts';
+import { getCard, isAugment, isGraftable } from '../src/cards/dsl.ts';
 import { ent, give, giveResources, pass, spawn, toDeployment, toNextBattle } from './util.ts';
 import type { DecisionOption, Entity, Seat, StackItem } from '../src/types.ts';
 
@@ -94,28 +93,25 @@ const damageTo = (h: Harness, id: number): number[] =>
 // ── 1. the offer ──────────────────────────────────────────────────────
 
 /**
- * The anti-narrowing test. One card of every capability class sits in hand,
- * and every one of them must be offered:
+ * One card of every class sits in hand. Every graft and every augment must be
+ * offered, and the card that is neither must not be:
  *
- *   Primordial Coalescence  graftable                 (the ONLY class offered before)
+ *   Primordial Coalescence  graftable
  *   Chitin Shredder         {Virus}, type-line [Augment] {Powerful}
- *   Tempest Wrangler        NOT a virus, type-line [Augment] {Alluring} — one of the
- *                           eight cards that could reach a spell by no route at all
+ *   Tempest Wrangler        NOT a virus, type-line [Augment] {Alluring} — {Modular}
+ *                           is its only route to a spell
  *   Sparkwraith             text-box [Augment] only, no attributes to grant
- *   Soul Tithe              neither graftable nor augmentable — inert as a mod, and
- *                           legal anyway ("even if they might not do anything")
- *
- * Any filter reintroduced above `canPayCard` drops at least one of these, so
- * this test fails the moment the menu is narrowed again.
+ *   Soul Tithe              neither graftable nor an augment — not a mod at all
  */
-test('CR 724.2: the {Modular} menu offers every card you can pay for — graft, virus, non-virus augment, [Augment] text, and a card that can do nothing at all CT-19', () => {
+test('CR 724.2: the {Modular} menu offers every graft and augment you can pay for, viruses and [Augment] text included, and not a card that is neither #389 CT-573', () => {
   const { h, A } = window(9101);
   giveResources(h, A, 'dark', 1);
   giveResources(h, A, 'earth', 2);
   giveResources(h, A, 'water', 1);
   giveResources(h, A, 'fire', 1);                     // 5 mana; 4 left after Spellbind
-  const MENU = ['Chitin Shredder', 'Primordial Coalescence', 'Soul Tithe', 'Sparkwraith', 'Tempest Wrangler'];
+  const MENU = ['Chitin Shredder', 'Primordial Coalescence', 'Sparkwraith', 'Tempest Wrangler'];
   for (const n of MENU) give(h, A, n);
+  give(h, A, 'Soul Tithe');                          // f/1 — affordable, but neither graft nor augment
   give(h, A, 'Oorblak');                             // eee/4 — earth affinity 3, and you have 2
 
   h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Spellbind') });
@@ -124,15 +120,42 @@ test('CR 724.2: the {Modular} menu offers every card you can pay for — graft, 
   const offered = dec!.options.filter(o => o.card).map(o => o.card!).sort();
 
   assert.deepEqual(offered, [...MENU].sort(),
-    'the offer is exactly the cards you can pay for — one per capability class, no filter above the cost');
+    'the offer is exactly the grafts and augments you can pay for');
   // named individually so a regression says WHICH class was dropped
-  assert.ok(offered.includes('Primordial Coalescence'), 'a GRAFT is still offered (no regression)');
-  assert.ok(offered.includes('Chitin Shredder'), 'a VIRUS is offered — the owner named viruses explicitly');
+  assert.ok(offered.includes('Primordial Coalescence'), 'a GRAFT is offered');
+  assert.ok(offered.includes('Chitin Shredder'), 'a VIRUS is offered: it is an augment');
   assert.ok(offered.includes('Tempest Wrangler'), 'a NON-VIRUS type-line augment is offered — {Modular} is its only route to a spell');
   assert.ok(offered.includes('Sparkwraith'), 'an [Augment]-TEXT card is offered even though its text cannot do anything here');
-  assert.ok(offered.includes('Soul Tithe'), 'a card that is neither graft nor augment is offered — a wasteful play is still a legal one');
-  assert.ok(!offered.includes('Oorblak'), 'the COST is the whole filter, and it is still enforced (eee needs 3 earth affinity)');
+  assert.ok(!offered.includes('Soul Tithe'), 'a card that is neither a graft nor an augment is not a mod, so it is not offered');
+  assert.ok(!offered.includes('Oorblak'), 'the cost is still enforced (eee needs 3 earth affinity)');
   assert.ok(dec!.options.some(o => o.label === 'No more mods'), 'and declining is always on the menu');
+});
+
+/**
+ * Nyar's game (KYYD): Spellbind cast in battle with Fester, Oracle of the Flame
+ * and Umbral Decay in the bin. Umbral Decay is "{Battle} {Afflicting} Blight
+ * Spell — Put two -1/-1 counters on target unit": no [Switch] half, and its
+ * {Afflicting} is its own type line, not an [Augment].
+ */
+test('CR 724.2: Umbral Decay is not offered to Spellbind, and a forged choice of it is refused; Fester and Oracle of the Flame still are #389 CT-573', () => {
+  const { h, A } = window(9106);
+  giveResources(h, A, 'dark', 3);
+  giveResources(h, A, 'fire', 2);
+  bin(h, A).push('Fester', 'Oracle of the Flame', 'Umbral Decay');
+  assert.ok(!isGraftable('Umbral Decay') && !isAugment('Umbral Decay'), 'the premise: neither a graft nor an augment');
+  h.do({ type: 'playCard', seat: A, handIndex: give(h, A, 'Spellbind') });
+  const dec = h.state.decision!;
+  const offered = dec.options.filter(o => o.card).map(o => o.card!).sort();
+  assert.deepEqual(offered, ['Fester', 'Oracle of the Flame'], 'the grafts in the bin, and not Umbral Decay');
+
+  // a client that sends Umbral Decay's bin index anyway is refused by the payment itself
+  const umbral = bin(h, A).indexOf('Umbral Decay');
+  const susp = h.state.suspension;
+  assert.ok(susp?.type === 'cast' && susp.stage === 'mods', 'the cast is waiting on its {Modular} mods');
+  assert.throws(() => h.q.payModularMod(structuredClone(susp.item), { modFrom: 'bin', index: umbral }),
+    /only a graft or an augment/, 'the payment itself refuses a card that is not a mod');
+  assert.equal(E.isModularMod('Umbral Decay'), false);
+  assert.equal(E.isModularMod('Fester'), true);
 });
 
 test('CR 724.2: a card in the BIN is offered beside the hand, and an unaffordable one is not CT-19', () => {
