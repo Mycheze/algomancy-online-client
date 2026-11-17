@@ -385,6 +385,10 @@ notes before editing. Then:
   Create room out of `ui/main.ts`, two spans went stale, red gate, a repair
   run); **any edit in `engine/src/`** also →
   `engine/test/800-cc-drift-guard` (~1 min; when it moves, §8a; report #344);
+  an `ev(` call added to or removed from `engine/src/engine.ts` (an
+  announcement) → `ui/test/244-log-is-not-the-only-surface` and
+  `ui/test/256-cost-toasts`, which pin the count (2026-11-16, CT-565: the
+  draw's game-over was the 231st, red gate, a repair run);
   a card's trigger, static or cost hook added, removed or reshaped →
   `engine/test/71-card-ledger` (a hand-kept tally; update it AND its table
   with the card and why — 2026-11-10, Iyngstra, 94 → 93 guards);
@@ -456,7 +460,11 @@ not have been:
 pinned baselines exist to catch *unintended* change. When your fix is a rules
 change and the baseline moved because of it: replay or list exactly which
 entries moved, confirm **every** one involves the cards or the rule you changed,
-re-bless only those, and say so in the commit message and the summary ("800:
+re-bless only those, then `grep -rlF '<date>' client/*/test` for each moved
+Weekly Challenge (`ref:<date>-<name>`) and run every hit — its season's
+calendar test pins how the run ends (2026-11-16, CT-565: 800 re-blessed, 506
+run, `server/test/645-challenge-calendar-…` not; red gate, a repair run).
+Say so in the commit message and the summary ("800:
 one reference run changes — it pays Malevolent Machinations with two units,
 which now die together"). That is `ship`. If any moved entry has nothing to do
 with your change, you broke something: fix it, do not re-bless.
@@ -715,7 +723,8 @@ typed text is the source; say in the summary that the scan is still the old one.
    the output).
 7. **Weekly Challenges** use real cards with stored solutions:
    `grep -ln "<Name>" client/server/challenge-solve.ts client/server/challenge-runs/*.json`.
-   If any hit, run `506-challenge-reference-runs` and `800-cc-drift-guard`. A
+   If any hit, run `506-challenge-reference-runs`, `800-cc-drift-guard` and
+   every test naming that week's date (§8a). A
    stored run that no longer plays out is a challenge the change broke: if that
    challenge is not live yet, re-solve it (`challenge-solve.ts`); if it is live
    or past, `needs-human` — say which week and what broke.
