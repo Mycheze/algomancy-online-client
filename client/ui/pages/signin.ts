@@ -15,6 +15,7 @@
  * warning and its message line. The buttons stay the page's `.homebtns`. The
  * identity bar is the home's slot and is drawn exactly as it was. */
 import { esc } from '../util.ts';
+import { USERNAME_MAX } from '../../shared/username.ts';
 import { ICON_BASE } from '../assets.ts';
 import type { Me } from '../account.ts';
 import { settingRow, statusMessage } from '../components/index.ts';
@@ -113,7 +114,7 @@ export function signinHtml(v: SigninView): string {
       THERE IS NO PASSWORD RESET.</b> There is no email address on this account to send one to.
       Write it down.</p>` : ''}
     <div class="acctrows">
-    ${settingRow({ label: 'Username', controlHtml: `<input id="a-user" maxlength="20" autocomplete="username"
+    ${settingRow({ label: 'Username', controlHtml: `<input id="a-user" maxlength="${USERNAME_MAX}" autocomplete="username"
       spellcheck="false" value="${esc(v.username)}" aria-label="Username">` })}
     ${settingRow({ label: 'Password', controlHtml: `<input id="a-pass" type="password" maxlength="200"
       autocomplete="${isRegister ? 'new-password' : 'current-password'}" aria-label="Password">` })}

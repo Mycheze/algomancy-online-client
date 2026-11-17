@@ -38,6 +38,7 @@ import { arrayOfRecords, isRecord, readStoreFile, readStoreLines, writeStoreFile
 import { notePersist } from './store-health.ts';
 import { RULES_EDITOR } from './crreview.ts';
 import { canonicalCardName } from '../engine/src/cards/dsl.ts';
+import { USERNAME_MAX, USERNAME_MIN } from '../shared/username.ts';
 // CR D8.5: a conceded game weighs by the turn it was conceded on. The fold below
 // reads the stamp through this one function; the thresholds live over there.
 import { concessionWeight, type Concession, type ConcessionWeight } from './concession.ts';
@@ -690,8 +691,8 @@ const foldName = (u: string): string => u.toLowerCase().replace(/[ _.-]/g, '');
  * against, so keep them boring: letters, digits, and a couple of separators. */
 export function usernameProblem(username: string): string | null {
   const u = username.trim();
-  if (u.length < 2) return 'a username needs at least 2 characters';
-  if (u.length > 20) return 'a username can be at most 20 characters';
+  if (u.length < USERNAME_MIN) return `a username needs at least ${USERNAME_MIN} characters`;
+  if (u.length > USERNAME_MAX) return `a username can be at most ${USERNAME_MAX} characters`;
   if (!/^[A-Za-z0-9][A-Za-z0-9 _.-]*$/.test(u)) {
     return 'a username can use letters, digits, spaces, and _ . - (and must start with a letter or digit)';
   }

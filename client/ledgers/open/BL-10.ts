@@ -379,5 +379,13 @@ export default {
     + 'words in it (crlayer.ts `discarding`) draws a red line in the box, "Click outside the box again to throw this '
     + 'comment away. Cancel keeps it for next time."; the second click discards, typing takes the question back, and '
     + 'Cancel and Esc still keep the words. Guarded by 1492-rules-review-asks-twice.test.ts (§1 also a census: no '
-    + 'confirm() anywhere in ui/; §2 and §3 drive the page and the layer). Reasoned, not looked at (no browser).',
+    + 'confirm() anywhere in ui/; §2 and §3 drive the page and the layer). Reasoned, not looked at (no browser).\n\n'
+    + '2026-11-17 (steward): a username box stops where the server does (docs/23-ui-inventory/02 §8.4 item 22: '
+    + '"Username maxlength: 20 on sign-up, 40 on guest claim (postgame.ts:216)"). The guest\'s Keep this game? box '
+    + 'took 40 characters and the server (accounts.ts usernameProblem) refused anything over 20 only after Keep it. '
+    + 'The limit is named once, client/shared/username.ts USERNAME_MIN / USERNAME_MAX: usernameProblem reads it, and '
+    + 'so does every username box in ui/ — sign-in and create-account, both post-game keep-it forms, the profile\'s '
+    + 'claim and Add a friend, the league organiser\'s Add player (which had no cap). Left on purpose: item 22\'s '
+    + 'league Discord name (40), which is not a username. Guarded by ui/test/1493-username-boxes-stop-at-the-limit.test.ts '
+    + '(§3 a census of every username <input> in ui/) and server/test/1494-username-limit-is-shared.test.ts.',
 } satisfies BacklogTicket;

@@ -20,6 +20,7 @@
  * styles/pages/53-profile.css. */
 import { ALL_ELEMENTS } from '../../engine/src/apply.ts';
 import { elIcon, esc } from '../util.ts';
+import { USERNAME_MAX } from '../../shared/username.ts';
 import { ICON_BASE } from '../assets.ts';
 import { button, icon, segmented, settingRow, statusMessage } from '../components/index.ts';
 import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
@@ -616,7 +617,7 @@ function friendRow(f: FriendView, kind: 'friend' | 'incoming' | 'outgoing'): str
 function friendsColumn(v: ProfileView): string {
   const me = v.me;
   const add = `<div class="pfadd">
-      <input id="a-friend" maxlength="20" aria-label="Their username" placeholder="Their username" spellcheck="false" autocomplete="off">
+      <input id="a-friend" maxlength="${USERNAME_MAX}" aria-label="Their username" placeholder="Their username" spellcheck="false" autocomplete="off">
       ${button({ label: 'Add', dataBtn: 'acct-friend-add' })}
     </div>
     ${v.friendMsg ? statusMessage({ tone: 'note', text: v.friendMsg }) : ''}`;
@@ -744,7 +745,7 @@ function accountSection(v: ProfileView): string {
   const rows: string[] = [];
   if (v.guest) {
     rows.push(settingRow({ label: 'Name', controlHtml: `<div class="pfform">
-        <input id="acct-claim-name" maxlength="20" aria-label="Username" placeholder="Pick a username" autocomplete="username" spellcheck="false">
+        <input id="acct-claim-name" maxlength="${USERNAME_MAX}" aria-label="Username" placeholder="Pick a username" autocomplete="username" spellcheck="false">
         <input id="acct-claim-pass" type="password" maxlength="200" aria-label="Password" placeholder="And a password" autocomplete="new-password">
         ${button({ label: 'Keep this account', variant: 'primary', size: 'sm', dataBtn: 'acct-claim' })}
         ${v.claimMsg ? statusMessage({ tone: 'error', text: v.claimMsg }) : ''}

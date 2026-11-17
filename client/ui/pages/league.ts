@@ -25,6 +25,7 @@ import { statusMessage, type StatusTone } from '../components/status.ts';
 import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
 import { table } from '../components/table.ts';
 import { esc } from '../util.ts';
+import { USERNAME_MAX } from '../../shared/username.ts';
 import { wallClock, zonedEpoch } from '../zonetime.ts';
 
 // ── the server's shapes (server/league-store.ts seasonView) ───────────
@@ -1168,7 +1169,7 @@ function organizerHtml(s: SeasonView | null, v: LeagueView): string {
         ${s.hidden ? `<button class="${arming === 'delete' ? 'danger' : ''}" data-btn="lg-delete">${arming === 'delete' ? 'Press again to delete this test season' : 'Delete'}</button>` : ''}
       </p>
       ${repairHtml(s, v)}
-      <p><input id="lg-addname" aria-label="Player name" placeholder="player name" spellcheck="false"> <button data-btn="lg-add">Add player</button>
+      <p><input id="lg-addname" maxlength="${USERNAME_MAX}" aria-label="Player name" placeholder="player name" spellcheck="false"> <button data-btn="lg-add">Add player</button>
         <span class="dim">(skips the Discord-name, hours and late-entry checks)</span></p>
       ${preview ? previewHtml(preview, tz) : ''}
       ${postHtml(s, v)}
