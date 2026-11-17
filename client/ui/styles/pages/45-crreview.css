@@ -152,7 +152,7 @@ html.touch .crdoc .crshare { opacity: .7; padding: var(--space-2) var(--space-3)
   --accent: var(--color-info); --accent-soft: var(--color-info-bg); --mark: var(--color-accent);
   --ok: var(--color-success); --ok-bg: var(--color-success-bg); --warn: var(--color-warning); --warn-bg: var(--color-warning-bg);
   --bad: var(--color-danger); --bad-bg: var(--color-danger-bg);
-  --c-printed: #82b3dd; --c-designer: #d9a6e8; --c-mixed: #8cc6bf; --c-judge: #a8d77f; --c-owner: #f2a66b; --c-engine: var(--color-danger);
+  --c-printed: #82b3dd; --c-designer: #d9a6e8; --c-mixed: #8cc6bf; --c-judge: var(--color-success); --c-owner: #f2a66b; --c-engine: var(--color-danger);
   --font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
   color: var(--fg); font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
   -webkit-user-select: text; user-select: text;
