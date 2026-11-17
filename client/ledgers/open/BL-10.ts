@@ -371,5 +371,13 @@ export default {
     + '(32-learn.css), so the second press lands where the first did. Stories "Start over, pressed once" and "Another element, '
     + 'Start pressed once". Guarded by 1486-learn-start-over-asks-twice.test.ts (§3 drives the layer through a fake '
     + 'document). Left: §L.11\'s native window.confirm for the rules review\'s Delete and Discard. Reasoned, not looked at '
-    + '(no browser).',
+    + '(no browser).\n\n'
+    + '2026-11-17 (steward): the rules review asks twice in the page, not in a browser box (docs/23-ui-inventory/04 '
+    + '§L.11: "native `window.confirm` for Delete and Discard"). Those were the last two confirm() calls in ui/. A '
+    + 'comment\'s Delete arms on the first press (crreview.ts `deleting`; "Press again to delete", button.danger, the '
+    + 'league\'s rule in 44-league.css), and any other button of the page disarms it. A click beside a composer with '
+    + 'words in it (crlayer.ts `discarding`) draws a red line in the box, "Click outside the box again to throw this '
+    + 'comment away. Cancel keeps it for next time."; the second click discards, typing takes the question back, and '
+    + 'Cancel and Esc still keep the words. Guarded by 1492-rules-review-asks-twice.test.ts (§1 also a census: no '
+    + 'confirm() anywhere in ui/; §2 and §3 drive the page and the layer). Reasoned, not looked at (no browser).',
 } satisfies BacklogTicket;

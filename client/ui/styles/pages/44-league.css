@@ -7,7 +7,7 @@
   color: var(--dim); text-transform: uppercase; letter-spacing: .06em; vertical-align: middle; }
 .lgpage .statval.lgphase { font-size: var(--text-14); padding: var(--space-1) 0; }
 .lgskips { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-4); }
-.lgskips button.on, .lgpage button.danger, .chmeter button.danger, .chkeptrow button.danger { border-color: var(--danger); color: var(--danger); }
+.lgskips button.on, .lgpage button.danger, .chmeter button.danger, .chkeptrow button.danger, .cracts button.danger { border-color: var(--danger); color: var(--danger); }
 /* three columns: the season beside your entry, the table beside the matches */
 .lgpage .acctbody { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .lgpage .lgspan2 { grid-column: span 2; }

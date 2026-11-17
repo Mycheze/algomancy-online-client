@@ -113,6 +113,8 @@ let filter: Filter = 'open';
 const expanded = new Set<string>();
 /** the narrow layout's sheet, while one is up */
 let sheetTarget: string | null = null;
+/** the comment whose Delete was pressed once and asks to be pressed again */
+let deleting: string | null = null;
 
 /** the painted page; a host rerender is a no-op while it is still on screen */
 let root: HTMLElement | null = null;
@@ -219,6 +221,7 @@ export function openReview(): void {
 
 function close(): void {
   open = false;
+  deleting = null;
   clearInterval(poll);
   resetCrLayer();
   resetSearch();
@@ -439,11 +442,12 @@ function badges(c: CrComment): string {
 }
 
 /** one comment's markup — exported for server/test/616 (CT-276: the system chip) */
-export function commentHtml(c: CrComment): string {
+export function commentHtml(c: CrComment, armed = false): string {
   const answer = c.kind === 'answer'
     ? ` <span class="crchipx crans">${c.reading === 'other' ? 'answer: other' : `answer: Reading ${esc(c.reading ?? '')}`}</span>` : '';
   const acts = c.canEdit && !c.deleted
-    ? `<button data-btn="cr-edit" data-id="${esc(c.id)}">Edit</button><button data-btn="cr-delete" data-id="${esc(c.id)}">Delete</button>` : '';
+    ? `<button data-btn="cr-edit" data-id="${esc(c.id)}">Edit</button><button${armed ? ' class="danger"' : ''} data-btn="cr-delete" data-id="${esc(c.id)}">${
+      armed ? 'Press again to delete' : 'Delete'}</button>` : '';
   return `<div class="crc${c.mine ? ' mine' : ''}">
     <div class="crby"><b>${esc(c.by.name)}</b> ${badges(c)} <span class="crwhen" title="${esc(c.at)}">${esc(ago(c.at))}</span>${c.editedAt ? ' <span class="crwhen">(edited)</span>' : ''}${answer}</div>
     <div class="crtext">${c.deleted ? '<i>This comment was deleted.</i>' : esc(c.body)}</div>
@@ -485,8 +489,8 @@ function threadHtml(th: Thread, opts: { goto?: boolean } = {}): string {
     ${chips ? `<div class="crstatus">${chips}</div>` : ''}
     ${r.resolved ? `<div class="crstatus"><span class="crchipx ok">✓ resolved by ${esc(r.resolved.by)}</span></div>` : ''}
     ${quote}
-    ${commentHtml(r)}
-    ${th.replies.map(commentHtml).join('')}
+    ${commentHtml(r, deleting === r.id)}
+    ${th.replies.map(c => commentHtml(c, deleting === c.id)).join('')}
     <div class="cracts">${acts.join('')}</div>
   </div>`;
 }
@@ -1044,6 +1048,8 @@ export function handleButton(btn: HTMLElement): boolean {
   const b = btn.dataset['btn'] ?? '';
   if (!b.startsWith('cr-')) return false;
   const id = btn.dataset['id'] ?? '';
+  // a deletion asks twice, and any other button of the page disarms it
+  if (deleting && (b !== 'cr-delete' || id !== deleting)) { deleting = null; refreshDecor(); }
   switch (b) {
     case 'cr-close': close(); return true;
     case 'cr-tab': {
@@ -1114,7 +1120,10 @@ export function handleButton(btn: HTMLElement): boolean {
       return true;
     }
     case 'cr-delete':
-      if (byId(id) && window.confirm('Delete this comment?')) void postOp({ op: 'delete', id }).then(showError);
+      if (!byId(id)) return true;
+      if (deleting !== id) { deleting = id; refreshDecor(); return true; }
+      deleting = null;
+      void postOp({ op: 'delete', id }).then(showError);
       return true;
     case 'cr-resolve': void postOp({ op: 'resolve', id }).then(showError); return true;
     case 'cr-reopen': void postOp({ op: 'reopen', id }).then(showError); return true;

@@ -79,6 +79,9 @@ let compose: (CrCompose & { quote: string }) | null = null;
 let draft = '';
 let busy = false;
 let error = '';
+/** a click beside a box with words in it asks to be clicked again before it
+ * throws them away; typing in the box takes the question back */
+let discarding = false;
 /** Cancel and Escape keep what was typed, keyed by what it was for, so an
  * accidental Escape costs nothing; a sent comment clears it */
 const stash = new Map<string, string>();
@@ -151,6 +154,7 @@ export function openComposer(c: CrCompose): void {
   compose = { ...c, quote: c.anchor?.quote ?? '' };
   draft = c.draft ?? stash.get(keyOf(c)) ?? '';
   error = '';
+  discarding = false;
   busy = false;
   chip = null;
   sheet = null;
@@ -163,6 +167,7 @@ export function closeComposer(): void {
   }
   compose = null;
   error = '';
+  discarding = false;
   paint();
 }
 
@@ -192,6 +197,7 @@ function send(): void {
   const c = compose;
   busy = true;
   error = '';
+  discarding = false;
   paint();
   void host.submit(c, body).then(err => {
     busy = false;
@@ -208,6 +214,8 @@ function send(): void {
 const HEAD: Record<CrCompose['mode'], string> = {
   add: 'Comment on', reply: 'Reply on', edit: 'Edit your comment on', answer: 'Answer',
 };
+
+export const DISCARD_ASK = 'Click outside the box again to throw this comment away. Cancel keeps it for next time.';
 
 function composerHtml(): string {
   const c = compose!;
@@ -239,6 +247,7 @@ function composerHtml(): string {
     ${quote}${c.note ? `<div class="crnote">${esc(c.note)}</div>` : ''}${reading}
     ${inner}
     ${error ? `<div class="crerr">${esc(error)}</div>` : ''}
+    ${discarding ? `<div class="crerr" id="crdiscard" role="alert">${DISCARD_ASK}</div>` : ''}
   </div></div>`;
 }
 
@@ -263,7 +272,10 @@ function paint(): void {
   if (!box) return;
   box.value = draft;
   if (!busy) { box.focus(); box.setSelectionRange(box.value.length, box.value.length); }
-  box.addEventListener('input', () => { draft = box.value; });
+  box.addEventListener('input', () => {
+    draft = box.value;
+    if (discarding) { discarding = false; document.getElementById('crdiscard')?.remove(); }
+  });
   // Ctrl+Enter sends, from inside the box (as the report form does)
   box.addEventListener('keydown', ev => {
     if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) { ev.preventDefault(); send(); }
@@ -314,8 +326,7 @@ export function installCrLayer(): void {
       if (target?.id === 'crscrim' && compose) {
         e.stopPropagation();
         if (busy) return;
-        // a click beside the box with words in it asks before throwing them away
-        if (draft.trim() && !window.confirm('Discard this comment?')) return;
+        if (draft.trim() && !discarding) { discarding = true; paint(); return; }
         draft = '';
         stash.delete(keyOf(compose));
         closeComposer();
