@@ -443,6 +443,33 @@ for (const p of PLANTS) {
   });
 }
 
+test('§8 a judge\'s call from a report is checked against that report: the words, the author, the level', () => {
+  const i = fixtureInputs(), x = fixtureExtract();
+  const o = rec(i, 'combat.damage.client');
+  o.basis = 'judge';
+  o.sources.judge = [{ quote: 'It does not have a graft', by: 'Nyar', level: 2, adopted: '2026-11-17', from: 'report #1' }];
+  o.sources.owner = [];
+  const reports = [null, { note: 'I was able to mod it. It does not have a graft to be able to graft.', by: { name: 'Nyar', judge: 2 } }];
+  assert.deepEqual(check(i, x, { reports }).problems, [], 'a verbatim judge quote by its reporter must pass');
+  o.sources.judge[0]!.quote = 'It may take any card';
+  assert.deepEqual(check(i, x, { reports }).problems.map((p) => p.code), ['judge-quote-not-in-report']);
+  o.sources.judge[0]!.quote = 'It does not have a graft';
+  o.sources.judge[0]!.from = 'report #0';
+  assert.deepEqual(check(i, x, { reports }).problems.map((p) => p.code), ['judge-report-missing']);
+  o.sources.judge[0]!.from = 'report #1';
+  reports[1]!.by.judge = 1;
+  assert.deepEqual(check(i, x, { reports }).problems.map((p) => p.code), ['judge-not-the-reporter'], 'a level-1 reporter is not a judge whose call counts');
+  reports[1]!.by.judge = 2;
+  // a judge outranks the owner: one record may not rest on the owner's call while carrying a judge's
+  o.basis = 'owner';
+  o.sources.owner = [{ quote: 'anything goes', adopted: '2026-08-23', from: '' }];
+  assert.ok(check(i, x, { reports }).problems.some((p) => p.code === 'basis-inconsistent' && /outranks the owner/.test(p.msg)));
+  o.basis = 'judge'; o.sources.owner = [];
+  const { files } = render(i, x);
+  assert.match(files.doc, /Basis: Judge call \(Nyar, L2\) · adopted 2026-11-17/);
+  assert.match(files.html, /<span class="sk">Judge call<\/span> Nyar \(L2\), adopted 2026-11-17 \(report #1\): <q>It does not have a graft<\/q>/);
+});
+
 test('§8 an owner call absorbed from the retired register is checked against it, verbatim', () => {
   const i = fixtureInputs(), x = fixtureExtract();
   const c = rec(i, 'attr.deadly');

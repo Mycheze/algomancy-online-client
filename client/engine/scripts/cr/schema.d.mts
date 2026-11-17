@@ -48,6 +48,8 @@ export interface RuleRecord {
     ours?: RefQuote[];
     /** the owner's own words, when he adopted them, and where he said them ('register@<sha>' = absorbed from the retired register) */
     owner?: { quote: string; adopted: string; from: string }[];
+    /** a judge's own words (level 3 = word of law, 2 = trusted), when adopted, and where said ('report #N' is checked against that row) */
+    judge?: { quote: string; by: string; level: 2 | 3; adopted: string; from: string }[];
     engine?: string[];
     tests?: string[];
   };

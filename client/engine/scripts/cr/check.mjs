@@ -24,6 +24,10 @@
  *              and that an owner-basis rule carries one — except a call absorbed from
  *              the retired register (`from: "register@<sha>"`), which must be verbatim
  *              in the register at that commit (read from git).
+ *   judge    → like an owner call, its own evidence — except one `from: "report #N"`,
+ *              whose quote must be verbatim in that report's note, and whose `by` and
+ *              `level` must be the report author's name and judge level
+ *              (client/ledgers/playtest-issues.snapshot.jsonl, row N, 0-based)
  * Pure apart from reading repo files named by `file:` references and verdict
  * spans. Run as a script it checks the committed state and exits 1 on problems.
  *
@@ -190,6 +194,18 @@ export function check(inputs, ex, opts = {}) {
     regCache.set(sha, raw === null ? null : norm(raw));
     return regCache.get(sha);
   };
+  /* report #N is row N of the committed snapshot; `opts.reports` (an array of rows) stands in for the file */
+  let reportRows;
+  const reportRow = (n) => {
+    if (reportRows === undefined) {
+      if (opts.reports) reportRows = opts.reports;
+      else {
+        const abs = join(repo, 'client', 'ledgers', 'playtest-issues.snapshot.jsonl');
+        reportRows = existsSync(abs) ? readFileSync(abs, 'utf8').split('\n').map((l) => { try { return JSON.parse(l); } catch { return null; } }) : [];
+      }
+    }
+    return reportRows[n] ?? null;
+  };
   const repoFile = (rel) => {
     if (!fileCache.has(rel)) {
       const abs = join(repo, rel);
@@ -329,6 +345,14 @@ export function check(inputs, ex, opts = {}) {
       const t = registerText(m[1]);
       if (t !== null && !t.includes(norm(x.quote ?? ''))) P('owner-quote-not-in-register', `${w} owner[${i}]`, `not verbatim in the retired register at ${m[1]}: "${String(x.quote).slice(0, 90)}"`);
     }
+    for (const [i, x] of arr('judge').entries()) {
+      const m = /^report #(\d+)$/.exec(String(x?.from ?? '').trim());
+      if (!m) continue;
+      const row = reportRow(Number(m[1])), where = `${w} judge[${i}]`;
+      if (!row) { P('judge-report-missing', where, `report #${m[1]} is not in the playtest snapshot`); continue; }
+      if (row.by?.name !== x.by || row.by?.judge !== x.level) P('judge-not-the-reporter', where, `report #${m[1]} was filed by ${row.by?.name ?? 'nobody named'}${row.by?.judge ? ` (judge L${row.by.judge})` : ' (no judge level)'}, not ${x.by} (L${x.level})`);
+      if (!norm(row.note ?? '').includes(norm(x.quote ?? ''))) P('judge-quote-not-in-report', where, `not verbatim in report #${m[1]}: "${String(x.quote).slice(0, 90)}"`);
+    }
     for (const e of arr('engine')) {
       // a `client/ui/…` or `client/server/…` path is one token: its slashes are not separators
       const whole = /^client\/(?:ui|server)\/[\w./-]+\.(?:ts|mjs|js):[\w.()]+$/.test(String(e).trim());
@@ -366,23 +390,26 @@ export function check(inputs, ex, opts = {}) {
 
     /* basis vs sources (ours never counts) */
     const hasPrinted = arr('printed').length > 0, hasDesigner = arr('designer').length > 0, hasOwner = arr('owner').length > 0;
-    const hasEngine = arr('engine').length > 0;
-    const kinds = [hasPrinted, hasDesigner, hasOwner, hasEngine].filter(Boolean).length;
+    const hasJudge = arr('judge').length > 0, hasEngine = arr('engine').length > 0;
+    const kinds = [hasPrinted, hasDesigner, hasJudge, hasOwner, hasEngine].filter(Boolean).length;
     const bad = (m) => { if (!('term' in r)) P('basis-inconsistent', w, `basis ${r.basis}: ${m}`); };
     if (r.basis === 'printed' && !hasPrinted) bad('needs a printed quote');
     if (r.basis === 'designer' && !hasDesigner) bad('needs a designer quote');
     if (r.basis === 'owner' && !hasOwner) bad('needs sources.owner: the owner\'s words, with the date he adopted them');
     if (r.basis === 'owner' && (hasPrinted || hasDesigner)) bad('has a printed or designer source, so it is not an owner call alone');
+    if (r.basis === 'owner' && hasJudge) bad('has a judge\'s call, which outranks the owner\'s: basis judge, or mixed');
+    if (r.basis === 'judge' && !hasJudge) bad('needs sources.judge: the judge\'s words, their name and level, and the date adopted');
+    if (r.basis === 'judge' && (hasPrinted || hasDesigner)) bad('has a printed or designer source, so it is not a judge\'s call alone');
     if (r.basis === 'engine' && (hasPrinted || hasDesigner)) bad('has a printed or designer source, so it is not engine-only');
-    if (r.basis === 'mixed' && kinds < 2) bad('needs sources of at least two kinds (printed, designer, owner, engine)');
+    if (r.basis === 'mixed' && kinds < 2) bad('needs sources of at least two kinds (printed, designer, judge, owner, engine)');
 
     /* the contract's first clause: at least one checkable evidence item */
-    const quoted = hasPrinted || hasDesigner || arr('owner').some((x) => typeof x === 'object' && x?.quote);
+    const quoted = hasPrinted || hasDesigner || [...arr('judge'), ...arr('owner')].some((x) => typeof x === 'object' && x?.quote);
     const v = verdictByKey.get(M ? M.canon(r.key) : r.key);
     const demonstrated = v && v.textHash === recordHash(r)
       && (v.quote_spans ?? []).some((q) => isEvidenceSpan(r, q.file))
       && (v.tests_run ?? []).some((t) => t.passed);
-    if (!('term' in r) && !quoted && !demonstrated) P('no-evidence', w, `no verbatim quote from a printed or designer source, no owner call in his words, and no verified code quote (engine source; for Annex D also client/ui or client/server source) with an executed test${hasEngine ? ' (engine symbols alone are not evidence)' : ''}`);
+    if (!('term' in r) && !quoted && !demonstrated) P('no-evidence', w, `no verbatim quote from a printed or designer source, no judge's or owner's call in their words, and no verified code quote (engine source; for Annex D also client/ui or client/server source) with an executed test${hasEngine ? ' (engine symbols alone are not evidence)' : ''}`);
 
     /* the sources a later check can watch */
     const hashes = r.sourceHashes ?? {};

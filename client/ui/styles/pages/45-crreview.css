@@ -152,7 +152,7 @@ html.touch .crdoc .crshare { opacity: .7; padding: var(--space-2) var(--space-3)
   --accent: var(--color-info); --accent-soft: var(--color-info-bg); --mark: var(--color-accent);
   --ok: var(--color-success); --ok-bg: var(--color-success-bg); --warn: var(--color-warning); --warn-bg: var(--color-warning-bg);
   --bad: var(--color-danger); --bad-bg: var(--color-danger-bg);
-  --c-printed: #82b3dd; --c-designer: #d9a6e8; --c-mixed: #8cc6bf; --c-owner: #f2a66b; --c-engine: var(--color-danger);
+  --c-printed: #82b3dd; --c-designer: #d9a6e8; --c-mixed: #8cc6bf; --c-judge: #a8d77f; --c-owner: #f2a66b; --c-engine: var(--color-danger);
   --font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
   color: var(--fg); font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
   -webkit-user-select: text; user-select: text;
@@ -183,7 +183,7 @@ html.touch .crdoc .crshare { opacity: .7; padding: var(--space-2) var(--space-3)
 .crdoc .tags { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin-top: var(--space-3); }
 .crdoc .chip { font: 500 11.5px/1 system-ui, sans-serif; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); border: 1px solid currentColor; letter-spacing: .02em; }
 .crdoc .b-printed { color: var(--c-printed); } .crdoc .b-designer { color: var(--c-designer); } .crdoc .b-mixed { color: var(--c-mixed); }
-.crdoc .b-owner { color: var(--c-owner); } .crdoc .b-engine { color: var(--c-engine); }
+.crdoc .b-judge { color: var(--c-judge); } .crdoc .b-owner { color: var(--c-owner); } .crdoc .b-engine { color: var(--c-engine); }
 .crdoc .v-confirmed { color: var(--ok); background: var(--ok-bg); border-color: transparent; }
 .crdoc .v-partial, .crdoc .v-untested { color: var(--warn); background: var(--warn-bg); border-color: transparent; }
 .crdoc .v-contradicted, .crdoc .v-unsupported { color: var(--bad); background: var(--bad-bg); border-color: transparent; }

@@ -44,6 +44,9 @@ Judge every record on the evidence, never on how plausible it sounds.
   `replyTo` (the message it answers; `missing: true` = deleted) and `before` (the messages just
   before it, ending at the question) to judge what he was answering: a bare "Yes" supports only
   what the question asked. The full export is not in MIRROR; the snapshot is the source.
+- Judge calls: `sources.judge[]` in the record itself — `{quote, by, level, adopted, from}`, a
+  judge's words (level 3 = word of law, 2 = trusted). `cr:check` verifies a `report #N` one
+  against that report row; judge whether it says what the record uses it for.
 - Owner calls: `sources.owner[]` in the record itself — `{quote, adopted, from}`, the owner's
   words and the date he adopted them. The quote is its own evidence (there is no register to
   check it against); judge whether it says what the record uses it for, and whether a printed
@@ -53,10 +56,11 @@ Judge every record on the evidence, never on how plausible it sounds.
   `client/server/test/`.
 
 Authority, strongest first: a RAQ `[Solved]` write-up by `_passer` or Caleb's own words;
-printed text read literally; the owner's calls (`sources.owner`) where neither speaks.
+printed text read literally; a judge's call (`sources.judge`, level 3 then 2), whose reading of
+the print beats ours; the owner's calls (`sources.owner`) where none of those speaks.
 Other players are not authority. Our glossary is never authority.
-`basis` must match: `printed`, `designer`, `owner` (owner calls only), `engine` (code + test
-only), or `mixed` (more than one kind).
+`basis` must match: `printed`, `designer`, `judge` (judge calls only), `owner` (owner calls
+only), `engine` (code + test only), or `mixed` (more than one kind).
 
 ## What to check, per record
 

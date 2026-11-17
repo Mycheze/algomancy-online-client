@@ -87,6 +87,25 @@ for (const r of rows) {
   if (r.path === 'client/ledgers/settled.jsonl' && r.del) reasons.push(`removes ${r.del} line(s) from settled.jsonl (append-only: a later row overrides, nothing is erased)`);
 }
 
+// ── 4a. a judge's report is not closed against them ───────────────────────
+// A judge at level 2 (trusted) or 3 (word of law) outranks the owner (level 1) and everything we
+// wrote; a rules report from one is filed as a ticket (SKILL §5). Report #N is row N of the snapshot.
+const ISSUES = 'client/ledgers/playtest-issues.snapshot.jsonl';
+const closing = git('diff', '-U0', `${base}...${head}`, '--', 'client/ledgers/settled.jsonl').split('\n')
+  .filter(l => l.startsWith('+') && !l.startsWith('+++'))
+  .map(l => { try { return JSON.parse(l.slice(1)); } catch { return null; } })
+  .filter(r => r && /^#\d+$/.test(r.id ?? '') && (r.as === 'by-design' || r.as === 'wontfix'));
+if (closing.length) {
+  let reports = [];
+  try { reports = git('show', `${head}:${ISSUES}`).split('\n'); } catch { /* no snapshot: nothing to match */ }
+  const judged = closing.map(r => {
+    let row = null;
+    try { row = JSON.parse(reports[Number(r.id.slice(1))] ?? 'null'); } catch { /* not a row */ }
+    return row && row.by?.judge >= 2 && !row.fix?.takeBack ? `${r.id} ${r.as}, ${row.by.name} L${row.by.judge}` : null;
+  }).filter(Boolean);
+  if (judged.length) reasons.push(`closes a judge's report (${judged.join('; ')}) — a judge outranks our rules and the owner's past calls, so it is a ticket (SKILL §5); closing it is the owner's call`);
+}
+
 // ── 5. size: a big diff deserves eyes even when it is "just engine" ──────────
 const lines = rows.filter(r => !isTest(r.path) && !/^client\/ledgers\//.test(r.path) && !/^data\/(comprehensive-rules|corpus)\//.test(r.path))
   .reduce((n, r) => n + r.add + r.del, 0);

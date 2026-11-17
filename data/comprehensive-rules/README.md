@@ -99,7 +99,13 @@ From strongest to weakest:
 1. A RAQ `[Solved]` write-up by `_passer`, or `calebgannon`'s own words.
 2. Printed text, read literally. Where Caleb states an intent that differs from
    print, follow Caleb.
-3. The owner's calls, recorded in the record they settle (`sources.owner`:
+3. A judge's call: an account with judge level 3 (word of law) or 2 (trusted),
+   recorded in the record it settles (`sources.judge`). A judge outranks the
+   owner — he is judge level 1 — and where a judge reads the print differently
+   from us, the judge's reading is the one we follow. A call made in a report
+   (`from: "report #N"`) is checked against that report row: the words, the
+   author and the level.
+4. The owner's calls, recorded in the record they settle (`sources.owner`:
    the quote, the date he adopted the call, and where it is written). Where no
    printed or designer source speaks, an owner call is the engine's law, basis
    = owner. Until 2026-10 these lived in a separate register of numbered
@@ -111,7 +117,7 @@ From strongest to weakest:
    retired ruling register"), and `cr:check` verifies each one, verbatim,
    against the register at that commit (when the archive ref is present).
 
-Other players are not authority. A thread that is still open is not a ruling.
+Other players (judge level 1 and below, apart from the owner) are not authority. A thread that is still open is not a ruling.
 `client/ui/glossary.ts` is OUR text (typed `ours`) and never counts as
 authority. When two readings are equally available, take the permissive one.
 
@@ -162,10 +168,11 @@ One JSON object per rule, in `rules/<section>.json`:
 | `sources.printed[]` | `{ ref, quote }`; `ref` is `Manual p.N`, `Rulebook 2023 p.N` or `card: <Name>` |
 | `sources.designer[]` | `{ ref: "RAQ <threadId>#<i>", quote }`, or `{ ref: "RQ <messageId>", quote }` for one of Caleb's messages in the flat rules-questions channel (see "Designer answers outside the RAQ threads") |
 | `sources.ours[]` | `{ ref, quote }` from our own text (the glossary) — never authority |
+| `sources.judge[]` | `{ quote, by, level, adopted, from }` — a judge's call in their words: their account name, judge level (2 or 3), the date it was adopted, and where it was said: `report #N` (checked against row N of `client/ledgers/playtest-issues.snapshot.jsonl`), `comment <id>`, or a Discord message. It outranks every owner call; a record it reverses drops the owner entry it replaces |
 | `sources.owner[]` | `{ quote, adopted, from }` — the owner's call, the date he adopted it (YYYY-MM-DD), and where it is written: `comment <id>` (a review comment, his own words), `questions-round27 Q2` (a question sheet), or `register@<sha>` for a call absorbed from the retired register (the register's write-up, verified against it; a sheet pointer may precede it: `questions-round27 Q2; register@72de434`) |
 | `sources.engine[]` | engine symbols (the verifier's citations): `file.ts:symbol` or a bare symbol, declared in `client/engine/src`. An Annex D rule may also name `client/server/<file>.ts:<symbol>` or `client/ui/<file>.ts:<symbol>`, declared in that file |
 | `sources.tests[]` | test files that demonstrate the rule |
-| `basis` | `printed` \| `designer` \| `owner` \| `engine` \| `mixed` |
+| `basis` | `printed` \| `designer` \| `judge` \| `owner` \| `engine` \| `mixed` |
 | `scope` | `game` (holds at a table) \| `digital` (true of this client only). Every `annexd.*` rule is digital; a digital rule in the main document carries a small "Digital client" tag, and Annex P lists them |
 | `digitalClause?` | on a game rule, the clause of its text (verbatim) that only the client does; the editions tag it where it stands |
 | `confidence` | `high` \| `medium` \| `low` |
@@ -459,8 +466,10 @@ glossary rows that share its rule key.
 2. **Check authority.** A comment is a lead, not a source, even from a judge or
    the owner. Find the source that settles it, in the authority order above.
    - A higher source agrees: cite it. No owner call is needed.
-   - No higher source speaks to it: the owner's comment is an owner call.
-     Record it as one (step 4).
+   - No higher source speaks to it: a judge's comment (judge level 2 or 3) is
+     a judge call, recorded in `sources.judge` with `from: "comment <id>"`,
+     and it replaces any owner call it contradicts; the owner's comment is an
+     owner call. Record it (step 4).
    - A higher source contradicts it: change nothing. Reply quoting the source,
      and ask.
 3. **Sweep the claim, not the rule.** The anchored record is one instance of a

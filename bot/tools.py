@@ -332,10 +332,11 @@ def glossary_row(g: dict) -> dict:
 BASIS_WORDS = {
     "printed": "printed (card or rulebook text)",
     "designer": "the designer's ruling",
+    "judge": "a judge's call (judge level 2 or 3; outranks the owner's calls)",
     "engine": "engine-derived: no printed or designer source, awaiting owner sign-off",
 }
 #: the authority kinds a `mixed` record can mix, strongest first (the CR README's order)
-MIXED_KINDS = (("designer", "designer"), ("printed", "printed"), ("owner", "owner call"),
+MIXED_KINDS = (("designer", "designer"), ("printed", "printed"), ("judge", "judge call"), ("owner", "owner call"),
                ("engine", "engine"))
 
 

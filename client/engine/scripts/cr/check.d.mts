@@ -13,7 +13,7 @@ export function indexExtract(ex: Extract): any;
 export function glossaryTags(ex: Extract, ledger?: { entries: { num: string; key: string; kind?: string; removed?: string }[] } | null): Map<string, string>;
 export function testFilesFor(X: any, file: string): any[];
 export function titleMatches(X: any, binding: string): { files: number; n: number };
-export function check(inputs: CrInputs, ex: Extract, opts?: { repoRoot?: string; registers?: Record<string, string> }): {
+export function check(inputs: CrInputs, ex: Extract, opts?: { repoRoot?: string; registers?: Record<string, string>; reports?: ({ note?: string; by?: { name?: string; judge?: number } } | null)[] }): {
   problems: CheckProblem[];
   stale: { kind: string; where: string; msg: string }[];
   /** what could not be checked here (an archived register this clone lacks) */

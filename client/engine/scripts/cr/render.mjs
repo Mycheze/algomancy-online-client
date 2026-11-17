@@ -270,6 +270,13 @@ const ownerMeta = (rec) => {
   if (reg.length) part.push(`Owner ruling, adopted ${[...new Set(reg)].sort().join(', ')} (${REGISTER_LABEL})`);
   return part.join('; ');
 };
+/** "Judge call (Nyar, L2) · adopted 2026-11-17": the judges whose calls a record rests on */
+const judgeMeta = (rec) => {
+  const js = rec.sources?.judge ?? [];
+  if (!js.length) return null;
+  const who = [...new Set(js.map((j) => `${j.by}, L${j.level}`))].join('; ');
+  return `Judge call (${who}) · adopted ${[...new Set(js.map((j) => j.adopted))].sort().join(', ')}`;
+};
 /** a main-document rule whose scope is the digital client (an Annex D rule is digital by its place) */
 export const isDigitalTagged = (rec) => rec.scope === 'digital' && !/^annexd(\.|$)/.test(String(rec.key ?? ''));
 const DIGITAL_TAG = 'Digital client';
@@ -284,7 +291,7 @@ function scopedText(rec, text, mark) {
 
 /* ── shared text helpers ────────────────────────────────────────────────── */
 
-const BASIS_LABEL = { printed: 'Printed', designer: 'Designer', mixed: 'Mixed', owner: 'Owner call', engine: 'Engine only' };
+const BASIS_LABEL = { printed: 'Printed', designer: 'Designer', judge: 'Judge call', mixed: 'Mixed', owner: 'Owner call', engine: 'Engine only' };
 const VERDICT_LABEL = { confirmed: 'Confirmed', partial: 'Partial', contradicted: 'Contradicted', unsupported: 'Unsupported', untested: 'Untested' };
 const KIND_LABEL = { a: 'Sources disagree', b: 'Engine only', c: 'Owner call only', d: 'RAQ open', f: 'Ruling chain wrong', g: 'Other' };
 
@@ -350,10 +357,12 @@ function verdictWords(M, rec) {
 }
 function provenanceBits(M, rec) {
   const s = rec.sources ?? {};
-  const om = ownerMeta(rec);
-  const bits = [rec.basis === 'owner' && om ? `Basis: ${om}` : `Basis: ${BASIS_LABEL[rec.basis] ?? rec.basis}`, `Verified: ${verdictWords(M, rec)}`];
+  const om = ownerMeta(rec), jm = judgeMeta(rec);
+  const basisWords = rec.basis === 'owner' && om ? om : rec.basis === 'judge' && jm ? jm : BASIS_LABEL[rec.basis] ?? rec.basis;
+  const bits = [`Basis: ${basisWords}`, `Verified: ${verdictWords(M, rec)}`];
   if (s.printed?.length) bits.push(`Printed: ${s.printed.map((x) => x.ref).join('; ')}`);
   if (s.designer?.length) bits.push(`Designer: ${s.designer.map((x) => x.ref).join('; ')}`);
+  if (jm && rec.basis !== 'judge') bits.push(jm);
   if (om && rec.basis !== 'owner') bits.push(om);
   if (s.ours?.length) bits.push(`Our glossary (not a source): ${s.ours.map((x) => x.ref.replace(/^glossary: /, '')).join('; ')}`);
   if (s.engine?.length) bits.push(`Engine: ${s.engine.join(', ')}`);
@@ -751,6 +760,7 @@ function htmlSources(M, rec) {
   for (const [k, label] of [['printed', 'Printed'], ['designer', 'Designer'], ['ours', 'Our glossary (not a source)']]) {
     for (const x of s[k] ?? []) rows.push(`<li><span class="sk">${label}</span> ${E(x.ref)}: <q>${E(x.quote)}</q></li>`);
   }
+  for (const x of s.judge ?? []) rows.push(`<li><span class="sk">Judge call</span> ${E(x.by)} (L${E(String(x.level))}), adopted ${E(x.adopted)}${x.from ? ` (${E(x.from)})` : ''}: <q>${E(x.quote)}</q></li>`);
   for (const x of s.owner ?? []) {
     const sheet = String(x.from ?? '').split(';').map((t) => t.trim()).filter((t) => t && !/^register@/.test(t)).join('; ');
     rows.push(fromRegister(x)
@@ -920,7 +930,7 @@ const CSS = `
   --bg: #2b1439; --surface: #3e1d52; --fg: #f3eef7; --muted: #b3a3bd; --line: #634a76;
   --accent: #bea3ef; --accent-soft: #3a2a63; --mark: #f68c3f;
   --ok: #6fc36f; --ok-bg: #1e3a2b; --warn: #e8b64c; --warn-bg: #45311a; --bad: #f06969; --bad-bg: #4a1a2c;
-  --c-printed: #82b3dd; --c-designer: #d9a6e8; --c-mixed: #8cc6bf; --c-owner: #f2a66b; --c-engine: #f06969;
+  --c-printed: #82b3dd; --c-designer: #d9a6e8; --c-mixed: #8cc6bf; --c-judge: #a8d77f; --c-owner: #f2a66b; --c-engine: #f06969;
   --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
   --font-display: "IBM Plex Serif", Georgia, serif;
@@ -930,7 +940,7 @@ const CSS = `
   --bg: #ffffff; --surface: #ffffff; --fg: #1d2329; --muted: #5b6670; --line: #d9dee3;
   --accent: #1f5f8b; --accent-soft: #e3eef6; --mark: #b4561a;
   --ok: #1e7a4c; --ok-bg: #e2f3ea; --warn: #8a5a00; --warn-bg: #fbefd5; --bad: #a3262a; --bad-bg: #f8e1e1;
-  --c-printed: #2d5f8a; --c-designer: #6b3fa0; --c-mixed: #3f6f6a; --c-owner: #9a5b12; --c-engine: #a3262a; color-scheme: light } }
+  --c-printed: #2d5f8a; --c-designer: #6b3fa0; --c-mixed: #3f6f6a; --c-judge: #3d6b1f; --c-owner: #9a5b12; --c-engine: #a3262a; color-scheme: light } }
 * { box-sizing: border-box }
 body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.6 var(--font-body); }
 .wrap { max-width: 1120px; margin: 0 auto; padding: 28px 16px 80px; display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 40px; }
@@ -964,7 +974,7 @@ code { font-size: 0.88em; background: var(--accent-soft); padding: 1px 4px; bord
 .tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px }
 .chip { font: 500 11.5px/1 var(--font-body); padding: 4px 7px; border-radius: 3px; border: 1px solid currentColor; letter-spacing: 0.02em }
 .b-printed { color: var(--c-printed) } .b-designer { color: var(--c-designer) } .b-mixed { color: var(--c-mixed) }
-.b-owner { color: var(--c-owner) } .b-engine { color: var(--c-engine) }
+.b-judge { color: var(--c-judge) } .b-owner { color: var(--c-owner) } .b-engine { color: var(--c-engine) }
 .s-digital { color: var(--muted); font-size: 10.5px; padding: 2px 5px; vertical-align: 1px }
 .v-confirmed { color: var(--ok); background: var(--ok-bg); border-color: transparent }
 .v-partial, .v-untested { color: var(--warn); background: var(--warn-bg); border-color: transparent }

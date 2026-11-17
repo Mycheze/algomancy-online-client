@@ -89,7 +89,11 @@ Read it before touching that string.
   `184-ruling-register.test.ts` fails on a CR number that names no live rule. An
   owner decision goes into the record it settles — `sources.owner {quote, from:
   "comment <id>", adopted}` — then re-verify and re-render; there is no separate
-  register. The R-ruling register (`client/docs/digital-rules.md`, `R1`–`R350`)
+  register. **A judge at level 2 or 3 outranks the owner** (he is level 1): their
+  call goes in `sources.judge {quote, by, level, adopted, from: "report #N"}` and
+  replaces the owner call it contradicts. Most of the CR is the owner's guesses
+  made while building; a judge saying otherwise is the correction, not a
+  dispute. The R-ruling register (`client/docs/digital-rules.md`, `R1`–`R350`)
   was retired on 2026-10-11 and is archived at `refs/archive/r-register-final`;
   184 fails on any `R<n>` citation that comes back.
 - **`client/ledgers/` holds every work queue** — `open/CT-n.ts` and

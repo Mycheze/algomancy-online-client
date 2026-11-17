@@ -253,7 +253,7 @@ sources, in this order, and record what each one said (or that it said nothing):
 
 1. **The comprehensive rules** — `data/comprehensive-rules/Algomancy-Comprehensive-Rules.json`
    (rule text AND examples, one row per rule; `sources.owner` blocks in `rules/*.json` are the
-   owner's past decisions).
+   owner's past decisions, and they rank BELOW a judge — see "Who outranks whom").
 2. **The RAQ** — `client/ledgers/raq.ts`, then the thread *titles* in
    `data/rulings/exports/` (`ls … | sed 's/Caleb Gannon.s Discord - //; s/ \[[0-9]*\].json//'`)
    — threads are named after the interaction they settle. `calebgannon` is the
@@ -271,6 +271,40 @@ The RAQ beats our own earlier rulings: if a thread contradicts the CR record,
 follow the thread, record the reversal in the CR record citing it, and fix the
 engine. **Do not ask about that.**
 
+**Who outranks whom** — the order above is where to LOOK; this is who WINS,
+strongest first:
+
+1. Caleb's own words (`calebgannon`) and `_passer`'s `[Solved]` write-ups — on
+   the case at hand, not a neighbouring one.
+2. The printed card and rulebook, read literally.
+3. **A judge at level 3 (word of law) or 2 (trusted)** — `by.judge` on a report
+   row. Where a judge reads the print differently from us, theirs is the reading.
+4. The owner — he is a level-1 judge. His answers, his marks, and every
+   `sources.owner` call in the CR.
+5. Everything we wrote: CR records of any other basis, the engine, its tests,
+   how analogous cards behave.
+
+The owner set this order himself (2026-11-17): *"the L2 judges are HIGHER ranked
+than I am. So if I assume something, but they say 'nah'. They're right. Not me."*
+Most of the CR is calls he made while building, with nobody to ask; a judge's
+report is how one of those gets corrected. **A rules report always contradicts
+our rules — that is what makes it a report. It is never, by itself, a reason to
+close one.**
+
+**A rules report from a judge (level 2 or 3) is the ruling.** In triage it is a
+`ticket`, every time: the CT quotes the judge as the authority (and the old
+verdict, if this is a reopening, so the next run does not repeat it). The work
+run records the judge's words in each CR record they reverse — `sources.judge`
+`{quote, by, level, adopted, from: "report #N"}`, dropping the owner call it
+replaces (`data/comprehensive-rules/README.md`; `cr:check` verifies the quote,
+name and level against the report row) — and fixes the engine. **Do not ask
+about it.** Only tier 1, speaking to that exact case, can stand against a judge;
+then the CT says so with both quotes, and its work run ends `needs-human`.
+Never `by-design` and never `wontfix` on a judge's report: `policy.mjs` stages
+any branch that does it, and a staged triage blocks every report behind it. The
+same holds when you could not reproduce what a judge says happened — a ticket
+saying what you tried.
+
 **The "of course, you fool" test.** Before you write a question, write down the
 answer you expect the owner to give and the one source that would make him
 say *"obviously"*. If you can name that source, it is not a question — cite it
@@ -283,8 +317,13 @@ where. Recommendations are for UX and process only.
 
 **What does NOT count as a source for "by design"** (2026-11-13: #390, #386
 and #323 were closed by-design on exactly these, and the owner had to overrule
-all three):
+all three; #389 on the first):
 
+- **The owner's earlier call, against a judge.** #389: Nyar (level 2) reported
+  that Umbral Decay, with no graft and no augment, could be applied to
+  Spellbind; it was closed by-design on the owner's 2026-08-23 "it's legal to
+  apply ANYTHING to a Modular card" (CR 724.2). That was a call he made alone
+  while building, and he has said it was wrong. A judge outranks it.
 - **A CR rule whose basis is "Engine only"** (its row's `"basis": "engine"` in the
   json, or a `discrepancies/*.json` entry saying "the sources are silent"). That rule is a
   description of the engine — the very thing the report says is wrong. Citing
@@ -303,10 +342,11 @@ all three):
   thing — what you have is `needs-human` "could not reproduce, here is what I
   tried", never `by-design`.
 
-**A report from a judge or the owner that says the engine broke a rule is not
-closed by-design by you.** If the sources you have really do settle it against
-them, write the verdict as `needs-human` with the quotes, so the owner sees it
-before it is closed.
+**A level-1 judge's report, or the owner's own, that says the engine broke a
+rule is not closed by-design by you either.** If tiers 1–3 really do settle it
+against them, file it as a `ticket` whose CT carries the quotes; its work run
+ends `needs-human`, so the owner sees it before it is closed — without holding
+up the triage.
 
 A real question goes in the handoff (§8b) in two forms: one for the
 owner (short, with the readings and their evidence) and a **Discord-ready**
@@ -573,7 +613,9 @@ for duplicates and already-fixed, and append its row (shapes in "The ledgers"):
 
 - **already fixed** on master: `fixed`, `to` the ticket that fixed it, and a test
   whose title carries `#N` (tag the existing guard's title if none does);
-- **by design**: `by-design`, the source quoted in `note` (§5: what does not count);
+- **by design**: `by-design`, the source quoted in `note` (§5: what does not count).
+  Never on a judge's report (`by.judge` 2 or 3): that is a `ticket` (§5, "Who
+  outranks whom");
 - **not being done**: `wontfix`, who decided and why;
 - **real work**: one CT or BL file with the evidence you gathered, then
   `{"id":"#N","as":"ticket","to":["CT-n"],"note":"…"}`. The same gap as an open

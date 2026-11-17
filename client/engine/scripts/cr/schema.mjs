@@ -12,7 +12,9 @@
  *                 verbatim clause of its text that only the client does) and
  *                 `sources.owner[{quote, adopted, from}]`: the owner's own words,
  *                 the date he adopted them, and where he said them ('comment <id>',
- *                 'questions-round27 Q2', or 'register@<sha>' for a call absorbed from the old register)
+ *                 'questions-round27 Q2', or 'register@<sha>' for a call absorbed from the old register),
+ *                 and `sources.judge[{quote, by, level, adopted, from}]`: a judge's call (level 2 or 3),
+ *                 which outranks the owner's; `from` 'report #N' is checked against that report row
  *   glossary row  a rule record with `term` instead of `parent`/`order`; a pointer:
  *                 one sentence + `see` (the first target is the defining rule),
  *                 `derived?` (the term-source tags it covers), `obsolete?` and,
@@ -32,7 +34,9 @@
  */
 import { createHash } from 'node:crypto';
 
-export const BASES = ['printed', 'designer', 'owner', 'engine', 'mixed'];
+export const BASES = ['printed', 'designer', 'judge', 'owner', 'engine', 'mixed'];
+/** the judge levels whose call is authority: 3 = word of law, 2 = trusted (1 is above genpop, not authority) */
+export const JUDGE_LEVELS = [2, 3];
 export const CONFIDENCES = ['high', 'medium', 'low'];
 export const VERDICTS = ['confirmed', 'partial', 'contradicted', 'unsupported', 'untested'];
 /** the pilot's discrepancy kinds; the letter is what the report groups on */
@@ -145,7 +149,7 @@ function refQuoteList(where, list, refOk, refHint) {
   return out;
 }
 
-const SOURCE_FIELDS = ['printed', 'designer', 'ours', 'owner', 'engine', 'tests'];
+const SOURCE_FIELDS = ['printed', 'designer', 'ours', 'judge', 'owner', 'engine', 'tests'];
 
 /** a section/parent number: `608`, `D3`; a rule number: `608.2`; a subrule: `608.2b` */
 export const SECTION_NUM_RE = /^(?:\d{3}|D\d+)$/;
@@ -222,6 +226,14 @@ export function validateRecord(r) {
     out.push(...quoteProblems(`${pre}.owner[${i}]`, x.quote));
     if (!DATE_RE.test(x.adopted ?? '')) P(`sources.owner[${i}].adopted must be YYYY-MM-DD`);
     if (!isStr(x.from)) P(`sources.owner[${i}].from must be a string ('comment <id>', 'questions-roundNN Qn', or '')`);
+  });
+  if (Array.isArray(s.judge)) s.judge.forEach((x, i) => {
+    if (!isObj(x)) { P(`sources.judge[${i}] must be {quote, by, level, adopted, from}`); return; }
+    out.push(...quoteProblems(`${pre}.judge[${i}]`, x.quote));
+    if (!nonEmpty(x.by)) P(`sources.judge[${i}].by must be the judge's account name`);
+    if (!JUDGE_LEVELS.includes(x.level)) P(`sources.judge[${i}].level must be ${JUDGE_LEVELS.join(' or ')}`);
+    if (!DATE_RE.test(x.adopted ?? '')) P(`sources.judge[${i}].adopted must be YYYY-MM-DD`);
+    if (!nonEmpty(x.from)) P(`sources.judge[${i}].from must say where it was said ('report #N', 'comment <id>', a Discord message)`);
   });
   if (Array.isArray(s.engine) && !s.engine.every(nonEmpty)) P('sources.engine must hold non-empty strings');
   if (Array.isArray(s.tests) && !s.tests.every(nonEmpty)) P('sources.tests must hold non-empty strings');

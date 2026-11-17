@@ -75,8 +75,10 @@ export function buildPack(I, unit, seed = null) {
   /* owner.md */
   const ol = [`# ${unit} — the owner's calls on this unit's rules`, '', `Unit: ${U.title} (rules ${U.rules}). Each quote is the owner's own words, adopted on the date shown; it is its own evidence. A new owner call is added to the record it settles (sources.owner, from: "comment <id>").`, ''];
   for (const r of records) {
-    if (!(r.sources?.owner ?? []).length) continue;
-    ol.push(`## ${L.numOf(r.key)} ${r.key}`, '', ...r.sources.owner.map((o) => `- adopted ${o.adopted}${o.from ? ` (${o.from})` : ''}: "${o.quote}"`), '');
+    if (!(r.sources?.owner ?? []).length && !(r.sources?.judge ?? []).length) continue;
+    ol.push(`## ${L.numOf(r.key)} ${r.key}`, '',
+      ...(r.sources.judge ?? []).map((j) => `- JUDGE ${j.by} (L${j.level}), adopted ${j.adopted} (${j.from}) — outranks the owner: "${j.quote}"`),
+      ...(r.sources.owner ?? []).map((o) => `- adopted ${o.adopted}${o.from ? ` (${o.from})` : ''}: "${o.quote}"`), '');
   }
   files['owner.md'] = ol.join('\n');
 
