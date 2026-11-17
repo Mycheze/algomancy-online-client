@@ -1654,21 +1654,32 @@
   },
   {
     "key": "concepts.cards.copies.token-copy",
-    "textHash": "db5ec638d0d69de7",
+    "textHash": "0785eb6706e24590",
     "verdict": "confirmed",
-    "round": 1,
-    "verifier": "U03-r1",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "cards Echo of Despair copy",
+        "loc": "client/engine/src/cards/sets/batch-hybrids-ld-c.ts:swarmlingCopy",
         "agrees": true,
-        "note": "copy entity carries token flag"
+        "note": "spawnUnit(..., { token: true })"
+      },
+      {
+        "loc": "client/engine/src/cards/sets/batch-light-a.ts:Hooba-God",
+        "agrees": true,
+        "note": "copy spawned with token: true"
       }
     ],
     "tests_run": [
       {
-        "file": "393-raq-mods.test.ts",
-        "pattern": "RAQ Download: a copy Echo of Despair makes of itself is a token",
+        "file": "client/engine/test/393-raq-mods.test.ts",
+        "pattern": "RAQ Download: a copy Echo of Despair",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
+        "file": "client/engine/test/46-hybrids-ld-c.test.ts",
+        "pattern": "Swarmling: discarding IT fires",
         "passed": true,
         "asserts_claim": true
       }
@@ -1676,15 +1687,41 @@
     "probes": [],
     "source_checks": [
       {
+        "ref": "card: Swarmling",
+        "supports": "yes",
+        "note": "printed text says 'create a copy of me' without the word token"
+      },
+      {
         "ref": "RAQ 1353864175910387742#3",
         "supports": "yes",
-        "note": ""
+        "note": "[Solved] Download thread: the Echo of Despair copy is a token"
+      },
+      {
+        "ref": "report #419 (owner)",
+        "supports": "yes",
+        "note": "snapshot line 419 relays Caleb: 'Yeah copies are tokens' / 'shouldn't specify token, since thats implicit'; the record limits itself to copies created in play, the case the owner's note says is clear"
       }
     ],
     "quote_spans": [
       {
+        "file": "client/engine/src/cards/printed.json",
+        "text": "Whenever you discard me or another card, you may pay [1] to create a copy of me."
+      },
+      {
+        "file": "client/ledgers/raq.ts",
+        "text": "4. Copy of Echo of Despair ✅"
+      },
+      {
+        "file": "client/ledgers/playtest-issues.snapshot.jsonl",
+        "text": "Yeah copies are tokens\\nI think hooba god shouldn't specify token, since thats implicit"
+      },
+      {
         "file": "client/engine/test/393-raq-mods.test.ts",
         "text": "assert.ok(copies[0]!.token, 'and it is a token — what Download and Arcane Echo can target');"
+      },
+      {
+        "file": "client/engine/test/46-hybrids-ld-c.test.ts",
+        "text": "assert.ok(copies[0]!.token, 'as a token (⚠ \"create a copy of me\")');"
       }
     ],
     "basis_ok": true,

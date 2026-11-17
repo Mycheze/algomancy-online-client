@@ -595,16 +595,25 @@
     "key": "concepts.cards.copies.token-copy",
     "parent": "concepts.cards.copies",
     "order": 2,
-    "text": "A token that an effect creates as a copy of a card is a token.",
+    "text": "A copy of a card that an effect creates in play is a token, whether or not the effect calls it a token.",
     "examples": [
       {
         "text": "The copy Echo of Despair makes of itself is a token.",
         "test": "393-raq-mods.test.ts::RAQ Download: a copy Echo of Despair makes of itself is a token"
+      },
+      {
+        "text": "Swarmling's text says only \"create a copy of me\", and the copy it creates is a token.",
+        "test": "46-hybrids-ld-c.test.ts::Swarmling: discarding IT fires its own trigger from the bin — pay [1] for a copy CT-392"
       }
     ],
     "see": [],
     "sources": {
-      "printed": [],
+      "printed": [
+        {
+          "ref": "card: Swarmling",
+          "quote": "you may pay [1] to create a copy of me."
+        }
+      ],
       "designer": [
         {
           "ref": "RAQ 1353864175910387742#3",
@@ -612,16 +621,28 @@
         }
       ],
       "ours": [],
-      "owner": [],
+      "owner": [
+        {
+          "quote": "Yeah copies are tokens",
+          "adopted": "2026-11-17",
+          "from": "report #419 (Caleb Gannon's ruling, relayed by the owner)"
+        },
+        {
+          "quote": "I think hooba god shouldn't specify token, since thats implicit",
+          "adopted": "2026-11-17",
+          "from": "report #419 (Caleb Gannon's ruling, relayed by the owner)"
+        }
+      ],
       "engine": [],
       "tests": [
-        "393-raq-mods.test.ts"
+        "393-raq-mods.test.ts",
+        "46-hybrids-ld-c.test.ts"
       ]
     },
-    "basis": "designer",
+    "basis": "mixed",
     "scope": "game",
     "confidence": "high",
-    "notes": "",
+    "notes": "Caleb's 2026-11-17 ruling reached us as the owner's relay in report #419; the owner is asking him whether ALL copies are tokens. Until he answers, 108.4a (spell copies) and 108.4c (becoming a copy) stand on their RAQ sources.",
     "sourceHashes": {
       "RAQ 1353864175910387742#3": "1df590deb52f750db15cbd1ae36380f43b93c3d85ddf7de7398839c45e108846"
     }

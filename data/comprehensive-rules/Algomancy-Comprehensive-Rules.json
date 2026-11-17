@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:694ec6b0bfa80d6b",
+ "generated_from": "sha256:97deddd755934553",
  "rules": [
   {
    "num": "100.1",
@@ -2988,12 +2988,13 @@
    "sectionTitle": "Cards, Tokens, Faces and Copies",
    "chapterTitle": "1. Game Concepts",
    "parent": "108.4",
-   "text": "A token that an effect creates as a copy of a card is a token.",
+   "text": "A copy of a card that an effect creates in play is a token, whether or not the effect calls it a token.",
    "see": [],
    "examples": [
-    "The copy Echo of Despair makes of itself is a token."
+    "The copy Echo of Despair makes of itself is a token.",
+    "Swarmling's text says only \"create a copy of me\", and the copy it creates is a token."
    ],
-   "basis": "designer",
+   "basis": "mixed",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [],

@@ -1752,3 +1752,5 @@
 {"id":"#389","on":"2026-11-17","as":"fixed","to":["CT-573"]}
 {"id":"BL-80","on":"2026-11-17","as":"done"}
 {"id":"#418","on":"2026-11-17","as":"fixed","to":["BL-80"]}
+{"id":"BL-81","on":"2026-11-17","as":"done","note":"CR 108.4b reworded: a copy of a card an effect creates in play is a token, whether or not the effect calls it one; Caleb's two lines from report #419 cited as the owner's relay. 108.4a and 108.4c unchanged until Caleb answers the owner's follow-up on ALL copies; that answer comes back as a new report."}
+{"id":"#419","on":"2026-11-17","as":"fixed","to":["BL-81"]}
