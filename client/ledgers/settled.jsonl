@@ -1750,3 +1750,5 @@
 {"id":"#419","on":"2026-11-17","as":"ticket","to":["BL-81"],"note":"The owner relays Caleb: \"Yeah copies are tokens / I think hooba god shouldn't specify token, since thats implicit\", and asks for a clearer CR 108.4b (today \"A token that an effect creates as a copy of a card is a token.\", circular). No engine fault named; the owner is still confirming the scope with Caleb. BL-81: reword 108.4b and cite the ruling; 108.4a/108.4c wait on his answer."}
 {"id":"CT-573","on":"2026-11-17","as":"done"}
 {"id":"#389","on":"2026-11-17","as":"fixed","to":["CT-573"]}
+{"id":"BL-80","on":"2026-11-17","as":"done"}
+{"id":"#418","on":"2026-11-17","as":"fixed","to":["BL-80"]}

@@ -283,7 +283,7 @@ export interface Account {
    * It is copied onto every report the account files (report-fields.ts
    * `ReportedBy`), which is what it is for: the owner, 2026-09-05, triaging the first live game's reports, asked
    * to know "what kind of account left the report". Shown on the profile.
-   * The admin dashboard lists a badged account's unjudged reports first
+   * The admin dashboard lists a judge's unjudged reports first, never the owner's
    * (ui/pages/admin.ts reportOrder, 2026-11-07), and every game push carries
    * each seat's mark for the board to draw beside the name (`seatBadge`,
    * server/main.ts seatBadges, 2026-11-08). The review queue is still BL-17.
