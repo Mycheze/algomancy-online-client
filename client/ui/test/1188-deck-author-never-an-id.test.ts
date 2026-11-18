@@ -52,6 +52,6 @@ test('§3 the Decks page preview never says "built by" an id', () => {
 
 test('§4 the waiting room\'s "deck is in" line goes through authorName', () => {
   const src = readFileSync(new URL('../pages/waiting.ts', import.meta.url), 'utf8');
-  assert.match(src, /esc\(v\.deck\.name\)\}\$\{authorName\(v\.deck\.author\)/);
-  assert.doesNotMatch(src, /by \$\{esc\(v\.deck\.author\)\}/);
+  assert.match(src, /esc\((\w+(?:\.\w+)?)\.name\)\}\$\{authorName\(\1\.author\)/);
+  assert.doesNotMatch(src, /by \$\{esc\(\w+(?:\.\w+)?\.author\)\}/);
 });
