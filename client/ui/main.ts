@@ -9363,6 +9363,9 @@ function renderHome(): void {
  * Competitive match): the room exists but the game has not been dealt.
  * pages/waiting.ts draws and wires whichever one this is. */
 function renderWaiting(): void {
+  // the Decks page ("My decks →") and the builder over it own #app until their
+  // Back, which paints the room as it stands by then; a push must not cover them
+  if (dk.screen() || tt.screen()) return;
   dropBaselines();
   $app.classList.remove('board');
   paintWaiting($app, NET!, uiError, renderWaiting);

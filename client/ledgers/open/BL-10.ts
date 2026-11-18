@@ -397,5 +397,14 @@ export default {
     + 'the way, same class: a reply to an older ask painted over a newer one (two quick clicks), so cardstats.ts load '
     + 'numbers its asks and meta.ts ask() tracks each of its three loads (list, one deck, ladder) apart — which also '
     + 'stops the ladder\'s answer from clearing the list\'s loading. Guarded by 1495-refetch-says-it-is-updating.test.ts '
-    + '(fake fetch, replies released out of order). Reasoned, not looked at (no browser).',
+    + '(fake fetch, replies released out of order). Reasoned, not looked at (no browser).\n\n'
+    + '2026-11-18 (steward): a page opened over a waiting room is not painted over by the room (docs/23-ui-inventory/05 '
+    + '§18.29: "\\"My decks →\\" in a waiting room opens a deck page … which the next server push overwrites"; its Close '
+    + 'half was fixed 2026-11-02, test 908). Every push to a room calls render(), and renderNow painted the room while '
+    + 'NET.waiting whatever was open, so the opponent arriving, picking or leaving threw the player off the Decks page, '
+    + 'or out of the builder mid-edit. The class was the two pages a room can open: the Decks page (the constructed '
+    + 'room\'s deck picker) and the builder over it; the draft lobby, the match room and the Single Card Duel room open '
+    + 'neither. main.ts renderWaiting returns while dk.screen() or tt.screen(); their Back paints the room as it stands '
+    + 'by then. Guarded by 1496-page-over-a-room-survives-a-push.test.ts (the ui driver: a room, My decks, a push, '
+    + 'Back). Left: §18.17 (no "change" once a deck is in) and §18.21 (Leave asks nothing).',
 } satisfies BacklogTicket;
