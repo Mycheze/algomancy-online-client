@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-18', kind: 'new', text: 'In a Constructed or Single Card Duel room, you can now change your deck or card after it is in, until your opponent is ready. Press Change deck, or Change card, beside your name.' },
   { date: '2026-11-18', kind: 'fix', text: 'In a Constructed room, My decks no longer snaps back to the room when your opponent arrives or leaves. Your Decks page, or the deck you are editing, stays open until you press Back.' },
   { date: '2026-11-17', kind: 'fix', text: 'Card stats and the Metagame lists now say "Updating…" and dim the old numbers while a new filter or sort loads. Clicking quickly no longer leaves numbers from the filter you clicked before.' },
   { date: '2026-11-17', kind: 'fix', text: 'After a game played as a guest, the Keep this game? box no longer lets you type a username longer than 20 characters, which was then refused only once you pressed Keep it.' },

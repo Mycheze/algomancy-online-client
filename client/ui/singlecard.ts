@@ -37,7 +37,8 @@ export function chosen(): string | null {
   } catch { return null; }
 }
 
-function choose(name: string): void {
+/** make `name` this browser's pick */
+export function choose(name: string): void {
   try { localStorage.setItem(STORE_KEY, name); } catch { /* private mode: this page only */ }
   draft = '';
 }

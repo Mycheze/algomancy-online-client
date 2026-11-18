@@ -406,5 +406,15 @@ export default {
     + 'room\'s deck picker) and the builder over it; the draft lobby, the match room and the Single Card Duel room open '
     + 'neither. main.ts renderWaiting returns while dk.screen() or tt.screen(); their Back paints the room as it stands '
     + 'by then. Guarded by 1496-page-over-a-room-survives-a-push.test.ts (the ui driver: a room, My decks, a push, '
-    + 'Back). Left: §18.17 (no "change" once a deck is in) and §18.21 (Leave asks nothing).',
+    + 'Back). Left: §18.17 (no "change" once a deck is in) and §18.21 (Leave asks nothing).\n\n'
+    + '2026-11-18 (steward): a deck or card that is in can be changed before the deal (docs/23-ui-inventory/05 §18.17: '
+    + '"Constructed/single waiting: once your deck/card is in, the picker vanishes with no \\"change\\" — the draft lobby has '
+    + '\\"Change my mind\\""). The server already put a second pick in the first one\'s place (rooms.ts setRoomDeck); only the '
+    + 'page had no way to send one. The constructed room (and a constructed league match) and the Single Card Duel room draw '
+    + 'Change deck / Change card in the foot where the draft lobby draws Change my mind, while mine is in and the opponent\'s '
+    + 'is not; it opens the picker again (ui/roomchange.ts, per room), the seat line keeps naming the one that is in, "until '
+    + 'you play another", and Keep <name> closes the picker and puts the browser\'s choice back on it. Play sends the pick '
+    + 'as before. Left out: the Competitive match room (registration is its own flow). Not done: §18.21, Leave asking twice '
+    + '— leaving only empties the chair, the seat and its deck wait for the room link, so a second press would guard '
+    + 'nothing. Guarded by 1497-room-change-deck.test.ts (§3/§4 drive the real client). Reasoned, not looked at (no browser).',
 } satisfies BacklogTicket;

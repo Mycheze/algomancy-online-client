@@ -17,7 +17,8 @@ import { roomFriendsHtml } from '../inbox.ts';
 import * as lob from '../lobby.ts';
 import * as mt from '../match.ts';
 import * as sc from '../singlecard.ts';
-import { settingRow, statusMessage } from '../components/index.ts';
+import { button, settingRow, statusMessage } from '../components/index.ts';
+import { changing } from '../roomchange.ts';
 import { chosenDeck, esc, shareBar } from '../util.ts';
 import { authorName } from '../deckformat.ts';
 import { deckPickerHtml, deckPickerView, wireDeckPicker, type DeckPickerView } from './deckpicker.ts';
@@ -68,6 +69,10 @@ export interface ConstructedWaitingView {
   oppName: string | undefined;
   /** the deck this browser brings, or none chosen */
   deck: { name: string; author: string } | null;
+  /** my deck is in and its picker is open again (ui/roomchange.ts) */
+  changing?: boolean;
+  /** the deck that is in, when that is not `deck` (the picker moved the selection) */
+  inDeck?: { name: string; author: string } | null;
   deckPicker: DeckPickerView;
   error: string;
   /** the toolbar's account and bell (pages/frame.ts) */
@@ -78,17 +83,20 @@ export function constructedWaitingView(net: WaitingNet, error: string): Construc
   const w = net.waiting!;
   const me = net.seat, opp = other(me);
   const league = w.league === true;
+  const mineIn = !!w.have[me];
+  const ch = mineIn ? changing(net.room) : null;
   return {
     room: net.room,
     link: `${location.origin}/?ws=1&room=${encodeURIComponent(net.room)}&seat=${opp}&mode=constructed`,
     league,
     friends: league ? '' : roomFriendsHtml(!net.peers[opp]),
-    mineIn: !!w.have[me],
+    mineIn,
     oppIn: !!w.have[opp],
     oppHere: !!net.peers[opp],
     myName: net.names[me],
     oppName: net.names[opp],
     deck: chosenDeck(),
+    ...(ch ? { changing: true, inDeck: ch.deck } : {}),
     deckPicker: deckPickerView(),
     error,
     chrome: frameChromeView(),
@@ -109,11 +117,13 @@ export function constructedWaitingView(net: WaitingNet, error: string): Construc
  * different products. */
 export function constructedWaitingHtml(v: ConstructedWaitingView): string {
   const oppLine = v.oppHere ? 'connected — still choosing a deck…' : 'not here yet';
+  const changingDeck = v.mineIn && !v.oppIn && v.changing === true;
+  const inDeck = changingDeck ? v.inDeck ?? null : v.deck;
   return roomFrameHtml({
     page: 'lobbypage', kind: v.league ? 'League match' : 'Constructed', room: v.room, chrome: v.chrome,
     cardHtml: roomSection(v.league ? '' : shareBar('Send your opponent the room code', v.room, v.link))
       + roomSection(v.league ? '' : v.friends)
-      + roomSection(v.mineIn ? '' : `<div class="lobbypanel deckpicker">
+      + roomSection(v.mineIn && !changingDeck ? '' : `<div class="lobbypanel deckpicker">
       ${settingRow({ label: `Your deck${v.league ? ' for this game' : ''}`, controlHtml: deckPickerHtml(v.deckPicker) })}
       <button class="cta primary" data-btn="deckjoin" ${v.deck ? '' : 'disabled'}>Play this deck</button>
     </div>`)
@@ -121,15 +131,27 @@ export function constructedWaitingHtml(v: ConstructedWaitingView): string {
       <div class="lobbyseats">
         <span class="lobbyseat"><i class="seatdot${v.mineIn ? ' ready' : ''}"></i>
           <span>${esc(v.myName ?? 'You')} (you) — ${v.mineIn
-            ? `<b class="lockedin">deck is in</b>${v.deck ? ` — ${esc(v.deck.name)}${authorName(v.deck.author) ? ` by ${esc(authorName(v.deck.author))}` : ''}` : ''}`
+            ? `<b class="lockedin">deck is in</b>${inDeck ? ` — ${esc(inDeck.name)}${authorName(inDeck.author) ? ` by ${esc(authorName(inDeck.author))}` : ''}` : ''}${
+              changingDeck ? ' <span class="dim">until you play another</span>' : ''}`
             : '<span class="dim">pick a deck above</span>'}</span></span>
         <span class="lobbyseat"><i class="seatdot${v.oppIn ? ' ready' : v.oppHere ? '' : ' away'}"></i>
           <span>${esc(v.oppName ?? 'Opponent')} — ${v.oppIn
             ? '<b class="lockedin">deck is in</b>' : `<span class="dim">${esc(oppLine)}</span>`}</span></span>
       </div>
+      ${changeHtml(v.mineIn && !v.oppIn, changingDeck, 'deck', inDeck?.name ?? null)}
     </div>`, 'roomsec--foot')
       + roomSection(v.error ? statusMessage({ tag: 'p', tone: 'error', className: 'pageerr', text: v.error }) : ''),
   });
+}
+
+/** The foot's button once my deck or card is in and the opponent's is not:
+ * Change opens the picker again; while it is open, Keep closes it on the one
+ * that is in. The draft lobby's Change my mind sits in the same place. */
+function changeHtml(shown: boolean, open: boolean, what: 'deck' | 'card', inName: string | null): string {
+  if (!shown) return '';
+  return `<div class="lobbygo">${open
+    ? button({ label: inName ? `Keep ${inName}` : `Keep my ${what}`, dataBtn: 'room-keep' })
+    : button({ label: `Change ${what}`, dataBtn: 'room-change' })}</div>`;
 }
 
 /* ── the Single Card Duel room ────────────────────────────────────────── */
@@ -148,6 +170,10 @@ export interface SingleWaitingView {
   oppName: string | undefined;
   /** the card picked so far (ui/singlecard.ts), or null */
   card: string | null;
+  /** my card is in and its picker is open again (ui/roomchange.ts) */
+  changing?: boolean;
+  /** the card that is in, when that is not `card` (the picker moved the pick) */
+  inCard?: string | null;
   /** pages/singlecard.ts singleCardPickerHtml() — a slot; '' once my card is in */
   picker: string;
   error: string;
@@ -158,6 +184,7 @@ export function singleWaitingView(net: WaitingNet, error: string): SingleWaiting
   const w = net.waiting!;
   const me = net.seat, opp = other(me);
   const mineIn = !!w.have[me];
+  const ch = mineIn ? changing(net.room) : null;
   return {
     room: net.room,
     link: `${location.origin}/?ws=1&room=${encodeURIComponent(net.room)}&seat=${opp}&mode=constructed`,
@@ -169,7 +196,8 @@ export function singleWaitingView(net: WaitingNet, error: string): SingleWaiting
     myName: net.names[me],
     oppName: net.names[opp],
     card: sc.chosen(),
-    picker: mineIn ? '' : singleCardPickerHtml(singleCardPickerView()),
+    ...(ch ? { changing: true, inCard: ch.card } : {}),
+    picker: mineIn && !ch ? '' : singleCardPickerHtml(singleCardPickerView()),
     error,
     chrome: frameChromeView(),
   };
@@ -179,6 +207,8 @@ export function singleWaitingView(net: WaitingNet, error: string): SingleWaiting
  * for a card. Blind: the other seat's line says only that their card is in. Pure. */
 export function singleWaitingHtml(v: SingleWaitingView): string {
   const oppLine = v.oppHere ? 'connected — still choosing a card…' : 'not here yet';
+  const changingCard = v.mineIn && !v.oppIn && v.changing === true;
+  const inCard = changingCard ? v.inCard ?? null : v.card;
   return roomFrameHtml({
     page: 'lobbypage', kind: 'Single Card Duel', room: v.room, chrome: v.chrome,
     cardHtml: roomSection(shareBar('Send your opponent the room code', v.room, v.link))
@@ -189,7 +219,7 @@ export function singleWaitingHtml(v: SingleWaitingView): string {
         <b data-prev="${esc(v.drawn.theirs)}">${esc(v.drawn.theirs)}</b>. Neither ever makes a unit, so nobody
         could attack — a draw before it starts. Pick again (the same card is allowed).</p>
     </div>` : '')
-      + roomSection(v.mineIn ? '' : `<div class="lobbypanel deckpicker">
+      + roomSection(v.mineIn && !changingCard ? '' : `<div class="lobbypanel deckpicker">
       <div class="zonelabel">Your card</div>
       <p class="cardsub">Thirty copies of whatever you pick, hidden from your opponent.</p>
       ${v.picker}
@@ -199,12 +229,14 @@ export function singleWaitingHtml(v: SingleWaitingView): string {
       <div class="lobbyseats">
         <span class="lobbyseat"><i class="seatdot${v.mineIn ? ' ready' : ''}"></i>
           <span>${esc(v.myName ?? 'You')} (you) — ${v.mineIn
-            ? `<b class="lockedin">card is in</b>${v.card ? ` — ${esc(v.card)}` : ''}`
+            ? `<b class="lockedin">card is in</b>${inCard ? ` — ${esc(inCard)}` : ''}${
+              changingCard ? ' <span class="dim">until you play another</span>' : ''}`
             : '<span class="dim">pick a card above</span>'}</span></span>
         <span class="lobbyseat"><i class="seatdot${v.oppIn ? ' ready' : v.oppHere ? '' : ' away'}"></i>
           <span>${esc(v.oppName ?? 'Opponent')} — ${v.oppIn
             ? '<b class="lockedin">card is in</b>' : `<span class="dim">${esc(oppLine)}</span>`}</span></span>
       </div>
+      ${changeHtml(v.mineIn && !v.oppIn, changingCard, 'card', inCard)}
     </div>`, 'roomsec--foot')
       + roomSection(v.error ? statusMessage({ tag: 'p', tone: 'error', className: 'pageerr', text: v.error }) : ''),
     footHtml: '<p class="homefoot">Deals when both cards are in.</p>',

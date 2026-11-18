@@ -46,7 +46,21 @@ export const ConstructedError = {
   name: 'Constructed: a refused deck',
   render: () => page(constructedWaitingHtml(cview({ error: 'that deck is not legal: 27 cards' }))),
 };
+export const ConstructedDeckIn = {
+  name: 'Constructed: my deck in, the opponent still choosing',
+  render: () => page(constructedWaitingHtml(cview({ mineIn: true, oppHere: true }))),
+};
+export const ConstructedChanging = {
+  name: 'Constructed: Change deck pressed',
+  render: () => page(constructedWaitingHtml(cview({
+    mineIn: true, oppHere: true, deck: DECKS[1] ?? DECKS[0]!, changing: true, inDeck: DECKS[0]!,
+  }))),
+};
 export const SingleCardDuel = { name: 'Single Card Duel', render: () => page(singleWaitingHtml(sview())) };
+export const SingleCardChanging = {
+  name: 'Single Card Duel: Change card pressed',
+  render: () => page(singleWaitingHtml(sview({ mineIn: true, changing: true, inCard: 'Overwhelm' }))),
+};
 export const SingleCardDraw = {
   name: 'Single Card Duel: a draw before it starts',
   render: () => page(singleWaitingHtml(sview({ drawn: { mine: 'Overwhelm', theirs: 'Torrential' } }))),

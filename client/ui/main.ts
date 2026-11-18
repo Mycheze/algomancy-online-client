@@ -187,7 +187,8 @@ import { gameLessons } from './lessons.ts';
 // lines here on purpose — the import, and the installSandbox() call at the
 // very bottom of this file.
 import { installSandbox } from './sandbox.ts';
-import { chosenDeck, clickOrTap, copyText, elIcon as elIconOf, esc, shareBar } from './util.ts';
+import * as roomChange from './roomchange.ts';
+import { chooseDeck, chosenDeck, clickOrTap, copyText, elIcon as elIconOf, esc, shareBar } from './util.ts';
 import { resGoKey, tapActsAtOnce, tapGoHtml, tapGoKeyOf, tapGoLabel, tapGoLive, tokenGoKey, zoomGoHtml, type TapGo } from './tapgo.ts';
 
 import { artUrl, ICON_BASE } from './assets.ts';
@@ -741,6 +742,8 @@ class NetBackend implements Backend {
     if ('match' in m && m.match) this.match = m.match;
     // a seat's lobby, before the deal
     const lobby = (m.t === 'joined' || m.t === 'update') && m.waiting ? m.waiting : null;
+    // a dealt game ends any Change still open in the waiting room before it
+    if ((m.t === 'joined' || m.t === 'update') && !m.waiting) roomChange.endChange();
     if (lobby?.match) { this.cc = true; mt.onLobby(lobby.match); }
     if (m.t === 'match') {
       if (postGame) postGame = { ...postGame, ...(m.match ? { match: m.match } : {}) };
@@ -10294,8 +10297,23 @@ const HOME_HOST: HomeButtonHost = {
  * copies — so the caller stops when one of these claims the click. */
 
 function handleRoomButton(b: string | undefined, btn: HTMLElement): boolean {
-  if (b === 'deckjoin') { NET?.sendJoin(true); return true; }
-  if (b === 'singlejoin') { if (NET) { NET.singleArmed = true; NET.sendJoin(); } return true; }
+  if (b === 'deckjoin') { roomChange.endChange(); NET?.sendJoin(true); return true; }
+  if (b === 'singlejoin') { roomChange.endChange(); if (NET) { NET.singleArmed = true; NET.sendJoin(); } return true; }
+  if (b === 'room-change') {
+    if (NET) roomChange.startChange(NET.room, { deck: chosenDeck(), card: sc.chosen() });
+    renderWaiting();
+    return true;
+  }
+  if (b === 'room-keep') {
+    // the picker moved the browser's choice; put back the one that is in, so
+    // a reconnect's join and the next room open on it
+    const kept = NET ? roomChange.changing(NET.room) : null;
+    roomChange.endChange();
+    if (kept?.deck) chooseDeck(kept.deck);
+    if (kept?.card) sc.choose(kept.card);
+    renderWaiting();
+    return true;
+  }
   if (b === 'gohome') { goHome(); return true; }
   if (b === 'copylink') {
     // both clipboard paths and no repaint — see copyText in ui/util.ts
