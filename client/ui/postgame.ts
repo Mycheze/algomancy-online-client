@@ -63,6 +63,10 @@ export interface GameOver {
    * either player's; it moves the two cards on the card ladder. */
   single?: [string, string];
   unlocked?: { id: string; name: string; desc: string; icon: string }[];
+  /** What this game did to this seat's rating, measured by the server when it
+   * recorded the game. Absent when it moved nothing, and on a rejoin after a
+   * server restart. */
+  rating?: { mode: 'constructed' | 'draft'; before: number; after: number };
   /**
    * CR D8.5 — present only when a concede decided the game: who conceded, on
    * which game turn, and how much the server says it weighed. The WEIGHT is

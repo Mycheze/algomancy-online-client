@@ -107,6 +107,21 @@ export interface RatingStanding {
   games: number;
 }
 
+/** What one finished game did to a player's rating, for the post-game screen. */
+export interface RatingMove {
+  mode: RatedMode;
+  before: number;
+  after: number;
+}
+
+/** The move between two standings of one player in one format, or null when
+ * the record changed neither the rating nor the count: an unrated game, a game
+ * of a match still going, the winner of a walkover. */
+export function ratingMove(mode: RatedMode, before: RatingStanding, after: RatingStanding): RatingMove | null {
+  if (before.rating === after.rating && before.games === after.games) return null;
+  return { mode, before: before.rating, after: after.rating };
+}
+
 /** userId → format → standing. Only accounts with a rated game appear. */
 export type RatingTable = Map<string, Record<RatedMode, RatingStanding>>;
 

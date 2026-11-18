@@ -416,5 +416,17 @@ export default {
     + 'you play another", and Keep <name> closes the picker and puts the browser\'s choice back on it. Play sends the pick '
     + 'as before. Left out: the Competitive match room (registration is its own flow). Not done: §18.21, Leave asking twice '
     + '— leaving only empties the chair, the seat and its deck wait for the room link, so a second press would guard '
-    + 'nothing. Guarded by 1497-room-change-deck.test.ts (§3/§4 drive the real client). Reasoned, not looked at (no browser).',
+    + 'nothing. Guarded by 1497-room-change-deck.test.ts (§3/§4 drive the real client). Reasoned, not looked at (no browser).\n\n'
+    + '2026-11-18 (steward): the post-game screen says what the game did to your rating (docs/23-ui-inventory/05 §18.20\'s '
+    + 'last line: "post-game shows no rating delta"). server/main.ts recordFinishedGame snapshots each signed-in seat\'s '
+    + 'standing in the room\'s rated format before the record (and before a Competitive match refolds, so a match\'s '
+    + 'deciding game shows the match\'s move; kept, not retaken, when a game taken back is decided again); gameRecorded '
+    + 'measures it again after and keeps rating.ts ratingMove per seat on the room, so a reconnect gets it too. '
+    + 'GameOver.rating {mode, before, after} is absent when nothing moved (unrated, a match still going, a walkover\'s '
+    + 'winner) and after a server restart. pages/postgame.ts draws "Live draft rating 1000 → 1020 (+20)" under the '
+    + 'recorded note; the sign is in the words, .pgdelta up/down only colours it. Stories "A rated win" / "A rated '
+    + 'loss". Guarded by server/test/1498-postgame-rating-move.test.ts (§2 a rated walkover over the wire: the '
+    + 'conceder 1000 → 995, the winner nothing, a reconnect the same) and ui/test/1499-postgame-rating-line.test.ts. '
+    + 'Left: §18.20\'s live region for the queue (the queue page repaints #app whole, so a live region there needs a '
+    + 'node that survives the repaint). Reasoned, not looked at (no browser).',
 } satisfies BacklogTicket;

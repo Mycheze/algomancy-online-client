@@ -70,6 +70,9 @@
 .pgweight { color: var(--text); font-size: var(--text-12); padding: var(--space-3) var(--space-4); border: 1px solid var(--line);
   border-radius: var(--radius-sm); }
 .pgweight.early { border-color: var(--accent); }
+.pgrating { color: var(--text); font-size: var(--text-13); font-variant-numeric: tabular-nums; }
+.pgdelta.up { color: var(--color-success); }
+.pgdelta.down { color: var(--color-danger); }
 
 .pgbtns { display: flex; flex-direction: column; gap: var(--space-4); }
 .pgbtns button { padding: var(--space-4); font-size: var(--text-14); }

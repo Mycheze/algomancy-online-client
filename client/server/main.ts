@@ -119,7 +119,7 @@ import { loadLeague } from './league-store.ts';
 import { StoreLoadError } from './store-file.ts';
 // #190: the trio picker's history, draft rows only — a pure function so a test can hold it
 import { trioHistoryRows } from './accounts.ts';
-import { ratedMode, type RatedMode } from './rating.ts';
+import { ratedMode, ratingMove, type RatedMode, type RatingMove, type RatingStanding } from './rating.ts';
 import {
   acceptOffer, closeOffer, dequeue, enqueue, entryFor, expiredOffers, makeOffer, offerFor,
   OFFER_MS, pairable, pairUp, queueCounts, queued, bandFor,
@@ -2136,6 +2136,8 @@ function recordFinishedGame(room: Room): void {
     for (const seat of [0, 1] as Seat[]) sendGameOver(room, seat, { row: null, unlocked: [], account: accountById(room.users[seat]) });
     return;
   }
+  // before the match below can refold anything: a match's deciding game shows the match's move
+  if (!ratingsBefore.has(room)) ratingsBefore.set(room, ratingStandings(room));
   // docs/22 §5.5 — A COMPETITIVE MATCH'S GAME, FIRST. This is the one choke
   // point a win, a concede and a flag all reach: the score moves, the banks
   // are written, and the match either ends or creates its next room (and
@@ -2205,9 +2207,29 @@ function achievementsOf(room: Room): Map<string, Set<string>> {
   return before;
 }
 
+/** each signed-in seat's standing in the room's rated format, or none when the format has no rating */
+function ratingStandings(room: Room): Map<string, RatingStanding> {
+  const out = new Map<string, RatingStanding>();
+  const mode = ratedMode(room.mode);
+  if (!mode) return out;
+  for (const id of room.users) {
+    const a = accountById(id);
+    if (a) out.set(a.id, { rating: a.profile.rating[mode], games: a.profile.ratedGames[mode] });
+  }
+  return out;
+}
+
+/** Each seat's standing before the room's first record. Kept, not retaken, so a
+ * game taken back and decided again still measures from before it was played. */
+const ratingsBefore = new WeakMap<Room, Map<string, RatingStanding>>();
+/** What the record did to each seat's rating, for this room's post-game screen
+ * now and on a rejoin. */
+const ratingMoves = new WeakMap<Room, [RatingMove | null, RatingMove | null]>();
+
 /** The record is in (or failed: `row` undefined): keep its row for the
  * post-game screen and send the screen to both seats, with what this game
- * unlocked — the achievements that are new since `before`. */
+ * unlocked — the achievements that are new since `before` — and how it moved
+ * each seat's rating. */
 function gameRecorded(room: Room, before: Map<string, Set<string>>,
   row: ReturnType<typeof recordLiveGame> | undefined, asOf: PostgameStamp): void {
   if (row) {
@@ -2217,6 +2239,13 @@ function gameRecorded(room: Room, before: Map<string, Set<string>>,
     console.log(`[accounts] recorded ${room.code}: ${row.game.names.join(' vs ')}, ` +
       `${row.game.finished ? `${row.game.names[row.game.winner ?? 0]} won` : 'unfinished'}`);
   }
+  const mode = ratedMode(room.mode);
+  const was = ratingsBefore.get(room);
+  const after = ratingStandings(room);
+  ratingMoves.set(room, room.users.map(id => {
+    const b = id ? was?.get(id) : undefined, a = id ? after.get(id) : undefined;
+    return mode && b && a ? ratingMove(mode, b, a) : null;
+  }) as [RatingMove | null, RatingMove | null]);
   for (const seat of [0, 1] as Seat[]) {
     const unlocked: { id: string; name: string; desc: string; icon: string }[] = [];
     const account = accountById(room.users[seat]);
@@ -2293,6 +2322,8 @@ function sendGameOver(room: Room, seat: Seat, extra: {
       return c ? { concession: { seat: c.seat, turn: c.turn, weight: concessionWeight({ concession: c }) } } : {};
     })(),
     ...(extra.unlocked.length ? { unlocked: extra.unlocked } : {}),
+    // absent, not zero, on a rejoin after a restart: the move was measured at the record
+    ...((): object => { const r = ratingMoves.get(room)?.[seat]; return r ? { rating: r } : {}; })(),
     ...(extra.account ? { me: privateView(extra.account, isOnline) } : {}),
     // BL-28: "sign up now and this game is your first" — this seat's alone
     ...(extra.signup ? { signup: extra.signup } : {}),

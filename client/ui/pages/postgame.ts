@@ -247,6 +247,18 @@ function disputedNote(o: GameOver): string {
     ? `<div class="pgnote">${esc(o.names[opp] ?? 'Your opponent')} disputed this result.</div>` : '';
 }
 
+const RATING_NAME = { constructed: 'Constructed', draft: 'Live draft' } as const;
+
+/** "Live draft rating 1000 → 1012 (+12)": the sign is in the words, the colour only repeats it */
+function ratingLineHtml(o: GameOver): string {
+  const r = o.rating;
+  if (!r) return '';
+  const d = r.after - r.before;
+  const delta = d > 0 ? `+${d}` : d < 0 ? `−${-d}` : '±0';
+  return `<div class="pgnote pgrating">${RATING_NAME[r.mode]} rating ${r.before} → <b>${r.after}</b>
+    <span class="pgdelta ${d > 0 ? 'up' : d < 0 ? 'down' : ''}">(${delta})</span></div>`;
+}
+
 /** The screen. Pure: everything comes in through `v` (postGameView). */
 export function postGameHtml(v: PostGameView): string {
   const o = v.over;
@@ -283,6 +295,7 @@ export function postGameHtml(v: PostGameView): string {
       : o.recorded
       ? (o.concession?.weight === 'walkover' ? 'In your match history, marked as not counted.' : 'Recorded to your profile.')
       : 'Not recorded — nobody was signed in.'}</div>
+    ${ratingLineHtml(o)}
 
     ${matchLineHtml(v)}
     ${disputedNote(o)}

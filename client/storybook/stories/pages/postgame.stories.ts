@@ -32,6 +32,8 @@ export default {
 export const Won = { render: () => screen(view()) };
 export const Lost = { render: () => screen(view({ winner: 1 })) };
 export const Draw = { render: () => screen(view({ winner: null })) };
+export const RatedWin = { name: 'A rated win', render: () => screen(view({ rating: { mode: 'draft', before: 1000, after: 1020 } })) };
+export const RatedLoss = { name: 'A rated loss', render: () => screen(view({ winner: 1, rating: { mode: 'draft', before: 1020, after: 1004 } })) };
 export const RematchAsked = { name: 'They want a rematch', render: () => screen(view({ rematch: [false, true], disputable: true, disputed: [false, false] })) };
 export const Waiting = { name: 'Waiting for their answer', render: () => screen(view({ rematch: [true, false] })) };
 export const Disputed = { name: 'Disputed by the other seat', render: () => screen(view({ disputable: true, disputed: [true, true] })) };
