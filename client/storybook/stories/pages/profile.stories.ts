@@ -74,6 +74,7 @@ export const Achievements = { args: { tab: 'achievements' } };
 export const Games = { args: { tab: 'games' } };
 export const GamesEmpty = { name: 'Games, none yet', args: { tab: 'games', me: { ...ME, history: [] } } };
 export const Players = { args: { tab: 'players', friendMsg: 'request sent to Fennick' } };
+export const PlayersRemoving = { name: 'Players, a friend\'s ✕ pressed once', args: { tab: 'players', removing: 'u2' } };
 export const PlayersLoading = { name: 'Players, the ladder loading', args: { tab: 'players', ladder: null } };
 export const PlayersFailed = { name: 'Players, the ladder failed', args: { tab: 'players', ladder: { ...base.ladder!, failed: true } } };
 export const PlayersEveryone = { name: 'Players, Everyone', args: { tab: 'players', board: 'all' } };

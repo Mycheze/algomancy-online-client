@@ -190,6 +190,8 @@ let busy = false;
 /** profile screen tab */
 let tab: ProfileTab = 'overview';
 let friendMsg = '';
+/** the friend whose ✕ is armed (pages/profile.ts removeFriendButton); any other account button disarms it */
+let removing: string | null = null;
 /** Add with the friend box empty (BL-10, docs/23-ui-inventory/01 §4 S16: it did nothing) */
 export const EMPTY_FRIEND_LINE = 'Type their username first.';
 /** #296: the change-password box's last answer (the server's error, or done) */
@@ -367,7 +369,7 @@ function renderAuth(): void {
 function renderProfile(): void {
   if (!me) { view = 'auth'; renderAuth(); return; }
   paintProfile($app!, profileView({
-    me, tab, discordLinking, linkCode, linkMsg, friendMsg, pwMsg, favMsg, claimMsg, leaders, leadersFailed, board, ladder,
+    me, tab, discordLinking, linkCode, linkMsg, friendMsg, removing, pwMsg, favMsg, claimMsg, leaders, leadersFailed, board, ladder,
     prefs: readPrefs(), artFor,
   }));
 }
@@ -463,6 +465,7 @@ export function handleButton(btn: HTMLElement): boolean {
   // is handled here with the rest of them rather than growing a second
   // place that knows how to set a session token.
   if (!b.startsWith('acct-') && b !== 'pg-claim' && b !== 'pg-signup') return false;
+  if (removing && b !== 'acct-friend-remove') { removing = null; if (view === 'profile') renderScreen(); }
 
   switch (b) {
     case 'acct-open-auth':
@@ -675,6 +678,11 @@ export function handleButton(btn: HTMLElement): boolean {
     case 'acct-friend-accept':
     case 'acct-friend-remove': {
       const id = btn.dataset['id'] ?? '';
+      // Decline and Cancel go at once: only an accepted friend takes their consent to undo
+      if (b === 'acct-friend-remove' && removing !== id && me?.friends.some(f => f.id === id)) {
+        removing = id; renderScreen(); return true;
+      }
+      removing = null;
       const path = b === 'acct-friend-accept' ? '/api/friends/accept' : '/api/friends/remove';
       void post<{ me?: Me }>(path, { id }).then(r => {
         if (r.me) me = r.me;

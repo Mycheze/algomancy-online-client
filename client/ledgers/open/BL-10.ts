@@ -428,5 +428,13 @@ export default {
     + 'loss". Guarded by server/test/1498-postgame-rating-move.test.ts (§2 a rated walkover over the wire: the '
     + 'conceder 1000 → 995, the winner nothing, a reconnect the same) and ui/test/1499-postgame-rating-line.test.ts. '
     + 'Left: §18.20\'s live region for the queue (the queue page repaints #app whole, so a live region there needs a '
-    + 'node that survives the repaint). Reasoned, not looked at (no browser).',
+    + 'node that survives the repaint). Reasoned, not looked at (no browser).\n\n'
+    + '2026-11-19 (steward): removing a friend asks twice (docs/23-ui-inventory/02 §8.5 item 31: "No confirm on: … '
+    + 'remove friend ✕"). The profile\'s Players tab ended a friendship on one click, and only a new request the other '
+    + 'player accepts undoes it. The ✕ arms first (account.ts `removing`, pages/profile.ts removeFriendButton): a red '
+    + '"Press again to remove Nyar"; a ✕ on another friend moves the question there, and any other account button '
+    + 'disarms. Left going at once on purpose: Decline and Cancel on a request (either side can simply ask again), and '
+    + 'Log out (sign in again). Left: item 31\'s admin tools (make/revoke admin, the league result override), the '
+    + 'owner\'s own. Story "Players, a friend\'s ✕ pressed once". Guarded by 1500-remove-friend-asks-twice.test.ts '
+    + '(§2 drives the real client). Reasoned, not looked at (no browser).',
 } satisfies BacklogTicket;

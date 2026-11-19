@@ -274,6 +274,8 @@ export interface ProfileState {
   linkCode: { code: string; expiresAt: number } | null;
   linkMsg: string;
   friendMsg: string;
+  /** the friend whose ✕ was pressed once: their row asks to be pressed again */
+  removing?: string | null;
   pwMsg: { text: string; ok: boolean } | null;
   /** why the last favourite-element pick did not take ('' when it did) */
   favMsg: string;
@@ -298,6 +300,7 @@ export interface ProfileView {
   /** the Discord row, or null when this deploy links nothing */
   connections: { linked: string | null; code: string | null; linkMsg: string } | null;
   friendMsg: string;
+  removing: string | null;
   pwMsg: { text: string; ok: boolean } | null;
   favMsg: string;
   claimMsg: string;
@@ -319,7 +322,7 @@ export function profileView(s: ProfileState, now = Date.now()): ProfileView {
   return {
     me: s.me, tab: s.tab, guest: !!s.me.provisional,
     connections: s.discordLinking ? { linked: s.me.discord ?? null, code: live, linkMsg: s.linkMsg } : null,
-    friendMsg: s.friendMsg, pwMsg: s.pwMsg, favMsg: s.favMsg, claimMsg: s.claimMsg,
+    friendMsg: s.friendMsg, removing: s.removing ?? null, pwMsg: s.pwMsg, favMsg: s.favMsg, claimMsg: s.claimMsg,
     leaders: s.leaders, leadersFailed: s.leadersFailed, board: s.board, ladder: s.ladder, prefs: s.prefs,
     decks: (s.me.decks ?? []).map(deck => ({ deck, cover: deck.cover ? s.artFor(deck.cover) : null })),
     topCards: s.me.topCards.map(c => ({ ...c, art: s.artFor(c.card) })),
@@ -600,7 +603,14 @@ function presence(online: boolean, name: string): string {
     + `<span class="pfopp">${esc(name)}</span><span class="srname">, ${online ? 'online now' : 'offline'}</span>`;
 }
 
-function friendRow(f: FriendView, kind: 'friend' | 'incoming' | 'outgoing'): string {
+/** A friend's ✕ asks twice: undoing it takes a new request they must accept. */
+function removeFriendButton(f: FriendView, armed: boolean): string {
+  return armed
+    ? button({ label: `Press again to remove ${f.username}`, variant: 'danger', size: 'sm', dataBtn: 'acct-friend-remove', attrs: { 'data-id': f.id } })
+    : button({ label: '✕', variant: 'icon', size: 'sm', dataBtn: 'acct-friend-remove', title: `remove ${f.username}`, attrs: { 'data-id': f.id } });
+}
+
+function friendRow(f: FriendView, kind: 'friend' | 'incoming' | 'outgoing', removing: string | null = null): string {
   return `<li class="pffriend">
     ${presence(f.online, f.username)}
     ${elChip(f.favoriteElement)}
@@ -610,7 +620,7 @@ function friendRow(f: FriendView, kind: 'friend' | 'incoming' | 'outgoing'): str
         + button({ label: 'Decline', size: 'sm', dataBtn: 'acct-friend-remove', attrs: { 'data-id': f.id } })
       : kind === 'outgoing'
         ? `<span class="pfaside">asked</span>${button({ label: 'Cancel', size: 'sm', dataBtn: 'acct-friend-remove', attrs: { 'data-id': f.id } })}`
-        : button({ label: '✕', variant: 'icon', size: 'sm', dataBtn: 'acct-friend-remove', title: `remove ${f.username}`, attrs: { 'data-id': f.id } })}
+        : removeFriendButton(f, removing === f.id)}
   </li>`;
 }
 
@@ -625,7 +635,7 @@ function friendsColumn(v: ProfileView): string {
     ${section('Add a friend', add)}
     ${me.incoming.length ? section('Wants to be friends', `<ul class="pflist">${me.incoming.map(f => friendRow(f, 'incoming')).join('')}</ul>`) : ''}
     ${section('Friends', me.friends.length
-      ? `<ul class="pflist">${me.friends.map(f => friendRow(f, 'friend')).join('')}</ul>`
+      ? `<ul class="pflist">${me.friends.map(f => friendRow(f, 'friend', v.removing)).join('')}</ul>`
       : '<p class="pfnone">Nobody yet.</p>', { aside: me.friends.length ? `<span class="pfaside">${me.friends.length}</span>` : '' })}
     ${me.outgoing.length ? section('Waiting on', `<ul class="pflist">${me.outgoing.map(f => friendRow(f, 'outgoing')).join('')}</ul>`) : ''}
   </div>`;

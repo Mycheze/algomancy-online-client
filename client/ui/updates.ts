@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-19', kind: 'change', text: 'On your profile\'s Players tab, the ✕ beside a friend now asks you to press again before it removes them, so one stray click no longer ends a friendship.' },
   { date: '2026-11-18', kind: 'new', text: 'After a rated game, the end-of-game screen now shows how your rating moved, for example "Live draft rating 1000 → 1020 (+20)".' },
   { date: '2026-11-18', kind: 'new', text: 'In a Constructed or Single Card Duel room, you can now change your deck or card after it is in, until your opponent is ready. Press Change deck, or Change card, beside your name.' },
   { date: '2026-11-18', kind: 'fix', text: 'In a Constructed room, My decks no longer snaps back to the room when your opponent arrives or leaves. Your Decks page, or the deck you are editing, stays open until you press Back.' },
