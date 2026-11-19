@@ -139,7 +139,7 @@ export function figureHtml(f: Figure): string {
           f.play === 'step' ? `<b>${i + 1}.</b> ` : ''}${captionHtml(fr.caption)}</div></div>`).join('')}
         <div class="lframebtns">
           <button data-lbtn="frame-prev" data-fr="${id}" title="step back" aria-label="Step back">⏮</button>
-          <button data-lbtn="frame-play" data-fr="${id}" class="lplay" title="play / pause" aria-label="${f.play === 'loop' ? 'Pause' : 'Play'}">${f.play === 'loop' ? '⏸' : '▶'}</button>
+          <button data-lbtn="frame-play" data-fr="${id}" class="lframeplay" title="play / pause" aria-label="${f.play === 'loop' ? 'Pause' : 'Play'}">${f.play === 'loop' ? '⏸' : '▶'}</button>
           <button data-lbtn="frame-next" data-fr="${id}" title="step forward" aria-label="Step forward"${f.play === 'step' ? ' class="lprimary"' : ''}>⏭</button>
           <span class="lframepos">1 / ${f.frames.length}</span>
         </div>
@@ -335,7 +335,7 @@ function ask(): void {
 /** start or stop a frames figure playing by itself */
 function playing(el: HTMLElement, on: boolean): void {
   el.dataset['playing'] = on ? '1' : '0';
-  const b = el.querySelector(':scope > .lframebtns .lplay');
+  const b = el.querySelector(':scope > .lframebtns .lframeplay');
   if (b) b.textContent = on ? '⏸' : '▶';
 }
 

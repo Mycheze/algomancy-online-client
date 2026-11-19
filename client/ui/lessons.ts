@@ -116,7 +116,7 @@ function stackPile(pile: FigCard[], resolved: FigCard[] = []): Figure {
   return {
     kind: 'html', html: `<div class="lstack">
       <div><div class="lstackpile" style="--n:${Math.max(0, pile.length - 1)}">${cards}</div><div class="lstacklabel">${pile.length ? 'the stack — the top resolves first' : 'the stack is empty'}</div></div>
-      ${resolved.length ? `<div class="lresolved"><div class="lres">${resolved.map(figCardHtml).join('')}</div><div class="lstacklabel">resolved</div></div>` : ''}
+      ${resolved.length ? `<div class="lresolved"><div class="lresolvedcards">${resolved.map(figCardHtml).join('')}</div><div class="lstacklabel">resolved</div></div>` : ''}
     </div>`,
   };
 }

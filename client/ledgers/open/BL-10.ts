@@ -436,5 +436,15 @@ export default {
     + 'disarms. Left going at once on purpose: Decline and Cancel on a request (either side can simply ask again), and '
     + 'Log out (sign in again). Left: item 31\'s admin tools (make/revoke admin, the league result override), the '
     + 'owner\'s own. Story "Players, a friend\'s ✕ pressed once". Guarded by 1500-remove-friend-asks-twice.test.ts '
-    + '(§2 drives the real client). Reasoned, not looked at (no browser).',
+    + '(§2 drives the real client). Reasoned, not looked at (no browser).\n\n'
+    + '2026-11-19 (steward): the lesson window and the board share no class name (docs/23-ui-inventory/04 §L.2: '
+    + '"`.lplay` is both the lesson slideshow ▶ button … and the regions board\'s play-zone"; "`.lres` … safe today, a trap '
+    + 'tomorrow"). Both draw over one page with `l`-prefixed names. The board\'s bare `.lplay` (display flex, overflow '
+    + 'hidden, 39-regions/41-regions-blocks) reached the lesson\'s play button, so its ▶/⏸ sat at the start of a 38px '
+    + 'button beside a centred ⏮ and ⏭; the other way, Learn\'s bare `.lres` (centre, wrap, a gap) reached the board\'s '
+    + 'resource cell, harmless only because that cell holds one full-width row. The class was exactly those two: the '
+    + 'lesson\'s are `.lframeplay` (lessonlayer.ts) and `.lresolvedcards` (lessons.ts stackPile, 32-learn.css, same cascade '
+    + 'place). Left shared on purpose: on/mine/theirs/dim, the lesson pill drawn on the board toolbar, and the rules text\'s '
+    + '.txticon. Guarded by the census 1501-lesson-and-board-share-no-class.test.ts (both directions, and every lesson page '
+    + 'rendered). Reasoned, not looked at (no browser).',
 } satisfies BacklogTicket;

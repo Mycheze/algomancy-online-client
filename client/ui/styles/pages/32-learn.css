@@ -163,8 +163,8 @@ body.lessonreading .arrowlayer { z-index: 85; }
 .lstacklabel { font-size: var(--text-11); letter-spacing: .1em; text-transform: uppercase; color: var(--dim); text-align: center; }
 .lresolved { display: flex; flex-direction: column; gap: var(--space-2); align-items: center; }
 .lresolved .lfigimg { width: 64px; }
-.lres { display: flex; gap: var(--space-4); align-items: center; justify-content: center; flex-wrap: wrap; }
-.lres .lfigimg { width: 80px; }
+.lresolvedcards { display: flex; gap: var(--space-4); align-items: center; justify-content: center; flex-wrap: wrap; }
+.lresolvedcards .lfigimg { width: 80px; }
 @media (max-width: 700px) {
   .lanat { width: 170px; }
   .lfcol .lfigimg, .lfempty { width: 64px; }
