@@ -426,7 +426,13 @@ notes before editing. Then:
   `grep -rlF 'Leave the match' client/*/test client/ledgers`. Run every hit.
   (2026-11-10, BL-10 dialogs: reworded overlay markup; `ui/test/292` and
   `engine/test/232` — an engine-dir test reading UI — went red; the run had
-  grepped only ui/ and server/, with `h3` in the pattern.) A **renamed test
+  grepped only ui/ and server/, with `h3` in the pattern.) **Code counts too**:
+  a test can regex a variable name. So also grep for each changed file's
+  path tail and run every hit:
+  `grep -rlF 'pages/waiting.ts' client/*/test client/ledgers` (2026-11-18,
+  BL-10 change-deck: `v.deck` became `inDeck`, and `ui/test/1188` matched the
+  old expression. The run grepped for its own identifiers, never the file name.
+  Red gate, a repair run.) A **renamed test
   title** keeps every `CT-n`, `BL-n` and `#N` it carried: that tag is what
   claims the fix, and `client/ledgers` `npm test` goes red without it
   (2026-11-10, Iyngstra: report #203's guards named two titles the run
