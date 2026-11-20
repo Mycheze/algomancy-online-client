@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-20', kind: 'fix', text: 'On a tablet, the deck name at the top of the deck builder now steps down a size as the toolbar tightens, as it was meant to, so more of a long name shows before it is cut short.' },
   { date: '2026-11-19', kind: 'fix', text: 'In Learn to Play, the ▶ button under a slideshow now sits centred like the step buttons beside it. It had been picking up the game board\'s layout because the two shared a name.' },
   { date: '2026-11-19', kind: 'change', text: 'On your profile\'s Players tab, the ✕ beside a friend now asks you to press again before it removes them, so one stray click no longer ends a friendship.' },
   { date: '2026-11-18', kind: 'new', text: 'After a rated game, the end-of-game screen now shows how your rating moved, for example "Live draft rating 1000 → 1020 (+20)".' },

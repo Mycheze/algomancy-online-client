@@ -446,5 +446,12 @@ export default {
     + 'lesson\'s are `.lframeplay` (lessonlayer.ts) and `.lresolvedcards` (lessons.ts stackPile, 32-learn.css, same cascade '
     + 'place). Left shared on purpose: on/mine/theirs/dim, the lesson pill drawn on the board toolbar, and the rules text\'s '
     + '.txticon. Guarded by the census 1501-lesson-and-board-share-no-class.test.ts (both directions, and every lesson page '
-    + 'rendered). Reasoned, not looked at (no browser).',
+    + 'rendered). Reasoned, not looked at (no browser).\n\n'
+    + '2026-11-20 (steward): no var() names a property nothing defines (docs/23-ui-inventory/02 §8.1 item 4\'s class: '
+    + '"`--bad` is used but never defined"; §L.8\'s, a declaration the browser drops). A var() with no fallback naming '
+    + 'nothing voids its declaration at computed time. Swept the stylesheet, every ui/ pages/ components/ source, the CR '
+    + 'renderer, server/ and bot/web: one site, the builder\'s tablet title (52-builder.css, `var(--text-18)`; the scale '
+    + 'has no 18), so under 1100px the deck name kept the frame\'s 22px. It is the 18px it meant; snapping it to the '
+    + 'scale (16 or 22) is the owner\'s near-miss list, not done here. Guarded by the census '
+    + '1502-every-var-names-a-property.test.ts. Reasoned, not looked at (no browser).',
 } satisfies BacklogTicket;
