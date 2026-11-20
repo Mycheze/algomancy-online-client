@@ -96,8 +96,9 @@
 .sharebar.off { opacity: .55; }
 .dksheet .dkexporttext { width: 100%; margin-top: var(--space-4); font: 12px ui-monospace, monospace; }
 .dkgamesrec { margin: 0 0 var(--space-5); }
-.dkgamesrec .good { color: var(--color-success); }
-.dkgamesrec .bad { color: var(--color-danger); }
+/* a deck's record, wherever it is drawn: the Games sheet, a Metagame row, a shared deck (test 1503) */
+.dkgamesrec .good, .metarec .good, .deckrecline .good { color: var(--color-success); }
+.dkgamesrec .bad, .metarec .bad, .deckrecline .bad { color: var(--color-danger); }
 /* the card's own × would sit beside the sheet's */
 .dkcardsheet .cbclose { display: none; }
 .dkcardsheet .cbdetail { position: static; width: auto; max-height: none; box-shadow: none; border: 0; padding: 0; background: none; }

@@ -453,5 +453,12 @@ export default {
     + 'renderer, server/ and bot/web: one site, the builder\'s tablet title (52-builder.css, `var(--text-18)`; the scale '
     + 'has no 18), so under 1100px the deck name kept the frame\'s 22px. It is the 18px it meant; snapping it to the '
     + 'scale (16 or 22) is the owner\'s near-miss list, not done here. Guarded by the census '
-    + '1502-every-var-names-a-property.test.ts. Reasoned, not looked at (no browser).',
+    + '1502-every-var-names-a-property.test.ts. Reasoned, not looked at (no browser).\n\n'
+    + '2026-11-20 (steward): a deck\'s record is green or red wherever it is drawn (docs/23-ui-inventory/03 §0.3.1 / '
+    + '§9.2, the good/bad colour on records). pages/meta.ts recordLine writes `<b class="good|bad">` on a Metagame row '
+    + '(.metarec) and a shared deck\'s page (.deckrecline), and only the Games sheet\'s .dkgamesrec had a rule, so a 25% '
+    + 'deck read like a 75% one. The class was those three sites (pages/decks.ts gamesBody the third); one rule now names '
+    + 'all three (51-decks-shelf.css). Left: `.accttable .good/.bad` (17-accounts.css), which nothing draws any more. '
+    + 'Guarded by 1503-deck-record-is-coloured-everywhere.test.ts (§2 a census of every good/bad record writer). '
+    + 'Reasoned, not looked at (no browser).',
 } satisfies BacklogTicket;
