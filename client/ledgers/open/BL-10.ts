@@ -460,5 +460,17 @@ export default {
     + 'deck read like a 75% one. The class was those three sites (pages/decks.ts gamesBody the third); one rule now names '
     + 'all three (51-decks-shelf.css). Left: `.accttable .good/.bad` (17-accounts.css), which nothing draws any more. '
     + 'Guarded by 1503-deck-record-is-coloured-everywhere.test.ts (§2 a census of every good/bad record writer). '
-    + 'Reasoned, not looked at (no browser).',
+    + 'Reasoned, not looked at (no browser).\n\n'
+    + '2026-11-20 (steward): no rule reads the rules review\'s private palette from outside it (docs/23-ui-inventory/README '
+    + 'Part 1, Status colours: "`--warn`, `--bad` and `--fg` are used outside the one place they are defined, so only their '
+    + 'fallbacks apply"; 02 §8.1 item 4\'s with-fallback half, 1502 having held the fallback-less one). Those three are '
+    + 'set only on `.crdoc` (45-crreview.css), so outside it each var() painted its literal, which neither a token change '
+    + 'nor the accessible palette reaches. The class was six reads: the prompt bar\'s compulsory-block line (.promptbar '
+    + '.duty), a mixed-X tally (.tallyrow.mixed .tallyx, whose fallback was the targeting gold), both running-low clock '
+    + 'rules (.clocktime.warn, .warn.run) — all now --color-warning, the colour they painted; the ride chip\'s ink '
+    + '(.ridechip, now --text) and the admin badge (.badgechip.admin, now --color-danger-fill: a red fill). 921 banks '
+    + 'pages/admin 12 → 11. Swept ui/ pages/ components/ source, server/ and the CR renderer for the same names: none. '
+    + 'Left on purpose: the scoped reads that do reach (a modifier sets it, the base falls back; three reached through an '
+    + 'ancestor the selector does not name, listed in the test), and bot/web, which has its own :root. Guarded by the '
+    + 'census 1504-scoped-properties-stay-in-scope.test.ts. Shades move by a hair at most; reasoned, not looked at (no browser).',
 } satisfies BacklogTicket;

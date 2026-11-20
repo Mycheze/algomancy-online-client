@@ -177,7 +177,7 @@
    "send which units?"): small, toggled on and off. */
 .ridepick { display: inline-flex; flex-wrap: wrap; gap: 4px; vertical-align: middle; margin: 0 4px; }
 .ridechip { display: inline-block; padding: 2px 8px; border-radius: 10px; cursor: pointer;
-  border: 1px solid #7a5e1e; background: #1b2028; color: var(--fg, #e8e6df); font-size: 12px; }
+  border: 1px solid #7a5e1e; background: #1b2028; color: var(--text); font-size: 12px; }
 .ridechip:hover { border-color: var(--accent); }
 .ridechip.on { background: #3d5a20; border-color: var(--glow, #b7e26a); color: #eaf6d8; }
 

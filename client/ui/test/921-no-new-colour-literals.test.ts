@@ -52,7 +52,7 @@ const ALLOW: Record<string, number> = {
   'pages/tabletop': 10,
   'pages/deckstrip-curve-affinity': 4,
   'pages/queue': 3,
-  'pages/admin': 12,
+  'pages/admin': 11, // 12 → 11: the admin badge's red is --color-danger-fill, not a fallback under a phantom --bad
   'pages/learn': 16,
   'pages/cardstats': 1, // 3 → 1 on 2026-11-10: the funnel bars' fills became --color-data-draft / -constructed (BL-63)
   'shared/touch': 2,

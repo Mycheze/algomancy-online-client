@@ -30,7 +30,7 @@
 .promptbar.playbar .playstep { color: var(--dim); font-variant-numeric: tabular-nums; }
 .promptbar.playbar .playcap { color: var(--text); }
 /* CR 606.2e {Alluring}: the compulsory block, named in the bar that gates Confirm */
-.promptbar .duty { color: var(--warn, #e8b64c); font-weight: 700; }
+.promptbar .duty { color: var(--color-warning); font-weight: 700; }
 /* [77] the refused-block notice: the engine's reason, the units it took back
    out of the plan, and the explicit "Reset blockers?" the report asked for.
    Inline in the bar rather than a modal — the plan it is talking about is

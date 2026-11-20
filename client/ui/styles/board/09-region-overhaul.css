@@ -130,7 +130,7 @@ button.declinebtn:hover { border-color: var(--danger); color: var(--danger); }
    of a name fires as ONE chain, and a group whose Xs differ is the case the
    report was actually about (apply.ts groups on the name and ignores X). */
 .tallyrow.burst .tallyname { color: var(--target); }
-.tallyrow.mixed .tallyx { color: var(--warn, #e0b93c); font-weight: 600; }
+.tallyrow.mixed .tallyx { color: var(--color-warning); font-weight: 600; }
 /* the riding row inside the attack builder — tokens joining this declaration */
 .col.ridecol { border-left: 1px dashed var(--target); padding-left: 8px; }
 .ridecol .collabel { color: var(--target); }

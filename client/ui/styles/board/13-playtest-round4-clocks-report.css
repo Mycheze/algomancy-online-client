@@ -10,12 +10,11 @@
 /* BL-27: the bank going critical. ⚠ WHEN is not decided here — main.ts's
    clockWarnAt() derives it from the ROOM'S OWN bank (a tenth of it, capped at
    a minute), so this rule only has to say what critical looks like and a
-   ninety-second game is not permanently lit. `--warn` is not in the :root
-   palette; the fallback is the one already used by .promptbar .duty, so the
-   two ambers stay one colour if the token ever lands. */
-.clocktime.warn { color: var(--warn, #e8b64c); border-color: var(--warn, #e8b64c);
+   ninety-second game is not permanently lit. The amber is --color-warning,
+   the same as .promptbar .duty's. */
+.clocktime.warn { color: var(--color-warning); border-color: var(--color-warning);
   background: rgba(232,182,76,.12); animation: clockwarn 1s ease-in-out infinite; }
-.clocktime.warn.run { color: var(--warn, #e8b64c); border-color: var(--warn, #e8b64c); }
+.clocktime.warn.run { color: var(--color-warning); border-color: var(--color-warning); }
 @keyframes clockwarn { 50% { opacity: .45; } }
 /* the pulse is the ATTENTION, not the information — the colour and the number
    carry it on their own, so a reader who has asked for less motion loses
