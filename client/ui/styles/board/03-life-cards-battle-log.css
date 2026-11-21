@@ -71,7 +71,6 @@
    the life total, though nothing like as far: it is the second number you
    look at in that row, not the first. */
 .handcount { color: var(--dim); font-size: 16px; font-weight: 600; }
-.binline { color: var(--dim); }
 
 .resrow { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
 .res { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #555; cursor: default; }

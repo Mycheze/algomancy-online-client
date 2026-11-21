@@ -36,16 +36,6 @@ a.lcard { color: var(--accent); text-decoration: underline dotted; cursor: help;
 .lturn span { padding: var(--space-1) var(--space-4); border: 1px solid var(--line); border-radius: 12px; color: var(--dim); }
 .lturn span.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
 .lturn i { color: var(--dim); font-style: normal; }
-.ldiag { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
-.ldside { font-size: var(--text-11); color: var(--dim); text-transform: uppercase; letter-spacing: .08em; }
-.ldcols { display: flex; gap: var(--space-5); }
-.ldcol { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); width: 90px; }
-.ldslot, .ldunit { width: 84px; padding: var(--space-3) var(--space-2); text-align: center; border-radius: var(--radius-md); font-size: var(--text-12); }
-.ldslot.ldempty { border: 1px dashed var(--line); color: var(--dim); }
-.ldslot.ldblock { background: #22384a; border: 1px solid var(--water); }
-.ldunit { background: #3a2622; border: 1px solid var(--fire); }
-.ldunit.ldback { opacity: .8; }
-.ldnote { font-size: var(--text-11); color: var(--accent); }
 .ljudge { border-top: 1px solid var(--line); padding-top: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
 .ljlog { max-height: 26vh; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-2); }
 .ljq { color: var(--accent); font-weight: 700; }
@@ -79,7 +69,6 @@ a.lcard { color: var(--accent); text-decoration: underline dotted; cursor: help;
 @media (max-width: 700px) {
   .lessonbox { padding: var(--space-4) var(--space-5); max-height: 94vh; }
   .lfigimg { width: 110px; }
-  .ldcol { width: 70px; } .ldslot, .ldunit { width: 66px; }
 }
 .lscroll, .ljlog { scrollbar-color: var(--line) transparent; scrollbar-width: thin; }
 
@@ -115,10 +104,6 @@ body.lessonreading .arrowlayer { z-index: 85; }
 @keyframes lpulse { 50% { box-shadow: 0 0 0 6px var(--color-accent), 0 0 20px 10px color-mix(in srgb, var(--color-accent) 40%, transparent); } }
 .lform { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
 .lfside { font-size: var(--text-11); color: var(--dim); text-transform: uppercase; letter-spacing: .1em; }
-.lfcols { display: flex; gap: var(--space-4); align-items: flex-start; }
-.lfcol { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
-.lfcol .lfigimg { width: 96px; }
-.lfslot { min-height: 40px; display: flex; align-items: flex-end; padding-bottom: var(--space-3); border-bottom: 2px solid rgba(63,143,217,.5); }
 .lfempty { width: 96px; padding: var(--space-4) 0; text-align: center; font-size: var(--text-11); color: var(--dim); border: 1px dashed var(--line); border-radius: var(--radius-md); }
 .lfnote { font-size: var(--text-11); color: var(--accent); font-weight: 700; text-align: center; max-width: 100px; }
 .lmodwrap { display: flex; gap: var(--space-6); align-items: flex-start; justify-content: center; flex-wrap: wrap; }
@@ -167,7 +152,7 @@ body.lessonreading .arrowlayer { z-index: 85; }
 .lresolvedcards .lfigimg { width: 80px; }
 @media (max-width: 700px) {
   .lanat { width: 170px; }
-  .lfcol .lfigimg, .lfempty { width: 64px; }
+  .lfempty { width: 64px; }
   .lmodded { width: 120px; height: calc(120px * 88 / 63 + var(--mods) * 26px); }
   .lmodded .lfigimg { width: 120px; }
   .lmodded .lmod { top: calc(var(--i) * 26px); }

@@ -177,6 +177,9 @@ export const CR_PACKS_DIR = join(CR_BUILD_DIR, 'packs');
  *  object in-process (`buildReview`) from the committed records. Gitignored,
  *  inside the build dir */
 export const CR_REVIEW_DEBUG_JSON = join(CR_BUILD_DIR, 'review.json');
+/** the renderer that writes the rules' HTML, whose classes the client's
+ *  stylesheet styles inside the rules review (ui/test/1507 reads it) */
+export const CR_RENDER_MJS = join(HERE, 'cr', 'render.mjs');
 /** the illustrated Manual: 23 sheets, sheets 2–22 two-page spreads */
 export const MANUAL_PDF = join(RULES_DIR, 'Algomancy-Manual.pdf');
 /** the 2023-07 Rulebook: one page per sheet, no printed page numbers */

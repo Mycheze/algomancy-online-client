@@ -50,11 +50,7 @@
 .qofferbox .hint { font-size: var(--text-11); }
 
 /* BL-02 — the ladder */
-.accttable.ladder .lrank { color: var(--dim); text-align: right; width: 2.5em; }
-.accttable.ladder .lrating b { color: var(--accent); }
 .accttable.ladder tr.myrow { background: var(--panel2); }
-.youstanding { background: var(--panel2); border: 1px solid var(--line); border-left: 3px solid var(--accent);
-  border-radius: var(--radius-md); padding: var(--space-4) var(--space-5); display: flex; flex-direction: column; gap: var(--space-1); }
 
 /* BL-42 — the open games on the home strip. A count cannot be clicked; these
    can, and each one is a whole game somebody is already waiting in. */

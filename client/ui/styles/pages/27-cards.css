@@ -91,8 +91,6 @@
 /* the whole tile pins the detail pane, so it has to look clickable */
 .cbtile { cursor: pointer; }
 .cbtile:hover { border-color: var(--accent); }
-/* …and the name banner is gone (see tileHtml), so the scan is unobstructed */
-.cbtile .dkname { display: none; }
 /* a token, a resource or a reference card is not a card you can play, and the
    tile says so rather than looking identical to one you can */
 .cbtile.noncard { opacity: .82; }
