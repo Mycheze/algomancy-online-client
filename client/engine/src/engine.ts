@@ -4235,8 +4235,8 @@ export class E {
     const [name] = bin.splice(binIndex, 1);
     this.foreignSpliced(seat, 'bin', binIndex, name!);   // CT-233: read zoneOwner BEFORE this call
     this.reindexBinRefs(seat, name!, nth);               // CR 405.6b / CT-380
-    const ev = this.ev('leftBin', '', { seat, card: name!, reason });
-    if (!opts.quiet) this.fireEvent('leftBin', ev);   // BL-46: an agreed fix is quiet
+    // quiet: an agreed fix (BL-46), or the sweep of a card that never entered (CR 405.5)
+    if (!opts.quiet) this.fireEvent('leftBin', this.ev('leftBin', '', { seat, card: name!, reason }));
     return name;
   }
 
@@ -7997,9 +7997,11 @@ export class E {
     // copy of the same name resting in that bin is one reordering away from
     // being the one eaten, leaving the token / Unstable card in the bin and
     // taking an innocent card out of the game in its place.
+    // CR 405.5: the Unstable card never entered the bin, so its sweep is quiet —
+    // no 'leftBin' for "When I leave your bin" (Rotling, CR 405.7) to hear.
     if (unstable && !opts.keepBinned) {
       this.eraseFromZone(binSeat, u.card, 'bin', `${u.card} is erased — Unstable.`,
-        { index: bodyBinIndex, token: u.token === true });
+        { index: bodyBinIndex, token: u.token === true, quiet: true });
       // CR 405.6: HIGHEST index first. Two mods of the same card on one carrier land
       // in one bin at consecutive slots, and erasing the lower one first slides
       // the higher one down under the index we recorded for it — after which a
@@ -8011,7 +8013,7 @@ export class E {
       for (const m of [...binnedMods].reverse()) {
         this.eraseFromZone(modBin(m), m.card, 'bin',
           `${m.card} is erased — it modded an Unstable card.`,
-          { index: binnedAt.get(m.id) });
+          { index: binnedAt.get(m.id), quiet: true });
       }
     } else if (u.token) {
       this.eraseFromZone(binSeat, u.card, 'bin', `${u.card} is erased from the bin — it is a token.`,
@@ -8332,7 +8334,7 @@ export class E {
    * genuinely have no handle (a white-box erase, a card naming a card).
    */
   eraseFromZone(seat: Seat, name: CardName, zone: 'bin' | 'hand' | 'cache', msg: string,
-    at?: { uid?: number; index?: number; token?: boolean }): void {
+    at?: { uid?: number; index?: number; token?: boolean; quiet?: boolean }): void {
     if (zone === 'cache') {
       const i = at?.uid !== undefined ? this.cacheIndexOf(seat, at.uid)
         : this.cache(seat).map(cc => cc.card).lastIndexOf(name);
@@ -8344,7 +8346,8 @@ export class E {
         ? (bin[at.index] === name ? at.index : -1)   // CR 405.6: a mismatch is "gone", never a search
         : bin.lastIndexOf(name);
       if (i === -1) return;
-      this.removeFromBin(seat, i, 'erased');   // CR 405.7: the one bin-removal path
+      // CR 405.7: the one bin-removal path; `quiet` for a card that never really entered (CR 405.5)
+      this.removeFromBin(seat, i, 'erased', { quiet: at?.quiet });
     } else {
       const i = this.player(seat).hand.lastIndexOf(name);
       if (i === -1) return;

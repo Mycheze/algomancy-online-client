@@ -398,7 +398,7 @@
     "quote_spans": [
       {
         "file": "client/engine/src/engine.ts",
-        "text": "const ev = this.ev('leftBin', '', { seat, card: name!, reason });"
+        "text": "if (!opts.quiet) this.fireEvent('leftBin', this.ev('leftBin', '', { seat, card: name!, reason }));"
       }
     ],
     "basis_ok": true,

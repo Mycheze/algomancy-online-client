@@ -24,6 +24,12 @@
  * game now plays differently; that is a rules change for every saved game and
  * needs its own round.
  *
+ * Re-blessed TWO fuzz entries on 2026-11-21 (CT-574, CR 405.5): an {Unstable}
+ * card's sweep no longer announces a bin exit it never made. `draft:102` (step
+ * 366, Smouldering Inferno and its mod) and `constructed:207` (step 291, a modded
+ * Wraith) lose only those signal-only 'leftBin' events; measured on both engines,
+ * every state and every other event is identical. Nothing else moved.
+ *
  * Re-blessed ONE entry on 2026-11-16 (CT-565, CR 104.1b): two players on the
  * same total at 0 or less now draw. `ref:2027-01-10-doubleko` ends that way:
  * replayed on both engines, its 149 steps are identical but the last, whose
