@@ -29,7 +29,7 @@ import * as dk from './decks.ts';
 import type { DeckGrouping } from './decklayout.ts';
 import { buildDeckFile, deckFileText } from './deckformat.ts';
 import { deckListText } from './deckstats.ts';
-import { copyText } from './util.ts';
+import { copyText, downloadText } from './util.ts';
 import * as cardstats from './cardstats.ts';
 import { metaView, paintMeta } from './pages/meta.ts';
 import type { StatusTone } from './components/status.ts';
@@ -384,6 +384,9 @@ export function handleButton(btn: HTMLElement): boolean {
       // no paint(): repainting throws the selection away, which is what plain
       // http falls back to — see copyText in ui/util.ts
       if (one) copyText(exportBody(one), document.querySelector('.dkexporttext'), btn);
+      return true;
+    case 'meta-download':
+      if (one) downloadText(btn.dataset['name'] ?? 'deck.txt', exportBody(one));
       return true;
 
     case 'meta-open':

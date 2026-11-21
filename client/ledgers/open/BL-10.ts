@@ -495,5 +495,16 @@ export default {
     + 'selector list only the dead selector. engine/test/222 §3 now holds in place only the tile furniture a page still '
     + 'draws (the over-cap badge). Left: .rulesrc (its name is still a word in rules.ts) and .eyebrow, the base\'s helper '
     + 'waiting for its first user. Nothing moves on screen. Guarded by the census 1507-every-class-rule-has-a-writer.test.ts '
-    + '(a class counts as drawn when a ui, story or CR-renderer source writes it, or builds it from a prefix: `el-${e}`).',
+    + '(a class counts as drawn when a ui, story or CR-renderer source writes it, or builds it from a prefix: `el-${e}`).'
+    + '\n\n2026-11-21 (steward): a shared deck\'s export downloads, as your own deck\'s does (docs/23-ui-inventory/03 '
+    + '§5.5: "The export panel is inline here and a modal on the deck page, and it lacks \\"download\\""). The Metagame '
+    + 'page\'s export on a published deck had Copy and Close; the Decks page\'s sheet has Copy and Download, so the whole-deck '
+    + 'file meant to be taken away could only be pasted. The class was those two panels, the only deck exports in ui/ '
+    + '(a challenge run\'s Export run is a run, not a deck). pages/meta.ts exportHtml draws Download (meta-download, '
+    + 'data-name per format) between Copy and Close; downloadText moved from decks.ts to util.ts and the file name rule to '
+    + 'deckformat.ts deckDownloadName, so both pages save the same way under the same name. Left: §5.5\'s inline-vs-sheet '
+    + 'difference itself (a layout change of its own), and the format\'s two names, "Whole deck (JSON)" here and '
+    + '"Deck file (JSON)" there. Guarded by '
+    + '1508-shared-deck-export-downloads.test.ts (§2 drives the real client and reads the saved blob). Reasoned, not looked '
+    + 'at (no browser).',
 } satisfies BacklogTicket;

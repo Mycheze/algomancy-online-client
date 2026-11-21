@@ -225,6 +225,12 @@ export function authorName(author: string | null | undefined): string {
   return a;
 }
 
+/** The file an export downloads as: the deck's name with anything a file
+ * system might refuse taken out, `.json` for the whole deck, `.txt` for the list. */
+export function deckDownloadName(name: string, format: 'text' | 'file'): string {
+  return `${name.replace(/[^\w. -]+/g, '').trim() || 'deck'}${format === 'file' ? '.json' : '.txt'}`;
+}
+
 /** A deck as a deck file. */
 export function buildDeckFile(deck: DeckSource, opts: BuildOpts = {}): DeckFile {
   const origin = (opts.origin ?? '').replace(/\/+$/, '');

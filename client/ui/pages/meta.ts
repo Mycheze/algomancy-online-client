@@ -21,6 +21,7 @@ import type { DeckGrouping } from '../decklayout.ts';
 import { deckStatsHtml } from '../decks.ts';
 import { ALL_ELEMENTS } from '../../engine/src/apply.ts';
 import { esc, elIcon } from '../util.ts';
+import { deckDownloadName } from '../deckformat.ts';
 import { artUrl } from '../assets.ts';
 import type { CardStanding, MetaState, PublicDeck } from '../meta.ts';
 import { cardStatsHtml, cardStatsView, paintCardStats, type CardStatsView } from './cardstats.ts';
@@ -316,6 +317,7 @@ function exportHtml(v: MetaView): string {
       <button class="dkkind${file ? ' on' : ''}" aria-pressed="${!!file}" data-btn="meta-export" data-format="file">Whole deck (JSON)</button>
       <span class="dkfilterspacer"></span>
       <button data-btn="meta-copy-export">Copy</button>
+      <button data-btn="meta-download" data-name="${esc(deckDownloadName(v.one?.name ?? '', file ? 'file' : 'text'))}">Download</button>
       <button data-btn="meta-export-close">Close</button>
     </div>
     <div class="hint">${file

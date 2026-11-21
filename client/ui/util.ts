@@ -65,6 +65,18 @@ export function copyText(
   if (btn) btn.textContent = label;
 }
 
+/** Hand the browser a file. An object URL rather than a `data:` one because a
+ * 30-card deck file with a long description is bigger than some browsers will
+ * accept in a URL, and revoking it is what keeps the blob from leaking. */
+export function downloadText(name: string, body: string): void {
+  const url = URL.createObjectURL(new Blob([body], { type: 'text/plain;charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
 /* ── the deck you are bringing to constructed ─────────────────────────
  *
  * One browser-local choice, read by the home screen, the constructed waiting

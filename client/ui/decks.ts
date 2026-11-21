@@ -44,7 +44,7 @@ import {
   DECK_SORTS, deckInfoButtonHtml, deckInfoHtml, deckInfoView, deckPill, decksView, paintDecks,
   type DeckSort, type DecksStateSheet,
 } from './pages/decks.ts';
-import { chooseDeck, chosenDeck, copyText } from './util.ts';
+import { chooseDeck, chosenDeck, copyText, downloadText } from './util.ts';
 import * as tt from './tabletop.ts';
 import { onShareFriends, shareFriends } from './inbox.ts';
 import type { DeckPile } from './deckarrange.ts';
@@ -378,18 +378,6 @@ function exportBody(d: DeckView): string {
   return file
     ? deckFileText(buildDeckFile(d, { origin: location.origin }))
     : deckListText(d.name, d.cards, { maybe: d.maybe, sideboard: d.sideboard ?? [], ...(d.url ? { url: d.url } : {}) });
-}
-
-/** Hand the browser a file. An object URL rather than a `data:` one because a
- * 30-card deck file with a long description is bigger than some browsers will
- * accept in a URL, and revoking it is what keeps the blob from leaking. */
-function downloadText(name: string, body: string): void {
-  const url = URL.createObjectURL(new Blob([body], { type: 'text/plain;charset=utf-8' }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = name;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
 // ── the page ──────────────────────────────────────────────────────────

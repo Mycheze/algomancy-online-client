@@ -24,7 +24,7 @@ import { analyzeDeck, deckElements } from '../deckstats.ts';
 import { mdToHtml } from '../markdown.ts';
 import { noImgDrag } from '../piletable.ts';
 import { clickOrTap, esc } from '../util.ts';
-import { authorName } from '../deckformat.ts';
+import { authorName, deckDownloadName } from '../deckformat.ts';
 import { button, chip, emptyState, field, iconButton, segmented, sheet, statusMessage, table } from '../components/index.ts';
 import type { TablePill } from '../tabletop.ts';
 import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
@@ -309,7 +309,7 @@ export function decksView(st: DecksState): DecksView {
     }
     else if (s.kind === 'export') {
       sheetV = { kind: 'export', format: s.format, body: st.exportBody,
-        downloadName: `${open.name.replace(/[^\w. -]+/g, '').trim() || 'deck'}${s.format === 'file' ? '.json' : '.txt'}` };
+        downloadName: deckDownloadName(open.name, s.format) };
     } else if (s.kind === 'delete') sheetV = { kind: 'delete', name: open.name };
     else if (s.kind === 'games') {
       sheetV = { kind: 'games', record: open.record ?? { games: 0, wins: 0, losses: 0, unresolved: 0 },
