@@ -122,8 +122,8 @@ test('985 §3 the home banner and the header button', () => {
   assert.equal(leagueBannerHtml({ st: state(null), open: true, howOpen: null, tz: 'UTC' }), '', 'no season, no banner');
 
   const join = season({ phase: 0, label: 'Sign-up week', me: { ...season().me!, entered: false } });
-  assert.match(leagueNavHtml({ season: join, organizer: false }), /class="homedecks lgnavjoin" data-btn="nav-league">🏅 League · sign up</);
-  assert.match(leagueNavHtml({ season: null, organizer: true }), /data-btn="nav-league">🏅 League</, 'an organizer, before any season');
+  assert.match(leagueNavHtml({ season: join, organizer: false }), /class="homedecks lgnavjoin" data-btn="nav-league"><svg class="ui-icon ui-icon--league"[^>]*>[\s\S]*?<\/svg> League · sign up</);
+  assert.match(leagueNavHtml({ season: null, organizer: true }), /data-btn="nav-league"><svg class="ui-icon ui-icon--league"[^>]*>[\s\S]*?<\/svg> League</, 'an organizer, before any season');
   assert.equal(leagueNavHtml({ season: null, organizer: false }), '');
 });
 

@@ -100,11 +100,11 @@ async function profileHead(): Promise<string> {
 test('§1 docs20 league trophies: a closed season puts its place on the profile, beside the badge', async () => {
   who = champion;
   const head = await profileHead();
-  assert.match(head, /class="badgechip trophy champion"[^>]*>🏆 Champion · October 2026 pilot</, '⭐ the champion has no trophy chip');
+  assert.match(head, /class="badgechip trophy champion"[^>]*><svg class="ui-icon ui-icon--league"[^>]*>[\s\S]*?<\/svg> Champion · October 2026 pilot</, '⭐ the champion has no trophy chip');
   who = finalist;
-  assert.match(await profileHead(), /class="badgechip trophy finalist"[^>]*>🥈 Finalist · October 2026 pilot</);
+  assert.match(await profileHead(), /class="badgechip trophy finalist"[^>]*><svg class="ui-icon ui-icon--league"[^>]*>[\s\S]*?<\/svg> Finalist · October 2026 pilot</);
   who = participant;
-  assert.match(await profileHead(), /class="badgechip trophy participant"[^>]*>🏅 Participant · October 2026 pilot</);
+  assert.match(await profileHead(), /class="badgechip trophy participant"[^>]*><svg class="ui-icon ui-icon--medal"[^>]*>[\s\S]*?<\/svg> Participant · October 2026 pilot</);
 });
 
 test('§2 the closed season standings mark the champion and the finalist with the same chip', async () => {
@@ -120,9 +120,9 @@ test('§2 the closed season standings mark the champion and the finalist with th
   // a ui-panel title since the design-system round (2026-11-03)
   const table = /<h3[^>]*>Standings<\/h3>([\s\S]*?)<\/table>/.exec(html)?.[1] ?? '';
   assert.ok(table, 'the standings did not paint');
-  const row = (a: Account): string => new RegExp(`<td>${a.username}([^<]*(?:<span[^>]*>[^<]*</span>)?)</td>`).exec(table)?.[1] ?? '';
-  assert.match(row(champion), /badgechip trophy champion[^>]*>🏆 Champion</);
-  assert.match(row(finalist), /badgechip trophy finalist[^>]*>🥈 Finalist</);
+  const row = (a: Account): string => new RegExp(`<td>${a.username}([\\s\\S]*?)</td>`).exec(table)?.[1] ?? '';
+  assert.match(row(champion), /badgechip trophy champion[^>]*><svg class="ui-icon ui-icon--league"[^>]*>[\s\S]*?<\/svg> Champion</);
+  assert.match(row(finalist), /badgechip trophy finalist[^>]*><svg class="ui-icon ui-icon--league"[^>]*>[\s\S]*?<\/svg> Finalist</);
   assert.doesNotMatch(row(participant), /badgechip/, 'only the final two are marked in the table');
   ui.click({ btn: 'lg-close' });
   await settle();

@@ -40,7 +40,7 @@ test('§2 finished: Standings and Matches stay', () => {
   assert.match(html, /data-btn="cube-tab"[^>]*data-v="matches"/);
   assert.match(html, /data-scroll="cube-done-matches"/);
   assert.match(html, /Ann <span class="dim">vs<\/span> Bo/, 'the finished matches, listed');
-  assert.match(html, /🏆 Ann/, 'the winner stays beside them');
+  assert.match(html, /<p class="cubebig"><svg class="ui-icon ui-icon--league champmark"[^>]*><title>Winner<\/title>[\s\S]*?<\/svg> Ann<\/p>/, 'the winner stays beside them');
   assert.doesNotMatch(html, /data-btn="cube-result-open"/, 'over: no Result to set');
   assert.match(cubeHtml(pageView({ event: eventView('playing'), tab: 'matches' })), /data-btn="cube-result-open"/, 'playing: the host still has it');
   assert.match(cubeHtml(pageView({ event: done })), /data-scroll="cube-done-standings"/);

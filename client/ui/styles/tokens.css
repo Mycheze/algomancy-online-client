@@ -88,6 +88,9 @@
   --color-time-pm: #c3c9ff;
   --color-time-pm-bg: rgba(34, 38, 84, .75);
   --color-time-pm-border: #6b73bc;
+  /* ── colour: a league place — the champion's gold and the finalist's silver, on their chips and marks ── */
+  --color-place-champion: #e0a93c;
+  --color-place-finalist: #b8c2cc;
 
   /* ── type ── */
   --font-ui: system-ui, sans-serif;

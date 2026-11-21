@@ -45,7 +45,7 @@ import { readStylePieces } from './read-styles.ts';
  *  2026-11-03 after the Manual's palette (ui/test/1030) moved the gold, green and felt onto the roles. May only go down. */
 const ALLOW: Record<string, number> = {
   'pages/joinscreen': 2,
-  'shared/element-chips': 8,
+  'shared/element-chips': 3, // 8 → 3: a league place's gold and silver are --color-place-champion / -finalist (BL-10)
   'pages/draft-lobby': 2,
   'pages/postgame': 1,
   'pages/decks': 4,

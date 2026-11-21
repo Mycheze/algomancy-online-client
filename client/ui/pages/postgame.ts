@@ -291,7 +291,7 @@ export function postGameHtml(v: PostGameView): string {
           ? 'A mirror match — it moves nothing, anywhere.'
           : o.winner === null || o.concession?.weight === 'walkover'
             ? 'In the match history; it moves nothing on the card ladder.'
-            : 'Rated the cards, not you — see the card ladder under 🏆 Metagame.'}`
+            : 'Rated the cards, not you — see the card ladder under Metagame.'}`
       : o.recorded
       ? (o.concession?.weight === 'walkover' ? 'In your match history, marked as not counted.' : 'Recorded to your profile.')
       : 'Not recorded — nobody was signed in.'}</div>

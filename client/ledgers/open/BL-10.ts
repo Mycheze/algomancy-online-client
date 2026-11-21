@@ -472,5 +472,17 @@ export default {
     + 'pages/admin 12 → 11. Swept ui/ pages/ components/ source, server/ and the CR renderer for the same names: none. '
     + 'Left on purpose: the scoped reads that do reach (a modifier sets it, the base falls back; three reached through an '
     + 'ancestor the selector does not name, listed in the test), and bot/web, which has its own :root. Guarded by the '
-    + 'census 1504-scoped-properties-stay-in-scope.test.ts. Shades move by a hair at most; reasoned, not looked at (no browser).',
+    + 'census 1504-scoped-properties-stay-in-scope.test.ts. Shades move by a hair at most; reasoned, not looked at (no browser).'
+    + '\n\n2026-11-21 (steward): a league place is drawn from the icon set, never an emoji (docs/23-ui-inventory/02 '
+    + '§8.3 item 13, "🏆 🥈 🏅 trophies", §8.1 item 6, "`.badgechip.trophy.participant` has no rule", and §8.2 item 9\'s '
+    + 'trophy literals; the owner\'s word on the seat badges, report #379). The class was every place mark in ui/: the '
+    + 'profile\'s and the closed standings\' chips (pages/profile.ts trophyChipHtml: the trophy for Champion and Finalist, '
+    + 'a new `medal` glyph for Participant), the champion beside a name (pages/league.ts banner, standings, About; '
+    + 'championMarkHtml, spoken "Champion" where no word near it says so), the banner\'s season mark and the dead '
+    + 'leagueNavHtml\'s, and the cube event\'s winner (pages/cube.ts, spoken "Winner"). The post-game\'s card-ladder line '
+    + 'pointed at "🏆 Metagame", a button the home draws as a chart icon: now "under Metagame". Gold and silver are '
+    + '--color-place-champion / --color-place-finalist (tokens.css); the participant chip is muted, not the accent '
+    + 'outline; 921 banks shared/element-chips 8 → 3. Left on purpose: the league\'s Discord post (postText, pasted into '
+    + 'Discord, which draws its own emoji), the server-sent achievement icons, and the challenge\'s dead 🧩 nav button. '
+    + 'Guarded by the census 1505-league-places-drawn-as-icons.test.ts. Reasoned, not looked at (no browser).',
 } satisfies BacklogTicket;

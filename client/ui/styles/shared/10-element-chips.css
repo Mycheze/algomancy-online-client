@@ -6,8 +6,12 @@
 .badgechip.owner { background: var(--accent); color: var(--color-text-on-accent); }
 /* docs/20 §7: a league season's place — the season's name is part of the chip, so it keeps its case */
 .badgechip.trophy { text-transform: none; letter-spacing: .02em; white-space: nowrap; }
-.badgechip.trophy.champion { background: #e0a93c; border-color: #e0a93c; color: #111; }
-.badgechip.trophy.finalist { border-color: #b8c2cc; color: #b8c2cc; }
+.badgechip.trophy.champion { background: var(--color-place-champion); border-color: var(--color-place-champion); color: var(--color-text-on-accent); }
+.badgechip.trophy.finalist { border-color: var(--color-place-finalist); color: var(--color-place-finalist); }
+.badgechip.trophy.participant { border-color: var(--color-border-strong); color: var(--color-text-muted); }
+/* the place's icon (components/icon.ts) sits on the text's baseline, a little over its cap height */
+.badgechip.trophy .ui-icon, .champmark { width: 1.15em; height: 1.15em; vertical-align: -.2em; }
+.champmark { color: var(--color-place-champion); }
 .accttable .badgechip.trophy { font-size: .8em; margin-left: var(--space-2); }
 .elchip { text-transform: capitalize; padding: 5px 10px; opacity: .55; border-width: 2px; }
 .elchip.on { opacity: 1; font-weight: 700; outline: 2px solid var(--accent); }

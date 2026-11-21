@@ -8,7 +8,7 @@ import { eventView, pageView, tagOf } from './cube-fixture.ts';
 
 test('1339 the end, and the other ways an event page can stand', () => {
   const done = cubeHtml(pageView({ event: eventView('done') }));
-  assert.match(done, /🏆 Ann/);
+  assert.match(done, /<p class="cubebig"><svg class="ui-icon ui-icon--league champmark"[^>]*><title>Winner<\/title>[\s\S]*?<\/svg> Ann<\/p>/);
   assert.match(done, /<th[^>]*>Points<\/th>/);
   assert.match(done, /data-scroll="cube-done-standings"/);
   // over, the standings and the matches stay to browse (test 1354)

@@ -18,7 +18,8 @@
  * Everything shown is the server's answer (server/league-store.ts
  * seasonView); nothing here re-derives a standing or a pairing.
  */
-import { trophyChipHtml } from '../account.ts';
+import { championMarkHtml, trophyChipHtml } from '../account.ts';
+import { icon } from '../components/icon.ts';
 import { panel, panelSubheading } from '../components/panel.ts';
 import { segmented } from '../components/segmented.ts';
 import { statusMessage, type StatusTone } from '../components/status.ts';
@@ -400,7 +401,7 @@ export function leagueNavHtml(v: LeagueNavView): string {
   const s = v.season;
   if (!s && !v.organizer) return '';
   const signUp = !!s && joinable(s) && !s.me?.entered;
-  return `<button class="homedecks${signUp ? ' lgnavjoin' : ''}" data-btn="nav-league">🏅 League${signUp ? ' · sign up' : ''}</button>`;
+  return `<button class="homedecks${signUp ? ' lgnavjoin' : ''}" data-btn="nav-league">${icon('league')} League${signUp ? ' · sign up' : ''}</button>`;
 }
 
 // ── the home's League card and Join sheet (docs/24, 2026-11-03) ───────
@@ -532,7 +533,7 @@ export function leagueBannerHtml(v: LeagueBannerView): string {
   return `<section class="lgbanner" aria-label="League">
     <div class="lgbhead">
       <button class="lgbfold" data-btn="lg-banner" aria-expanded="${bannerOpen}">
-        <span class="lgbcaret">${bannerOpen ? '▾' : '▸'}</span> 🏅 <b>${esc(s.name)}</b></button>
+        <span class="lgbcaret">${bannerOpen ? '▾' : '▸'}</span> ${icon('league')} <b>${esc(s.name)}</b></button>
       <span class="lgbphase">${competitive(s) ? 'Competitive · ' : constructed(s) ? 'Constructed · ' : ''}${esc(s.label)}</span>
       ${me?.entered ? `<span class="lgbin">✓ you're in</span>` : ''}
       <span class="lgbnext">${esc(nextText(s, tz))}</span>
@@ -550,7 +551,7 @@ export function leagueBannerHtml(v: LeagueBannerView): string {
         return `<h3><button class="lgbhowfold" data-btn="lg-how" aria-expanded="${shown}">${shown ? '▾' : '▸'} How it works</button></h3>${
           shown ? howHtml(s) : ''}`;
       })()}</div>
-      <div>${s.champion ? `<h3>Champion</h3><p class="lgbchamp">🏆 <b>${esc(s.champion.name)}</b></p>`
+      <div>${s.champion ? `<h3>Champion</h3><p class="lgbchamp">${championMarkHtml(false)} <b>${esc(s.champion.name)}</b></p>`
         : me?.entered && s.phase >= 0 ? mineHtml(s, tz) : joinStepsHtml(st, s, tz)}</div>
       ${tableHtml(s)}
     </div>` : ''}
@@ -565,7 +566,7 @@ function otherHtml(s: SeasonView, tz: string): string {
   const fin = s.phase === s.weeks + 1 ? s.matches.find(m => m.final) : undefined;
   return `<section class="lgbanner lgbother" aria-label="${esc(s.name)}">
     <div class="lgbhead">
-      <span>🏅 <b>${esc(s.name)}</b></span>
+      <span>${icon('league')} <b>${esc(s.name)}</b></span>
       <span class="lgbphase">${esc(s.label)}</span>
       <span class="lgbnext">${fin && !mine.length ? pairingText(fin) : esc(nextText(s, tz))}</span>
       ${mine.map(m => `<span>vs <b>${esc(m.opponent.name)}</b></span>
@@ -656,7 +657,7 @@ function tableHtml(s: SeasonView): string {
   const pairs = [...week.filter(mine), ...week.filter(m => !mine(m))];
   return `<div><h3>Standings</h3>
       <table class="lgbtable"><tbody>${top.map(r => `<tr><td>${r.rank}</td><td>${esc(r.name)}${
-        s.champion?.id === r.id ? ' 🏆' : ''}</td><td>${r.w}–${r.l}</td><td>${r.points} pts</td></tr>`).join('')}</tbody></table>
+        s.champion?.id === r.id ? ` ${championMarkHtml(true)}` : ''}</td><td>${r.w}–${r.l}</td><td>${r.points} pts</td></tr>`).join('')}</tbody></table>
       ${s.standings.length > top.length ? `<p class="dim">+${s.standings.length - top.length} more on the League page</p>` : ''}
     </div>
     ${pairs.length ? `<div><h3>${s.phase > s.weeks ? 'The final' : `Week ${s.phase} pairings`}</h3>
@@ -833,7 +834,7 @@ function seasonCardHtml(s: SeasonView, v: LeagueView): string {
     <p>${s.phase < 0 ? `Sign-ups open <b>${when(s.signupOpens, v.tz)}</b>. ` : ''}Week 1 starts <b>${wk1 ? when(wk1.at, v.tz) : '?'}</b>,
       the final <b>${fin ? when(fin.at, v.tz) : '?'}</b>, and the season ends <b>${end ? when(end.at, v.tz) : '?'}</b>
       <span class="dim">(your time)</span>.</p>
-    ${s.champion ? `<p>🏆 Champion: <b>${esc(s.champion.name)}</b></p>` : ''}
+    ${s.champion ? `<p>${championMarkHtml(false)} Champion: <b>${esc(s.champion.name)}</b></p>` : ''}
     <p class="hint">Weeks run Sunday to Saturday. ${matchLine(s)} Your opponents are here each week: suggest a time below (or message them on Discord), then both press Play.
       A match nobody plays by the end of its week counts for neither player.</p>
   ` });
@@ -1045,7 +1046,7 @@ function standingsHtml(s: SeasonView, v: LeagueView): string {
     const place = s.champion?.id === id ? 'champion' as const
       : fin && (fin.a.id === id || fin.b.id === id) ? 'finalist' as const : null;
     if (place && s.phase >= s.weeks + 2) return v.chips[place];
-    return s.champion?.id === id ? ' 🏆' : '';
+    return s.champion?.id === id ? ` ${championMarkHtml(true)}` : '';
   };
   return panel({ title: 'Standings', bodyHtml: `
     ${table({ columns: STANDINGS_COLUMNS, rows: s.standings.map(r => ({ className: withdrawn.has(r.id) ? 'dim' : undefined, cells: {

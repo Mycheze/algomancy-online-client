@@ -25,7 +25,7 @@ import type {
 import type { Element } from '../../engine/src/types.ts';
 import { ALL_ELEMENTS } from '../../engine/src/apply.ts';
 import { draftDeckList } from '../../engine/src/cards/registry.ts';
-import { button, chip, emptyState, segmented, settingRow, sheet, statusMessage, table, toggle } from '../components/index.ts';
+import { button, chip, emptyState, icon, segmented, settingRow, sheet, statusMessage, table, toggle } from '../components/index.ts';
 import type { StatusTone } from '../components/status.ts';
 import { elIcon, esc } from '../util.ts';
 import { caretIn, restoreCaret } from './caret.ts';
@@ -613,7 +613,7 @@ function doneHtml(v: CubePageView, e: CubeView, tab: CubeTab): string {
   return `<div class="cubework cubework--play">
     <aside class="cubeside" data-scroll="cube-done-side">
       <div class="cubeyours"><h2 class="cubehead">Finished</h2>
-        ${top ? `<p class="cubebig">🏆 ${esc(top.name)}</p><p class="dim">${top.points} points · ${top.w}–${top.l}–${top.d}</p>` : ''}</div>
+        ${top ? `<p class="cubebig">${icon('league', { className: 'champmark', title: 'Winner' })} ${esc(top.name)}</p><p class="dim">${top.points} points · ${top.w}–${top.l}–${top.d}</p>` : ''}</div>
       ${factsHtml(v, e)}
     </aside>
     <section class="cubepane" data-scroll="cube-done-${tab}">${body}</section>

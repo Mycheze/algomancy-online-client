@@ -22,7 +22,7 @@ import { ALL_ELEMENTS } from '../../engine/src/apply.ts';
 import { elIcon, esc } from '../util.ts';
 import { USERNAME_MAX } from '../../shared/username.ts';
 import { ICON_BASE } from '../assets.ts';
-import { button, icon, segmented, settingRow, statusMessage } from '../components/index.ts';
+import { button, icon, type IconName, segmented, settingRow, statusMessage } from '../components/index.ts';
 import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
 import type { AchievementState, FriendView, LeaderRow, LeagueTrophy, Me, MatchRow } from '../account.ts';
 import type { PublicDeck } from '../meta.ts';
@@ -100,22 +100,28 @@ export function seatBadgeTipHtml(badge: SeatBadge | null | undefined): string {
   return rows.join('');
 }
 
-const PLACE: Record<LeagueTrophy['place'], { icon: string; word: string }> = {
-  champion: { icon: '🏆', word: 'Champion' },
-  finalist: { icon: '🥈', word: 'Finalist' },
-  participant: { icon: '🏅', word: 'Participant' },
+/** a place's mark is from the icon set, never an emoji, which each device's font draws its own way */
+const PLACE: Record<LeagueTrophy['place'], { glyph: IconName; word: string }> = {
+  champion: { glyph: 'league', word: 'Champion' },
+  finalist: { glyph: 'league', word: 'Finalist' },
+  participant: { glyph: 'medal', word: 'Participant' },
 };
 
-/** One league place as a chip: "🏆 Champion", or with the season's name when
- * it is shown away from its season ("🏆 Champion · October 2026"). The record
- * is the title. An unknown place (a newer server) shows nothing. */
+/** One league place as a chip: a trophy and "Champion", or with the season's
+ * name when it is shown away from its season ("Champion · October 2026"). The
+ * record is the title. An unknown place (a newer server) shows nothing. */
 export function trophyChipHtml(t: Pick<LeagueTrophy, 'name' | 'place'> & Partial<LeagueTrophy>, withSeason = true): string {
   const p = PLACE[t.place];
   if (!p) return '';
   const title = typeof t.w === 'number' && typeof t.l === 'number'
     ? `${t.name}: ${p.word.toLowerCase()}, ${t.w}–${t.l} in the league` : `${p.word} of ${t.name}`;
   return `<span class="badgechip trophy ${t.place}" title="${esc(title)}">${
-    p.icon} ${p.word}${withSeason ? ` · ${esc(t.name)}` : ''}</span>`;
+    icon(p.glyph)} ${p.word}${withSeason ? ` · ${esc(t.name)}` : ''}</span>`;
+}
+
+/** the champion's trophy beside a name; `spoken` when nothing near it says "Champion" */
+export function championMarkHtml(spoken: boolean): string {
+  return icon('league', { className: 'champmark', ...(spoken ? { title: 'Champion' } : {}) });
 }
 
 /** Docs/20 §7: the league's trophies in the profile header, beside the badge —

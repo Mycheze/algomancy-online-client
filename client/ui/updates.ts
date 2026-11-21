@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-21', kind: 'change', text: 'League trophies on profiles, the League page and a finished cube event are now drawn as the game\'s own icons instead of emoji, so they look the same on every device. A season\'s participants get a medal of their own.' },
   { date: '2026-11-20', kind: 'fix', text: 'On the Metagame list and a shared deck\'s page, a deck\'s win rate is now green when it wins more than it loses and red when it loses more, the same as on your own decks.' },
   { date: '2026-11-20', kind: 'fix', text: 'On a tablet, the deck name at the top of the deck builder now steps down a size as the toolbar tightens, as it was meant to, so more of a long name shows before it is cut short.' },
   { date: '2026-11-19', kind: 'fix', text: 'In Learn to Play, the ▶ button under a slideshow now sits centred like the step buttons beside it. It had been picking up the game board\'s layout because the two shared a name.' },
