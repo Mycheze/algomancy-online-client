@@ -1767,3 +1767,4 @@
 {"id":"CT-575","on":"2026-11-21","as":"done"}
 {"id":"#426","on":"2026-11-21","as":"fixed","to":["CT-575"]}
 {"id":"#427","on":"2026-11-21","as":"fixed","to":["CT-575"],"note":"The agreed fix drew invi the card the second Rotling now offers: the owner ruled per card (B), so the agreement matched the rules."}
+{"id":"#428","on":"2026-11-21","as":"agreed-fix","note":"A take-back, ticked \"Not a bug\", proposed by mcauthor and agreed by Debeli, no reason given. Turn 4 battle, counterattack declaration: took back mcauthor's declining to attack [98] (declareAttack with no columns). The redo attacked with one Unit Token [98], which Debeli blocked with Corrupting Blight; the token died and Corrupting Blight's after-combat trigger gave mcauthor control of it. GAPT (Debeli v mcauthor, constructed, played on 1a0a0764) fetched 2026-11-21 and replays FAITHFUL (149 of 149, 0 refused). A line of play changed by agreement; no defect."}
