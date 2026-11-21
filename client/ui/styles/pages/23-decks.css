@@ -84,39 +84,16 @@
 }
 .dktile.dkstack .dkghostwrap .dkart { position: static; width: 100%; height: 100%;
   border: none; border-radius: 0; box-shadow: none; }
-/* The controls and the over-cap number ride the FRONT CARD, which on a stack is
-   inset from the cell by the depth. Left where they were they would hang over
-   the mat beside the pile — the 121px overhang above, in miniature.
-
-   ⚠ AND THEY HAVE TO BE GIVEN A LAYER. THIS WAS THE WORST OF THE REGRESSION AND
-   IT IS NOT A LAYOUT FAULT AT ALL. The front card is positioned with
-   `z-index: 2` and `.dkbtns` is positioned with `z-index: auto`, so on a stacked
-   tile THE ART PAINTED OVER THE CONTROLS. Measured over CDP on the shipped
-   build: `elementFromPoint` at the centre of `−` on a two-of returned the
-   <img>, whose `data-btn` is `deck-focus` — so pressing −, » or ★ on any
-   two-of pinned the card panel instead of cutting, shelving or setting the
-   cover. In a constructed deck, where nearly every card is a two-of, that is
-   nearly every control on the page. Nothing that reads the source could see it:
-   the buttons are emitted, they are the right size, they are simply underneath. */
-.dktile.dkstack .dkbtns { right: calc(var(--d) * var(--dkstep)); z-index: 3; }
-.dktile.dkstack .dkname { right: calc(var(--d) * var(--dkstep)); z-index: 3; }
+/* The over-cap number rides the FRONT CARD, which on a stack is inset from the
+   cell by the depth; left at the tile's edge it would hang over the mat beside
+   the pile. It also needs a layer above the front card's `z-index: 2`, or the
+   art paints over it. */
 .dktile.dkstack .dkn { top: calc(var(--d) * var(--dkstep) + 3px);
   right: calc(var(--d) * var(--dkstep) + 3px); z-index: 3; }
 
 .dkn { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,.7); color: var(--color-text-on-fill);
   border-radius: var(--radius-lg); padding: 0 var(--space-2); font-size: var(--text-11); font-weight: 700; }
 .dkn.bad { background: var(--color-danger-fill); }
-/* the name is the fallback when the scan is missing, and the label when it is
-   not — small, on a scrim, at the bottom where the printed name is anyway */
-.dkname { position: absolute; left: 0; right: 0; bottom: 20px; font-size: var(--text-11); line-height: 1.15;
-  padding: var(--space-1) var(--space-2); color: var(--color-text-on-fill); background: linear-gradient(transparent, rgba(0,0,0,.8) 40%);
-  text-align: center; }
-.dkbtns { position: absolute; left: 0; right: 0; bottom: 0; display: flex;
-  background: rgba(0,0,0,.72); }
-.dkbtns button { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  background: none; border: none; border-radius: 0; color: var(--color-text-on-fill);
-  padding: var(--space-1) 0; font-size: var(--text-12); line-height: 1.3; }
-.dkbtns button:hover { background: var(--accent); color: var(--color-text-on-accent); }
 
 .dkadd { margin-top: var(--space-3); }
 .dksearch { flex: 1; }

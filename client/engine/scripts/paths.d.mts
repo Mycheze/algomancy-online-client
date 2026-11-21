@@ -49,6 +49,7 @@ export const CR_SOURCE_CLASSIFICATION: string;
 export const CR_PACKS_DIR: string;
 /** gitignored debug dump of buildReview(); the server builds it in-process */
 export const CR_REVIEW_DEBUG_JSON: string;
+export const CR_RENDER_MJS: string;
 export const MANUAL_PDF: string;
 export const RULEBOOK_PDF: string;
 /** the engine's source and the four test directories */

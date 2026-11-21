@@ -484,5 +484,16 @@ export default {
     + '--color-place-champion / --color-place-finalist (tokens.css); the participant chip is muted, not the accent '
     + 'outline; 921 banks shared/element-chips 8 → 3. Left on purpose: the league\'s Discord post (postText, pasted into '
     + 'Discord, which draws its own emoji), the server-sent achievement icons, and the challenge\'s dead 🧩 nav button. '
-    + 'Guarded by the census 1505-league-places-drawn-as-icons.test.ts. Reasoned, not looked at (no browser).',
+    + 'Guarded by the census 1505-league-places-drawn-as-icons.test.ts. Reasoned, not looked at (no browser).'
+    + '\n\n2026-11-21 (steward): no rule styles a class nothing draws (docs/23-ui-inventory/04 §L.9: "Dead CSS / dead '
+    + 'hooks: .rulesrc, .ldiag .ldside .ldcols .ldcol .ldslot .ldunit .ldnote, .lfcols .lfcol .lfslot, .crframe"). The class '
+    + 'was 45 classes across eleven pieces, orphaned by the redesigns: the profile\'s old sidebar, friend rows, top cards '
+    + 'and achievement groups (17-accounts), the queue page\'s ladder and standing box (30-queue), the old builder\'s '
+    + 'per-tile buttons and name banner (23-decks, 27-cards), the home logo, fixed-clock line and bare custom rules '
+    + '(06-home), the Learn diagrams (32-learn), the help box\'s head, tabs, book bar and CR frame (board/11), the '
+    + 'resource window\'s head and mana (board/42), the deck line (board/03), card stats\' sections. Each rule went; in a '
+    + 'selector list only the dead selector. engine/test/222 §3 now holds in place only the tile furniture a page still '
+    + 'draws (the over-cap badge). Left: .rulesrc (its name is still a word in rules.ts) and .eyebrow, the base\'s helper '
+    + 'waiting for its first user. Nothing moves on screen. Guarded by the census 1507-every-class-rule-has-a-writer.test.ts '
+    + '(a class counts as drawn when a ui, story or CR-renderer source writes it, or builds it from a prefix: `el-${e}`).',
 } satisfies BacklogTicket;

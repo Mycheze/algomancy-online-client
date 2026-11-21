@@ -7,7 +7,6 @@
    block at the end of this piece lays it out) */
 .csfilters { flex-wrap: wrap; row-gap: var(--space-3); }
 .csline { margin: var(--space-1) 0 var(--space-4); }
-.cssections { margin-top: var(--space-2); }
 .cswork:has(.cbdetail) { grid-template-columns: minmax(0, 1fr) 340px; }
 .cstablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--panel); }
 .cstable { border-collapse: collapse; width: 100%; font-size: var(--text-13); }

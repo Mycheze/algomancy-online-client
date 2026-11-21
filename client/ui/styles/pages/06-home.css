@@ -8,7 +8,6 @@
    owns its own width. */
 #app:not(.board) { display: block; max-width: none; padding: 0; }
 
-.homelogo { color: var(--accent); letter-spacing: .3em; text-align: center; margin: var(--space-3) 0 var(--space-6); }
 .namerow { display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-6); color: var(--dim); }
 .namerow input { flex: 1; }
 .homebtns { display: flex; flex-direction: column; gap: var(--space-4); }
@@ -92,7 +91,6 @@
 .homeplaysub { margin: 0; color: var(--color-text-muted); font-size: var(--text-13); }
 .homerows { display: flex; flex-direction: column; gap: var(--space-6); flex: 1 1 auto; }
 /* each row is the setting-row component (components/setting-row.css, 2026-11-04) */
-.homefixed { display: inline-block; padding-top: var(--space-3); color: var(--color-text); font-size: var(--text-13); }
 
 /* the Draft tab's rows above Alternate modes, in one fieldset: Cube draft
    disables it, and it greys out (2026-11-14) */
@@ -183,8 +181,6 @@
 .homejoinsec .zonelabel { margin: 0; }
 .homejoinsec .ccmine { margin: 0; padding: 0; background: none; border: 0; display: flex; flex-direction: column; gap: var(--space-4); }
 .homejoinnone { margin: 0; padding-top: var(--space-5); border-top: 1px solid var(--color-border); color: var(--color-text-muted); }
-/* the Custom rules panel, drawn open with no fold of its own */
-.homepage .customrules--bare { margin: 0; padding: 0; border: 0; }
 /* the client info: legal.ts footHtml, which #legalfoot styles under its id */
 .homeinfosheet .lgfootwrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-7); }
 .homeinfosheet h3 { margin: 0 0 var(--space-4); color: var(--color-accent); font-size: var(--text-16); }

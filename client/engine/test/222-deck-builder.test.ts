@@ -151,6 +151,13 @@ test('§2b the whole pile fits the cell, because the layers shrink by the depth'
 
 /* ══ §3 the controls are ON the front card, and ON TOP of it ════════════ */
 
+/** the furniture a stacked tile can carry, kept to the pieces some page still
+ *  draws: a class no markup writes has no rule left to hold in place */
+const UI_TS = [...readdirSync(UI), ...readdirSync(join(UI, 'pages')).map(f => `pages/${f}`)]
+  .filter(f => f.endsWith('.ts')).map(read).join('\n');
+const drawnOnTiles = (...classes: string[]): string[] =>
+  classes.filter(c => new RegExp(`class="(?:[^"]*\\s)?${c}[\\s"]`).test(UI_TS));
+
 /** the layer a rule puts its subject on, `auto` read as 0 */
 const zOf = (r: Rule): number => {
   const v = decl(r, 'z-index');
@@ -166,7 +173,9 @@ test('§3a the buttons sit above the art, or the click lands on the card', () =>
   const front = rulesFor('dkstack').filter(r => />\s*\.dkart\b/.test(r.sel) && decl(r, 'z-index'));
   assert.ok(front.length > 0, 'the front card must declare its own layer');
   const artZ = Math.max(...front.map(zOf));
-  for (const cls of ['dkbtns', 'dkn', 'dkname']) {
+  const furniture = drawnOnTiles('dkbtns', 'dkn', 'dkname');
+  assert.ok(furniture.includes('dkn'), 'the over-cap badge is drawn on a tile (positive control)');
+  for (const cls of furniture) {
     const onStack = rulesFor('dkstack').filter(r => new RegExp(`\\.${cls}\\b`).test(r.sel));
     assert.ok(onStack.length > 0, `a stacked tile must place its .${cls}`);
     assert.ok(onStack.some(r => zOf(r) > artZ),
@@ -179,7 +188,7 @@ test('§3b the buttons and the badge are pulled in to the front card', () => {
   // front card is inset from the tile by the depth. Left at the tile edge they
   // hang over the mat beside the pile — the 121px overhang of the two-track
   // version, in miniature.
-  for (const cls of ['dkbtns', 'dkn']) {
+  for (const cls of drawnOnTiles('dkbtns', 'dkn')) {
     const rules = rulesFor('dkstack').filter(r => new RegExp(`\\.${cls}\\b`).test(r.sel));
     assert.ok(rules.some(r => /var\(--d\)\s*\*\s*var\(--dkstep\)/.test(decl(r, 'right') ?? '')),
       `.${cls} on a stack must pull its right edge in by the depth, so it ends where the card does`);

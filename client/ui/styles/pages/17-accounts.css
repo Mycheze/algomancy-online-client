@@ -49,7 +49,6 @@ button.acctbar:hover .acctname { text-decoration: underline; }
   border-bottom: 1px solid var(--line); padding-bottom: var(--space-4); margin-bottom: var(--space-5); }
 .accthead h1 { margin: 0 0 var(--space-2); letter-spacing: .04em; display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
 .accthead .hint { font-size: var(--text-12); }
-.accthbtns { margin-left: auto; display: flex; gap: var(--space-4); align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 
 .accttabs { display: flex; gap: var(--space-3); margin-bottom: var(--space-5); flex-wrap: wrap; }
 .accttab { text-transform: uppercase; letter-spacing: .06em; font-size: var(--text-11); padding: var(--space-3) var(--space-5); }
@@ -84,11 +83,6 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .elbarseg.metal { background: var(--metal); } .elbarseg.light { background: var(--light); }
 .elbarseg.dark { background: var(--dark); }
 .ellegend { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
-
-.topcards { margin: 0; padding-left: 20px; }
-.topcards li { padding: var(--space-1) 0; }
-.tcname { color: var(--text); }
-.tcn { color: var(--dim); margin-left: var(--space-3); }
 
 .accttable { width: 100%; border-collapse: collapse; font-size: var(--text-12); }
 .accttable th { text-align: left; color: var(--dim); font-weight: 400; font-size: var(--text-11);
@@ -130,10 +124,6 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .achbar span { display: block; height: 100%; background: var(--accent); }
 .achprog { font-size: var(--text-11); color: var(--dim); margin-top: var(--space-1); }
 
-/* one section per group: fifty-odd achievements in a single grid is a wall */
-.achgroup + .achgroup { margin-top: var(--space-5); }
-.achgroup h4 { margin: 0 0 var(--space-3); font-size: var(--text-12); text-transform: uppercase;
-  letter-spacing: .06em; color: var(--dim); display: flex; gap: var(--space-4); align-items: baseline; }
 /* a ladder's rungs — one pip each, filled for the ones already earned */
 .achpips { display: flex; gap: var(--space-1); margin-top: var(--space-3); }
 .achpips span { width: 14px; height: 3px; border-radius: var(--radius-pill); background: var(--line); }
@@ -142,13 +132,6 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .ach.secret { border-style: dashed; }
 .ach.secret .achname { font-family: ui-monospace, monospace; letter-spacing: .1em; }
 
-.friendrow { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-3) 0;
-  border-bottom: 1px dotted var(--line); }
-.friendrow:last-child { border-bottom: none; }
-.fname { font-weight: 700; }
-.fstats { color: var(--dim); font-size: var(--text-11); }
-.fspacer { flex: 1; }
-.friendrow button { font-size: var(--text-11); padding: var(--space-1) var(--space-4); }
 /* a player's presence (BL-10, 2026-11-12): offline is a hollow ring, online a lit disc, in a game a gold
  * one — a shape as well as a colour. .fdot.busy is here, after .fdot.on: in 13-report-and-inbox.css,
  * which loads first, the green won and a friend in a game was drawn as merely online. */
@@ -159,39 +142,13 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 
 
 /* ── the profile and the sign-in screen in the app frame (2026-11-04, docs/24) ──
-   One window each. The profile: a sidebar (who this is, the six tabs one under
-   another, the pages it leads to, Log out) and the tab beside it, scrolling by
-   itself. Sign-in: one card in the middle, as matchmaking's is. Everything is
-   scoped to `.apppage`: .acctcard, .acctbody, .statgrid and .acctscreen are
-   drawn by the deck, league, challenge and metagame pages too. */
-.acctlayout { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 248px minmax(0, 1fr); gap: var(--space-7); }
-.acctside { min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-6); padding-right: var(--space-2); }
-.acctwhois { display: flex; flex-direction: column; gap: var(--space-3); }
-.acctme { margin: 0; display: flex; align-items: center; gap: var(--space-3); color: var(--color-text);
-  font-size: var(--text-22); font-weight: 700; letter-spacing: .02em; overflow-wrap: anywhere; }
-.acctchips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-/* a badge chip is sized in em off its heading (.badgechip: .55em, shared/10);
-   it sat in the old header's h1, so this row gives it that size again */
-.acctchips { font-size: var(--text-22); line-height: 1.2; }
-.acctsum { margin: 0; color: var(--color-text-muted); font-size: var(--text-12); line-height: 1.5; }
-/* the tabs, one under another: rows, not a stack of boxes */
-.acctside .acctnav { flex-direction: column; flex-wrap: nowrap; gap: var(--space-1); margin: 0; }
-.acctside .acctnav .ui-tabs__tab { display: flex; justify-content: space-between; align-items: center; width: 100%;
-  min-height: 40px; text-align: left; background: none; border-color: transparent; border-radius: var(--radius-md); }
-.acctside .acctnav .ui-tabs__tab:hover { background: var(--color-surface-raised); border-color: transparent; }
-.acctside .acctnav .ui-tabs__tab.on { background: var(--color-surface-raised); border-color: var(--color-border); }
-/* the pages the profile leads to, each a row; refresh and Log out share the last */
-.acctside .accthbtns { margin: 0; justify-content: flex-start; padding-top: var(--space-5); border-top: 1px solid var(--color-border); }
-.acctside .accthbtns > [data-btn^="nav-"] { flex: 1 1 100%; text-align: left; }
-.acctside .accthbtns > [data-btn="acct-logout"] { flex: 1 1 auto; }
-
+   One window each. Sign-in is one card in the middle, as matchmaking's is.
+   Everything is scoped to `.apppage`: .acctcard, .acctbody, .statgrid and
+   .acctscreen are drawn by the deck, league, challenge and metagame pages too. */
 .acctpage.apppage .acctbody { min-height: 0; overflow-y: auto; align-content: start; padding-right: var(--space-2); }
 /* flatter: a stat is a number and its label inside its card, not a box in a box */
 .acctpage.apppage .statgrid { grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: var(--space-3) var(--space-4); }
 .acctpage.apppage .statcell { background: none; border: 0; border-radius: 0; padding: var(--space-2) 0; text-align: left; }
-/* …and the achievements are tiles on the page, not tiles inside one big card */
-.acctpage.apppage .acctcard.wide:has(> .achgroup) { background: none; border: 0; padding: 0; }
-.acctmodes { margin-bottom: var(--space-4); }
 /* the published decks are rows inside their card, hairlines between, as the metagame's list is */
 .acctpage.apppage .acctcard .metalist { gap: 0; margin: 0; }
 .acctpage.apppage .acctcard .metarow { background: none; border: 0; border-radius: 0; padding: var(--space-4) var(--space-2); }
@@ -208,6 +165,5 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .acctform .ui-setting-row__control, .acctform .ui-setting-row__control input { width: 100%; }
 
 @media (max-width: 759.98px), (max-height: 599.98px) {
-  .acctlayout { grid-template-columns: minmax(0, 1fr); }
-  .acctside, .acctpage.apppage .acctbody { overflow: visible; }
+  .acctpage.apppage .acctbody { overflow: visible; }
 }
