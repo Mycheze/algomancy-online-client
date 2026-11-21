@@ -333,39 +333,31 @@ test('the pool coverage census — printed on every run so CARD-TODO #9 cannot r
 // nothing, and the honest fix while zero cards needed the combination was to
 // keep it out of the pool.
 //
-// The bin-budget ruling (now CR 109.9m) answered the design question the old census
-// was holding open, "what is a per-card budget (R9) for a card that is not in play?":
-// PER SEAT PER CARD
-// NAME, in `GameState.zoneBudgets` — real, serialized state, written by
-// composeParts' stand-in branch, refunded by refundPart's (CR 109.9b), cleared by
-// startTurn beside the Entity.budgets wipe. A bin holds bare names, not
-// instances, so the name in that seat's zone IS the card as far as the rules
-// can see — the same reading the bin-listener rule (CR 400.5a) already used to give three copies one firing.
+// CR 109.9m answers "what is a per-card budget for a card that is not in play?"
+// in two halves. A STANDING permission ("if I am in your bin") gets one firing for
+// all the copies in a zone (CR 400.5a), so it keeps its [once] per seat per card
+// NAME in `GameState.zoneBudgets` — written by composeParts' stand-in branch,
+// refunded by refundPart's (CR 109.9b), cleared by startTurn. A `self` trigger
+// ("When I leave your bin") is one card's own event, so each card that leaves
+// has its own use, on its own stand-in, like a trash trigger (CR 109.9n) — the
+// owner's ruling: copies that share a name do not affect each other.
 //
-// WHY THE CHANGED PREMISE IS STILL HONEST: the old test's claim was "the
-// ghost budget is a silent lie, so the shape is banned". The ghost budget is
-// gone — a bounded zone firing reserves in real state, and the BEHAVIOUR is
-// pinned by the Rotling tests in 43-dark-c (bounds once per turn, CR 109.9b
-// refund on decline, survives a JSON round-trip, wiped by startTurn). What
-// this census still holds is the POPULATION: per-seat-per-name is a design
-// decision with a written rationale (CR 109.9m), not a universal truth about every
-// printed text — so a new bounded+zone ability must arrive HERE, be checked
-// against that rationale, and be added deliberately rather than slipping in
-// because the combination stopped failing.
+// The behaviour is pinned by the Rotling tests in 43-dark-c and 414. What this
+// census holds is the POPULATION: a new bounded+zone ability must arrive HERE,
+// be checked against which half its printed text is, and be added on purpose.
 test('no ability is both bounded and zone-dispatched without a real budget holder — the population is enumerated (CARD-TODO #21/CR 109.9m) CT-21', () => {
   const found: string[] = [];
   for (const name of allCardNames()) {
     const def = getCard(name);
     for (const ab of [...(def.abilities ?? []), ...(def.augmentText ?? [])]) {
-      const a = ab as { bounded?: boolean; zone?: string };
-      if (a.bounded && a.zone) found.push(`${name} (zone '${a.zone}')`);
+      const a = ab as { bounded?: boolean; zone?: string; self?: boolean };
+      if (a.bounded && a.zone) found.push(`${name} (zone '${a.zone}'${a.self ? ', self: per card' : ', standing: per name'})`);
     }
   }
-  assert.deepEqual(found.sort(), ["Rotling (zone 'bin')"],
-    'a bounded ability dispatched from a zone keeps its [once] in GameState.zoneBudgets, '
-    + 'per (seat, card name), per turn — CR 109.9m / CARD-TODO #21. That is a design decision '
-    + "with a rationale, not a default: check the new card's printed text against it "
-    + '(is per-seat-per-name what IT means?), then add it to this list on purpose.');
+  assert.deepEqual(found.sort(), ["Rotling (zone 'bin', self: per card)"],
+    'a bounded ability dispatched from a zone is either a `self` trigger, whose use is per card that '
+    + 'leaves, or a standing permission, whose use is kept per (seat, card name) in GameState.zoneBudgets — '
+    + "CR 109.9m. Check which one the new card's printed text is, then add it to this list on purpose.");
 });
 
 // ── CR 405.7: the choke point stays the ONLY way out of a bin (CARD-TODO #26) ──

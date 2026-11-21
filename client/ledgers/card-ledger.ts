@@ -184,9 +184,8 @@ export const CARD_LEDGER: CardLedgerEntry[] = [
   // `E.removeFromBin(seat, index, reason)`, which fires 'leftBin'
   // { seat, card, reason } once per card, and the zone dispatch (CR 400.5) delivers it
   // to the card that just left (for 'leftBin' the presence test is the EVENT,
-  // not the bin — the subject has already left). Its [Switch1] lives in
-  // GameState.zoneBudgets — CARD-TODO #21's design question answered as per
-  // seat per card name. Its todo was promoted to real tests in
+  // not the bin — the subject has already left). Its [Switch1] is kept per
+  // card that leaves, not per name (CR 109.9m). Its todo was promoted to real tests in
   // 43-dark-c.test.ts. Signpost, not a park.
   // The Everywhere's entry was DELETED on 2026-08-23 when the continuous half
   // was built, per the house rule at the head of this file. It waited on "a

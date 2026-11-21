@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-21', kind: 'fix', text: 'Every Rotling that leaves your bin now offers its own pay-1 draw. Two leaving in the same turn no longer share one, because cards that only share a name do not affect each other.' },
   { date: '2026-11-21', kind: 'fix', text: 'Rotling no longer offers its pay-1 draw when a unit it was grafted onto dies. A modded unit and its mods are erased without ever reaching the bin, so "When I leave your bin" has nothing to fire on.' },
   { date: '2026-11-21', kind: 'change', text: 'League trophies on profiles, the League page and a finished cube event are now drawn as the game\'s own icons instead of emoji, so they look the same on every device. A season\'s participants get a medal of their own.' },
   { date: '2026-11-20', kind: 'fix', text: 'On the Metagame list and a shared deck\'s page, a deck\'s win rate is now green when it wins more than it loses and red when it loses more, the same as on your own decks.' },

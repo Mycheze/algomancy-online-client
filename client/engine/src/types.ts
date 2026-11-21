@@ -2565,17 +2565,14 @@ export interface GameState {
    */
   nextPlayDiscount?: number[];
   /**
-   * CR 109.9m / CARD-TODO #21: the [once]/[Switch1] budgets of ZONE-dispatched
-   * triggers ("When I leave your bin, [Switch1] ...", Rotling). The engine anchors a
-   * zone trigger (CR 400.5) on a throwaway stand-in whose `Entity.budgets` dies with the
-   * call, so a bounded zone trigger had nowhere real to keep its reservation.
-   * It lives here instead, keyed `${seat}:${prefix}:${card}#${abilityIndex}` —
-   * CARD-TODO #21's design question,
-   * "what does 'per card' (R9) mean for a card not in play?", answered as
-   * PER SEAT PER CARD NAME: a bin holds bare
-   * names, not instances, so the name in that seat's zone IS the card as far
-   * as the rules can see, and three copies leaving one bin share one budget
-   * the same way CR 400.5a gives three copies one firing.
+   * CR 109.9m: the [once]/[Switch1] budgets of ZONE-dispatched standing
+   * permissions ("If I am in your bin, …"). The engine anchors a zone trigger
+   * (CR 400.5) on a throwaway stand-in whose `Entity.budgets` dies with the call,
+   * so a bounded standing permission keeps its reservation here, keyed
+   * `${seat}:${prefix}:${card}#${abilityIndex}`: the copies in one zone get one
+   * firing (CR 400.5a), so they get one use. A `self` zone trigger ("When I leave
+   * your bin", Rotling) is one card's own event and is not kept here: each card
+   * that leaves has its own use.
    *
    * Written by composeParts (stand-in branch), refunded by refundPart
    * (sourceId -1 branch, so CR 109.9b holds from a zone), cleared by E.startTurn

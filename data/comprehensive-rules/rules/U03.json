@@ -1923,15 +1923,15 @@
     "key": "concepts.abilities.once.bin",
     "parent": "concepts.abilities.once",
     "order": 12,
-    "text": "A bounded ability that works while its card is in a bin, such as Rotling's \"When I leave your bin\", is limited once per turn for each player and card name: copies of one card in one player's bin share one use.",
+    "text": "A bounded ability that triggers when its own card leaves a bin, such as Rotling's \"When I leave your bin\", is limited for each card that leaves, not for each player and card name: two copies leaving one bin in the same turn each trigger.",
     "examples": [
       {
-        "text": "Rotling's [Switch1] works once per turn from the bin and is available again the next turn.",
-        "test": "43-dark-c.test.ts::Rotling: the [Switch1] bounds it once per turn when it does something"
+        "text": "Two Rotling leaving one bin in the same turn each offer their own [Switch1] pay-[1].",
+        "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.abilities.once.bin — two copies of Rotling leaving ONE bin in the same turn each offer their own [Switch1] pay-[1]"
       },
       {
-        "text": "Two Rotling leaving one bin in the same turn share one [Switch1] use: the second copy is not offered it.",
-        "test": "414-cr-cards-abilities-targets.test.ts::cr:concepts.abilities.once.bin — two copies of Rotling leaving ONE bin in the same turn share one [Switch1] use"
+        "text": "A second Rotling leaving the same bin that turn is offered the pay-[1] again, and so is one leaving it on a later turn.",
+        "test": "43-dark-c.test.ts::Rotling: each card that leaves the bin is offered its own [Switch1]"
       }
     ],
     "see": [
@@ -1944,19 +1944,9 @@
       "ours": [],
       "owner": [
         {
-          "quote": "**The budget (CARD-TODO #21, closed).** A zone firing is anchored on a",
-          "adopted": "2026-08-24",
-          "from": "register@72de434"
-        },
-        {
-          "quote": "card\" (R9) mean for a card that is not in play?* — is answered **per seat per",
-          "adopted": "2026-08-24",
-          "from": "register@72de434"
-        },
-        {
-          "quote": "card name**: a bin holds bare names, not instances, so the name in that seat's",
-          "adopted": "2026-08-24",
-          "from": "register@72de434"
+          "quote": "Cards that just happen to be *named* the same thing don't affect each other.",
+          "adopted": "2026-11-21",
+          "from": "owner, Discord 2026-11-21 (steward thread CT-575, reports #426/#427: \"B — per card\")"
         }
       ],
       "engine": [],
@@ -1967,8 +1957,8 @@
     },
     "basis": "owner",
     "scope": "game",
-    "confidence": "medium",
-    "notes": "The owner's reading of \"per card\" for a card that is not in play; no designer source: D-U03-6. It covers abilities that listen from the bin; a \"When I am trashed\" ability is concepts.abilities.once.trashed.",
+    "confidence": "high",
+    "notes": "The owner's ruling of 2026-11-21 replaces his 2026-08-24 reading that copies in one bin share one use; no designer source: D-U03-6. It covers a card's own \"When I leave your bin\"; a \"When I am trashed\" ability is concepts.abilities.once.trashed.",
     "sourceHashes": {}
   },
   {
@@ -3832,6 +3822,11 @@
           "quote": "none), so composing the trigger cannot write a bounded budget onto a corpse.",
           "adopted": "2026-08-22",
           "from": "register@72de434"
+        },
+        {
+          "quote": "Cards that just happen to be *named* the same thing don't affect each other.",
+          "adopted": "2026-11-21",
+          "from": "owner, Discord 2026-11-21 (steward thread CT-575, reports #426/#427: \"B — per card\")"
         }
       ],
       "engine": [
@@ -3841,10 +3836,10 @@
         "414-cr-cards-abilities-targets.test.ts"
       ]
     },
-    "basis": "engine",
+    "basis": "owner",
     "scope": "game",
-    "confidence": "low",
-    "notes": "Engine only: no printed, designer or owner sentence says how [Switch1] bounds a trash trigger. The owner ruling of 2026-08-22 (“Facts about a leaving unit ride…”) says only that the trigger is composed on a copy, so its bounded budget lands on nothing that lasts; the per-trashed-card consequence is the engine's. Maw of Despair prints \"When I am trashed, [Switch1] Glimpse 2.\" Measured by the verifiers' probes (data/comprehensive-rules/build/probes/U03/u03-verify-probes.test.ts, whose title names concepts.abilities.once.bin, and u03-r2-verify-probes.test.ts), not a suite test. D-U03-10. The owner ruling of 2026-08-22 (“Facts about a leaving unit ride…”) was not in the U03 pack; read from the register.",
+    "confidence": "medium",
+    "notes": "No printed or designer sentence says how [Switch1] bounds a trash trigger. The owner ruling of 2026-08-22 (“Facts about a leaving unit ride…”) says the trigger is composed on a copy, so its bounded budget lands on nothing that lasts; his ruling of 2026-11-21 (copies that share a name do not affect each other, given for Rotling leaving a bin) states the per-trashed-card consequence. Maw of Despair prints \"When I am trashed, [Switch1] Glimpse 2.\" Measured by the verifiers' probes (data/comprehensive-rules/build/probes/U03/u03-verify-probes.test.ts and u03-r2-verify-probes.test.ts) and the suite test. D-U03-10.",
     "sourceHashes": {}
   },
   {

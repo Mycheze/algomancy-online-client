@@ -14319,21 +14319,13 @@ export class E {
       ? this.entity(fromAugment) : undefined;
     const budgetHolder = augmentMod ?? source;
     if (ability.bounded) {
-      // CR 109.9m / CARD-TODO #21: a ZONE-dispatched firing (CR 400.5) arrives on a
-      // throwaway stand-in (id -1) whose `budgets` dies with the call, so its
-      // [once] reservation moves to real, serialized state instead —
-      // GameState.zoneBudgets, per (seat, card name). "Per card" (CR 109.9m) for a
-      // card that is not in play can only mean the NAME in that seat's zone:
-      // a bin holds bare names, not instances, so three copies leaving one
-      // bin share one budget, the same way the zone dispatch gives three copies one firing.
-      // Cleared by startTurn beside the Entity.budgets wipe; refunded by
-      // refundPart's stand-in branch (CR 109.9b keeps working from a zone).
-      // ZONE-dispatched only: CR 109.9n's trash-trigger stand-in also has id -1,
-      // but there the throwaway per-instance budget is DELIBERATE ("each
-      // trashed card is its own instance" — see fireOwnTrashTrigger); only a
-      // zone listener is a standing per-name permission (CR 109.9m), so only it
-      // keeps its reservation here.
-      if (source.id === -1 && (ability as { zone?: 'bin' | 'cache' }).zone !== undefined) {
+      // CR 109.9m: a standing zone permission ("if I am in your bin") arrives on a
+      // throwaway stand-in (id -1), so its [once] is kept per (seat, card name) in
+      // GameState.zoneBudgets, as CR 400.5a gives the copies in one zone one firing.
+      // A `self` zone trigger ("When I leave your bin") is one card's own event:
+      // its throwaway budget is the card's, like a trash trigger's (CR 109.9n).
+      const zoneAbility = ability as { zone?: 'bin' | 'cache'; self?: boolean };
+      if (source.id === -1 && zoneAbility.zone !== undefined && zoneAbility.self !== true) {
         const zb = (this.s.zoneBudgets ??= {});
         const zoneKey = `${source.controller}:${budgetKey}`;
         if ((zb[zoneKey] ?? 0) > 0) return null;
@@ -14550,9 +14542,10 @@ export class E {
    * ONE firing per zone per event even when the zone holds several copies: the
    * printed texts are standing permissions ("if I am in your bin"), not
    * per-copy triggers. Bounded budgets (CR 109.9m) cannot persist on a stand-in, so
-   * composeParts keeps a zone firing's [Switch1] reservation in
+   * composeParts keeps a standing permission's [Switch1] reservation in
    * GameState.zoneBudgets instead — per turn per (seat, card name), refunded
-   * by refundPart's stand-in branch (CR 109.9m / CARD-TODO #21).
+   * by refundPart's stand-in branch. A `self` trigger ("When I leave your bin")
+   * is one card's event and keeps its use on its own stand-in.
    *
    * Cost: one Map.get() per event when nothing in the pool listens from a zone.
    */

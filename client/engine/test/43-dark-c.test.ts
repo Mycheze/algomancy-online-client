@@ -932,7 +932,7 @@ test("Rotling: another card leaving the bin is not me; leaving the OPPONENT's bi
   assert.equal(h.q.rot(P), 0, 'the other seat gains nothing');
 });
 
-test('Rotling: the [Switch1] bounds it once per turn when it does something, and startTurn refreshes it CT-21', () => {
+test('Rotling: each card that leaves the bin is offered its own [Switch1] — a second copy the same turn too, and nothing is kept per name CT-21 #426', () => {
   const h = new Harness(4344);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -942,21 +942,21 @@ test('Rotling: the [Switch1] bounds it once per turn when it does something, and
   pickBy(h, o => String(o.label).startsWith('Pay [1]'));
   assert.equal(h.q.rot(P), 1, 'the first leave fired and did something');
 
-  // second leave, same turn: the [Switch1] is spent — no ask, nothing happens
+  // another Rotling leaves the same bin the same turn: it is another card, with its own use
   bin(h, P).push('Rotling');
   whiteBox(h, e => e.removeFromBin(P, e.player(P).bin.lastIndexOf('Rotling'), 'test'));
-  assert.equal(h.state.decision, null, 'bounded: it does not ask twice in one turn');
-  assert.equal(h.q.rot(P), 1, 'and nothing happened');
-  assert.equal(Object.keys(h.state.zoneBudgets ?? {}).length, 1,
-    'the reservation is real GameState, not a stand-in ghost (CARD-TODO #21)');
+  assert.ok(h.state.decision, 'the second card is offered its own pay-[1]');
+  pickBy(h, o => String(o.label).startsWith('Pay [1]'));
+  assert.equal(h.q.rot(P), 2, 'and it did something too');
+  assert.deepEqual(h.state.zoneBudgets ?? {}, {},
+    'no use is reserved per (seat, card name): copies do not share one');
 
   toNextDeployment(h);
-  assert.deepEqual(h.state.zoneBudgets ?? {}, {}, 'startTurn wipes it beside Entity.budgets');
   const Q = h.state.deployPlayer!;
   giveResources(h, Q, 'dark', 1);
   bin(h, Q).push('Rotling');
   whiteBox(h, e => e.removeFromBin(Q, e.player(Q).bin.lastIndexOf('Rotling'), 'test'));
-  assert.ok(h.state.decision, 'a fresh turn, a fresh [Switch1]');
+  assert.ok(h.state.decision, 'a fresh turn asks as well');
   pickBy(h, o => o.label === 'Decline');
 });
 
@@ -977,7 +977,7 @@ test("Rotling: CR 405.7 — two different engine removal sites (erase-from-bin, 
   assert.ok(h.q.cache(P).some(cc => cc.card === 'Good Whale'), 'the card is in the cache');
 });
 
-test('Rotling: the pending pay-[1] decision and the zoneBudgets reservation survive a JSON round-trip (older saved states still load) CT-21', () => {
+test('Rotling: the pending pay-[1] decision survives a JSON round-trip, and a save with no zoneBudgets field still loads CT-21', () => {
   const h = new Harness(4346);
   toDeployment(h);
   const P = h.state.deployPlayer!;
@@ -987,8 +987,7 @@ test('Rotling: the pending pay-[1] decision and the zoneBudgets reservation surv
   assert.ok(h.state.decision, 'the leave-trigger is mid-question');
 
   const round = JSON.parse(JSON.stringify(h.state)) as typeof h.state;
-  assert.deepEqual(round.zoneBudgets, h.state.zoneBudgets, 'the reservation round-trips');
-  assert.equal(Object.keys(round.zoneBudgets ?? {}).length, 1, 'and it is really there');
+  assert.deepEqual(round.decision, h.state.decision, 'the question round-trips');
   h.state = round;
   const before = hand(h, P).length;
   pickBy(h, o => String(o.label).startsWith('Pay [1]'));
@@ -1003,16 +1002,14 @@ test('Rotling: the pending pay-[1] decision and the zoneBudgets reservation surv
   delete old.zoneBudgets;
   h2.state = old;
   bin(h2, P2).push('Rotling');
-  // drain the mana first, so the CR 109.9b "cannot pay [1]" branch runs — it must
-  // not crash on the absent field (composeParts recreates it, refundPart
-  // hands the use back)
+  // drain the mana first, so the CR 109.9b "cannot pay [1]" branch runs on the absent field
   whiteBox(h2, e => {
     const m = e.openMana(P2);
     if (m > 0) e.payMana(P2, m);
     e.removeFromBin(P2, e.player(P2).bin.lastIndexOf('Rotling'), 'test');
   });
   assert.equal(h2.state.decision, null, 'no [1] to offer — no question');
-  assert.deepEqual(h2.state.zoneBudgets ?? {}, {}, 'and the unusable firing is refunded (CR 109.9b)');
+  assert.deepEqual(h2.state.zoneBudgets ?? {}, {}, 'and nothing is reserved');
   assert.doesNotThrow(() => h2.legal(P2), 'an older save still drives');
 });
 

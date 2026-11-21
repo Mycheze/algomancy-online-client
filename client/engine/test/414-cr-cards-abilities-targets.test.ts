@@ -88,17 +88,20 @@ test('cr:concepts.abilities.once.trashed — two copies of Maw of Despair discar
   assert.equal(triggers.length, 2, `both copies triggered:\n${h.log.slice(start).join('\n')}`);
 });
 
-test('cr:concepts.abilities.once.bin — two copies of Rotling leaving ONE bin in the same turn share one [Switch1] use', () => {
+test('cr:concepts.abilities.once.bin — two copies of Rotling leaving ONE bin in the same turn each offer their own [Switch1] pay-[1] (#426 #427 CT-575)', () => {
   const h = new Harness(31604);
   toDeployment(h);
   const P = h.state.deployPlayer!;
   giveResources(h, P, 'dark', 3);
   h.state.players[P]!.bin.push('Rotling', 'Rotling');
+  const hand0 = h.state.players[P]!.hand.length;
   withE(h, e => { e.removeFromBin(P, e.player(P).bin.lastIndexOf('Rotling'), 'test'); e.settle(); });
   assert.ok(h.state.decision, 'the first copy is offered its pay-[1]');
   pick(h, h.state.decision!.options.find(o => String(o.label).startsWith('Pay [1]'))!.value);
   withE(h, e => { e.removeFromBin(P, e.player(P).bin.lastIndexOf('Rotling'), 'test'); e.settle(); });
-  assert.equal(h.state.decision, null, 'the second copy, out of the same bin the same turn, is not offered');
+  assert.ok(h.state.decision, 'the second copy, out of the same bin the same turn, is offered its own');
+  pick(h, h.state.decision!.options.find(o => String(o.label).startsWith('Pay [1]'))!.value);
+  assert.equal(h.state.players[P]!.hand.length, hand0 + 2, 'and each draws its card');
 });
 
 // ── targets ──────────────────────────────────────────────────────────────────

@@ -406,48 +406,52 @@
   },
   {
     "key": "concepts.abilities.once.bin",
-    "textHash": "28c980a7e26ab0af",
+    "textHash": "40cdee4458fe1c34",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U03-r2",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
-        "loc": "client/engine/src/engine.ts:E.composeParts",
+        "loc": "client/engine/src/engine.ts:E.removeFromBin",
         "agrees": true,
-        "note": "zone-dispatched bounded ability reserves GameState.zoneBudgets keyed `${source.controller}:${budgetKey}` — per seat per card name; cleared by startTurn"
+        "note": "record cites no engine loc; the bound tests show each Rotling leaving the bin is offered its own pay-[1] and no zoneBudgets entry is kept per (seat, name)"
       }
     ],
     "tests_run": [
       {
+        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
+        "pattern": "cr:concepts.abilities.once.bin",
+        "passed": true,
+        "asserts_claim": true
+      },
+      {
         "file": "client/engine/test/43-dark-c.test.ts",
-        "pattern": "Rotling: the [Switch1] bounds it once per turn when it does something",
+        "pattern": "Rotling: each card that leaves the bin",
         "passed": true,
         "asserts_claim": true
       }
     ],
-    "probes": [
-      {
-        "file": "data/comprehensive-rules/build/probes/U03/u03-r2-verify-probes.test.ts",
-        "title": "concepts.abilities.once.bin: two copies of Rotling leaving ONE bin in the same turn share one [Switch1] use",
-        "passed": true,
-        "demonstrates": "yes — the second copy is not offered"
-      }
-    ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "R124",
+        "ref": "owner, Discord 2026-11-21 (CT-575, #426/#427 \"B — per card\")",
         "supports": "yes",
-        "note": "answers 'per card' for a bin card as per seat per card name"
+        "note": "same-named cards do not share a use"
+      },
+      {
+        "ref": "card: Rotling",
+        "supports": "yes",
+        "note": "printed 'When I leave your bin, [Switch1] You may pay [1] to draw a card and gain 1 rot.'"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "card name**: a bin holds bare names, not instances, so the name in that seat's"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "When I leave your bin, [Switch1] You may pay [1] to draw a card and gain 1 rot."
       },
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "const zoneKey = `${source.controller}:${budgetKey}`;"
+        "file": "client/engine/test/43-dark-c.test.ts",
+        "text": "assert.ok(h.state.decision, 'the second card is offered its own pay-[1]');"
       }
     ],
     "basis_ok": true,
@@ -840,50 +844,58 @@
     "key": "concepts.abilities.once.trashed",
     "textHash": "674dd8049739beca",
     "verdict": "confirmed",
-    "round": 2,
-    "verifier": "U03-r2",
+    "round": 4,
+    "verifier": "U03-r4",
     "engine": [
       {
         "loc": "client/engine/src/engine.ts:E.fireOwnTrashTrigger",
         "agrees": true,
-        "note": "each trash anchors on a fresh ghost with budgets: {} thrown away after the call — per trashed instance, unlike the zoneBudgets per-name reservation"
+        "note": "each trash queues the trigger on a fresh ghost/copy with budgets: {}, so no use is shared between two trashed copies"
       }
     ],
-    "tests_run": [],
-    "probes": [
+    "tests_run": [
       {
-        "file": "data/comprehensive-rules/build/probes/U03/u03-r2-verify-probes.test.ts",
-        "title": "concepts.abilities.once.trashed: two copies of a bounded \"When I am trashed\" card discarded in one turn each trigger",
+        "file": "client/engine/test/414-cr-cards-abilities-targets.test.ts",
+        "pattern": "cr:concepts.abilities.once.trashed",
         "passed": true,
-        "demonstrates": "yes"
-      },
-      {
-        "file": "data/comprehensive-rules/build/probes/U03/u03-verify-probes.test.ts",
-        "title": "concepts.abilities.once.bin: a bounded \"when I am trashed\" ability is NOT limited per seat and card name — two copies trashed in one turn both trigger",
-        "passed": true,
-        "demonstrates": "yes (round-1 probe; title names the wrong key)"
+        "asserts_claim": true
       }
     ],
+    "probes": [],
     "source_checks": [
       {
-        "ref": "R70 (its trash-trigger anchor half)",
-        "supports": "partly",
-        "note": "says the stand-in budget is not written onto the real corpse; it does not itself state 'per trashed card'. The engine comment does. Basis 'engine' is honest"
+        "ref": "owner register@72de434 (destroy() hands over the detached…)",
+        "supports": "partial",
+        "note": "context only: describes the detached stand-in a trash trigger is anchored on, not the per-card rule itself"
+      },
+      {
+        "ref": "owner register@72de434 (…cannot write a bounded budget onto a corpse)",
+        "supports": "partial",
+        "note": "mechanism: the bounded budget is written on the per-trash copy, consistent with per-card"
+      },
+      {
+        "ref": "owner, Discord 2026-11-21 (CT-575, #426/#427 \"B — per card\")",
+        "supports": "yes",
+        "note": "same-named cards do not share a use; carries the sentence"
+      },
+      {
+        "ref": "card: Maw of Despair",
+        "supports": "yes",
+        "note": "printed 'When I am trashed, [Switch1] Glimpse 2.' — the example's card is a bounded trash trigger"
       }
     ],
     "quote_spans": [
       {
-        "file": "client/engine/src/engine.ts",
-        "text": "which is right: each trashed card is its own instance. Its id is not in"
+        "file": "client/engine/src/cards/printed.json",
+        "text": "When I am trashed, [Switch1] Glimpse 2."
       },
       {
-        "file": "client/docs/digital-rules.md",
-        "text": "none), so composing the trigger cannot write a bounded budget onto a corpse."
+        "file": "client/engine/src/engine.ts",
+        "text": "? { ...anchor, kind: 'unit', controller: seat, region, mods: [], budgets: {} }"
       }
     ],
     "basis_ok": true,
-    "problem": "No printed/designer source; the rule is engine behaviour (basis honestly 'engine').",
-    "carried": "example-label 2026-10-11"
+    "problem": ""
   },
   {
     "key": "concepts.abilities.once.unbounded-cause",

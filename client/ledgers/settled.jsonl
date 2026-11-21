@@ -1764,3 +1764,6 @@
 {"id":"#427","on":"2026-11-21","as":"ticket","to":["CT-575"],"note":"The agreed fix for #426, proposed by invi and agreed by Yagamino: invi draws 1 card, the draw the second Rotling would have given. Not a take-back; its reason names the same question as #426, so it rides on the same ticket."}
 {"id":"CT-574","on":"2026-11-21","as":"done"}
 {"id":"#421","on":"2026-11-21","as":"fixed","to":["CT-574"]}
+{"id":"CT-575","on":"2026-11-21","as":"done"}
+{"id":"#426","on":"2026-11-21","as":"fixed","to":["CT-575"]}
+{"id":"#427","on":"2026-11-21","as":"fixed","to":["CT-575"],"note":"The agreed fix drew invi the card the second Rotling now offers: the owner ruled per card (B), so the agreement matched the rules."}

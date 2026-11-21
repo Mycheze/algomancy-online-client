@@ -100,14 +100,18 @@
     "kind": "c-owner-call-only",
     "rule": "concepts.abilities.once.bin",
     "tier": 3,
-    "summary": "How a once-per-turn limit works for a card in a bin (one use per player per card name, shared by copies in one bin) is an owner reading of \"per card\" for a card not in play. No printed or designer source.",
+    "summary": "How a once-per-turn limit works for a card leaving a bin (one use for each card that leaves; copies in one bin do not share one) is an owner ruling. No printed or designer source.",
     "sides": [
       {
-        "source": "owner ruling, adopted 2026-08-24",
-        "quote": "card name**: a bin holds bare names, not instances, so the name in that seat's"
+        "source": "owner ruling, adopted 2026-11-21",
+        "quote": "Cards that just happen to be *named* the same thing don't affect each other."
+      },
+      {
+        "source": "card: Rotling",
+        "quote": "When I leave your bin, [Switch1] You may pay [1] to draw a card and gain 1 rot."
       }
     ],
-    "resolution": "Owner call; the rule states it with basis owner."
+    "resolution": "Owner call: asked on reports #426/#427, he answered \"per card\", which replaces his 2026-08-24 reading that copies in one bin share one use. The rule states it with basis owner."
   },
   {
     "id": "D-U03-7",
@@ -169,25 +173,25 @@
   },
   {
     "id": "D-U03-10",
-    "kind": "b-engine-only",
+    "kind": "c-owner-call-only",
     "rule": "concepts.abilities.once.trashed",
     "tier": 3,
-    "summary": "Sources silent on how [Switch1] bounds a \"When I am trashed\" ability. The owner ruling of 2026-08-24 (“'leftBin': every bin removal goes through…”)’s per-player-per-name limit covers abilities that listen from the bin; the engine fires a trash trigger from a fresh stand-in per trashed card, so two copies trashed in one turn both trigger.",
+    "summary": "No printed or designer source says how [Switch1] bounds a \"When I am trashed\" ability. The engine fires a trash trigger from a fresh stand-in per trashed card, so two copies trashed in one turn both trigger, and the owner ruling of 2026-11-21 (given for Rotling leaving a bin) says copies that share a name do not affect each other.",
     "sides": [
       {
         "source": "card: Maw of Despair",
         "quote": "When I am trashed, [Switch1] Glimpse 2."
       },
       {
-        "source": "owner ruling, adopted 2026-08-24",
-        "quote": "card name**: a bin holds bare names, not instances, so the name in that seat's"
+        "source": "owner ruling, adopted 2026-11-21",
+        "quote": "Cards that just happen to be *named* the same thing don't affect each other."
       },
       {
         "source": "file: client/engine/src/engine.ts",
         "quote": "which is right: each trashed card is its own instance. Its id is not in"
       }
     ],
-    "resolution": "The rule states the engine's behaviour with basis engine. Question for the owner only if \"once per turn\" on a trash trigger is meant per player and card name, as the owner ruling of 2026-08-24 (“'leftBin': every bin removal goes through…”) reads it for a card in a bin; then the second copy trashed in a turn would not trigger."
+    "resolution": "Owner call; the rule states it with basis owner."
   },
   {
     "id": "D-U03-11",

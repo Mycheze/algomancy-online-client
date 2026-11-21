@@ -4,7 +4,7 @@
   "effective": "2026-10-10",
   "engineCommit": "76d01fa"
  },
- "generated_from": "sha256:97deddd755934553",
+ "generated_from": "sha256:914166d6beccd231",
  "rules": [
   {
    "num": "100.1",
@@ -3731,14 +3731,14 @@
    "sectionTitle": "Abilities",
    "chapterTitle": "1. Game Concepts",
    "parent": "109.9",
-   "text": "A bounded ability that works while its card is in a bin, such as Rotling's \"When I leave your bin\", is limited once per turn for each player and card name: copies of one card in one player's bin share one use.",
+   "text": "A bounded ability that triggers when its own card leaves a bin, such as Rotling's \"When I leave your bin\", is limited for each card that leaves, not for each player and card name: two copies leaving one bin in the same turn each trigger.",
    "see": [
     "405",
     "109.9n"
    ],
    "examples": [
-    "Rotling's [Switch1] works once per turn from the bin and is available again the next turn.",
-    "Two Rotling leaving one bin in the same turn share one [Switch1] use: the second copy is not offered it."
+    "Two Rotling leaving one bin in the same turn each offer their own [Switch1] pay-[1].",
+    "A second Rotling leaving the same bin that turn is offered the pay-[1] again, and so is one leaving it on a later turn."
    ],
    "basis": "owner",
    "scope": "game",
@@ -3765,7 +3765,7 @@
    "examples": [
     "Two Maw of Despair discarded in the same turn each trigger their [Switch1] Glimpse 2."
    ],
-   "basis": "engine",
+   "basis": "owner",
    "scope": "game",
    "engineDiffers": false,
    "discrepancies": [

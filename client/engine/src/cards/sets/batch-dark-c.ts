@@ -666,9 +666,8 @@ card('Primordial Coalescence', {
 // "YOUR bin" is the BIN OWNER's: the seat whose bin I leave is the seat that
 // triggers, decides, pays, draws and gains the rot — whichever side once
 // played me (leaving the opponent's bin is leaving THEIR "your bin"). The
-// [Switch1] is bounded per turn per (seat, card name) in GameState.zoneBudgets
-// (CR 109.9m / CARD-TODO #21 — a bin holds bare names, so the name IS the card),
-// and CR 109.9b applies from a bin exactly as in play: declining the [1], or
+// [Switch1] is bounded per card that leaves: two copies leaving one bin in a
+// turn each offer it (CR 109.9m), and CR 109.9b applies from a bin exactly as in play: declining the [1], or
 // having no [1] to offer, refunds the use.
 //
 // THE [Switch1] IS A GRAFT SYMBOL, and it was only half read. The bin-exit ruling's engine
