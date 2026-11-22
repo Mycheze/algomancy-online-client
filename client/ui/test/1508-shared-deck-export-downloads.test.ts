@@ -9,6 +9,7 @@
  *      text that is showing, under that name
  *   §3 every export panel offers both Copy and Download
  *   §4 both panels call the two formats by the same names
+ *   §5 and describe them alike, naming the boards each file carries
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -105,4 +106,17 @@ test('1508 §4 BL-10: both export panels call the formats by the same names', ()
   const shared = labels(ui.click({ btn: 'meta-export', format: 'text' }));
   assert.deepEqual(Object.keys(own).sort(), ['file', 'text'], 'your Decks page offers both formats');
   assert.deepEqual(shared, own, 'the Metagame page names them as your Decks page does');
+});
+
+test('1508 §5 BL-10: both export panels describe each format alike, naming the boards the file carries', () => {
+  const note = (html: string): string => (/<(?:p class="dksheetnote"|div class="hint")>([^<]*)<\/(?:p|div)>/.exec(html)?.[1] ?? '');
+  for (const format of ['text', 'file'] as const) {
+    const own = note(decksSheetHtml({ kind: 'export', format, body: '2 Ignis Sprite', downloadName: 'Mine.txt' }));
+    const shared = note(ui.click({ btn: 'meta-export', format }));
+    assert.ok(own && shared, `${format}: both panels say what the format holds`);
+    assert.equal(shared, own.replace('maybeboard ', ''), `${format}: the Metagame page says it as your Decks page does`);
+  }
+  const shared = note(ui.click({ btn: 'meta-export', format: 'file' }));
+  assert.match(shared, /sideboard/, 'a shared deck file carries its sideboard, and says so');
+  assert.doesNotMatch(shared, /maybeboard/, 'a shared deck has no maybeboard to promise');
 });

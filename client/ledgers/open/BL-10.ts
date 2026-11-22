@@ -512,5 +512,11 @@ export default {
     + '(pages/meta.ts exportHtml) said "Whole deck (JSON)"; the Decks page\'s sheet, the import box ("Or paste a list, or a '
     + 'deck file") and deckformat.ts\'s refusals all say deck file. It is "Deck file (JSON)". Left: the two hints under '
     + 'the formats, which differ in wording (and the Metagame one omits the sideboard the file carries). Guarded by '
-    + '1508-shared-deck-export-downloads.test.ts §4 (both panels\' format labels equal). Reasoned, not looked at (no browser).',
+    + '1508-shared-deck-export-downloads.test.ts §4 (both panels\' format labels equal). Reasoned, not looked at (no browser).'
+    + '\n\n2026-11-22 (steward): the export notes say one thing (the "Left" of the deck-file round: "the two hints under '
+    + 'the formats, which differ in wording (and the Metagame one omits the sideboard the file carries)"). Both are now '
+    + 'deckformat.ts deckExportNote: the Decks page\'s words, and on a shared deck the file note names the sideboard and no '
+    + 'maybeboard, the boards a published deck carries. Left: §5.5\'s inline-vs-sheet layout difference, and the two '
+    + 'notes\' element (.hint vs .dksheetnote). Guarded by 1508-shared-deck-export-downloads.test.ts §5. Reasoned, not '
+    + 'looked at (no browser).',
 } satisfies BacklogTicket;

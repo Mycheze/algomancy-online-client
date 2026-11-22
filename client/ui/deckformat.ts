@@ -231,6 +231,14 @@ export function deckDownloadName(name: string, format: 'text' | 'file'): string 
   return `${name.replace(/[^\w. -]+/g, '').trim() || 'deck'}${format === 'file' ? '.json' : '.txt'}`;
 }
 
+/** The line under an export's format buttons, the same on every page. `shelf`
+ * says the deck file carries a maybeboard: a shared deck's does not. */
+export function deckExportNote(format: 'text' | 'file', shelf: boolean): string {
+  return format === 'file'
+    ? `Description, cover, sideboard, ${shelf ? 'maybeboard ' : ''}and attribution included. Any import box reads it.`
+    : 'Cards only, one per line. algomancer.cc reads this.';
+}
+
 /** A deck as a deck file. */
 export function buildDeckFile(deck: DeckSource, opts: BuildOpts = {}): DeckFile {
   const origin = (opts.origin ?? '').replace(/\/+$/, '');

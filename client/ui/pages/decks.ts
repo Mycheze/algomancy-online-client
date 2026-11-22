@@ -24,7 +24,7 @@ import { analyzeDeck, deckElements } from '../deckstats.ts';
 import { mdToHtml } from '../markdown.ts';
 import { noImgDrag } from '../piletable.ts';
 import { clickOrTap, esc } from '../util.ts';
-import { authorName, deckDownloadName } from '../deckformat.ts';
+import { authorName, deckDownloadName, deckExportNote } from '../deckformat.ts';
 import { button, chip, emptyState, field, iconButton, segmented, sheet, statusMessage, table } from '../components/index.ts';
 import type { TablePill } from '../tabletop.ts';
 import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
@@ -446,9 +446,7 @@ function exportBody(s: Extract<DecksSheet, { kind: 'export' }>): string {
       { label: 'Deck file (JSON)', value: 'file', on: file, dataBtn: 'deck-export', attrs: { 'data-format': 'file' } },
     ],
   })}
-    <p class="dksheetnote">${file
-    ? 'Description, cover, sideboard, maybeboard and attribution included. Any import box reads it.'
-    : 'Cards only, one per line. algomancer.cc reads this.'}</p>
+    <p class="dksheetnote">${deckExportNote(s.format, true)}</p>
     <textarea class="dkexporttext" rows="${file ? 16 : 12}" readonly aria-label="The exported deck" onclick="this.select()">${esc(s.body)}</textarea>`;
 }
 

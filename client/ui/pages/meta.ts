@@ -21,7 +21,7 @@ import type { DeckGrouping } from '../decklayout.ts';
 import { deckStatsHtml } from '../decks.ts';
 import { ALL_ELEMENTS } from '../../engine/src/apply.ts';
 import { esc, elIcon } from '../util.ts';
-import { deckDownloadName } from '../deckformat.ts';
+import { deckDownloadName, deckExportNote } from '../deckformat.ts';
 import { artUrl } from '../assets.ts';
 import type { CardStanding, MetaState, PublicDeck } from '../meta.ts';
 import { cardStatsHtml, cardStatsView, paintCardStats, type CardStatsView } from './cardstats.ts';
@@ -320,9 +320,7 @@ function exportHtml(v: MetaView): string {
       <button data-btn="meta-download" data-name="${esc(deckDownloadName(v.one?.name ?? '', file ? 'file' : 'text'))}">Download</button>
       <button data-btn="meta-export-close">Close</button>
     </div>
-    <div class="hint">${file
-      ? 'Description, cover and attribution included — paste it into the import box on your decks page.'
-      : 'One line per card — paste it anywhere, including algomancer.cc.'}</div>
+    <div class="hint">${deckExportNote(file ? 'file' : 'text', false)}</div>
     <textarea class="dkexporttext" rows="${file ? 16 : 10}" readonly aria-label="The exported deck"
       onclick="this.select()">${esc(v.exportText)}</textarea>
   </div>`;
