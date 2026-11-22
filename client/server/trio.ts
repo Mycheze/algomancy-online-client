@@ -24,10 +24,12 @@ import { rngShuffle } from '../engine/src/rng.ts';
 /** 'random' is the LEAGUE's method (docs/20-league.md §5): a league room's
  * lobby is fixed to it, and it is never offered anywhere else — it is not in
  * TRIO_METHODS. It still needs both players to say they are ready, which is
- * what keeps a league room from dealing before the opponent has arrived. */
-export type TrioMethod = 'pick-one' | 'fresh' | 'rank' | 'again' | 'random';
+ * what keeps a league room from dealing before the opponent has arrived.
+ * 'chosen' is the same for a room whose creator picked the elements on the
+ * home page: the room's own `els`, offered alone, dealt once both are ready. */
+export type TrioMethod = 'pick-one' | 'fresh' | 'rank' | 'again' | 'random' | 'chosen';
 
-/** the methods a lobby OFFERS — 'random' is not one of them (see TrioMethod) */
+/** the methods a lobby OFFERS — 'random' and 'chosen' are not among them (see TrioMethod) */
 export const TRIO_METHODS: TrioMethod[] = ['again', 'pick-one', 'fresh', 'rank'];
 
 /** What one seat submits. The shape depends on the method; `fresh` asks for
@@ -93,7 +95,7 @@ export function sanitizeSubmission(raw: unknown, method: TrioMethod): TrioSubmis
 export function submissionReady(sub: TrioSubmission, method: TrioMethod): boolean {
   if (method === 'pick-one') return isElement(sub.element);
   if (method === 'rank') return (sub.ranking?.length ?? 0) === ALL_ELEMENTS.length;
-  return true;   // 'fresh', 'again' and 'random' ask nothing of you but your presence
+  return true;   // 'fresh', 'again', 'random' and 'chosen' ask nothing of you but your presence
 }
 
 /** draw `n` distinct elements from `pool`, seeded */
@@ -241,6 +243,8 @@ export interface ResolveInput {
   history: TrioHistoryRow[];
   /** the trio the previous game used, for 'again' (rematches only) */
   previousTrio?: Element[];
+  /** the elements the room's creator picked, for 'chosen' */
+  chosen?: Element[];
   /** seeded generator state — the room's seed, so this is reproducible */
   rng: number;
   /** BL-43: how many elements the game is played with (default 3) */
@@ -257,6 +261,13 @@ export function resolveTrio(input: ResolveInput): TrioResult {
       els: inOrder(previousTrio),
       how: `the same ${setWord(count)} again`,
       detail: [`You both wanted another game of ${list(inOrder(previousTrio))}.`],
+    };
+  }
+  if (method === 'chosen' && input.chosen?.length === count) {
+    return {
+      els: inOrder(input.chosen),
+      how: `the ${setWord(count)} picked when the room was made`,
+      detail: ['Nobody voted: the room was made with these elements.'],
     };
   }
   if (method === 'random') {
@@ -280,6 +291,7 @@ export const METHOD_LABELS: Record<TrioMethod, string> = {
   fresh: 'Something new',
   rank: 'Rank all seven',
   random: 'All at random',
+  chosen: 'Already picked',
 };
 
 /** The lobby's explanation of each method, for a game of `count` elements. */
@@ -295,13 +307,14 @@ export function methodBlurbs(count = 3): Record<TrioMethod, string> {
     fresh: `The server picks a ${word} the two of you have never played — or have not played in the longest.`,
     rank: `You each put all seven in order. The ${word} is the ${countWord(count)} you ranked highest together; a tie is broken at random.`,
     random: `A league match: the ${word} is drawn at random once you are both ready.`,
+    chosen: `The ${word} was picked when the room was made. It is dealt once you are both ready.`,
   };
 }
 
 export const METHOD_BLURBS: Record<TrioMethod, string> = methodBlurbs(3);
 
 export function sanitizeMethod(v: unknown): TrioMethod {
-  // 'random' is accepted here (a saved league lobby must restore as one); a
-  // league room refuses any change of method, and nothing offers it elsewhere
-  return TRIO_METHODS.includes(v as TrioMethod) || v === 'random' ? v as TrioMethod : 'pick-one';
+  // 'random' and 'chosen' are accepted here (a saved lobby must restore as one); their
+  // rooms refuse any change of method, and nothing offers them elsewhere
+  return TRIO_METHODS.includes(v as TrioMethod) || v === 'random' || v === 'chosen' ? v as TrioMethod : 'pick-one';
 }

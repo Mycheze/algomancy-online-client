@@ -138,7 +138,16 @@ function rankHtml(ranking: readonly string[], iAmLocked: boolean): string {
 function bodyLabel(method: string): string {
   if (method === 'pick-one') return 'Your element';
   if (method === 'rank') return 'Your ranking, best first';
+  if (method === 'chosen') return 'The elements';
   return 'Nothing to fill in';
+}
+
+/** 'chosen': the elements the room was made with, as chips */
+function chosenHtml(lobby: TrioLobby, word: string): string {
+  const els = ELEMENTS.filter(el => lobby.chosen?.includes(el));
+  return `${els.length ? `<div class="elrow lobbyels">${els.map(el =>
+    `<span class="elchip ${el} on">${icon(el)}${el}</span>`).join('')}</div>` : ''}
+  <p class="hint">This ${word} was picked when the room was made. Say you are ready and it is dealt.</p>`;
 }
 
 /** one seat's line in the footer: a dot, a name, a state */
@@ -170,6 +179,9 @@ export function lobbyHtml(v: LobbyView): string {
     : lobby.method === 'rank' ? rankHtml(v.ranking, iAmLocked)
     : lobby.method === 'again'
       ? '<p class="hint">Say you are ready and you will play it again.</p>'
+      // the room was made with its elements (server/trio.ts 'chosen'): nothing to choose
+      : lobby.method === 'chosen'
+        ? chosenHtml(lobby, word)
       // a league match: the method is fixed (server/trio.ts 'random')
       : lobby.method === 'random'
         ? `<p class="hint">This is a league match. When you are both ready, the ${word} is drawn at random and the first player is picked at random.</p>`

@@ -575,8 +575,9 @@ export interface Room {
    * the map again. */
   closed?: RoomClosed;
   /** Draft mode: the room where the trio is chosen. Nothing is dealt until the trio is settled
-   * and both players are in, so nobody studies the first pack alone. null for a room created
-   * with an explicit trio, which deals immediately. */
+   * and both players are in, so nobody studies the first pack alone. Elements picked when the
+   * code was reserved make a 'chosen' lobby; null for a room created with an explicit trio
+   * otherwise, which deals immediately. */
   lobby: Lobby | null;
   /** post-game: which seats have asked for a rematch. In memory only — a
    * rematch offer does not deserve to outlive the tab it was made in. */
@@ -1037,8 +1038,8 @@ const freshLobby = (method: TrioMethod = 'pick-one', previousTrio?: Element[]): 
 export function setLobbyMethod(room: Room, method: unknown): boolean {
   const lobby = roomLobby(room);
   if (!lobby) return false;
-  // a league room's trio is drawn at random, full stop (docs/20 §5)
-  if (room.league) return false;
+  // a league room's trio is drawn at random, full stop (docs/20 §5); a picked one stays picked
+  if (room.league || lobby.method === 'chosen') return false;
   const next = sanitizeMethod(method);
   if (next === lobby.method) return false;
   lobby.method = next;
@@ -1118,6 +1119,7 @@ export function resolveLobby(room: Room, history: TrioHistoryRow[]): TrioResult 
     names: room.names,
     history,
     previousTrio: lobby.previousTrio,
+    chosen: room.els,
     rng: room.seed,
     count: roomElementCount(room),
   });
@@ -1637,9 +1639,10 @@ export function createRoom(code: string, seed: number, names: [string, string] =
 // join spends the reservation). A code you typed yourself never creates anything, so a mistyped
 // code cannot mint an empty game.
 
-/** minted-but-not-yet-joined codes: when each was minted, and the custom rules its creator chose
- * (resolved and checked) with the elements they were checked against. A join creates the room
- * from THIS, never from its own message, so the second player cannot re-specify the rules. */
+/** minted-but-not-yet-joined codes: when each was minted, the custom rules its creator chose
+ * (resolved and checked), and the elements the creator picked (the ones the rules were checked
+ * against). A join creates the room from THIS, never from its own message, so the second player
+ * cannot re-specify the rules. */
 interface Reservation { at: number; custom?: RoomCustom; els?: Element[] }
 const reserved = new Map<string, Reservation>();
 /** a reservation nobody used is a dead code — do not honour it forever */
@@ -1663,7 +1666,7 @@ function pruneReservations(): void {
 /** /api/new: this code may be turned into a room by its first joiner */
 export function reserveRoomCode(code: string, custom?: RoomCustom, els?: Element[]): void {
   pruneReservations();
-  reserved.set(code, { at: Date.now(), ...(custom ? { custom, ...(els ? { els: [...els] } : {}) } : {}) });
+  reserved.set(code, { at: Date.now(), ...(custom ? { custom } : {}), ...(els ? { els: [...els] } : {}) });
 }
 
 /** is `code` either a live room or a code we minted? (i.e. joinable at all) */
@@ -1753,12 +1756,17 @@ export function joinableRoom(code: string, mode: GameMode = 'shared', els?: Elem
   const reservation = reserved.get(code);
   if (!reservation) return null;
   reserved.delete(code);
-  // a reservation made with custom rules brings them, with the elements the pool was checked
-  // against; the join's own `els` are not consulted. Only a live draft carries rules.
+  // a reservation brings its custom rules and the elements its creator picked; the join's own
+  // `els` are not consulted then. Only a live draft carries either.
   const custom = mode === 'draft' ? reservation.custom : undefined;
-  return createRoom(code, (Math.random() * 1e9) >>> 0, undefined, mode, custom ? reservation.els : els, creatorDeck,
+  const picked = mode === 'draft' ? reservation.els : undefined;
+  const room = createRoom(code, (Math.random() * 1e9) >>> 0, undefined, mode, picked ?? (custom ? undefined : els), creatorDeck,
     undefined, clockStart, custom, single,
     mode === 'constructed' && !single && cc?.match ? cc : mode === 'draft' && !cc?.match ? cc : undefined);
+  // picked elements still wait in the lobby, so the room's code and invites are shown and
+  // nobody sees a pack before the opponent is in
+  if (picked) { room.lobby = freshLobby('chosen'); persist(room); }
+  return room;
 }
 
 /** Apply an action to the room's authoritative state and record it. Throws

@@ -93,7 +93,10 @@ const fixedRoom = (() => {
   eq(room.els, ['fire', 'wood'], 'the reserved elements, not the join message ones');
   eq(room.state.packs[0]!.length, 5, 'packs of 5');
   ok(room.custom && room.custom.deal.packSize === 5, 'the room keeps its custom rules');
-  ok(room.lobby === null, 'fixed elements skip the lobby');
+  eq(room.lobby?.method, 'chosen', 'fixed elements still wait in the lobby, with nothing to choose');
+  room.lobby!.locked = [true, true];
+  resolveLobby(room, []);
+  eq(room.els, ['fire', 'wood'], 'and deal the reserved elements');
 
   reserveRoomCode('CUSB', CUSTOM);
   const shared = joinableRoom('CUSB', 'shared')!;
@@ -233,16 +236,33 @@ try {
   const a = new Client(); await a.open();
   a.send({ t: 'join', room, seat: 0, name: 'Ann', mode: 'draft', els: ['water', 'earth', 'dark'] });
   await a.settle();
-  const joined = a.last('joined')!;
-  eq(joined.view?.packs?.[0]?.length, 5, 'the beginner room deals packs of 5');
-  eq(joined.view?.elements, ['fire', 'wood'], 'with the fixed elements, not the ones the join sent');
-  ok(joined.custom?.summary?.includes('Simple cards only'), 'both the rules and their summary reach the seat');
-  ok(joined.log?.some(l => l.startsWith('Custom rules:')), 'and the game log says so');
+  const lobby = a.last('joined')!.waiting?.trio;
+  eq(lobby?.method, 'chosen', 'the beginner room waits in its lobby for the opponent');
+  eq(lobby?.chosen, ['fire', 'wood'], 'with the fixed elements, not the ones the join sent');
+  ok(a.last('joined')!.waiting?.custom?.summary?.includes('Simple cards only'), 'and shows the rules before the deal');
 
   const b = new Client(); await b.open();
   b.send({ t: 'join', room, seat: 1, name: 'Bob', mode: 'draft' });
   await b.settle();
-  ok(b.last('joined')?.custom?.summary?.includes('Packs of 5'), 'the second seat sees the rules too');
+  ok(b.last('joined')?.waiting?.custom?.summary?.includes('Packs of 5'), 'the second seat sees the rules too');
+  a.send({ t: 'lobby', submission: {}, lock: true });
+  b.send({ t: 'lobby', submission: {}, lock: true });
+  await a.settle(700);
+  const joined = a.last('joined')!;
+  eq(joined.view?.packs?.[0]?.length, 5, 'both ready: the beginner room deals packs of 5');
+  eq(joined.view?.elements, ['fire', 'wood'], 'of the fixed elements');
+  ok(joined.custom?.summary?.includes('Simple cards only'), 'both the rules and their summary reach the seat');
+  ok(joined.log?.some(l => l.startsWith('Custom rules:')), 'and the game log says so');
+
+  // elements picked under the standard rules ride the same POST, and wait the same
+  const picked = await newRoom({ els: ['wood', 'fire', 'water'] });
+  eq(picked.status, 200, 'picked elements without rules make a room');
+  const c = new Client(); await c.open();
+  c.send({ t: 'join', room: picked.json.code, seat: 0, name: 'Cy', mode: 'draft', els: ['wood', 'fire', 'water'] });
+  await c.settle();
+  eq(c.last('joined')?.waiting?.trio?.method, 'chosen', 'a standard room with picked elements opens in its lobby');
+  ok(!c.last('joined')?.waiting?.custom, 'and is not a custom room');
+  c.ws.close();
 
   a.send({ t: 'action', action: { type: 'draftCommit', seat: 0, packIndices: [6, 7, 8, 9, 10] } });
   b.send({ t: 'action', action: { type: 'draftCommit', seat: 1, packIndices: [6, 7, 8, 9, 10] } });

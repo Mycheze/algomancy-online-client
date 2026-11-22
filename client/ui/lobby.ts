@@ -25,6 +25,8 @@ export interface TrioLobby {
   /** BL-43: how many elements are being chosen (absent from an older server: 3) */
   count?: number;
   methods: TrioMethodInfo[];
+  /** method 'chosen': the elements the room was made with */
+  chosen?: string[];
   locked: [boolean, boolean];
   /** your own submission, echoed by the server so a refresh keeps it */
   mine: { element?: string; ranking?: string[] };

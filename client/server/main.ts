@@ -733,7 +733,7 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // empty game.
   if (path === '/api/new') {
     // BL-43: a POST carries custom rules for a live draft, and the elements if
-    // the creator fixed them now. They are cleaned, resolved into a deal and
+    // the creator fixed them now (with or without rules). They are cleaned, resolved into a deal and
     // pool-checked HERE, once, and the reservation keeps the result; a refusal
     // is a 400 carrying the sentence the settings panel shows. A GET — every
     // standard game — is exactly what it always was.
@@ -751,7 +751,7 @@ async function handleRequest(req: import('node:http').IncomingMessage,
       if (verdict.rules && verdict.deal) custom = { rules: verdict.rules, deal: verdict.deal };
     }
     const code = freshRoomCode();
-    reserveRoomCode(code, custom, custom ? fixed : undefined);
+    reserveRoomCode(code, custom, fixed);
     res.writeHead(200, { 'content-type': 'application/json' });
     return res.end(JSON.stringify({ code }));
   }
@@ -1973,6 +1973,8 @@ function waitingInfo(room: Room, seat: Seat): {
     /** BL-43: how many elements this lobby is choosing — 3 unless custom */
     count: number;
     methods: { id: string; label: string; blurb: string }[];
+    /** method 'chosen': the elements the room was made with */
+    chosen?: string[];
     locked: [boolean, boolean];
     /** your own submission, echoed back so a reconnect keeps your ranking */
     mine: unknown;
@@ -2004,15 +2006,18 @@ function waitingInfo(room: Room, seat: Seat): {
         count,
         // "run it back" only exists coming out of a game — offering it on a
         // fresh room would be a button with nothing behind it
-        // a league room's lobby is fixed to 'random' (docs/20 §5): one method, no choice
-        methods: (lobby.method === 'random' ? ['random' as const] : TRIO_METHODS)
+        // a league room's lobby is fixed to 'random' (docs/20 §5), and a room whose creator
+        // picked the elements to 'chosen': one method, no choice
+        methods: (lobby.method === 'random' || lobby.method === 'chosen' ? [lobby.method] : TRIO_METHODS)
           .filter(id => id !== 'again' || lobby.previousTrio?.length === count)
           .map(id => ({
             id,
             label: id === 'again' && lobby.previousTrio
-              ? `Run it back — ${lobby.previousTrio.join(' + ')}` : METHOD_LABELS[id],
+              ? `Run it back — ${lobby.previousTrio.join(' + ')}`
+              : id === 'chosen' ? `${METHOD_LABELS.chosen} — ${room.els.join(' + ')}` : METHOD_LABELS[id],
             blurb: blurbs[id],
           })),
+        ...(lobby.method === 'chosen' ? { chosen: [...room.els] } : {}),
         locked: [...lobby.locked] as [boolean, boolean],
         mine: lobby.submissions[seat],
       },

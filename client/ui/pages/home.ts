@@ -1016,8 +1016,8 @@ export function handleHomeButton(b: string | undefined, btn: HTMLElement, host: 
     // CR D8.2: a single card duel is a constructed room that brings a card, not a deck
     const single = mode === 'constructed' && btn.dataset['single'] === '1';
     if (single ? !sc.chosen() : mode === 'constructed' && !chosenDeck()) return true;   // button is disabled anyway
-    // a draft with NO els opens the lobby and chooses the trio there; passing
-    // els is the deliberate escape hatch that skips it
+    // picked elements ride the reservation, and the room still opens in its lobby: the code to
+    // share and the invites, dealt once both players are in
     const fixed = mode === 'draft' && btn.dataset['els'] && homeEls.length === crp.elementCount() ? homeEls : null;
     const els = fixed ? `&els=${encodeURIComponent(fixed.join(','))}` : '';
     // BL-26: the chosen bank rides the CREATING join. ⚠ It is appended HERE
@@ -1029,11 +1029,12 @@ export function handleHomeButton(b: string | undefined, btn: HTMLElement, host: 
     // BL-26: the MODE is known here and nowhere earlier, which is the whole
     // reason the default is resolved at this line rather than in the picker.
     const clock = `&clock=${chosenClockMs(mode)}`;
-    // BL-43: custom rules ride a POST — the server resolves and checks them and
-    // keeps them with the reserved code. A standard game is the GET it always was.
+    // BL-43: custom rules and picked elements ride a POST — the server resolves and checks
+    // them and keeps them with the reserved code. Anything else is the plain GET.
     const payload = mode === 'draft' ? crp.createPayload(fixed) : null;
-    const made = payload
-      ? fetch('/api/new', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) })
+    const body = payload ?? (fixed ? { els: [...fixed] } : null);
+    const made = body
+      ? fetch('/api/new', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
       : fetch('/api/new');
     made.then(async r => {
       const j = await r.json() as { code?: string; error?: string };
