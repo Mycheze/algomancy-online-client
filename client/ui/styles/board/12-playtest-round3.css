@@ -139,15 +139,3 @@ img.elicon { width: 16px; height: 16px; max-width: none; }
 /* …and the same fact in the focus viewer, where the player reads the item */
 .abmodhost { color: var(--glow); font-size: 12px; margin-top: 6px; }
 
-/* #5: draft pack indicator + the "last look" warning */
-.packrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
-.packinfo { color: var(--accent); font-weight: 700; }
-.lastlook { background: #33270f; border: 1px solid #7a5e1e; border-radius: 5px;
-  color: var(--accent); padding: 3px 8px; font-size: 12px; }
-/* the cycle's FINAL look is a different fact from "your opponent gets it
-   next", so it must not wear the same colour — leftovers are recycled here */
-.lastlook.final { background: #241a2e; border-color: #7a5b96; color: #d6b8f2; }
-/* the reassuring half of the same information: the pack returns to you */
-.packback { background: #17241c; border: 1px solid #35583f; border-radius: 5px;
-  color: #8fc79c; padding: 3px 8px; font-size: 12px; }
-

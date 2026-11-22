@@ -1,0 +1,55 @@
+/* THE DRAFT STEP (main.ts draftPanelHtml): the pack on top, in one row on a
+   tray; your hand under it, fanned. Each row stays one row however many cards
+   it holds: a slot shrinks and the card overlaps the next, as a hand does. */
+.pickbox:has(> .dstep) { position: relative; padding: 14px 18px 16px; }
+.pickbox:has(> .dstep) > .pickbar { position: absolute; top: 10px; right: 14px; }
+.dstep { --dcw: clamp(70px, 8.6vw, 124px); display: flex; flex-direction: column; gap: var(--space-3); }
+.dstep .dtop { display: flex; align-items: center; gap: 12px; min-height: 34px; padding-right: 190px; }
+.dstep .dpackno { font-weight: 700; font-size: 1.05rem; color: var(--text); }
+.dstep .dpips { display: inline-flex; gap: 5px; }
+.dstep .dpips i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--dim); }
+.dstep .dpips i.was { background: var(--dim); }
+.dstep .dpips i.now { background: var(--accent); border-color: var(--accent); }
+.dstep .dfate { font-size: .92rem; padding: 3px 10px; border-radius: 999px; }
+.dstep .dfate.back { color: var(--color-success); background: var(--color-success-bg); }
+.dstep .dfate.last { color: var(--color-warning); background: var(--color-warning-bg); }
+.dstep .dfate.final { color: var(--color-info); background: var(--color-info-bg); }
+
+.dstep .dlabel { display: flex; align-items: baseline; gap: 10px; margin: 0 0 6px 2px;
+  font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+.dstep .dlabel > span:first-child { color: var(--text); font-weight: 700; }
+.dstep .dcount { margin-left: auto; text-transform: none; letter-spacing: 0; font-size: .9rem; font-weight: 700; }
+.dstep .dcount.ok { color: var(--color-success); }
+.dstep .dcount.bad { color: var(--danger); }
+
+.dstep .drow { display: flex; flex-wrap: nowrap; justify-content: center; align-items: flex-end;
+  min-height: calc(var(--dcw) * 1.4 + 16px); padding: 8px 12px; gap: 0; margin: 0; border: none; opacity: 1; }
+.dstep .dslot { flex: 0 1 calc(var(--dcw) + 10px); min-width: 0; position: relative;
+  transition: margin-left .12s ease; }
+.dstep .dslot:last-child { flex: 0 0 var(--dcw); }
+.dstep .dslot > .card { width: var(--dcw); position: relative; }
+.dstep .dslot:hover { z-index: 5; }
+
+/* the pack: laid flat in an open tray */
+.dstep .dpack { border-radius: 12px; background: var(--color-surface-sunken);
+  box-shadow: inset 0 0 0 1px var(--color-border); }
+.dstep .dpack .dslot:hover > .card { transform: translateY(-6px); }
+
+/* the hand: fanned from the bottom edge, lifted toward you on hover */
+.dstep .dhand { padding-top: 18px; padding-bottom: 22px; }
+.dstep .dhand .dslot > .card { transform-origin: 50% 120%;
+  transform: rotate(var(--fr, 0deg)) translateY(var(--fy, 0px)); transition: transform .12s ease; }
+.dstep .dhand .dslot:hover > .card { transform: rotate(0deg) translateY(-14px) scale(1.04); }
+
+/* a drag opens a gap where the card will land */
+.dstep .dslot.gapl { margin-left: calc(var(--dcw) * .8); }
+.dstep .drow.gapend::after { content: ''; flex: 0 0 calc(var(--dcw) * .8); }
+.dstep .drow.droptarget { outline: none; }
+.dstep .drow.dropover { outline: none; box-shadow: none; }
+.dstep .dpack.dropover { box-shadow: inset 0 0 0 2px var(--glow); }
+.dstep .dhand.dropover { background: rgb(var(--glow-rgb) / .07); border-radius: 12px; }
+
+.dstep .dfoot { display: flex; justify-content: flex-end; }
+.dstep .dfoot .primary { font-size: 1.02rem; padding: 9px 20px; }
+.dstep .dempty { align-self: center; color: var(--dim); font-size: .9rem; }
+

@@ -104,3 +104,5 @@
 /* cube draft events (docs/25, 2026-11-14): the event page, then the pick screen; after the frame and the builder they lay out */
 @import "pages/56-cube.css";
 @import "pages/57-cube-draft.css";
+/* the live draft step (main.ts draftPanelHtml): last, over the pick dialog's rules in 37-touch */
+@import "pages/58-draft-step.css";

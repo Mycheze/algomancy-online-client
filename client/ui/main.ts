@@ -189,6 +189,8 @@ import { gameLessons } from './lessons.ts';
 import { installSandbox } from './sandbox.ts';
 import * as roomChange from './roomchange.ts';
 import { chooseDeck, chosenDeck, clickOrTap, copyText, elIcon as elIconOf, esc, shareBar } from './util.ts';
+import { expectOrder, moveCard, reconcile } from './handorder.ts';
+import type { HandOrder } from './handorder.ts';
 import { resGoKey, tapActsAtOnce, tapGoHtml, tapGoKeyOf, tapGoLabel, tapGoLive, tokenGoKey, zoomGoHtml, type TapGo } from './tapgo.ts';
 
 import { artUrl, ICON_BASE } from './assets.ts';
@@ -1201,6 +1203,9 @@ interface UiState {
   orderAutoFor: number;
   /** draft step: pile indices (into hand.concat(pack)) marked "leave in pack" */
   draftPack: number[] | null;
+  /** draft step: the hand row's order, as pile indices — view only: the
+   * engine keeps the hand in pile order (doDraftCommit), so this never sends */
+  draftHand: number[];
   /** which turn+seat draftPack was built for (re-init on change) */
   draftFor: string;
   /**
@@ -1364,7 +1369,7 @@ const freshUi = (): UiState => ({
   assignCount: 0, assignFor: -1,
   numberCount: 0, numberFor: -1,
   decSearch: '', decSearchFor: -1, decSearchAll: false, orderAutoFor: -1,
-  draftPack: null, draftFor: '', passMode: null, autopassStack: 0,
+  draftPack: null, draftHand: [], draftFor: '', passMode: null, autopassStack: 0,
   autopassSig: [], autopassItems: [], autopassOpts: [], autopassPhase: 'battle',
   autoAt: -1, sentFor: -1, cancelling: false, cancelAt: -1,
   rampTo: null, rampAt: -1, rampDone: 0,
@@ -3609,11 +3614,26 @@ function handBadges(n: CardName, offers: ReturnType<typeof handOffers>, xrows: X
   return badges;
 }
 
+/** my hand's order on screen (ui/handorder.ts): drawing only, so it is kept
+ * for my own seat alone, and per room */
+let handOrder: { key: string; o: HandOrder } | null = null;
+/** the seat whose hand this screen may rearrange, or null */
+function ownHandSeat(): Seat | null { return NET && !NET.spectating && !replayActive() ? NET.seat : null; }
+/** the engine indices of `p`'s hand, in the order they are drawn */
+function shownOrder(p: Seat): number[] {
+  const hand = h.state.players[p]!.hand;
+  if (p !== ownHandSeat()) return hand.map((_, i) => i);
+  const key = `${NET!.room}:${p}`;
+  handOrder = { key, o: reconcile(handOrder?.key === key ? handOrder.o : null, hand) };
+  return [...handOrder.o.order];
+}
+
 function handZoneHtml(p: Seat): string {
   const pl = h.state.players[p]!;
   const legal = legalFor(p);
   const keys = nameKeys(pl.hand, `h${p}:`);
-  const cards = pl.hand.map((n, i) => {
+  const cards = shownOrder(p).map(i => {
+    const n = pl.hand[i]!;
     if (n === HIDDEN_CARD) return backHtml(keys[i]);
     // CT-49 (#54): the ring used to be this OR and nothing else, so a {Battle}
     // spell in deployment — GRAFT only — was drawn exactly like a castable
@@ -7694,6 +7714,7 @@ function ensureDraftUi(): void {
   if (ui.draftFor !== key || !ui.draftPack) {
     const H = h.state.players[seat]!.hand.length;
     ui.draftPack = h.state.packs[seat]!.map((_, i) => H + i);   // keep hand as-is
+    ui.draftHand = h.state.players[seat]!.hand.map((_, i) => i);
     ui.draftFor = key;
   }
 }
@@ -7716,32 +7737,55 @@ interface PackInfo {
  * the deck and nobody drafts them. That is the difference between a hate-draft
  * being worth a pick and being worth nothing (Bena, playtest 2026-08-20).
  */
-const PACK_FATE: Record<string, { cls: string; html: string }> = {
-  returns: {
-    cls: 'packback',
-    html: 'this pack <b>comes back to you</b> later this cycle — what you leave, your opponent picks from first',
-  },
-  others: {
-    cls: 'lastlook',
-    html: 'your <b>last look</b> at this pack — after this commit it never comes back to you, and your opponent drafts whatever you leave in it',
-  },
-  recycled: {
-    cls: 'lastlook final',
-    html: '<b>final look</b> — this pack is retired after this commit: what you leave is shuffled into the bottom of the deck, and <b>nobody</b> drafts from it again',
-  },
+const PACK_FATE: Record<string, { cls: string; text: string }> = {
+  returns: { cls: 'back', text: 'Comes back to you' },
+  others: { cls: 'last', text: 'Last look · your opponent drafts the rest' },
+  recycled: { cls: 'final', text: 'Final look · the rest are recycled, unseen' },
 };
 
-/** #5: "Pack #N · pick M of T (X of Y cards left)" + what happens to it next */
+/** "Pack 1 ●○○ Comes back to you" — which pack, how many looks at it, and
+ * where the cards left in it go */
 function packInfoHtml(): string {
   const pi = (h.state as GameState & { packInfo?: PackInfo }).packInfo;
   if (!pi || typeof pi !== 'object' || typeof pi.packNumber !== 'number') return '';
-  const of = typeof pi.picksTotal === 'number' ? ` of ${pi.picksTotal}` : '';
-  const pick = typeof pi.picksMade === 'number' ? ` · pick ${pi.picksMade + 1}${of}` : '';
-  const count = typeof pi.remaining === 'number' && typeof pi.originalSize === 'number'
-    ? ` (${pi.remaining} of ${pi.originalSize} cards left)` : '';
+  const total = typeof pi.picksTotal === 'number' ? pi.picksTotal : 0;
+  const made = typeof pi.picksMade === 'number' ? pi.picksMade : 0;
+  const pips = total > 0 && total <= 8
+    ? `<span class="dpips" title="look ${made + 1} of ${total} at this pack">${
+      Array.from({ length: total }, (_, k) => `<i class="${k < made ? 'was' : k === made ? 'now' : ''}"></i>`).join('')}</span>`
+    : '';
   const fate = PACK_FATE[pi.after ?? ''];
-  const note = fate ? `<div class="${fate.cls}">${fate.html}</div>` : '';
-  return `<div class="packrow"><span class="packinfo">Pack #${pi.packNumber}${pick}${count}</span>${note}</div>`;
+  return `<span class="dpackno">Pack ${pi.packNumber}</span>${pips}${
+    fate ? `<span class="dfate ${fate.cls}">${fate.text}</span>` : ''}`;
+}
+
+/** the hand row's order: the player's, with any card new to the row at its end */
+function draftHandOrder(handIdx: number[]): number[] {
+  const inHand = new Set(handIdx);
+  const kept = ui.draftHand.filter(i => inHand.has(i));
+  const seen = new Set(kept);
+  return [...kept, ...handIdx.filter(i => !seen.has(i))];
+}
+
+/** a gentle fan: the slot's turn and drop, from its place in a row of n */
+function fanStyle(k: number, n: number): string {
+  if (n < 2) return '';
+  const t = (k - (n - 1) / 2) / ((n - 1) / 2);   // -1 … 1
+  const spread = Math.min(6, 1.5 + n * 0.45);
+  return ` style="--fr:${(t * spread).toFixed(2)}deg;--fy:${(t * t * 7).toFixed(1)}px"`;
+}
+
+const emptyRow = (): string => `<span class="dempty">${clickOrTap()} or drag cards here</span>`;
+
+/** the draft step's hand row becomes the hand's order on screen once the
+ * merged hand arrives */
+function keepDraftHandOrder(seat: Seat): void {
+  if (seat !== ownHandSeat() || !ui.draftPack) return;
+  const pile = [...h.state.players[seat]!.hand, ...h.state.packs[seat]!];
+  const inPack = new Set(ui.draftPack);
+  const want = draftHandOrder(pile.map((_, i) => i).filter(i => !inPack.has(i))).map(i => pile[i]!);
+  shownOrder(seat);
+  handOrder = { key: handOrder!.key, o: expectOrder(handOrder!.o, h.state.players[seat]!.hand, want) };
 }
 
 function draftPanelHtml(): string {
@@ -7751,29 +7795,30 @@ function draftPanelHtml(): string {
   const pile = [...s.players[seat]!.hand, ...s.packs[seat]!];
   const need = s.packs[seat]!.length;
   const inPack = new Set(ui.draftPack);
-  const cardRow = (indices: number[]): string => indices.map(i =>
-    cardHtml(pile[i]!, { playable: true, data: `data-act="draftcard" data-i="${i}"` })).join('');
-  const handIdx = pile.map((_, i) => i).filter(i => !inPack.has(i));
-  const packIdx = pile.map((_, i) => i).filter(i => inPack.has(i));
+  const packIdx = ui.draftPack.slice();
+  const handIdx = draftHandOrder(pile.map((_, i) => i).filter(i => !inPack.has(i)));
+  ui.draftHand = handIdx;
+  const slot = (i: number, style = ''): string => `<div class="dslot"${style}>${
+    cardHtml(pile[i]!, { playable: true, data: `data-act="draftcard" data-i="${i}"` })}</div>`;
   const ok = packIdx.length === need;
-  // the pack's own label makes the same promise the banner does, so it has to
-  // tell the same truth: on the cycle's final look these cards go to the
-  // bottom of the deck, not to the player across the table
   const fate = (h.state as GameState & { packInfo?: PackInfo }).packInfo?.after;
-  const leftLabel = fate === 'recycled'
-    ? 'Left in the pack — recycled into the deck, unseen'
-    : 'Left in the pack — passes to your opponent';
-  return `<div class="draftpanel">
-    ${packInfoHtml()}
-    <div class="drafthead"><span class="who">${esc(s.players[seat]!.name)} — draft step</span>
-      <span class="remind">Click a card to move it.</span> Leave exactly ${need} in the pack.
+  const off = packIdx.length - need;
+  const count = ok ? `<span class="dcount ok">${need}/${need}</span>`
+    : `<span class="dcount bad">${packIdx.length}/${need} · ${off > 0 ? `${off} too many` : `${-off} short`}</span>`;
+  return `<div class="draftpanel dstep">
+    <div class="dtop">${packInfoHtml()}</div>
+    <section class="dzone dpackzone">
+      <div class="dlabel"><span>The pack</span><span class="dneed">leave ${need}</span>${count}</div>
+      <div class="drow dpack zone draftleave" data-drow="pack">${packIdx.map(i => slot(i)).join('') || emptyRow()}</div>
+    </section>
+    <section class="dzone dhandzone">
+      <div class="dlabel"><span>Your hand</span><span class="dneed">${handIdx.length}</span></div>
+      <div class="drow dhand zone draftkeep" data-drow="hand">${handIdx.map((i, k) => slot(i, fanStyle(k, handIdx.length))).join('') || emptyRow()}</div>
+    </section>
+    <div class="dfoot">
       <button class="primary" data-btn="draftcommit" data-p="${seat}" ${ok ? '' : 'disabled'}>
-        Keep ${handIdx.length} · ${fate === 'recycled' ? 'end the pack' : 'pass the pack'} <span class="kh">(enter)</span></button>
-      ${ok ? '' : `<span style="color:var(--danger)">pack has ${packIdx.length}/${need}</span>`}</div>
-    <div class="zonelabel">Your hand after drafting (${handIdx.length})</div>
-    <div class="zone draftkeep">${cardRow(handIdx)}</div>
-    <div class="zonelabel">${leftLabel} (${packIdx.length}/${need})</div>
-    <div class="zone draftleave">${cardRow(packIdx)}</div>
+        ${fate === 'recycled' ? 'End the pack' : 'Pass the pack'} <span class="kh">(enter)</span></button>
+    </div>
   </div>`;
 }
 
@@ -8682,9 +8727,8 @@ function dragPlanFor(src: HTMLElement): DragPlan | null {
   if (!inGame || !h.state || NET?.waiting || replayActive()) return null;
   if (actBarUp()) return null;   // D2: nothing is picked up while "Yes, activate" is asking
   const kind = src.dataset['act'];
-  if (kind === 'hand' || kind === 'cache') {
-    return dragCardPlan(kind, Number(src.dataset['p']) as Seat, Number(src.dataset['i']));
-  }
+  if (kind === 'hand') return withHandReorder(src, dragCardPlan('hand', Number(src.dataset['p']) as Seat, Number(src.dataset['i'])));
+  if (kind === 'cache') return dragCardPlan(kind, Number(src.dataset['p']) as Seat, Number(src.dataset['i']));
   if (kind === 'unit') return dragUnitPlan(Number(src.dataset['id']) as EntityId);
   if (kind === 'token') return dragTokenPlan(src);
   if (kind === 'draftcard' || kind === 'bottomcard') return dragPickPlan(src);
@@ -8717,6 +8761,7 @@ function dragTokenPlan(src: HTMLElement): DragPlan | null {
 /** the draft step and the constructed bottom-2: a card dragged across to the
  * other pile is the click that moves it there */
 function dragPickPlan(src: HTMLElement): DragPlan | null {
+  if (src.dataset['act'] === 'draftcard') return dragDraftPlan(src);
   const panel = src.closest('.draftpanel');
   const other = src.closest('.draftkeep') ? panel?.querySelector('.draftleave') : panel?.querySelector('.draftkeep');
   if (!other) return null;
@@ -8724,6 +8769,82 @@ function dragPickPlan(src: HTMLElement): DragPlan | null {
     targets: [other],
     zoneAt: el => el && other.contains(el) ? other : null,
     drop: (_z, x, y) => clickAt(src, x, y),
+  };
+}
+
+/** a card of my own hand dropped back on the hand goes where it was let go —
+ * on screen only (ui/handorder.ts). Everywhere else the drag is the play it
+ * always was; when there is no play, rearranging is all it can do. */
+function withHandReorder(src: HTMLElement, play: DragPlan | null): DragPlan | null {
+  const p = Number(src.dataset['p']) as Seat;
+  const dock = document.querySelector(`#app .handdock [data-animzone="hand:${p}"]`);
+  if (p !== ownHandSeat() || !dock || !dock.contains(src)) return play;
+  const others = (): HTMLElement[] => ([...dock.querySelectorAll(':scope > [data-act="hand"]')] as HTMLElement[])
+    .filter(c => c !== src);
+  const indexAt = (x: number): number => others().filter(c => { const r = c.getBoundingClientRect(); return r.left + r.width / 2 < x; }).length;
+  const clearGap = (): void => { for (const c of dock.querySelectorAll('.gapl, .gapr')) c.classList.remove('gapl', 'gapr'); };
+  return {
+    targets: play?.targets ?? [],
+    zoneAt: el => (el && dock.contains(el) ? dock : play?.zoneAt(el) ?? null),
+    over(zone, x, y) {
+      clearGap();
+      if (zone === dock) {
+        const cards = others(), at = indexAt(x);
+        if (at < cards.length) cards[at]!.classList.add('gapl'); else cards[cards.length - 1]?.classList.add('gapr');
+        play?.over?.(null, x, y);
+      } else play?.over?.(zone, x, y);
+    },
+    drop(zone, x, y) {
+      if (zone !== dock) return play ? play.drop(zone, x, y) : false;
+      shownOrder(p);
+      handOrder = { key: handOrder!.key, o: moveCard(handOrder!.o, Number(src.dataset['i']), indexAt(x)) };
+      render();
+      return true;
+    },
+  };
+}
+
+/** the draft step: a card dropped in either row lands where it was let go —
+ * across to the other row, or to a new place in its own */
+function dragDraftPlan(src: HTMLElement): DragPlan | null {
+  const panel = src.closest('.dstep');
+  const rows = [...(panel?.querySelectorAll('.drow') ?? [])] as HTMLElement[];
+  if (rows.length !== 2) return null;
+  const zoneOf = (el: Element | null): HTMLElement | null => {
+    const sec = el?.closest?.('.dzone');
+    return sec && panel!.contains(sec) ? sec.querySelector('.drow') as HTMLElement : null;
+  };
+  /** where in `row` a drop at x lands: the count of the other slots whose
+   * visible middle is left of it */
+  const indexAt = (row: Element, x: number): { at: number; slots: HTMLElement[] } => {
+    const slots = ([...row.querySelectorAll(':scope > .dslot')] as HTMLElement[]).filter(d => !d.contains(src));
+    const at = slots.filter(d => { const r = d.getBoundingClientRect(); return r.left + r.width / 2 < x; }).length;
+    return { at, slots };
+  };
+  const clearGap = (): void => {
+    for (const r of rows) { r.classList.remove('gapend'); for (const d of r.querySelectorAll('.gapl')) d.classList.remove('gapl'); }
+  };
+  return {
+    targets: rows,
+    zoneAt: el => zoneOf(el),
+    over(zone, x) {
+      clearGap();
+      if (!zone) return;
+      const { at, slots } = indexAt(zone, x);
+      if (at < slots.length) slots[at]!.classList.add('gapl'); else zone.classList.add('gapend');
+    },
+    drop(zone, x) {
+      if (!ui.draftPack) return false;
+      const i = Number(src.dataset['i']);
+      const { at } = indexAt(zone, x);
+      const toPack = (zone as HTMLElement).dataset['drow'] === 'pack';
+      const pack = ui.draftPack.filter(j => j !== i);
+      const hand = ui.draftHand.filter(j => j !== i);
+      (toPack ? pack : hand).splice(at, 0, i);
+      ui.draftPack = pack; ui.draftHand = hand;
+      render();
+      return true;
+    },
   };
 }
 
@@ -10746,6 +10867,7 @@ const BOARD_BTNS: Record<string, BtnHandler> = {
   countercancel: () => { ui.confirmCounter = null; },   // back to blocking, unanswered
   draftcommit: btn => {
     if (!ui.draftPack) return;
+    keepDraftHandOrder(Number(btn.dataset['p']) as Seat);
     act({ type: 'draftCommit', seat: Number(btn.dataset['p']) as Seat, packIndices: ui.draftPack.slice() });
     if (!uiError) { ui.draftPack = null; }
   },
@@ -11086,7 +11208,8 @@ function handleAction(t: HTMLElement, e: MouseEvent): void {
     if (!ui.draftPack) return;
     const i = Number(t.dataset['i']);
     const at = ui.draftPack.indexOf(i);
-    if (at >= 0) ui.draftPack.splice(at, 1); else ui.draftPack.push(i);
+    if (at >= 0) { ui.draftPack.splice(at, 1); ui.draftHand = [...ui.draftHand.filter(j => j !== i), i]; }
+    else { ui.draftPack.push(i); ui.draftHand = ui.draftHand.filter(j => j !== i); }
     render();
     return;
   }

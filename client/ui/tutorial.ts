@@ -155,9 +155,9 @@ export const TUTORIAL: readonly TutorialSection[] = [
     steps: [
       { text: 'Refreshing your resources and drawing happen by themselves.' },
       {
-        text: 'Live draft: the draft panel shows your hand and pack as one pile. Click cards to move them between “your hand after drafting” '
-          + 'and “left in the pack”. When the pack holds exactly the number it must, press Keep (Enter) to pass it — on the last look at a '
-          + 'pack the cards left go to the bottom of the deck instead, and the label says so.',
+        text: 'Live draft: the pack is on top, your hand below. Click a card to move it to the other row, or drag it to exactly where you '
+          + 'want it, in either row. When the pack holds the number it must, press Pass the pack (Enter). The dots count your looks at '
+          + 'this pack; on its final look the cards left go to the bottom of the deck, and the button says End the pack.',
         btns: ['draftcommit'],
       },
       {

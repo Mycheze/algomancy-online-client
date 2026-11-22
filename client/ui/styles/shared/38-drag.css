@@ -13,3 +13,7 @@ html.dragging, html.dragging * { cursor: grabbing !important; -webkit-user-selec
   box-shadow: 0 0 18px 4px rgb(var(--glow-rgb) / .35); }
 .slot.dropover { background: rgb(var(--glow-rgb) / .16); }
 
+/* rearranging your own hand (main.ts withHandReorder): a gap where the card will land */
+.handdock .zone > .card { transition: margin .12s ease; }
+.handdock .zone > .card.gapl { margin-left: 56px; }
+.handdock .zone > .card.gapr { margin-right: 56px; }

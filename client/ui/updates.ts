@@ -45,6 +45,8 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-22', kind: 'change', text: 'The live draft step is redrawn: the pack sits on top in one row, your hand fans out below it. Tap a card to move it, or drag it to exactly where you want it in either row.' },
+  { date: '2026-11-22', kind: 'new', text: 'Drag the cards in your hand into any order you like. It is only how your hand looks to you: the game and your opponent never see it.' },
   { date: '2026-11-22', kind: 'fix', text: 'Rank all seven in the draft lobby now gives you the elements you ranked highest together, no longer a weighted lottery. If you both put the same three on top, you get those three. Chance only breaks ties.' },
   { date: '2026-11-22', kind: 'change', text: 'The Metagame page\'s deck export now calls its second format "Deck file (JSON)", the same name your Decks page and the import box use.' },
   { date: '2026-11-21', kind: 'new', text: 'A deck someone shared on the Metagame page can be downloaded from its Export panel, as a card list or the whole deck file, just like your own decks.' },
