@@ -48,7 +48,15 @@ verdict, your handoff, notes and scratch files.
    `steward/vps-fetch.sh` to bring down a game file. It is the only way down:
    if it refuses or fails, say so in the verdict — there is no other key.
 5. **Never edit** `deploy/`, `CLAUDE.md`, `.claude/`, any `package.json` or
-   lockfile. If one of those is the problem, say so in a handoff. `steward/`
+   lockfile. If one of those is the problem, say so in a handoff. **The policy
+   also stages any change to** `client/engine/scripts/paths.mjs`,
+   `client/engine/scripts/fetch-reports.mjs`, `client/engine/scripts/cr/*.mjs`,
+   `client/ui/scripts/`, `.gitignore`, `.env*`, `requirements.txt`, `LICENSE`,
+   `data/NOTICE.md` (the list is `PROTECTED` in `steward/policy.mjs`). Check
+   before you touch one: a polish item that needs one is not a `ship` (2026-11-21,
+   BL-10: a stylesheet sweep added one path constant to `paths.mjs` for its new
+   test, said `ship`, and was held for the owner's approval). Do without it, or
+   choose `stage` yourself and write the handoff. `steward/`
    (your own harness) you MAY fix when the item's fault is there, and in a
    `retro` (§15). This skill is **`steward/SKILL.md`** — edit it there with
    Edit like any file (`.claude/skills/steward/SKILL.md` is only a symlink to
@@ -83,7 +91,11 @@ verdict, your handoff, notes and scratch files.
    - **Waiting:** start the test or script with Bash `run_in_background` (or
      `> LOG 2>&1` behind `timeout <s>`), keep working, and wait with **Monitor**
      on `until grep -q '^exit ' LOG; do sleep 10; done` (repeat if it times
-     out; the scan readers take ~50 minutes in all) — that loop and nothing
+     out; the scan readers take ~50 minutes in all). **One Monitor per log.**
+     With nothing left to do, end your turn with one line ("waiting on the
+     engine tests"): its notification wakes you. Arming a second Monitor on the
+     same log to "wait" and stopping the first is a wasted pair of turns
+     (2026-11-20 and 2026-11-21, CT-574: six such pairs). That loop and nothing
      else: no `tail -F … &` beside it, no `kill %1` after it (2026-11-10,
      Iyngstra: denied whole). Foreground `sleep N` is
      blocked; stop a runaway with TaskStop, never `kill` (denied).
