@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-22', kind: 'fix', text: 'Rank all seven in the draft lobby now gives you the elements you ranked highest together, no longer a weighted lottery. If you both put the same three on top, you get those three. Chance only breaks ties.' },
   { date: '2026-11-22', kind: 'change', text: 'The Metagame page\'s deck export now calls its second format "Deck file (JSON)", the same name your Decks page and the import box use.' },
   { date: '2026-11-21', kind: 'new', text: 'A deck someone shared on the Metagame page can be downloaded from its Export panel, as a card list or the whole deck file, just like your own decks.' },
   { date: '2026-11-21', kind: 'fix', text: 'Every Rotling that leaves your bin now offers its own pay-1 draw. Two leaving in the same turn no longer share one, because cards that only share a name do not affect each other.' },

@@ -19,7 +19,7 @@
  */
 import type { Element } from '../engine/src/types.ts';
 import { ALL_ELEMENTS } from '../engine/src/apply.ts';
-import { rngNext, rngShuffle } from '../engine/src/rng.ts';
+import { rngShuffle } from '../engine/src/rng.ts';
 
 /** 'random' is the LEAGUE's method (docs/20-league.md §5): a league room's
  * lobby is fixed to it, and it is never offered anywhere else — it is not in
@@ -186,34 +186,12 @@ function freshest(history: TrioHistoryRow[], rng: number, count: number): [TrioR
   return [{ els, how: `a ${setWord(count)} you have not played (or have not played in a while)`, detail }, next];
 }
 
-// ── method 3: rank all seven, then let the weighting decide ───────────
-
-/** how much a combined rank is worth as a lottery ticket. Best possible
- * (both rank it 1st) is 36; worst (both 7th) is 1. Squaring the gap makes
- * a shared favourite a heavy favourite without making it a certainty. */
-const WEIGHT_FLOOR = 1;
-function rankWeight(combined: number): number {
-  const best = 2, worst = 2 * ALL_ELEMENTS.length;          // 2 .. 14
-  const span = worst - best;                                 // 12
-  const goodness = (span - (combined - best)) / span;        // 1 .. 0
-  return WEIGHT_FLOOR + Math.round(goodness * goodness * 35);
-}
-
-/** one weighted draw without replacement, seeded */
-function weightedDraw(pool: { el: Element; weight: number }[], rng: number): [Element, number] {
-  const total = pool.reduce((n, p) => n + p.weight, 0);
-  const [r, next] = rngNext(rng);
-  let mark = r * total;
-  for (const p of pool) {
-    mark -= p.weight;
-    if (mark <= 0) return [p.el, next];
-  }
-  return [pool[pool.length - 1]!.el, next];
-}
+// ── method 3: rank all seven, and the ballots decide ──────────────────
 
 /**
- * Both players put the seven elements in order, and the trio is drawn from
- * the combined ranking with the odds tilted toward what you both wanted.
+ * Both players put the seven elements in order, and the set is the top of the
+ * combined ranking. Chance only breaks a tie at the cut, so a top three you
+ * both share is always the trio.
  *
  * A Borda count rather than an instant runoff: with two voters and seven
  * candidates an IRV would just be "whoever's first choice survives the coin
@@ -228,36 +206,29 @@ function ranked(subs: [TrioSubmission, TrioSubmission], names: [string, string],
     return i < 0 ? ALL_ELEMENTS.length : i + 1;
   };
   const rankA = rankOf(subs[0].ranking), rankB = rankOf(subs[1].ranking);
-  let pool = ALL_ELEMENTS.map(el => ({
-    el,
-    combined: rankA(el) + rankB(el),
-    weight: rankWeight(rankA(el) + rankB(el)),
-  }));
+  const combined = (el: Element): number => rankA(el) + rankB(el);
+  // a seeded shuffle first, so the stable sort leaves tied elements in a random order
+  const [shuffled, next] = rngShuffle(ALL_ELEMENTS, rng);
+  const order = shuffled.sort((x, y) => combined(x) - combined(y));
+  const picked = order.slice(0, count);
 
-  const picked: Element[] = [];
-  let state = rng;
-  for (let i = 0; i < count; i++) {
-    const [el, next] = weightedDraw(pool, state);
-    state = next;
-    picked.push(el);
-    pool = pool.filter(p => p.el !== el);
-  }
-
-  const table = ALL_ELEMENTS
-    .map(el => ({ el, combined: rankA(el) + rankB(el) }))
-    .sort((x, y) => x.combined - y.combined)
-    .map(x => `${x.el} ${x.combined}`)
+  const table = [...ALL_ELEMENTS]
+    .sort((x, y) => combined(x) - combined(y))
+    .map(el => `${el} ${combined(el)}`)
     .join(' · ');
-  return [{
-    els: inOrder(picked),
-    how: 'drawn from your combined rankings',
-    detail: [
-      `${names[0]} ranked ${list(subs[0].ranking ?? [])}.`,
-      `${names[1]} ranked ${list(subs[1].ranking ?? [])}.`,
-      `Combined (lower is more wanted): ${table}.`,
-      `Drawn with the odds weighted to that: ${list(inOrder(picked))}.`,
-    ],
-  }, state];
+  const detail = [
+    `${names[0]} ranked ${list(subs[0].ranking ?? [])}.`,
+    `${names[1]} ranked ${list(subs[1].ranking ?? [])}.`,
+    `Combined (lower is more wanted): ${table}.`,
+  ];
+  const cut = count > 0 && count < order.length ? combined(order[count - 1]!) : null;
+  const tied = cut === null ? [] : order.filter(el => combined(el) === cut);
+  if (tied.length > 1 && combined(order[count]!) === cut) {
+    const won = tied.filter(el => picked.includes(el));
+    detail.push(`${list(inOrder(tied))} tied at ${cut}; ${list(inOrder(won))} ${won.length === 1 ? 'was' : 'were'} drawn at random to break it.`);
+  }
+  detail.push(`Your top ${countWord(count)}: ${list(inOrder(picked))}.`);
+  return [{ els: inOrder(picked), how: 'the top of your combined rankings', detail }, next];
 }
 
 // ── the one entry point ───────────────────────────────────────────────
@@ -322,7 +293,7 @@ export function methodBlurbs(count = 3): Record<TrioMethod, string> {
         ? 'You each name one element without seeing the other. If you name the same one, the second is drawn at random.'
         : 'You each name one element without seeing the other. The rest are drawn at random.',
     fresh: `The server picks a ${word} the two of you have never played — or have not played in the longest.`,
-    rank: `You each put all seven in order. The ${word} is drawn from your combined ranking, weighted toward what you both wanted.`,
+    rank: `You each put all seven in order. The ${word} is the ${countWord(count)} you ranked highest together; a tie is broken at random.`,
     random: `A league match: the ${word} is drawn at random once you are both ready.`,
   };
 }

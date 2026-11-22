@@ -91,7 +91,7 @@ players choose how the three elements are picked, both submit blind, and the
 game is dealt to both at the same instant. Three methods (`trio.ts`): **one
 each, one at random**; **something new**, the trio the two of you have played
 least recently, read off the account history; **rank all seven**, a Borda
-count of both ballots and a weighted draw. A rematch adds **run it back**.
+count of both ballots whose top wins, with ties drawn. A rematch adds **run it back**.
 Every draw runs off the room seed, and the result comes with its working, in
 the game log. A room created with an explicit trio (`&els=fire,water,earth`)
 has no lobby and deals immediately.

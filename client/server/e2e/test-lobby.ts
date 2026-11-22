@@ -163,16 +163,14 @@ console.log('\n[method: rank all seven]');
   eq(same.els.length, 3, 'three come back');
   eq(new Set(same.els).size, 3, 'and they are distinct — no element drawn twice');
 
-  // agreement should show: over many seeds, a shared top-3 should dominate
+  // a shared top three is the trio, whatever the seed
   let topHits = 0;
   const RUNS = 200;
   for (let seed = 0; seed < RUNS; seed++) {
     const r = resolve({ method: 'rank', submissions: [{ ranking: love }, { ranking: love }], rng: seed });
     topHits += r.els.filter(e => love.slice(0, 3).includes(e)).length;
   }
-  const share = topHits / (RUNS * 3);
-  ok(share > 0.55, `a shared top three is heavily favoured (${Math.round(share * 100)}% of slots)`);
-  ok(share < 1, 'but not a certainty — the draw is still a draw');
+  eq(topHits, RUNS * 3, 'a shared top three always comes back');
 
   // opposed rankings: the middle should come out ahead of either extreme
   const opposed: Element[] = [...love].reverse();
