@@ -518,5 +518,14 @@ export default {
     + 'deckformat.ts deckExportNote: the Decks page\'s words, and on a shared deck the file note names the sideboard and no '
     + 'maybeboard, the boards a published deck carries. Left: §5.5\'s inline-vs-sheet layout difference, and the two '
     + 'notes\' element (.hint vs .dksheetnote). Guarded by 1508-shared-deck-export-downloads.test.ts §5. Reasoned, not '
-    + 'looked at (no browser).',
+    + 'looked at (no browser).'
+    + '\n\n2026-11-22 (steward): a count on a button is spoken with what it counts (docs/23-ui-inventory/01 §4 S15: '
+    + '"The bell\'s unread count is not announced"). The Alerts pill is a span before the caption, so the button\'s name '
+    + 'read "4Alerts". The class was every number drawn on a button: the bell (components/icon-button.ts: a number '
+    + 'badge now names the button, `badgeName` after it, "Alerts, 4 unread"; iconButtonName), the home\'s Join a room '
+    + 'pill ("Join a room, 2 waiting for you", the pill aria-hidden) and the profile\'s Players tab, whose count is CSS '
+    + '`attr(data-count)` ("Players, 1 friend request waiting"). pages/home.ts patchHomeBadges, which moves both home '
+    + 'counts in place, moves the names with them. Left: the dot badges (Updates says "· 3 new" in its caption), and a '
+    + 'live announcement when a count changes. Guarded by 1003 (the component), 1071 §2, 960 §7, 976. Reasoned, not '
+    + 'looked at (no browser or screen reader).',
 } satisfies BacklogTicket;

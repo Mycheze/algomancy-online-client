@@ -318,6 +318,10 @@ test('960 §7 the badges, and none at zero', () => {
   const some = homeHtml(signedIn({ badges: { alerts: 4, join: 2, updates: 3 } }));
   assert.match(some, /homealerts[^>]*>[^]*?<span class="ui-icon-button__badge">4<\/span>/, 'Alerts counts the bell');
   assert.match(buttonOf(some, 'home-sheet', 'data-sheet="join"'), /homejoinbadge[^>]*>2</, 'Join counts what waits');
+  assert.match(buttonOf(some, 'home-sheet', 'data-sheet="join"'), /aria-label="Join a room, 2 waiting for you"/, 'and says it, not "Join a room2"');
+  assert.match(buttonOf(some, 'home-sheet', 'data-sheet="join"'), /homejoinbadge" aria-hidden="true">2</, 'the pill is not read twice');
+  assert.doesNotMatch(buttonOf(zero, 'home-sheet', 'data-sheet="join"'), /aria-label/, 'nothing waiting: its words are its name');
+  assert.match(some, /homealerts[^>]*aria-label="Alerts, 4 unread"/, 'the bell says its count');
   assert.match(some, /<span class="ui-icon-button__label">Updates · 3 new<\/span>/, 'Updates says how many are new');
 });
 

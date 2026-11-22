@@ -88,7 +88,7 @@ test('976 §1 every tab draws, and the current one is the one that is on', () =>
   // the tabs are the toolbar's centre; Players says somebody is waiting
   const html = profileHtml(view());
   assert.match(html, /ui-app-shell__zone--center"><div class="ui-segmented acctnav"/);
-  assert.match(html, /data-tab="players" data-count="1">Players</, 'one request waiting');
+  assert.match(html, /data-tab="players" aria-label="Players, 1 friend request waiting" data-count="1">Players</, 'one request waiting, and its name says so');
   assert.doesNotMatch(profileHtml(view({ me: { ...ME, incoming: [] } })), /data-count/, 'none waiting, no count');
 });
 

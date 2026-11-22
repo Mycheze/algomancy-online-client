@@ -64,11 +64,11 @@ import { markUpdatesSeen, updatesListHtml, updatesUnseen, wireUpdates } from '..
 import { ICON_BASE } from '../assets.ts';
 import { artPick, backdropCard, challengeArtCard, LEAGUE_ART, modeArt, QUEUE_ART, type ArtPick } from '../homeart.ts';
 import {
-  appShell, button, chip, icon, iconButton, iconButtonBadge, installSheetEsc, segmented, settingRow, sheet, shellBar, statusMessage,
+  appShell, button, chip, icon, iconButton, iconButtonBadge, iconButtonName, installSheetEsc, segmented, settingRow, sheet, shellBar, statusMessage,
 } from '../components/index.ts';
 import { chosenDeck, elIcon as elIconOf, esc } from '../util.ts';
 import { caretIn, restoreCaret } from './caret.ts';
-import { keepArt, TOOL_NAMES, toolsHtml } from './frame.ts';
+import { ALERTS_BADGE_NAME, keepArt, TOOL_NAMES, toolsHtml } from './frame.ts';
 import {
   CLOCK_DEFAULT_MS, chosenClockMs, clockPickHtml, clockPickView, setMatchClockChoice, type ClockPickView,
 } from './clockpick.ts';
@@ -609,11 +609,17 @@ function modeTilesHtml(v: HomeView): string {
   return `<div class="homemodes" role="group" aria-label="Game type">${tile('draft', 'Draft')}${tile('constructed', 'Constructed')}</div>`;
 }
 
+/** Join a room's count, and the name that speaks it: the pill alone reads "Join a room2" */
+const joinBadgeHtml = (n: number): string =>
+  chip({ label: String(n), tone: 'accent', shape: 'pill', solid: true, className: 'homejoinbadge', attrs: { 'aria-hidden': 'true' } });
+export const joinName = (n: number): string => `Join a room, ${n} waiting for you`;
+
 function playHtml(v: HomeView): string {
   const { rows, go } = v.mode === 'draft' ? draftRowsHtml(v) : constructedRowsHtml(v);
   const join = button({
-    labelHtml: `Join a room${v.badges.join > 0 ? ` ${chip({ label: String(v.badges.join), tone: 'accent', shape: 'pill', solid: true, className: 'homejoinbadge' })}` : ''}`,
-    className: 'homejoin', ...opens('join'),
+    labelHtml: `Join a room${v.badges.join > 0 ? ` ${joinBadgeHtml(v.badges.join)}` : ''}`,
+    className: 'homejoin', dataBtn: 'home-sheet',
+    attrs: { 'data-sheet': 'join', ...(v.badges.join > 0 ? { 'aria-label': joinName(v.badges.join) } : {}) },
     title: 'a room code, a friend’s invite, a paused match or a league match',
   });
   return `<section class="homeplay" aria-labelledby="home-play-h">
@@ -854,15 +860,19 @@ function wireInfoHover(app: HTMLElement): void {
 /** The Alerts and Join badges, patched in place when the inbox's counts move
  * (no whole-page repaint for a count). */
 function patchHomeBadges(alerts: number, join: number): void {
-  const bell = document.querySelector('#app > .homepage .homealerts .ui-icon-button__icon');
-  if (bell) {
+  const bellBtn = document.querySelector('#app > .homepage .homealerts');
+  const bell = bellBtn?.querySelector('.ui-icon-button__icon');
+  if (bellBtn && bell) {
     bell.querySelector('.ui-icon-button__badge')?.remove();
     bell.insertAdjacentHTML('beforeend', iconButtonBadge(alerts));
+    const name = iconButtonName('Alerts', alerts, ALERTS_BADGE_NAME);
+    if (name === 'Alerts') bellBtn.removeAttribute('aria-label'); else bellBtn.setAttribute('aria-label', name);
   }
   const joinBtn = document.querySelector('#app > .homepage .homejoin');
   if (joinBtn) {
     joinBtn.querySelector('.homejoinbadge')?.remove();
-    if (join > 0) joinBtn.insertAdjacentHTML('beforeend', ` ${chip({ label: String(join), tone: 'accent', shape: 'pill', solid: true, className: 'homejoinbadge' })}`);
+    if (join > 0) joinBtn.insertAdjacentHTML('beforeend', ` ${joinBadgeHtml(join)}`);
+    if (join > 0) joinBtn.setAttribute('aria-label', joinName(join)); else joinBtn.removeAttribute('aria-label');
   }
 }
 

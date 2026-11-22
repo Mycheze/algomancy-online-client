@@ -828,6 +828,9 @@ function settingsTab(v: ProfileView): string {
 /** The profile, in the app frame (pages/frame.ts): the five tabs in the
  * toolbar's centre, the tab filling the window below, each of its regions
  * scrolling by itself. The toolbar's start is Home (`acct-close`). */
+/** the Players tab's count is drawn by CSS (`data-count`), so its name says it: "Players1" otherwise */
+export const playersTabName = (n: number): string => `Players, ${n} friend request${n === 1 ? '' : 's'} waiting`;
+
 export function profileHtml(v: ProfileView): string {
   const me = v.me, tab = v.tab;
   const counts: Partial<Record<ProfileTab, string>> = {
@@ -838,7 +841,7 @@ export function profileHtml(v: ProfileView): string {
     ariaLabel: 'Profile', className: 'acctnav',
     options: PROFILE_TABS.map(id => ({
       label: TAB_LABEL[id], value: id, on: id === tab, dataBtn: 'acct-tab',
-      attrs: { 'data-tab': id, ...(counts[id] && id === 'players' ? { 'data-count': counts[id] } : {}) },
+      attrs: { 'data-tab': id, ...(counts[id] && id === 'players' ? { 'aria-label': playersTabName(me.incoming.length), 'data-count': counts[id] } : {}) },
     })),
   });
   return frameHtml({

@@ -3,7 +3,7 @@
  * escaping and pass-through. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ICON_BUTTON_LAYOUTS, iconButton, iconButtonBadge } from '../components/icon-button.ts';
+import { ICON_BUTTON_LAYOUTS, iconButton, iconButtonBadge, iconButtonName } from '../components/icon-button.ts';
 import { icon } from '../components/icon.ts';
 
 test('a stack button: the icon, then the caption', () => {
@@ -47,4 +47,15 @@ test('escapes the caption; iconHtml is trusted; className and attrs pass through
   assert.match(html, /<span class="ui-icon-button__icon"><img src="a\.png" alt=""><\/span>/);
   assert.match(html, /class="ui-icon-button ui-icon-button--stack acct"/);
   assert.match(html, /data-seat="1"/);
+});
+
+test('a number badge is spoken in the button\'s name, with what it counts', () => {
+  assert.match(iconButton({ label: 'Alerts', icon: 'alerts', badge: 3, badgeName: 'unread' }), /<button class="[^"]*" type="button" aria-label="Alerts, 3 unread">/);
+  assert.match(iconButton({ label: 'Alerts', icon: 'alerts', badge: 3 }), /aria-label="Alerts, 3"/, 'no noun: the count alone');
+  assert.equal(iconButtonName('Alerts', 140, 'unread'), 'Alerts, more than 99 unread', '99+ is not read as "99 plus"');
+  for (const quiet of [0, 'dot', true, false, undefined] as const) {
+    assert.equal(iconButtonName('Alerts', quiet, 'unread'), 'Alerts', String(quiet));
+    assert.doesNotMatch(iconButton({ label: 'Alerts', icon: 'alerts', badge: quiet, badgeName: 'unread' }), /aria-label/, `${String(quiet)}: the caption is the name`);
+  }
+  assert.match(iconButton({ label: 'Home <x>', labelHtml: '<b>Home</b>', icon: 'home', badge: 2, badgeName: 'new' }), /aria-label="Home &lt;x&gt;, 2 new"/, 'escaped, beside labelHtml');
 });

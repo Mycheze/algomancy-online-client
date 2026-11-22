@@ -46,6 +46,7 @@ test('1071 §2 the shared tools: one list, the home draws them all', () => {
   const all = toolsHtml(IN, TOOL_NAMES);
   for (const a of ['data-learn="menu"', 'data-sbx="open"', 'data-help="rules"', 'data-inbox="bell"', 'data-report="open"']) assert.ok(all.includes(a), a);
   assert.match(all, /ui-icon-button__badge">4</, 'the bell carries the unread count');
+  assert.match(all, /data-inbox="bell"[^>]*aria-label="Alerts, 4 unread"|aria-label="Alerts, 4 unread"[^>]*data-inbox="bell"/, 'and says it: the pill alone reads "4Alerts"');
   assert.doesNotMatch(toolsHtml(OUT, TOOL_NAMES), /data-inbox/, 'signed out: no bell');
   assert.match(toolsHtml(OUT, ['alerts'], { alertsSignedOutHtml: '<!--SIGNIN-->' }), /^<!--SIGNIN-->$/);
   // the home really draws them through here, so a tool changed here changes everywhere

@@ -14,7 +14,8 @@
  *
  * `badge`: a number draws a small gold pill on the icon's top-right corner (99+
  * past 99); `'dot'` (or `true`) a plain dot; 0, false or undefined draws
- * nothing. `on` is the class `on` (as on every pressed thing in the client:
+ * nothing. A number is spoken in the button's name, with `badgeName` after it
+ * ("Alerts, 3 unread"): the pill alone reads as "3Alerts". `on` is the class `on` (as on every pressed thing in the client:
  * tests read `.on`) plus `aria-pressed` on a <button> or `aria-current="page"`
  * on a link; leave it undefined for a button that is never pressed.
  *
@@ -37,6 +38,8 @@ export interface IconButtonProps extends Common {
   layout?: IconButtonLayout;
   /** a count (0 hides it), or 'dot' / true for a dot */
   badge?: number | 'dot' | boolean;
+  /** what a number badge counts, spoken after it: 'unread' → "Alerts, 3 unread" */
+  badgeName?: string;
   /** pressed / current; undefined for a button that has no such state */
   on?: boolean;
   disabled?: boolean;
@@ -53,13 +56,23 @@ export function iconButtonBadge(badge: IconButtonProps['badge']): string {
   return `<span class="ui-icon-button__badge">${badge > 99 ? '99+' : esc(Math.floor(badge))}</span>`;
 }
 
+/** The button's spoken name: its label, then a number badge's count and what
+ * it counts. A page that patches the badge in place sets this as aria-label too. */
+export function iconButtonName(label: string, badge: IconButtonProps['badge'], badgeName?: string): string {
+  const pill = typeof badge === 'number' ? iconButtonBadge(badge) : '';
+  if (!pill) return label;
+  const n = badge as number > 99 ? 'more than 99' : String(Math.floor(badge as number));
+  return `${label}, ${n}${badgeName ? ` ${badgeName}` : ''}`;
+}
+
 export function iconButton(p: IconButtonProps): string {
   const layout = p.layout ?? 'stack';
   const own = `ui-icon-button ui-icon-button--${layout}${p.on ? ' on' : ''}`;
   const glyph = p.iconHtml ?? (p.icon ? icon(p.icon) : '');
   const inner = `<span class="ui-icon-button__icon">${glyph}${iconButtonBadge(p.badge)}</span>`
     + `<span class="ui-icon-button__label">${p.labelHtml ?? esc(p.label)}</span>`;
-  const named = p.labelHtml !== undefined ? p.label : undefined;
+  const spoken = iconButtonName(p.label, p.badge, p.badgeName);
+  const named = p.labelHtml !== undefined || spoken !== p.label ? spoken : undefined;
   if (p.href !== undefined) {
     return `<a${rootAttrs(own, p, {
       href: p.href, title: p.title, 'aria-label': named, 'aria-current': p.on ? 'page' : undefined, 'aria-disabled': p.disabled ? 'true' : undefined,

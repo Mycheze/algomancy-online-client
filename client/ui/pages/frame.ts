@@ -76,6 +76,8 @@ export const TOOL_NAMES = ['learn', 'test', 'rules', 'alerts', 'report'] as cons
 export type ToolName = typeof TOOL_NAMES[number];
 /** the tools a page in the frame carries (the home carries all five) */
 export const PAGE_TOOLS: readonly ToolName[] = ['rules', 'alerts', 'report'];
+/** what the bell's count is, spoken after it: "Alerts, 3 unread" */
+export const ALERTS_BADGE_NAME = 'unread';
 
 export interface ToolsOptions {
   /** signed out there is no bell: the markup to draw in its place ('' or
@@ -100,7 +102,7 @@ function toolHtml(name: ToolName, c: FrameChrome, o: ToolsOptions): string {
       return iconButton({ label: 'Rules', icon: 'rules', attrs: { 'data-help': 'rules' }, title: 'how to play: the rules, the rulebook, the interface' });
     case 'alerts':
       return c.signedIn
-        ? iconButton({ label: 'Alerts', icon: 'alerts', badge: c.alerts, on: c.alertsOpen === true, className: 'homealerts', attrs: { 'data-inbox': 'bell' },
+        ? iconButton({ label: 'Alerts', icon: 'alerts', badge: c.alerts, badgeName: ALERTS_BADGE_NAME, on: c.alertsOpen === true, className: 'homealerts', attrs: { 'data-inbox': 'bell' },
           title: 'friend invites, match alerts and league notices' })
         : o.alertsSignedOutHtml ?? '';
     case 'report':
