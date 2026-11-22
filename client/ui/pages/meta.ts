@@ -314,7 +314,7 @@ function exportHtml(v: MetaView): string {
     <div class="dktoolbar">
       <span class="zonelabel">export</span>
       <button class="dkkind${file ? '' : ' on'}" aria-pressed="${!file}" data-btn="meta-export" data-format="text">Card list</button>
-      <button class="dkkind${file ? ' on' : ''}" aria-pressed="${!!file}" data-btn="meta-export" data-format="file">Whole deck (JSON)</button>
+      <button class="dkkind${file ? ' on' : ''}" aria-pressed="${!!file}" data-btn="meta-export" data-format="file">Deck file (JSON)</button>
       <span class="dkfilterspacer"></span>
       <button data-btn="meta-copy-export">Copy</button>
       <button data-btn="meta-download" data-name="${esc(deckDownloadName(v.one?.name ?? '', file ? 'file' : 'text'))}">Download</button>

@@ -506,5 +506,11 @@ export default {
     + 'difference itself (a layout change of its own), and the format\'s two names, "Whole deck (JSON)" here and '
     + '"Deck file (JSON)" there. Guarded by '
     + '1508-shared-deck-export-downloads.test.ts (§2 drives the real client and reads the saved blob). Reasoned, not looked '
-    + 'at (no browser).',
+    + 'at (no browser).'
+    + '\n\n2026-11-22 (steward): the deck file has one name (the "Left" of the 2026-11-21 export round: "the format\'s '
+    + 'two names, \\"Whole deck (JSON)\\" here and \\"Deck file (JSON)\\" there"). The Metagame page\'s export button '
+    + '(pages/meta.ts exportHtml) said "Whole deck (JSON)"; the Decks page\'s sheet, the import box ("Or paste a list, or a '
+    + 'deck file") and deckformat.ts\'s refusals all say deck file. It is "Deck file (JSON)". Left: the two hints under '
+    + 'the formats, which differ in wording (and the Metagame one omits the sideboard the file carries). Guarded by '
+    + '1508-shared-deck-export-downloads.test.ts §4 (both panels\' format labels equal). Reasoned, not looked at (no browser).',
 } satisfies BacklogTicket;

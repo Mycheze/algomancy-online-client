@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-22', kind: 'change', text: 'The Metagame page\'s deck export now calls its second format "Deck file (JSON)", the same name your Decks page and the import box use.' },
   { date: '2026-11-21', kind: 'new', text: 'A deck someone shared on the Metagame page can be downloaded from its Export panel, as a card list or the whole deck file, just like your own decks.' },
   { date: '2026-11-21', kind: 'fix', text: 'Every Rotling that leaves your bin now offers its own pay-1 draw. Two leaving in the same turn no longer share one, because cards that only share a name do not affect each other.' },
   { date: '2026-11-21', kind: 'fix', text: 'Rotling no longer offers its pay-1 draw when a unit it was grafted onto dies. A modded unit and its mods are erased without ever reaching the bin, so "When I leave your bin" has nothing to fire on.' },

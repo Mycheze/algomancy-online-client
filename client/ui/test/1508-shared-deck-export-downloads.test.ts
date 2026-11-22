@@ -8,6 +8,7 @@
  *   §2 ui/meta.ts driven through the real client: Download hands the browser the
  *      text that is showing, under that name
  *   §3 every export panel offers both Copy and Download
+ *   §4 both panels call the two formats by the same names
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -95,4 +96,13 @@ test('1508 §3 BL-10: every export panel offers Copy and Download', () => {
     assert.match(html, new RegExp(`data-btn="${copy}"[^>]*>Copy<`), `${where}: Copy`);
     assert.match(html, new RegExp(`data-btn="${download}"[^>]*>Download<`), `${where}: Download`);
   }
+});
+
+test('1508 §4 BL-10: both export panels call the formats by the same names', () => {
+  const labels = (html: string): Record<string, string> => Object.fromEntries(
+    [...html.matchAll(/<button[^>]*data-format="(text|file)"[^>]*>([^<]*)<\/button>/g)].map(m => [m[1]!, m[2]!]));
+  const own = labels(decksSheetHtml({ kind: 'export', format: 'text', body: '2 Ignis Sprite', downloadName: 'Mine.txt' }));
+  const shared = labels(ui.click({ btn: 'meta-export', format: 'text' }));
+  assert.deepEqual(Object.keys(own).sort(), ['file', 'text'], 'your Decks page offers both formats');
+  assert.deepEqual(shared, own, 'the Metagame page names them as your Decks page does');
 });
