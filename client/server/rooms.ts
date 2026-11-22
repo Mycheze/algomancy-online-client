@@ -2602,6 +2602,12 @@ export function disputesRefusal(room: Room): string | null {
   return null;
 }
 
+/** `seat` can watch this game back once it is decided: `/api/replay` admits an account that
+ * played it, and the browser viewer refuses a scenario deal; a sandbox room's file is scratch. */
+export function replayableBy(room: Room, seat: Seat): boolean {
+  return !!room.users[seat] && !room.state.sandbox && !room.scenario;
+}
+
 /** Why `seat` may not dispute this game right now — null when it may. */
 export function disputeRefusal(room: Room, seat: Seat | null): string | null {
   if (seat !== 0 && seat !== 1) return 'only a player in this game can dispute it';

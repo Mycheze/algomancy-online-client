@@ -247,6 +247,15 @@ function disputedNote(o: GameOver): string {
     ? `<div class="pgnote">${esc(o.names[opp] ?? 'Your opponent')} disputed this result.</div>` : '';
 }
 
+/** Watch the replay — not while a Competitive match is open: the route refuses
+ * its games until the match ends, so the next game's deck stays hidden (docs/22 §2.6) */
+function replayHtml(o: GameOver): string {
+  if (!o.replay) return '';
+  const m = o.match;
+  if (m && m.phase !== 'over' && m.phase !== 'void') return '';
+  return button({ label: 'Watch the replay', dataBtn: 'pg-replay' });
+}
+
 const RATING_NAME = { constructed: 'Constructed', draft: 'Live draft' } as const;
 
 /** "Live draft rating 1000 → 1012 (+12)": the sign is in the words, the colour only repeats it */
@@ -305,6 +314,7 @@ export function postGameHtml(v: PostGameView): string {
     <div class="pgbtns">
       ${o.match ? matchButtonsHtml(o) : rematchHtml(o)}
       ${disputeHtml(o)}
+      ${replayHtml(o)}
       ${homeHtml(o)}
       ${button({ label: 'Find a game', dataBtn: 'pg-queue' })}
     </div>

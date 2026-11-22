@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-22', kind: 'new', text: 'The end-of-game screen now has a Watch the replay button: it opens the game you just played, from the first move, in the replay viewer. In a best-of-three it appears once the match is over.' },
   { date: '2026-11-22', kind: 'change', text: 'The live draft step is redrawn: the pack sits on top in one row, your hand fans out below it. Tap a card to move it, or drag it to exactly where you want it in either row.' },
   { date: '2026-11-22', kind: 'new', text: 'Drag the cards in your hand into any order you like. It is only how your hand looks to you: the game and your opponent never see it.' },
   { date: '2026-11-22', kind: 'fix', text: 'A live draft made with its elements picked now opens in the room first, with the code to send and Invite a friend, like any draft. Nothing is dealt until you are both in and ready.' },

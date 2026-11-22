@@ -85,6 +85,9 @@ export interface GameOver {
    */
   disputable?: true;
   disputed?: [boolean, boolean];
+  /** the room code this seat can watch back in the replay viewer — absent when
+   * the replay route would not admit it (signed out, a scenario, test mode) */
+  replay?: string;
   /**
    * BL-28 — this seat played signed out, and may make an account now and
    * keep THIS game as its first: a single-use ticket and when it runs out
@@ -178,9 +181,15 @@ export function handlePostGameButton(btn: HTMLElement, a: PostGameActions): bool
     case 'pg-newmatch': location.href = `${location.pathname}?bo=${btn.dataset['bo'] === '1' ? 1 : 3}`; return true;
     case 'pg-home': location.href = location.pathname; return true;
     case 'pg-close': a.dismiss(); return true;
+    case 'pg-replay': if (a.over.replay) location.href = replayLink(a.over.replay); return true;
     case 'pg-dispute': if (a.over.disputable && !a.over.disputed?.[a.over.seat]) a.dispute(); return true;
   }
   return false;
+}
+
+/** the replay viewer's address for a finished game (main.ts `?replay=`) */
+export function replayLink(code: string): string {
+  return `${location.pathname}?replay=${encodeURIComponent(code)}`;
 }
 
 /** Both agreed: walk into the new room, same seat, same format. The mode

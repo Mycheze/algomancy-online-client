@@ -56,7 +56,7 @@ import {
   closedNotice, codeTaken, setCodeTakenAlso, sweepIdleRooms, sandboxCodesByAge, hiddenActionsFrom,
   answerFix, dropProposal, fixInfo, fixesRefusal, editTiming, proposalExpired, proposeFix, recordAmendment,
   rewindOptions, rewindRoom, type Proposal, fixRunContinues, noteFixRun, takeFixRun, takeStaleFixRuns, FIX_RUN_IDLE_MS,
-  disputedSeats, disputesRefusal,
+  disputedSeats, disputesRefusal, replayableBy,
   MATCH_CLOCK_MS, ccUndoOpen,
 } from './rooms.ts';
 // docs/22 — Competitive Constructed: the match record and everything between games
@@ -2337,6 +2337,8 @@ function sendGameOver(room: Room, seat: Seat, extra: {
     // BL-48: a game between two players can be disputed from this screen —
     // and who already has. Absent on a scenario or sandbox room's payload.
     ...(disputesRefusal(room) === null ? { disputable: true, disputed: disputedSeats(room) } : {}),
+    // the game this seat can open in the replay viewer (`/api/replay` admits it once decided)
+    ...(replayableBy(room, seat) ? { replay: room.code } : {}),
     // docs/22 §5.5: a match game's screen shows the match score and Continue
     // (`match.room` is where the match is now) in place of Rematch
     ...((): object => { const m = matchOfRoom(room); return m ? { match: matchSummary(m) } : {}; })(),
