@@ -183,6 +183,46 @@ test('§3 regression: round 1 after combat with nobody sent ends the battle (the
   noHint(html2);
 });
 
+/** round 1's block window: A attacks with one column per card named, unblocked */
+function blockWindow(seed: number, names: string[]): Harness {
+  const h = new Harness(seed);
+  toDeployment(h);
+  const A = h.state.initiative, D = (1 - A) as Seat;
+  const ids = names.map(n => spawn(h, A, n));
+  toNextBattle(h, A);
+  h.do({ type: 'declareAttack', seat: A, columns: ids.map(u => [u]) });
+  for (let g = 0; g < 20 && h.state.battle!.step !== 'blocks'; g++) pass(h);
+  h.do({ type: 'declareBlocks', seat: D, blocks: {} });
+  for (let g = 0; g < 20 && h.state.stack.length; g++) pass(h);
+  assert.equal(h.state.battle!.step, 'blockWindow', 'premise: the block window');
+  return h;
+}
+
+test('§3 CT-576 #431: a split damage step names its Swift sub-step from the block window', () => {
+  const h = blockWindow(70611, ['Dune Drifter', 'Bripp']);   // {Swift}, normal
+  assert.equal(passLabel(h.state, h.state.priority!).text, 'To Swift damage');
+  assert.match(passBtn(show(h.state)), /^To Swift damage/);
+  pass(h); pass(h);
+  assert.equal(h.state.battle!.step, 'damageWindow', 'the two passes dealt only the Swift sub-step');
+  assert.equal(passLabel(h.state, h.state.priority!).text, 'To normal damage');
+});
+
+test('§3 CT-576: normal then Sluggish — the block window names the normal sub-step', () => {
+  const h = blockWindow(70612, ['Bripp', 'Adversary of the Deep']);   // normal, {Sluggish}
+  assert.equal(passLabel(h.state, h.state.priority!).text, 'To normal damage');
+  pass(h); pass(h);
+  for (let g = 0; g < 20 && h.state.stack.length; g++) pass(h);   // the Adversary's own trigger
+  assert.equal(h.state.battle!.pendingSub, 'Sluggish');
+  assert.equal(passLabel(h.state, h.state.priority!).text, 'To Sluggish damage');
+});
+
+test('§3 CT-576: an unsplit damage step is still "To Damage", Swift alone included', () => {
+  for (const [seed, names] of [[70613, ['Bripp', 'Bloated Manablub']], [70614, ['Dune Drifter']]] as const) {
+    const h = blockWindow(seed, [...names]);
+    assert.equal(passLabel(h.state, h.state.priority!).text, 'To Damage', names.join(' + '));
+  }
+});
+
 test('§4 deployment: "Done Deploying", then "End Turn" once the opponent is done', () => {
   const h = new Harness(70605);
   toDeployment(h);

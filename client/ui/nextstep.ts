@@ -7,7 +7,9 @@
  * line, "‹opponent› can reply", because the destination is only reached if
  * they pass too.
  *
- * Pure: engine TYPES only, so a test can drive it over bare fixture states.
+ * Pure: it reads the state and never changes it (the block window asks the
+ * engine, on a copy, which damage sub-steps will strike), so a test can drive
+ * it over bare fixture states.
  *
  * ⚠ `passOutcome` MIRRORS THE ENGINE'S PASS RULE (engine.ts `passPriority` /
  * `advanceBattleStep` / `pumpCombatDamage` / `endBattleRound`). If those
@@ -16,12 +18,14 @@
  *     an item in a region where only one player is present is not in the
  *     window (CR 703.7, engine `soloStacked`) and drains on its own
  *   - otherwise the step advances: attackWindow → blocks, blockWindow →
- *     damage, damageWindow → `pendingSub` (null reads as 'after'),
+ *     damage (named by its first sub-step when the step is split, CR 608.3b),
+ *     damageWindow → `pendingSub` (null reads as 'after'),
  *     afterWindow → the counterattack round, or the end of the battle phase
  *     when round 1 happened and nobody was sent (round 2 ends the instant it
  *     starts — the same test as ui/passrelease.ts passEndsBattlePhase).
  */
-import type { BattleState, GameState, Seat, StackItem } from '../engine/src/types.ts';
+import { E } from '../engine/src/engine.ts';
+import type { BattleState, DamageSubStep, GameState, Seat, StackItem } from '../engine/src/types.ts';
 
 export interface PassLabel {
   /** the button's text */
@@ -34,7 +38,7 @@ export interface PassLabel {
 export type PassOutcome =
   | { kind: 'resolve'; item: StackItem }
   | { kind: 'blocks' }
-  | { kind: 'damage' }
+  | { kind: 'damage'; first: DamageSubStep | null }
   | { kind: 'substep'; sub: NonNullable<BattleState['pendingSub']> }
   | { kind: 'counterattack' }
   | { kind: 'endBattle' }
@@ -65,7 +69,7 @@ export function passOutcome(s: GameState): PassOutcome {
   if (top) return { kind: 'resolve', item: top };
   switch (b.step) {
     case 'attackWindow': return { kind: 'blocks' };
-    case 'blockWindow': return { kind: 'damage' };
+    case 'blockWindow': return { kind: 'damage', first: firstSplitSub(s) };
     case 'damageWindow': return { kind: 'substep', sub: b.pendingSub ?? 'after' };
     case 'afterWindow':
       // engine endBattleRound: round 1 hands over to round 2, which ends at
@@ -74,6 +78,18 @@ export function passOutcome(s: GameState): PassOutcome {
       return { kind: 'endBattle' };
     default: return { kind: 'unknown' };
   }
+}
+
+/** CR 608.3b: when the damage step about to open is split, the first sub-step
+ * that strikes — two passes deal only it, then offer priority. Null when the
+ * step is one unsplit step. The engine's own `subStepsWithStrikes`, on a copy. */
+export function firstSplitSub(s: GameState): DamageSubStep | null {
+  let subs: DamageSubStep[];
+  try {
+    const c = structuredClone(s);
+    subs = new E(c).subStepsWithStrikes(c.battle!);
+  } catch { return null; }
+  return subs.length >= 2 ? subs[0]! : null;
 }
 
 const SUB_NAME: Record<NonNullable<BattleState['pendingSub']>, string> = {
@@ -86,7 +102,7 @@ function battleText(s: GameState): string {
   switch (o.kind) {
     case 'resolve': return `Resolve ${o.item.card ?? o.item.label}`;
     case 'blocks': return 'To Blockers';
-    case 'damage': return 'To Damage';
+    case 'damage': return o.first ? `To ${SUB_NAME[o.first]}` : 'To Damage';
     case 'substep': return `To ${SUB_NAME[o.sub]}`;
     case 'counterattack': return 'To Counterattack';
     case 'endBattle': return 'End Battle';

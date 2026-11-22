@@ -15206,8 +15206,9 @@ export class E {
    * striking in them. Two or more and the damage step is SPLIT — each is a
    * real step with priority between them. The walk is `assignCombatDamage`'s
    * own, asked of all three sub-steps instead of one, so a sub-step counts
-   * here exactly when that method would deal damage in it. */
-  private subStepsWithStrikes(b: BattleState,
+   * here exactly when that method would deal damage in it. Public for the
+   * block window's button, which names the first of them (ui/nextstep.ts). */
+  subStepsWithStrikes(b: BattleState,
     among: readonly DamageSubStep[] = ['Swift', 'normal', 'Sluggish'] as const): DamageSubStep[] {
     // CR 606.4f: a blocking column strikes only with an attacker in front of it, so
     // a side-block (and a CR 608.4e hole) opens no damage window of its own
