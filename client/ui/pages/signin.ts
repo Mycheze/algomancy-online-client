@@ -14,7 +14,7 @@
  * the heading in the toolbar, the frame's Back); tests 267 and 905 read its
  * warning and its message line. The buttons stay the page's `.homebtns`. The
  * identity bar is the home's slot and is drawn exactly as it was. */
-import { esc } from '../util.ts';
+import { esc, favouriteTitle } from '../util.ts';
 import { USERNAME_MAX } from '../../shared/username.ts';
 import { ICON_BASE } from '../assets.ts';
 import type { Me } from '../account.ts';
@@ -45,7 +45,7 @@ export function identityBarView(me: Me | null, resolving: boolean): IdentityBarV
  * just text, use the actual element icon") — the same data/icons file the
  * card text draws for a pip; the word stays as the title and the alt */
 export const elChip = (el: string | null): string =>
-  el ? `<span class="acctel icon ${el}" title="favorite element: ${el}"><img src="${ICON_BASE}${el}.webp" alt="${el}"></span>` : '';
+  el ? `<span class="acctel icon ${esc(el)}" title="${favouriteTitle(el)}"><img src="${ICON_BASE}${esc(el)}.webp" alt="${esc(el)}"></span>` : '';
 
 /** The account line that sits above the home screen's buttons.
  *

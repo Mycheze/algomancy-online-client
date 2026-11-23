@@ -66,7 +66,7 @@ import { artPick, backdropCard, challengeArtCard, LEAGUE_ART, modeArt, QUEUE_ART
 import {
   appShell, button, chip, icon, iconButton, iconButtonBadge, iconButtonName, installSheetEsc, segmented, settingRow, sheet, shellBar, statusMessage,
 } from '../components/index.ts';
-import { chosenDeck, elIcon as elIconOf, esc } from '../util.ts';
+import { chosenDeck, elIcon as elIconOf, esc, favouriteTitle } from '../util.ts';
 import { caretIn, restoreCaret } from './caret.ts';
 import { ALERTS_BADGE_NAME, keepArt, TOOL_NAMES, toolsHtml } from './frame.ts';
 import {
@@ -432,7 +432,7 @@ function accountHtml(a: IdentityBarView): string {
     ? `${me.wins}W–${me.losses}L${me.unresolved ? ` · ${me.unresolved} unrecorded` : ''}`
     : 'no games yet';
   const av = me.favoriteElement
-    ? `<span class="homeav el ${esc(me.favoriteElement)}"><img src="${ICON_BASE}${esc(me.favoriteElement)}.webp" alt="" title="favorite element: ${esc(me.favoriteElement)}"></span>`
+    ? `<span class="homeav el ${esc(me.favoriteElement)}"><img src="${ICON_BASE}${esc(me.favoriteElement)}.webp" alt="" title="${favouriteTitle(me.favoriteElement)}"></span>`
     : `<span class="homeav">${esc(me.username.charAt(0).toUpperCase())}</span>`;
   return `<button class="homeacct in" data-btn="acct-open-profile" title="your profile, stats and achievements">
     ${av}<span class="homeaccttext"><span class="homeacctname">${esc(me.username)}</span>

@@ -7,6 +7,9 @@ import { ICON_BASE } from './assets.ts';
 export const esc = (s: unknown): string =>
   String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
 
+/** the tooltip on every favourite-element icon, escaped for an attribute */
+export const favouriteTitle = (el: string): string => `favourite element: ${esc(el)}`;
+
 /** The game's REAL icon (element pip, cost circle, marker) as an inline img.
  * `alt` shows only while the file is missing: pass the name where no word is
  * printed beside the icon (the topbar trio), nothing where one already is. */

@@ -17,7 +17,7 @@
  * every click here is `data-inbox`, and `.invbtns button` / `.roomfriend
  * button` size them, so the button component would add nothing but a class.
  * Its CSS is styles/shared/13-report-and-inbox.css. */
-import { esc, elIcon } from '../util.ts';
+import { esc, elIcon, favouriteTitle } from '../util.ts';
 import { statusMessage } from '../components/index.ts';
 
 // ── the view ─────────────────────────────────────────────────────────
@@ -108,7 +108,7 @@ function friendRowHtml(f: RoomFriendView): string {
     : `<button ${f.status === 'offline' ? '' : 'class="primary" '}data-inbox="invite" data-id="${esc(f.id)}">${f.invite === 'declined' ? 'Ask again' : 'Invite'}</button>`;
   return `<div class="roomfriend ${f.status}">
     <span class="fdot ${f.status === 'offline' ? '' : 'on'}${f.status === 'playing' ? ' busy' : ''}"></span>
-    ${f.favoriteElement ? `<span class="acctel icon ${esc(f.favoriteElement)}">${elIcon(f.favoriteElement)}</span>` : ''}
+    ${f.favoriteElement ? `<span class="acctel icon ${esc(f.favoriteElement)}" title="${favouriteTitle(f.favoriteElement)}">${elIcon(esc(f.favoriteElement))}</span>` : ''}
     <span class="rfname">${esc(f.username)}</span>
     <span class="rfstatus">${f.invite === 'declined' ? 'said no' : STATUS_WORD[f.status]}</span>
     ${btn}
