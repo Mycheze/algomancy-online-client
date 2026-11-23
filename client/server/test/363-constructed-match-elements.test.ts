@@ -49,8 +49,8 @@ const accounts = await import('../accounts.ts');
  * a literal would pull ui/'s DOM code into the SERVER's typecheck, which has no
  * DOM lib. Both are pure string builders and run fine under node. */
 const uiModule = (rel: string): Promise<unknown> => import(new URL(rel, import.meta.url).href);
-const { historyRowsHtml } = await uiModule('../../ui/account.ts') as {
-  historyRowsHtml: (rows: import('../accounts.ts').MatchRow[]) => string };
+const { gameRowsHtml } = await uiModule('../../ui/account.ts') as {
+  gameRowsHtml: (rows: import('../accounts.ts').MatchRow[]) => string };
 const { elementsLine } = await uiModule('../../ui/postgame.ts') as {
   elementsLine: (o: { seat: 0 | 1; els: string[]; sides?: [string[], string[]] }) => string };
 
@@ -217,11 +217,12 @@ test('§3b a custom draft is still left out, and a signed-out seat still matches
 
 test('§4 Recent games prints mine vs theirs for a constructed row and the trio for a draft', () => {
   const rows = accounts.recentGames(MY);
-  const html = historyRowsHtml(rows.filter(r => r.code === 'TVXN'));
-  assert.match(html, /water<\/span><span class="hint"> vs <\/span><span class="acctel fire">fire<\/span><span class="acctel dark">dark/);
+  const html = gameRowsHtml(rows.filter(r => r.code === 'TVXN'));
+  assert.match(html, /<span class="pfdots" title="water">.*?<\/span><span class="pfvs">vs<\/span><span class="pfdots" title="fire, dark">/s);
   assert.doesNotMatch(html, /earth/);
-  const draft = historyRowsHtml(rows.filter(r => r.code === 'DRAFTD'));
-  assert.doesNotMatch(draft, / vs /);
+  const draft = gameRowsHtml(rows.filter(r => r.code === 'DRAFTD'));
+  assert.doesNotMatch(draft, /pfvs/);
+  assert.match(draft, /<span class="pfdots" title="[a-z]+, [a-z]+, [a-z]+">/, 'a draft row is its trio');
 });
 
 test('§4b the post-game line puts the viewer side first', () => {

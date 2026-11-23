@@ -90,15 +90,10 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .accttable td { padding: var(--space-2) var(--space-3); border-bottom: 1px dotted var(--line); }
 .accttable .good { color: var(--glow); }
 .accttable .bad { color: var(--danger); }
-.accttable.games .resultcell { font-weight: 700; }
-.accttable.games .res-win .resultcell { color: var(--glow); }
-.accttable.games .res-loss .resultcell { color: var(--danger); }
-.accttable.games .res-unknown td { color: var(--dim); }
 /* a game the current engine cannot replay to its end: its numbers are a floor */
 .partial { color: var(--accent); font-weight: 700; margin-left: var(--space-1); cursor: help; }
-.roomcell { font-family: ui-monospace, monospace; color: var(--dim); }
-/* CR D8.5: a conceded game that did not weigh as a full one — the tag beside its
- * result. A walkover row is dimmed whole: it is in the history, counted nowhere. */
+/* CR D8.5: a conceded game that did not weigh as a full one — the tag that says so.
+ * A walkover is in the history and counted nowhere (its result is struck through, 53-profile.css). */
 .constag { display: inline-block; margin-left: var(--space-3); padding: var(--space-1) var(--space-3); border-radius: var(--radius-sm);
   font-size: var(--text-11); font-weight: 600; letter-spacing: .03em; text-transform: uppercase;
   color: var(--dim); border: 1px solid var(--line); cursor: help; vertical-align: middle; }
@@ -106,8 +101,6 @@ button.acctbar:hover .acctname { text-decoration: underline; }
 .constag.fixed { color: var(--text); }   /* BL-46: counted, and tagged */
 .constag.disputed { color: var(--text); }   /* BL-48: the result stands, and is tagged */
 .lgdispute { font-size: 0.85em; color: var(--accent); margin-top: var(--space-1); }   /* BL-48: the organizer's flag */
-.accttable.games .weight-walkover td { color: var(--dim); }
-.accttable.games .weight-walkover .resultcell { color: var(--dim); font-weight: 500; }
 
 .achgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-4); }
 .ach { display: flex; gap: var(--space-4); background: var(--panel2); border: 1px solid var(--line);

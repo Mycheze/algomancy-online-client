@@ -13,7 +13,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { concessionNote, type GameOver } from '../postgame.ts';
 import { postGameHtml as drawPostGame, postGameView } from '../pages/postgame.ts';
-import { concessionTag, historyRowsHtml, type MatchRow } from '../account.ts';
+import { concessionTag, gameRowsHtml, type MatchRow } from '../account.ts';
+import { readStyles } from './read-styles.ts';
 
 // the screen's markup is pages/postgame.ts since the design-system round (2026-11-03)
 const postGameHtml = (o: GameOver): string => drawPostGame(postGameView(o));
@@ -84,14 +85,16 @@ const row = (extra: Partial<MatchRow> = {}): MatchRow => ({
   damageDealt: 0, favoriteElement: null, ...extra,
 });
 
-test('CR D8.5 a walkover row is tagged "not counted" and dimmed whole', () => {
+test('CR D8.5 a walkover row is tagged "not counted" and its result struck through', () => {
   const tag = concessionTag(row({ concession: { turn: 1, weight: 'walkover', mine: false } }));
   assert.match(tag, /constag walkover/);
   assert.match(tag, /walkover · not counted/);
   assert.match(tag, /Bo conceded on turn 1/, 'the title names the conceder');
-  const html = historyRowsHtml([row({ concession: { turn: 1, weight: 'walkover', mine: false } })]);
+  const html = gameRowsHtml([row({ concession: { turn: 1, weight: 'walkover', mine: false } })]);
   assert.match(html, /class="res-win weight-walkover"/);
-  assert.match(html, /WIN<span class="constag walkover"/, 'the result still says who won; the tag sits beside it');
+  assert.match(html, /<span class="pfres">Win<\/span>/, 'the result still says who won');
+  assert.match(html, /<span class="pftags"><span class="constag walkover"/, 'the tag sits under the opponent');
+  assert.match(readStyles(), /\.weight-walkover \.pfres \{[^}]*line-through/, 'a walkover\'s result is struck through');
 });
 
 test('CR D8.5 an early row is tagged "half weight"', () => {
@@ -99,14 +102,14 @@ test('CR D8.5 an early row is tagged "half weight"', () => {
   assert.match(tag, /constag early/);
   assert.match(tag, /early concession · half weight/);
   assert.match(tag, /you conceded on turn 2/, '"you" when it was this account');
-  assert.match(historyRowsHtml([row({ result: 'loss', concession: { turn: 2, weight: 'early', mine: true } })]),
+  assert.match(gameRowsHtml([row({ result: 'loss', concession: { turn: 2, weight: 'early', mine: true } })]),
     /class="res-loss weight-early"/);
 });
 
 test('CR D8.5 ⭐ a normal concession and an un-stamped row carry no tag and no weight class', () => {
   assert.equal(concessionTag(row({ turns: 7, concession: { turn: 7, weight: 'normal', mine: false } })), '');
   assert.equal(concessionTag(row({ turns: 7 })), '');
-  const html = historyRowsHtml([row({ turns: 7 }), row({ turns: 7, concession: { turn: 7, weight: 'normal', mine: true } })]);
+  const html = gameRowsHtml([row({ turns: 7 }), row({ turns: 7, concession: { turn: 7, weight: 'normal', mine: true } })]);
   assert.doesNotMatch(html, /constag|weight-/);
   assert.match(html, /class="res-win">/);
 });

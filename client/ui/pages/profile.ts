@@ -208,21 +208,6 @@ export function gameElementsHtml(els: readonly string[], sides?: readonly [reado
   return sides ? `${chips(sides[0])}<span class="hint"> vs </span>${chips(sides[1])}` : chips(els);
 }
 
-/** The match-history table body, one row per game. Pure: takes the rows. */
-export function historyRowsHtml(history: MatchRow[]): string {
-  return history.map(g => `<tr class="res-${g.result}${g.concession && g.concession.weight !== 'normal' ? ` weight-${g.concession.weight}` : ''}">
-      <td class="resultcell">${g.result === 'win' ? 'WIN' : g.result === 'loss' ? 'loss' : '?'}${concessionTag(g)}${customTag(g)}${fixedTag(g)}${disputedTag(g)}</td>
-      <td>${esc(g.opponent)}</td>
-      <td>${formatCell(g)}</td>
-      <td>${gameElementsHtml(g.els, g.sides)}</td>
-      <td>${g.turns}${g.diverged ? '<span class="partial" title="played on an older engine — its numbers are a floor, not a total">+</span>' : ''}</td>
-      <td>${g.life[0]}–${g.life[1]}</td>
-      <td>${shortDate(g.playedAt)}</td>
-      <td class="roomcell"><a class="replaylink" href="?replay=${encodeURIComponent(g.code)}"
-        title="watch this game back">▶ ${esc(g.code)}</a></td>
-    </tr>`).join('');
-}
-
 // ── the view ──────────────────────────────────────────────────────────
 
 /* The account redesign (owner, 2026-11-07: "the boxes aren't aligned, they're

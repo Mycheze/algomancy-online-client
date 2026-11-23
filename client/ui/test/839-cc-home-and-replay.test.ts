@@ -143,15 +143,15 @@ test('§5 a watch says who is watching', () => {
 });
 
 test('§6 the match history says Game 2 of 3 CT-514', async () => {
-  const { historyRowsHtml } = await import('../account.ts');
+  const { gameRowsHtml } = await import('../account.ts');
   const row = {
     code: 'G2CC', playedAt: '2026-11-02T10:00:00Z', mode: 'constructed', els: [], turns: 9, deckId: null,
     finished: true, diverged: false, result: 'win' as const, opponent: 'Rashi', opponentId: null, life: [12, 0] as [number, number],
     unitsPlayed: 0, spellsPlayed: 0, damageDealt: 0, favoriteElement: null,
   };
-  assert.match(historyRowsHtml([{ ...row, match: { id: 'M839', game: 2, bestOf: 3 } }]), /<td>competitive · game 2 of 3<\/td>/);
-  assert.match(historyRowsHtml([{ ...row, match: { id: 'M839', game: 1 } }]), /<td>competitive · game 1<\/td>/, 'no Best of: no "of"');
-  assert.match(historyRowsHtml([row]), /<td>constructed<\/td>/, 'any other game reads as before');
+  assert.match(gameRowsHtml([{ ...row, match: { id: 'M839', game: 2, bestOf: 3 } }]), /<td class="pfdim pffmt">competitive · game 2 of 3<\/td>/);
+  assert.match(gameRowsHtml([{ ...row, match: { id: 'M839', game: 1 } }]), /<td class="pfdim pffmt">competitive · game 1<\/td>/, 'no Best of: no "of"');
+  assert.match(gameRowsHtml([row]), /<td class="pfdim pffmt">constructed<\/td>/, 'any other game reads as before');
 });
 
 test('§7 the League Play for a Competitive match opens the match room CT-514', async () => {

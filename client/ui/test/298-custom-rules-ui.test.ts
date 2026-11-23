@@ -20,7 +20,7 @@ import { readFileSync } from 'node:fs';
 import { createPayload, elementCount, handlePanelButton, verdict } from '../customrulespanel.ts';
 import { bansHtml, cardsHtml, customRulesView, gameValuesHtml, modeHtml, poolLineHtml } from '../pages/customrules.ts';
 import { lobbyHtml as drawLobby, lobbyView, type LobbyArgs } from '../pages/lobby.ts';
-import { customTag, historyRowsHtml, type MatchRow } from '../account.ts';
+import { customTag, gameRowsHtml, type MatchRow } from '../account.ts';
 import { RULES_SECTIONS } from '../rules.ts';
 import { DECK_LIST } from '../../engine/src/cards/registry.ts';
 
@@ -135,10 +135,10 @@ const row = (extra: Partial<MatchRow> = {}): MatchRow => ({
 
 test('BL-43 ui §7 a custom row in the match history says it was not counted', () => {
   assert.equal(customTag(row()), '');
-  const tagged = historyRowsHtml([row({ custom: ['2 elements', 'Simple cards only'] })]);
+  const tagged = gameRowsHtml([row({ custom: ['2 elements', 'Simple cards only'] })]);
   assert.match(tagged, /custom · not counted/);
   assert.match(tagged, /2 elements · Simple cards only/);
-  assert.ok(!historyRowsHtml([row()]).includes('custom'), 'a standard row carries no tag');
+  assert.ok(!gameRowsHtml([row()]).includes('custom'), 'a standard row carries no tag');
 });
 
 test('BL-43 ui §8 the draft prompt names the real pack size and no share link carries rules', () => {

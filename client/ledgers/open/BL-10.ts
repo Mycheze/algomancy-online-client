@@ -527,5 +527,13 @@ export default {
     + '`attr(data-count)` ("Players, 1 friend request waiting"). pages/home.ts patchHomeBadges, which moves both home '
     + 'counts in place, moves the names with them. Left: the dot badges (Updates says "· 3 new" in its caption), and a '
     + 'live announcement when a count changes. Guarded by 1003 (the component), 1071 §2, 960 §7, 976. Reasoned, not '
-    + 'looked at (no browser or screen reader).',
+    + 'looked at (no browser or screen reader).'
+    + '\n\n2026-11-23 (steward): the tests that guard the Games tab read the Games tab (docs/23-ui-inventory/02 §8.4 '
+    + 'item 15: "history\'s result reads \"WIN\" vs \"loss\""). That line was pages/profile.ts historyRowsHtml, the '
+    + 'pre-redesign history table: no page drew it after 2026-11-07, when gameRowsHtml (Win / Loss pills) replaced it, '
+    + 'but four tests (ui 291 concession tags, 298 custom tag, 839 match format, server 363 mine-vs-theirs elements) '
+    + 'still asserted on it, so the live rows had none of those guards. The function went, the tests read gameRowsHtml '
+    + '(account.ts re-exports it in its place), and its only rules went with it (.accttable.games …, .roomcell in '
+    + '17-accounts.css); 1507 could not see them, because the dead function still wrote the classes. Swept '
+    + 'ui/pages for any other exported …Html drawn only by tests: none. Nothing moves on screen.',
 } satisfies BacklogTicket;
