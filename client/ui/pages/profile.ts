@@ -498,7 +498,7 @@ function achievementCard(a: AchievementState, rungs: boolean[]): string {
       rungs.map(got => `<span class="${got ? 'on' : ''}"></span>`).join('')}</div>`
     : '';
   return `<div class="ach ${a.earned ? 'got' : ''} ${a.hidden ? 'secret' : ''}">
-    <div class="achicon">${a.icon}</div>
+    <div class="achicon" aria-hidden="true">${esc(a.icon)}</div>
     <div class="achbody">
       <div class="achname">${esc(a.name)}${a.earned && a.earnedAt
         ? `<span class="achdate">${shortDate(a.earnedAt)}</span>` : ''}</div>

@@ -289,7 +289,7 @@ export function postGameHtml(v: PostGameView): string {
 
     ${o.unlocked?.length ? `<div class="pgunlocked">
       <div class="pgunlockedhead">Unlocked</div>
-      ${o.unlocked.map(u => `<div class="pgach"><span class="achicon">${u.icon}</span>
+      ${o.unlocked.map(u => `<div class="pgach"><span class="achicon" aria-hidden="true">${esc(u.icon)}</span>
         <span><b>${esc(u.name)}</b><br><span class="hint">${esc(u.desc)}</span></span></div>`).join('')}
     </div>` : ''}
     </div><div class="pgside">

@@ -538,5 +538,9 @@ export default {
     + 'ui/pages for any other exported …Html drawn only by tests: none. Nothing moves on screen.\n\n'
     + '2026-11-23 (steward): a favourite element is said one way (docs/23-ui-inventory/02 §8.4 item 16: "\"favorite element\" in the bar\'s tooltip … vs \"Favourite element\" on the profile", and §8.6 item 42\'s second half: "`elChip` puts the server\'s element string into a class and URL unescaped"). '
     + 'The class was every favourite-element icon in ui/: pages/signin.ts elChip (the identity bar, the profile\'s friend and ladder rows), the home\'s avatar (pages/home.ts accountHtml) and the waiting room\'s Invite a friend row (pages/inbox.ts friendRowHtml, which had no tooltip). All take util.ts favouriteTitle, and elChip escapes its class, URL and alt. '
-    + 'Left: §8.6 item 42\'s first half (the achievement icon), and the profile hero\'s crest, which names its element by alt beside the name. Guarded by 1514-favourite-element-one-spelling.test.ts (§3 a census of every ui string). Reasoned, not looked at (no browser).',
+    + 'Left: §8.6 item 42\'s first half (the achievement icon), and the profile hero\'s crest, which names its element by alt beside the name. Guarded by 1514-favourite-element-one-spelling.test.ts (§3 a census of every ui string). Reasoned, not looked at (no browser).'
+    + '\n\n2026-11-23 (steward): an achievement\'s icon is escaped and silent (docs/23-ui-inventory/02 §8.6 item 42\'s first half: "The achievement icon is inserted **unescaped** (account.ts:712)"). The icon is a server string; the class was the two places it is drawn, '
+    + 'the profile\'s Achievements tab (pages/profile.ts achievementCard) and the post-game\'s Unlocked list (pages/postgame.ts). Both write it '
+    + 'through esc() and aria-hidden, since the name beside it says what it is. §8.6 item 42 is used up. Guarded by '
+    + '1515-achievement-icon-escaped.test.ts (§2 a census of every achicon in ui/). Nothing moves on screen.',
 } satisfies BacklogTicket;
