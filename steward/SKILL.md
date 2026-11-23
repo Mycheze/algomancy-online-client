@@ -426,7 +426,9 @@ notes before editing. Then:
   the code you changed (`node --test <file>` from its package), plus
   `npm --prefix client/ui run typecheck` and
   `client/engine/node_modules/.bin/tsc --noEmit -p client/server/tsconfig.json`
-  and the engine's typecheck when you touched those. **Any edit in
+  and the engine's typecheck when you touched those. The ui typecheck also
+  covers `client/storybook/stories/` — there is no storybook tsconfig
+  (2026-11-22, BL-10 badges: a run went looking for one). **Any edit in
   `client/ledgers/`** (a CT filed beside a fix counts) → `cd client/ledgers &&
   npm run typecheck`, then `npm test` (2026-11-09, report #364: an unused
   variable in a new CT's proof, red at the gate in 21 s, never compiled by the run).
