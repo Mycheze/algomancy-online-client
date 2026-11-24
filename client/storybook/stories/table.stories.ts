@@ -29,7 +29,7 @@ export const Headless = {
 export const HeaderTooltips = {
   name: 'Header tooltips and a marked column',
   args: {
-    columns: [{ key: 'rank', label: '#' }, { key: 'player', label: 'player' },
+    columns: [{ key: 'rank', label: '#' }, { key: 'player', label: 'Player' },
       { key: 'turns', label: 'Turns', title: 'The turn you met the goal on, plus any turns paying off debt.', headClassName: 'chsorted' },
       { key: 'omw', label: 'OMW', title: "opponents' match-win percentage — the tiebreak" }],
     rows: [{ cells: { rank: 1, player: 'Ann', turns: { html: '<b>4</b>' }, omw: '62%' } }, { cells: { rank: 2, player: 'Bob', turns: { html: '<b>5</b>' }, omw: '48%' } }],

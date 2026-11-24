@@ -56,7 +56,7 @@ function cell(html: string, code: string, at: number): string {
 
 test('1516 §2 the admin tables say the format in words', () => {
   const games = adminHtml(view('games'));
-  assert.match(games, /<th>played<\/th><th>format<\/th>/);
+  assert.match(games, /<th>Played<\/th><th>Format<\/th>/);
   assert.match(cell(games, 'G1', 2), /^sandbox/);
   assert.match(cell(games, 'G2', 2), /^live draft/);
   assert.match(cell(games, 'G3', 2), /^constructed/);
@@ -64,7 +64,7 @@ test('1516 §2 the admin tables say the format in words', () => {
   assert.doesNotMatch(games, /<td>(shared|draft)\b/);
 
   const rooms = adminHtml(view('rooms'));
-  assert.match(rooms, /<th>room<\/th><th>format<\/th>/);
+  assert.match(rooms, /<th>Room<\/th><th>Format<\/th>/);
   assert.match(cell(rooms, 'RMAA', 1), /^sandbox/);
   assert.match(cell(rooms, 'RMBB', 1), /^live draft/);
   assert.match(cell(rooms, 'RMCC', 1), /^constructed/);

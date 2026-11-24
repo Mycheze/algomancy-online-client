@@ -55,8 +55,8 @@ test('975 §1 refused: the one sentence and the way out, nothing else', () => {
 
 test('975 §2 every tab draws its table, and the current tab is the one that is on', () => {
   const heads: Record<string, RegExp> = {
-    reports: /<th>status<\/th>\s*<th>real\?<\/th>/, accounts: /<th>discord<\/th><th>actions<\/th>/,
-    games: /<th>result<\/th><th>turns<\/th><th>length<\/th>/, rooms: /<th>live<\/th><th>watching<\/th>/,
+    reports: /<th>Status<\/th>\s*<th>Real\?<\/th>/, accounts: /<th>Discord<\/th><th>Actions<\/th>/,
+    games: /<th>Result<\/th><th>Turns<\/th><th>Length<\/th>/, rooms: /<th>Live<\/th><th>Watching<\/th>/,
     challenges: /The calendar is empty\./,
   };
   for (const [id] of ADMIN_TABS) {

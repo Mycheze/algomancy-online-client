@@ -595,7 +595,7 @@ const SYNTAX_HTML = `<div class="dksyntax">
       emits a closed set of tags and no attributes at all, which is what makes it safe to show
       your text on somebody else’s screen.</p>
     <table class="accttable">
-      <thead><tr><th>write</th><th>get</th></tr></thead>
+      <thead><tr><th>Write</th><th>Get</th></tr></thead>
       <tbody>
         <tr><td><code>## A heading</code></td><td>a heading (<code>#</code> through <code>###</code>)</td></tr>
         <tr><td><code>**bold**</code> · <code>*italic*</code></td><td><b>bold</b> · <i>italic</i></td></tr>

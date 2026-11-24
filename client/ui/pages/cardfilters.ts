@@ -181,7 +181,7 @@ export function syntaxHelpHtml(btns: FilterBtns = CARDS_BTNS): string {
       <code>OR</code>, brackets to group, and a leading <code>-</code> to exclude.</p>
     <pre class="cbexample">-el:fire (sub:sprite OR sub:demon) mana&lt;=3</pre>
     <table class="cbkeys">
-      <tr><th>filter</th><th>also</th><th>what it matches</th><th>example</th></tr>
+      <tr><th>Filter</th><th>Also</th><th>What it matches</th><th>Example</th></tr>
       ${KEYS.map(d => `<tr>
         <td><code>${esc(d.key)}:</code></td>
         <td class="dim">${d.aliases.map(a => `<code>${esc(a)}:</code>`).join(' ')}</td>

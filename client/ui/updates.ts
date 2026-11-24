@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-24', kind: 'fix', text: 'The column heads in the card search\'s syntax help now start with a capital, like every other table\'s.' },
   { date: '2026-11-24', kind: 'fix', text: 'Card stats\' filters, the Metagame sort, the card browser\'s Grid / List / Text switch and the "Working…" and "Sending…" buttons now start with a capital, like every other button.' },
   { date: '2026-11-23', kind: 'fix', text: 'With a screen reader, an achievement on your profile and in the end-of-game Unlocked list is read by its name alone, without its icon\'s emoji spoken first.' },
   { date: '2026-11-23', kind: 'fix', text: 'Hovering a player\'s element icon now says "favourite element" everywhere, including beside a friend in a room\'s Invite a friend list, where it said nothing before.' },

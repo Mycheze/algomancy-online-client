@@ -69,19 +69,19 @@ function leaned(weights: Record<string, number>): string | null {
 interface Row { label: string; get: (s: SeatStats) => number; better?: 'high' | null }
 
 const ROWS: Row[] = [
-  { label: 'life left', get: s => s.lifeLeft, better: 'high' },
-  { label: 'damage dealt', get: s => Math.round(s.damageDealt), better: 'high' },
-  { label: 'units played', get: s => s.unitsPlayed, better: 'high' },
-  { label: 'spells played', get: s => s.spellsPlayed, better: 'high' },
-  { label: 'spell tokens cast', get: s => s.tokensCast, better: 'high' },
-  { label: 'augments & grafts', get: s => s.modsApplied, better: 'high' },
-  { label: 'units killed', get: s => s.unitsKilled, better: 'high' },
-  { label: 'units lost', get: s => s.unitsLost, better: null },
-  { label: 'attacks declared', get: s => s.attacksDeclared, better: 'high' },
-  { label: 'units sent', get: s => s.unitsAttackedWith, better: 'high' },
-  { label: 'cards drafted', get: s => s.cardsDrafted, better: 'high' },
-  { label: 'resources opened', get: s => s.resourcesActivated, better: 'high' },
-  { label: 'abilities used', get: s => s.abilitiesActivated, better: 'high' },
+  { label: 'Life left', get: s => s.lifeLeft, better: 'high' },
+  { label: 'Damage dealt', get: s => Math.round(s.damageDealt), better: 'high' },
+  { label: 'Units played', get: s => s.unitsPlayed, better: 'high' },
+  { label: 'Spells played', get: s => s.spellsPlayed, better: 'high' },
+  { label: 'Spell tokens cast', get: s => s.tokensCast, better: 'high' },
+  { label: 'Augments & grafts', get: s => s.modsApplied, better: 'high' },
+  { label: 'Units killed', get: s => s.unitsKilled, better: 'high' },
+  { label: 'Units lost', get: s => s.unitsLost, better: null },
+  { label: 'Attacks declared', get: s => s.attacksDeclared, better: 'high' },
+  { label: 'Units sent', get: s => s.unitsAttackedWith, better: 'high' },
+  { label: 'Cards drafted', get: s => s.cardsDrafted, better: 'high' },
+  { label: 'Resources opened', get: s => s.resourcesActivated, better: 'high' },
+  { label: 'Abilities used', get: s => s.abilitiesActivated, better: 'high' },
 ];
 
 function statTableHtml(o: GameOver): string {
@@ -116,9 +116,9 @@ function statTableHtml(o: GameOver): string {
     </tr></thead>
     <tbody>
       ${rows}
-      <tr><td class="pgel">${el(o.seats[me])}</td><th scope="row" class="pglabel">leaned on</th>
+      <tr><td class="pgel">${el(o.seats[me])}</td><th scope="row" class="pglabel">Leaned on</th>
         <td class="pgel">${el(o.seats[opp])}</td></tr>
-      <tr><td class="pgcard">${topCard(o.seats[me])}</td><th scope="row" class="pglabel">most played</th>
+      <tr><td class="pgcard">${topCard(o.seats[me])}</td><th scope="row" class="pglabel">Most played</th>
         <td class="pgcard">${topCard(o.seats[opp])}</td></tr>
     </tbody>
   </table>`;

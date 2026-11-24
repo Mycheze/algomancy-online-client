@@ -74,7 +74,7 @@ function affinityHtml(a: DeckAnalysis): string {
       : 'carried up from a cheaper card'}">${cum}</td>`;
   };
   return `<table class="dkaff">
-    <thead><tr><th>by mana</th><th>cards</th>${live.map(el =>
+    <thead><tr><th>By mana</th><th>Cards</th>${live.map(el =>
       `<th class="acctel ${el}">${elIcon(el)}${el}</th>`).join('')}</tr></thead>
     <tbody>${rows.map(r => `<tr>
       <td class="dkmana">${r.mana}</td>

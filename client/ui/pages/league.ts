@@ -929,7 +929,7 @@ const SUGGEST_COLUMNS = [{ key: 'who', label: '' }, { key: 'free', label: '' }, 
 const STAMP_COLUMNS = [{ key: 'preview', label: '' }, { key: 'code', label: '' }, { key: 'copy', label: '' }];
 const OUTBOX_COLUMNS = [{ key: 'kind', label: '' }, { key: 'to', label: '' }, { key: 'at', label: '', className: 'dim' }, { key: 'state', label: '' }];
 const PREVIEW_COLUMNS = [{ key: 'pair', label: '' }, { key: 'shared', label: '' }, { key: 'windows', label: '', className: 'dim' }];
-const STANDINGS_COLUMNS = [{ key: 'rank', label: '#' }, { key: 'player', label: 'player' }, { key: 'wl', label: 'W–L' }, { key: 'pts', label: 'pts' },
+const STANDINGS_COLUMNS = [{ key: 'rank', label: '#' }, { key: 'player', label: 'Player' }, { key: 'wl', label: 'W–L' }, { key: 'pts', label: 'Pts' },
   { key: 'omw', label: 'OMW', title: "opponents' match-win percentage — the tiebreak" }];
 
 function myMatchesHtml(s: SeasonView, v: LeagueView): string {

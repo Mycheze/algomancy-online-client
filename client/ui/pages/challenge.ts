@@ -288,7 +288,7 @@ function boardHtml(c: ChallengeView, v: ChallengePageView, past = false, backToW
     const col = (k: 'turns' | 'cards' | 'elements', label: string, tip?: string): TableColumn =>
       ({ key: k, label, headClassName: k === first ? 'chsorted' : undefined, title: tip });
     const td = (k: 'turns' | 'cards' | 'elements', val: string): { html: string } => ({ html: k === first ? `<b>${val}</b>` : val });
-    const columns: TableColumn[] = [{ key: 'rank', label: '#' }, { key: 'player', label: 'player' },
+    const columns: TableColumn[] = [{ key: 'rank', label: '#' }, { key: 'player', label: 'Player' },
       col('turns', 'Turns', TURNS_TIP), col('cards', 'Cards', CARDS_TIP), col('elements', 'Elements'),
       ...(b.closed ? [{ key: 'btns', label: '', spokenLabel: 'Try or watch', className: 'chrowbtns' }] : [])];
     body = `${winnersHtml(b)}

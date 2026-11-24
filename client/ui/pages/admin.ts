@@ -277,8 +277,8 @@ function accountsHtml(accounts: AccountRow[], over: Overview | null): string {
     A judge badge and the admin flag are independent — a judge is a trusted voice on rules,
     an admin can change other people's accounts. The last admin cannot be revoked.</p>
     <div class="admintablewrap" data-scroll="admin-accounts"><table class="admintable">
-    <thead><tr><th>account</th><th>games</th><th>wins</th><th>joined</th><th>last played</th>
-      <th>discord</th><th>actions</th></tr></thead>
+    <thead><tr><th>Account</th><th>Games</th><th>Wins</th><th>Joined</th><th>Last played</th>
+      <th>Discord</th><th>Actions</th></tr></thead>
     <tbody>${rows || '<tr><td colspan="7">no accounts yet</td></tr>'}</tbody></table></div>`;
 }
 
@@ -347,8 +347,8 @@ function reportsHtml(reports: ReportRow[], over: Overview | null, unmarkedOnly: 
     it says whether a report is fixed <i>in what people are playing right now</i>. Your 👍/👎 is
     the part you can change, and it comes down with <code>npm run reports</code>.</p>
     <div class="admintablewrap" data-scroll="admin-reports"><table class="admintable">
-    <thead><tr><th>#</th><th>when</th><th>where</th><th>who</th><th>kind</th><th>report</th>
-      <th>status</th><th>real?</th></tr></thead>
+    <thead><tr><th>#</th><th>When</th><th>Where</th><th>Who</th><th>Kind</th><th>Report</th>
+      <th>Status</th><th>Real?</th></tr></thead>
     <tbody>${rows || '<tr><td colspan="8">no reports</td></tr>'}</tbody></table></div>`;
 }
 
@@ -394,8 +394,8 @@ function gamesHtml(games: GameRow[]): string {
     ${untimed ? `${untimed} were played before the match timer existed and have no length —
     they are shown as “—” rather than as 0, which would drag every average toward nothing.` : ''}</p>
     <div class="admintablewrap" data-scroll="admin-games"><table class="admintable">
-    <thead><tr><th>code</th><th>played</th><th>format</th><th>elements</th><th>players</th>
-      <th>result</th><th>turns</th><th>length</th></tr></thead>
+    <thead><tr><th>Code</th><th>Played</th><th>Format</th><th>Elements</th><th>Players</th>
+      <th>Result</th><th>Turns</th><th>Length</th></tr></thead>
     <tbody>${rows || '<tr><td colspan="8">no games recorded</td></tr>'}</tbody></table></div>`;
 }
 
@@ -419,8 +419,8 @@ function roomsHtml(rooms: RoomRow[]): string {
     beside each seat is whether a socket is attached right now, so “over, nobody connected” and
     “turn 4, both here” are told apart by looking. This page never touches a live game.</p>
     <div class="admintablewrap" data-scroll="admin-rooms"><table class="admintable">
-    <thead><tr><th>room</th><th>format</th><th>seats</th><th>at</th><th>actions</th>
-      <th>live</th><th>watching</th></tr></thead>
+    <thead><tr><th>Room</th><th>Format</th><th>Seats</th><th>At</th><th>Actions</th>
+      <th>Live</th><th>Watching</th></tr></thead>
     <tbody>${rows || '<tr><td colspan="7">no rooms</td></tr>'}</tbody></table></div>`;
 }
 
@@ -476,8 +476,8 @@ function challengesHtml(cal: ChallengeCal | null): string {
     The reference run is each row's own solution, scored by this server's engine; its raw is the row's par.
     Open now first, then upcoming, then closed newest first.</p>
     <div class="admintablewrap" data-scroll="admin-challenges"><table class="admintable">
-    <thead><tr><th>status</th><th>challenge</th><th>goal</th><th>opens / closes</th><th>seed</th>
-      <th>par</th><th>reference run</th><th>board</th></tr></thead>
+    <thead><tr><th>Status</th><th>Challenge</th><th>Goal</th><th>Opens / closes</th><th>Seed</th>
+      <th>Par</th><th>Reference run</th><th>Board</th></tr></thead>
     <tbody>${rows || '<tr><td colspan="8">no challenges</td></tr>'}</tbody></table></div>`;
 }
 

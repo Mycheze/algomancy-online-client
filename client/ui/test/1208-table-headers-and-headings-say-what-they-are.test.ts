@@ -188,7 +188,7 @@ test('§4 the post-game: the title is a heading, each stat row is headed by what
   const rows = [...html.matchAll(/<tr>([\s\S]*?)<\/tr>/g)].map(r => r[1]!).filter(r => /<td/.test(r));
   assert.ok(rows.length >= 4, 'life left, units played, leaned on, most played');
   for (const r of rows) assert.match(r, /<th scope="row" class="pglabel">[^<]+<\/th>/, `a stat row with no row header: ${r.trim().slice(0, 80)}`);
-  assert.match(html, /<th scope="row" class="pglabel">life left<\/th>/);
+  assert.match(html, /<th scope="row" class="pglabel">Life left<\/th>/);
   // the row headers look as the cells they replaced did: the head's bold and padding stay on the head
   const css = readStyles();
   assert.match(css, /\.pgtable thead th \{ padding/);
