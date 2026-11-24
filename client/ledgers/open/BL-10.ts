@@ -542,5 +542,13 @@ export default {
     + '\n\n2026-11-23 (steward): an achievement\'s icon is escaped and silent (docs/23-ui-inventory/02 §8.6 item 42\'s first half: "The achievement icon is inserted **unescaped** (account.ts:712)"). The icon is a server string; the class was the two places it is drawn, '
     + 'the profile\'s Achievements tab (pages/profile.ts achievementCard) and the post-game\'s Unlocked list (pages/postgame.ts). Both write it '
     + 'through esc() and aria-hidden, since the name beside it says what it is. §8.6 item 42 is used up. Guarded by '
-    + '1515-achievement-icon-escaped.test.ts (§2 a census of every achicon in ui/). Nothing moves on screen.',
+    + '1515-achievement-icon-escaped.test.ts (§2 a census of every achicon in ui/). Nothing moves on screen.'
+    + '\n\n2026-11-24 (steward): a game\'s format is said in words on the admin page too (docs/23-ui-inventory/02 §8.4 '
+    + 'item 18: "the profile uses `modeName()` (\"sandbox\", \"live draft\"); admin prints the raw `g.mode` (\"shared\", '
+    + '\"draft\")"). The class was the two cells that print a game\'s mode: the admin\'s Games and Live rooms tables (pages/admin.ts). '
+    + 'A single card duel is constructed on the wire, so both read "constructed" for one; server/admin.ts gameRows and roomRows now '
+    + 'carry `single`, and pages/profile.ts formatName(mode, single) says "single card duel" (the post-game\'s label reads it too). '
+    + 'Both columns are headed "format", as the profile\'s Games tab is. Left: item 18\'s neighbours, §8.4 item 15 (the admin\'s '
+    + 'lower-case buttons and heads). Guarded by ui/test/1516-format-said-in-words.test.ts (§3 a census: no ui template escapes a '
+    + '`.mode` raw) and server/test/1517-admin-rows-carry-single-card-duel.test.ts.',
 } satisfies BacklogTicket;

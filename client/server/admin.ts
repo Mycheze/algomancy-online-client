@@ -317,6 +317,8 @@ export interface AdminGameRow {
   known: [boolean, boolean];
   rated: boolean;
   custom: boolean;
+  /** CR D8.2: a single card duel — the two cards, by seat */
+  single?: [string, string];
   /** BL-46: how many agreed fixes the game took (0 = none) — a tag, it counts */
   amended: number;
   /** BL-48: how many players disputed the result (0 = none) — a tag, it stands */
@@ -375,6 +377,7 @@ export function gameRows(): AdminGameRow[] {
       ],
       rated: g.rated === true,
       custom: !!g.custom,
+      ...(g.single ? { single: [g.single[0], g.single[1]] as [string, string] } : {}),
       amended: g.amended ?? 0,
       disputed: g.disputed?.length ?? 0,
     }))
@@ -398,6 +401,8 @@ export interface AdminRoomRow {
   minutes: number;
   watchers: number;
   rated: boolean;
+  /** CR D8.2: a single card duel */
+  single?: true;
 }
 
 /**
@@ -435,6 +440,7 @@ export function roomRows(): AdminRoomRow[] {
       minutes: Math.round(r.matchMs / 60000),
       watchers: r.watchers.size,
       rated: r.rated === true,
+      ...(r.single ? { single: true as const } : {}),
     });
   }
   return rows.sort((x, y) => y.actions - x.actions);

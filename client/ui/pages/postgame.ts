@@ -11,7 +11,7 @@
  * (concessionNote, matchLength, elementsLine).
  */
 import { ALL_ELEMENTS } from '../../engine/src/apply.ts';
-import { currentUser, isGuest, modeName, signupNoteHtml, signupOutcome } from '../account.ts';
+import { currentUser, formatName, isGuest, signupNoteHtml, signupOutcome } from '../account.ts';
 import { button } from '../components/index.ts';
 import { scoreWords } from '../match.ts';
 import { concessionNote, elementsLine, matchLength, type GameOver, type SeatStats } from '../postgame.ts';
@@ -21,7 +21,7 @@ import { matchResultHtml } from './match.ts';
 
 export interface PostGameView {
   over: GameOver;
-  /** "single card duel", or the mode's name (account.ts modeName) */
+  /** the format in words (account.ts formatName) */
   modeLabel: string;
   /** the game's elements, drawn (ui/postgame.ts elementsLine) — a slot; null
    * when the game has none to show (no trio, no sides) */
@@ -44,7 +44,7 @@ export function postGameView(o: GameOver): PostGameView {
   const m = o.match;
   return {
     over: o,
-    modeLabel: o.single ? 'single card duel' : modeName(o.mode),
+    modeLabel: formatName(o.mode, o.single),
     elements: o.sides || o.els.length ? elementsLine(o) : null,
     guest: isGuest(),
     signup,

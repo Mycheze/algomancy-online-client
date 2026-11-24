@@ -74,6 +74,8 @@ export interface GameRow {
   finished: boolean; diverged: boolean; winner: number | null; turns: number;
   minutes: number | null; players: [string, string]; known: [boolean, boolean];
   rated: boolean; custom: boolean;
+  /** a single card duel: the two cards, by seat (absent on an older server) */
+  single?: [string, string];
   /** BL-46: agreed fixes the game took (absent on an older server) */
   amended?: number;
   /** BL-48: how many players disputed the result (absent on an older server) */
@@ -85,6 +87,8 @@ export interface RoomRow {
   connected: [boolean, boolean]; users: [string | null, string | null];
   turn: number; phase: string; winner: number | null; actions: number;
   minutes: number; watchers: number; rated: boolean;
+  /** a single card duel (absent on an older server) */
+  single?: true;
 }
 
 export interface Overview {
@@ -374,7 +378,7 @@ function gamesHtml(games: GameRow[]): string {
       <td><a class="replaylink" href="?replay=${encodeURIComponent(g.code)}"
         title="watch this game back — both hands, since you did not play it">▶ ${esc(g.code)}</a></td>
       <td>${when(g.playedAt)}</td>
-      <td>${esc(g.mode)}${g.custom ? ' <span class="stchip">custom</span>' : ''}${g.rated ? ' <span class="stchip">rated</span>' : ''}${g.amended ? ` <span class="stchip" title="${g.amended} agreed fix${g.amended === 1 ? '' : 'es'}">fixed</span>` : ''}${g.disputed ? ` <span class="stchip" title="disputed by ${g.disputed === 1 ? 'one player' : 'both players'} — see the reports">disputed</span>` : ''}</td>
+      <td>${g.single ? `<span title="${esc(g.single.join(' vs '))}">${esc(acct.formatName(g.mode, true))}</span>` : esc(acct.formatName(g.mode, false))}${g.custom ? ' <span class="stchip">custom</span>' : ''}${g.rated ? ' <span class="stchip">rated</span>' : ''}${g.amended ? ` <span class="stchip" title="${g.amended} agreed fix${g.amended === 1 ? '' : 'es'}">fixed</span>` : ''}${g.disputed ? ` <span class="stchip" title="disputed by ${g.disputed === 1 ? 'one player' : 'both players'} — see the reports">disputed</span>` : ''}</td>
       <td>${esc(g.sides
         ? g.sides.map(side => side.join('+') || '—').join(' vs ')
         : g.els.join('+'))}</td>
@@ -390,7 +394,7 @@ function gamesHtml(games: GameRow[]): string {
     ${untimed ? `${untimed} were played before the match timer existed and have no length —
     they are shown as “—” rather than as 0, which would drag every average toward nothing.` : ''}</p>
     <div class="admintablewrap" data-scroll="admin-games"><table class="admintable">
-    <thead><tr><th>code</th><th>played</th><th>mode</th><th>elements</th><th>players</th>
+    <thead><tr><th>code</th><th>played</th><th>format</th><th>elements</th><th>players</th>
       <th>result</th><th>turns</th><th>length</th></tr></thead>
     <tbody>${rows || '<tr><td colspan="8">no games recorded</td></tr>'}</tbody></table></div>`;
 }
@@ -402,7 +406,7 @@ function roomsHtml(rooms: RoomRow[]): string {
       `<span class="dot ${r.connected[i] ? 'on' : 'off'}" title="${r.connected[i] ? 'connected' : 'not connected'}"></span>`;
     return `<tr>
       <td>${esc(r.code)}</td>
-      <td>${esc(r.mode)}${r.rated ? ' <span class="stchip">rated</span>' : ''}</td>
+      <td>${esc(acct.formatName(r.mode, r.single))}${r.rated ? ' <span class="stchip">rated</span>' : ''}</td>
       <td>${seat(0)} vs ${seat(1)}</td>
       <td>${r.winner !== null || r.phase === 'gameover' ? 'over' : `turn ${r.turn} · ${esc(r.phase)}`}</td>
       <td class="num">${r.actions}</td>
@@ -415,7 +419,7 @@ function roomsHtml(rooms: RoomRow[]): string {
     beside each seat is whether a socket is attached right now, so “over, nobody connected” and
     “turn 4, both here” are told apart by looking. This page never touches a live game.</p>
     <div class="admintablewrap" data-scroll="admin-rooms"><table class="admintable">
-    <thead><tr><th>room</th><th>mode</th><th>seats</th><th>at</th><th>actions</th>
+    <thead><tr><th>room</th><th>format</th><th>seats</th><th>at</th><th>actions</th>
       <th>live</th><th>watching</th></tr></thead>
     <tbody>${rows || '<tr><td colspan="7">no rooms</td></tr>'}</tbody></table></div>`;
 }

@@ -20,8 +20,8 @@
 import { artFor } from './meta.ts';
 import { identityBarHtml, identityBarView, paintSignin, signinView } from './pages/signin.ts';
 import {
-  badgeChipsHtml, championMarkHtml, concessionTag, customTag, disputedTag, fixedTag, gameElementsHtml, gameRowsHtml,
-  modeName, paintProfile, profileTabFor, profileView, trophyChipHtml, trophyChipsHtml, type Ladder, type LadderMode,
+  badgeChipsHtml, championMarkHtml, concessionTag, customTag, disputedTag, fixedTag, formatName, gameElementsHtml,
+  gameRowsHtml, modeName, paintProfile, profileTabFor, profileView, trophyChipHtml, trophyChipsHtml, type Ladder, type LadderMode,
   type PlayersBoard, type ProfileTab,
 } from './pages/profile.ts';
 import { applyColourMode, isPrefName, readPrefs, setPref } from './prefs.ts';
@@ -32,7 +32,7 @@ import { applyColourMode, isPrefName, readPrefs, setPref } from './prefs.ts';
  * the history rows and their tags, modeName) moved with the profile and are
  * re-exported here, where postgame.ts, league.ts and the tests find them. */
 export {
-  badgeChipsHtml, championMarkHtml, concessionTag, customTag, disputedTag, fixedTag, gameElementsHtml, gameRowsHtml, modeName,
+  badgeChipsHtml, championMarkHtml, concessionTag, customTag, disputedTag, fixedTag, formatName, gameElementsHtml, gameRowsHtml, modeName,
   trophyChipHtml, trophyChipsHtml,
 };
 /* TYPE ONLY, and it has to stay that way: ui/meta.ts imports this module for

@@ -140,6 +140,12 @@ export function modeName(mode: string): string {
   return mode === 'shared' ? 'sandbox' : mode === 'draft' ? 'live draft' : mode;
 }
 
+/** The format a game or room is played in, in a player's words: a single card
+ * duel is a constructed game on the wire (CR D8.2), and is named as itself. */
+export function formatName(mode: string, single: unknown): string {
+  return single ? 'single card duel' : modeName(mode);
+}
+
 /** the format cell: a Competitive match game says which game it was */
 function formatCell(g: MatchRow): string {
   if (!g.match) return esc(modeName(g.mode));
