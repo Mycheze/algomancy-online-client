@@ -143,7 +143,7 @@ test('T6 §4 the body carries room, seat, note, kind and severity; ok closes wit
   assert.deepEqual(posted[0]!.body, {
     room: 'UIDRIVER', seat: 0, page: 'game', note: 'the stack vanished after undo', kind: 'bug', severity: 'gamebreaking',
   }, 'the body is the fields the server stores — and from the rail it says which game');
-  assert.match(busy, /sending…/, 'the dialog shows the send in flight');
+  assert.match(busy, /Sending…/, 'the dialog shows the send in flight');
   await settle();
   const after = ui.html();
   assert.ok(!ui.has({ report: 'send' }), 'ok: the dialog closed');

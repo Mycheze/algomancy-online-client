@@ -122,7 +122,7 @@ export function signinHtml(v: SigninView): string {
     ${authMsg ? statusMessage({ tag: 'p', tone: 'error', className: 'pageerr', text: authMsg }) : ''}
     <div class="homebtns">
       <button class="primary" data-btn="acct-submit" ${v.busy ? 'disabled' : ''}>
-        ${v.busy ? 'working…' : isRegister ? 'Create account' : 'Log in'}</button>
+        ${v.busy ? 'Working…' : isRegister ? 'Create account' : 'Log in'}</button>
       <button data-btn="acct-toggle-mode">${isRegister
         ? 'I already have an account' : "I'm new here — create an account"}</button>
     </div>

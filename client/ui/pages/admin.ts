@@ -267,9 +267,9 @@ function accountsHtml(accounts: AccountRow[], over: Overview | null): string {
       <td>${a.lastPlayed ? day(a.lastPlayed) : '—'}</td>
       <td>${a.discord ? esc(a.discord) : '—'}</td>
       <td class="adminacts">
-        ${(['none', 'L1', 'L2', 'L3'] as const).map((label, level) =>
+        ${(['None', 'L1', 'L2', 'L3'] as const).map((label, level) =>
     button({ label, dataBtn: 'admin-judge', attrs: { 'data-name': a.username, 'data-level': level } })).join('\n        ')}
-        ${button({ label: a.admin ? 'revoke admin' : 'make admin', dataBtn: 'admin-flag',
+        ${button({ label: a.admin ? 'Revoke admin' : 'Make admin', dataBtn: 'admin-flag',
     attrs: { 'data-name': a.username, 'data-want': a.admin ? '0' : '1' } })}
       </td>
     </tr>`).join('');

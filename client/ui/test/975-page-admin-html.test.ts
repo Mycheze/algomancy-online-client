@@ -78,7 +78,7 @@ test('975 §3 every data-btn the handler routes on is drawn, with what it reads'
   assert.match(reports, /data-mark=""/, 'and a marked report can be cleared');
   const accounts = adminHtml(view({ current: 'accounts' }));
   for (const level of [0, 1, 2, 3]) assert.match(accounts, new RegExp(`data-btn="admin-judge"[^>]*data-level="${level}"`));
-  assert.match(accounts, /data-btn="admin-flag"[^>]*data-name="Ann &lt;b&gt;" data-want="1">make admin</);
+  assert.match(accounts, /data-btn="admin-flag"[^>]*data-name="Ann &lt;b&gt;" data-want="1">Make admin</);
 });
 
 test('975 §4 text off the server is escaped', () => {

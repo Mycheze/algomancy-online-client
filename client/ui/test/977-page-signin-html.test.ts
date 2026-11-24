@@ -40,7 +40,7 @@ test('977 §2 every data-btn, and a sign-in in flight disables the submit', () =
   // Back is the frame's back button (first, in the toolbar), still acct-close
   assert.deepEqual(btns(signinHtml(view())), ['acct-close', 'acct-submit', 'acct-toggle-mode']);
   const busy = signinHtml(view({ busy: true }));
-  assert.match(busy, /data-btn="acct-submit" disabled>\s*working…/);
+  assert.match(busy, /data-btn="acct-submit" disabled>\s*Working…/);
 });
 
 test('977 §3 the message line and the username are escaped', () => {

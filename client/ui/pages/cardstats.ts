@@ -197,9 +197,9 @@ function headerHtml(v: CardStatsView): string {
       ${seg('Section', 'meta-cs-section', v.section, [['cards', 'Cards'], ['elements', 'Elements'], ['highlights', 'Highlights'], ['game', 'Games']])}
       <span class="framespacer"></span>
       <span class="zonelabel">format</span>
-      ${seg('Format', 'meta-cs-mode', v.mode, [['all', 'both'], ['draft', 'draft'], ['constructed', 'constructed']] as [Mode, string][])}
+      ${seg('Format', 'meta-cs-mode', v.mode, [['all', 'Both'], ['draft', 'Draft'], ['constructed', 'Constructed']] as [Mode, string][])}
       <span class="zonelabel">played</span>
-      ${seg('Played', 'meta-cs-range', v.range, [['all', 'ever'], ['30', 'last 30 days'], ['7', 'last 7 days']] as [Range, string][])}
+      ${seg('Played', 'meta-cs-range', v.range, [['all', 'Ever'], ['30', 'Last 30 days'], ['7', 'Last 7 days']] as [Range, string][])}
     </div>
     <div class="framebar csline">
       ${d && v.loading ? updatingHtml() : d ? `<span class="hint">
@@ -208,9 +208,9 @@ function headerHtml(v: CardStatsView): string {
         <span class="dim" title="Hands and draws are read from each game's own record. An older game that no longer replays on today's rules still says what was played and drafted, but not what was drawn, so it counts toward Played and not toward GIH.">(why?)</span>
         ${v.mine ? ' · <b>your games only</b>' : ''}</span>` : ''}
       <span class="framespacer"></span>
-      ${flag(v.rated, 'meta-cs-rated', 'rated only')}
-      ${flag(v.bothSigned, 'meta-cs-signed', 'both signed in')}
-      ${v.signedIn ? flag(v.mine, 'meta-cs-mine', 'my games') : ''}
+      ${flag(v.rated, 'meta-cs-rated', 'Rated only')}
+      ${flag(v.bothSigned, 'meta-cs-signed', 'Both signed in')}
+      ${v.signedIn ? flag(v.mine, 'meta-cs-mine', 'My games') : ''}
     </div>`;
 }
 
@@ -226,7 +226,7 @@ function tableHtml(v: CardStatsView): string {
   return `
     <div class="framebar">
       <input id="meta-cs-q" class="dksearch" aria-label="Find a card" spellcheck="false" placeholder="find a card" value="${esc(v.text)}">
-      ${seg('Kind', 'meta-cs-kind', v.kind, [['all', 'all'], ['unit', 'units'], ['spell', 'spells']])}
+      ${seg('Kind', 'meta-cs-kind', v.kind, [['all', 'All'], ['unit', 'Units'], ['spell', 'Spells']])}
       <div class="dkfilters">
         ${ELEMENTS.map(el => `<button class="elchip ${el}${v.els.includes(el) ? ' on' : ''}" aria-pressed="${v.els.includes(el)}" data-btn="meta-cs-el" data-v="${el}">${elIcon(el)}${el}</button>`).join('')}
         ${v.els.length || v.text || v.kind !== 'all' || v.minGames > 1 ? '<button data-btn="meta-cs-clear">Clear</button>' : ''}

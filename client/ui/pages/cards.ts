@@ -19,7 +19,7 @@ import { artHtml, cardPanelHtml, costHtml } from '../cardpanel.ts';
 import type { CardRow } from '../cardindex.ts';
 import { allRows, rowFor } from '../cardindex.ts';
 import { printsStats } from '../../engine/src/cards/dsl.ts';   // CR 206.2
-import { SORT_LABEL, SORTS, VIEWS, type SearchResult } from '../cardsearch.ts';
+import { SORT_LABEL, SORTS, VIEWS, type SearchResult, type ViewKey } from '../cardsearch.ts';
 import { suggest } from '../cardsynonyms.ts';
 import { esc } from '../util.ts';
 import { icon, segmented, sheet } from '../components/index.ts';
@@ -34,6 +34,9 @@ export { facets, type Facet };
 /** How many tiles are painted before the "show the rest" button. Not a cap on
  * the SEARCH — the count above the grid is always the true total. */
 export const CHUNK = 120;
+
+/** the view switch's words; the key is the `view:` search word, which stays lower-case */
+const VIEW_LABEL: Record<ViewKey, string> = { grid: 'Grid', list: 'List', text: 'Text' };
 
 /** Everything the page shows. */
 export interface CardsView {
@@ -251,7 +254,7 @@ function barHtml(v: CardsView): string {
       <button class="cbdir" data-btn="cards-dir" title="reverse the order" aria-label="Reverse the order">${res.query.dir === 'asc' ? '↑' : '↓'}</button>
       ${segmented({
     ariaLabel: 'View', size: 'sm', className: 'cbviews',
-    options: VIEWS.map(view => ({ label: view, value: view, on: res.query.view === view, dataBtn: 'cards-view', attrs: { 'data-view': view } })),
+    options: VIEWS.map(view => ({ label: VIEW_LABEL[view], value: view, on: res.query.view === view, dataBtn: 'cards-view', attrs: { 'data-view': view } })),
   })}
     </div>
   </div>`;

@@ -103,7 +103,7 @@ test('§3 Send puts the note on the socket; the answer closes the form and the b
   const busy = ui.click({ report: 'send' });
   const wire = ui.sent().filter(m => m['t'] === 'dispute');
   assert.deepEqual(wire, [{ t: 'dispute', note: 'I won because Bo\'s blocker vanished' }], 'one dispute on the game\'s socket');
-  assert.match(busy, /sending…/, 'the form waits for the server');
+  assert.match(busy, /Sending…/, 'the form waits for the server');
   const html = ui.push({ t: 'dispute', disputed: [true, false] });
   assert.ok(!ui.has({ report: 'send' }), 'the server\'s answer closes the form');
   assert.match(html, /dispute sent/, 'with a toast');

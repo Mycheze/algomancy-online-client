@@ -214,7 +214,7 @@ function listHtml(v: MetaView): string {
   // — everything that arrives here is legal and has been played.
   const all = shown(v);
   const SORTS: [Sort, string][] = [
-    ['winrate', 'winrate'], ['games', 'most played'], ['new', 'newest'], ['name', 'name'],
+    ['winrate', 'Win rate'], ['games', 'Most played'], ['new', 'Newest'], ['name', 'Name'],
   ];
   return metaFrame(v, 'metapage', `
     <div class="framebar">

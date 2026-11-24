@@ -55,7 +55,7 @@ test('978 §2 the report form: kinds, severity for a bug or UX only, Send disabl
   assert.ok(bug.includes('<button class="ui-button ui-button--primary" type="button" data-report="send">Send report</button>'), 'complete: Send is live');
   assert.match(bug, /this exact moment of the game[^<]*Filed as <b>Ann<\/b>/);
   assert.doesNotMatch(reportLayerHtml({ dialog: dialog({ kind: 'feature' }), onBoard: false, toast: null }), /data-report="severity"/);
-  assert.match(reportLayerHtml({ dialog: dialog({ busy: true, kind: 'other', complete: true }), onBoard: false, toast: null }), /type="button" disabled data-report="send">sending…</);
+  assert.match(reportLayerHtml({ dialog: dialog({ busy: true, kind: 'other', complete: true }), onBoard: false, toast: null }), /type="button" disabled data-report="send">Sending…</);
 });
 
 test('978 §3 the dispute form, and the error line', () => {

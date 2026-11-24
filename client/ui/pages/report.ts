@@ -95,7 +95,7 @@ const errorHtml = (error: string): string =>
  * also flips the live `disabled` property as the note is typed) */
 const cancelButton = button({ labelHtml: 'Cancel <span class="kh">(esc)</span>', attrs: { 'data-report': 'close' } });
 const sendButton = (v: ReportDialogView, label: string): string =>
-  button({ variant: 'primary', label: v.busy ? 'sending…' : label, disabled: v.busy || !v.complete, attrs: { 'data-report': 'send' } });
+  button({ variant: 'primary', label: v.busy ? 'Sending…' : label, disabled: v.busy || !v.complete, attrs: { 'data-report': 'send' } });
 
 /** BL-48: the dispute form — one box, required */
 function disputeDialogHtml(v: ReportDialogView): string {
