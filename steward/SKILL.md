@@ -478,6 +478,11 @@ notes before editing. Then:
   (2026-11-11, BL-03: two new cards, the run fixed the ones its own grep for
   `496` with a regex found and missed 207 and 209 — red gate, a repair run);
   a page or URL parameter → `server/test/771-link-preview`;
+  any new text under `client/` — a test fixture included — with an `R<digits>`
+  word or a `CR <number>` in it → `engine/test/184-ruling-register` (it reads
+  all of `client/` for retired register numbers and dead CR citations; name fixture rooms
+  like real ones, `QJEY`; 2026-11-24, BL-10: rooms `'R1'`..`'R4'` in a ui
+  test, red gate, a repair run);
   a new click or tap handler on the board (anything in `ui/main.ts` that
   answers a pointer) → `ui/test/676-touch-token-resource-tap-reads` (a finger's
   held Cast button must go away on any other tap; 2026-11-11, report #380's
