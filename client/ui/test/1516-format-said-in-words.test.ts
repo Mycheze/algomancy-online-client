@@ -41,7 +41,7 @@ function view(current: AdminView['current']): AdminView {
     accountRows: [], reportRows: [],
     gameRows: [game('G1', 'shared'), game('G2', 'draft'), game('G3', 'constructed'),
       game('G4', 'constructed', { single: ['Mindburn', 'Fight <x>'] })],
-    roomRows: [room('R1', 'shared'), room('R2', 'draft'), room('R3', 'constructed'), room('R4', 'constructed', { single: true })],
+    roomRows: [room('RMAA', 'shared'), room('RMBB', 'draft'), room('RMCC', 'constructed'), room('RMDD', 'constructed', { single: true })],
     calendar: { now: 0, rows: [], runsOutAt: null, weeksLeft: 0, upcoming: 0 },
     onlyUnmarked: false, chrome: { signedIn: true, alerts: 0 },
   };
@@ -65,10 +65,10 @@ test('1516 §2 the admin tables say the format in words', () => {
 
   const rooms = adminHtml(view('rooms'));
   assert.match(rooms, /<th>room<\/th><th>format<\/th>/);
-  assert.match(cell(rooms, 'R1', 1), /^sandbox/);
-  assert.match(cell(rooms, 'R2', 1), /^live draft/);
-  assert.match(cell(rooms, 'R3', 1), /^constructed/);
-  assert.match(cell(rooms, 'R4', 1), /^single card duel/);
+  assert.match(cell(rooms, 'RMAA', 1), /^sandbox/);
+  assert.match(cell(rooms, 'RMBB', 1), /^live draft/);
+  assert.match(cell(rooms, 'RMCC', 1), /^constructed/);
+  assert.match(cell(rooms, 'RMDD', 1), /^single card duel/);
   assert.doesNotMatch(rooms, /<td>(shared|draft)\b/);
 });
 
