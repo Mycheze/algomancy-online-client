@@ -1,5 +1,5 @@
-# The PRIVATE staging copy of the game server on :5100, loopback only, behind
-# staging.algomancy.online and a password (deploy/staging.caddy). It runs the
+# The staging copy of the game server on :5100, loopback only, behind
+# staging.algomancy.online (deploy/staging.caddy). It runs the
 # `staging` branch — work nobody has reviewed yet — on a copy of production's
 # data (deploy/README.md § Staging). Installed by staging-setup.sh.
 #
