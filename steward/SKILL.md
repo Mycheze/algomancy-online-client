@@ -234,6 +234,13 @@ it) and which are **hypothesis**. Your verdict carries both lists.
   not go looking elsewhere for something to call polish: outcome `skip`, which
   rests it for a week (2026-11-10: 16 BL-10 runs in a row, the last ones
   reaching into other pages' lists after its own ran out).
+  **Never `cat` BL-10 whole**: its `notes` are a 66 KB diary (2026-11-24/25:
+  every run read it whole, two or three times, through the persisted-output
+  file). Read the brief with `sed -n 1,40p`, the last two entries with
+  `tail -c 3000` (their "Left:" lines name what is still undone), and what has
+  shipped with `git log --oneline --grep=BL-10`. Your own entry goes at the end:
+  at most three lines — what shipped, the guard, and "Left:". The story belongs
+  in the commit message.
 - **Reproduce it in a test that fails.** Before any fix. If you cannot
   reproduce it, that is a finding: outcome `not-a-bug` or `needs-human`, with
   exactly what you tried.
