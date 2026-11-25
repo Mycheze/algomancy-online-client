@@ -555,5 +555,12 @@ export default {
     + '\n\n2026-11-24 (steward): every table head outside the game starts with a capital (the capitals round\'s Left: docs/23-ui-inventory/02 §8.4 item 15, "admin table headers are lowercase and **not** uppercased"). '
     + 'Card stats\' heads were already capitalised; the class was every <th> and table() column in pages/: the admin\'s five tables (Account … Reference run), the card search\'s syntax table (Filter / Also / What it matches / Example, the one players see change), '
     + 'the deck description\'s syntax table (Write / Get), the deck stats\' affinity table (By mana / Cards), the post-game\'s stat rows (Life left … Most played) and the league\'s and challenge\'s Player / Pts. The CSS-uppercased ones look the same. '
-    + 'Left: card stats\' `zonelabel` captions (format / played, uppercased on screen), and the admin\'s ✕ clear title. Guarded by ui/test/1518-table-heads-start-with-a-capital.test.ts (stories drawn, and the source). Reasoned, not looked at (no browser).',
+    + 'Left: card stats\' `zonelabel` captions (format / played, uppercased on screen), and the admin\'s ✕ clear title. Guarded by ui/test/1518-table-heads-start-with-a-capital.test.ts (stories drawn, and the source). Reasoned, not looked at (no browser).'
+    + '\n\n2026-11-25 (steward): the admin page draws the profile\'s judge chip (docs/23-ui-inventory/02 §8.8 item 49: "`badgeChips` (admin.ts) '
+    + 'duplicates `badgeChipsHtml` (account.ts) with different case and no titles"). pages/admin.ts badgeChips, used by the Accounts table and the '
+    + 'Reports tab\'s filer column, now takes the judge chip from pages/profile.ts badgeChipsHtml (its "judge level N — a trusted voice…" hover), '
+    + 'and the two chips only this page draws, Owner and Admin, say what they are on hover, written with a capital (CSS uppercases all three). '
+    + 'Left: §8.8 item 48, the stale "There is no link to it anywhere in the client" in pages/admin.ts\'s head and main.ts (the profile has an '
+    + 'Admin button for an admin). Guarded by ui/test/1519-admin-badges-are-the-profile-chips.test.ts (§2 a census: only the profile writes a '
+    + 'judge chip). Nothing a player sees; reasoned, not looked at (no browser).',
 } satisfies BacklogTicket;

@@ -249,18 +249,22 @@ export function initAdmin(opts: { app: HTMLElement; rerender: () => void }): voi
 const day = (iso: string): string => (iso ? esc(iso.slice(0, 10)) : '—');
 const when = (iso: string): string => (iso ? esc(iso.slice(0, 16).replace('T', ' ')) : '—');
 
+/** An account's marks: the owner chip, which only this page draws, then the profile's own
+ * judge chip, so a judge reads the same here as everywhere else. */
 function badgeChips(b: { owner?: boolean; judge?: number } | null | undefined): string {
   if (!b) return '';
-  const out: string[] = [];
-  if (b.owner) out.push('<span class="badgechip owner">owner</span>');
-  if (b.judge) out.push(`<span class="badgechip judge">Judge L${b.judge}</span>`);
-  return out.join(' ');
+  const j = b.judge;
+  const judge = j === 1 || j === 2 || j === 3 ? acct.badgeChipsHtml({ judge: j }) : '';
+  const owner = b.owner ? '<span class="badgechip owner" title="the owner\'s account — shown only on this page">Owner</span>' : '';
+  return [owner, judge].filter(Boolean).join(' ');
 }
+
+const ADMIN_CHIP = ' <span class="badgechip admin" title="can open this page">Admin</span>';
 
 function accountsHtml(accounts: AccountRow[], over: Overview | null): string {
   const rows = accounts.map(a => `
     <tr>
-      <td><b>${esc(a.username)}</b> ${badgeChips(a.badge)}${a.admin ? ' <span class="badgechip admin">admin</span>' : ''}</td>
+      <td><b>${esc(a.username)}</b> ${badgeChips(a.badge)}${a.admin ? ADMIN_CHIP : ''}</td>
       <td class="num">${a.games}</td>
       <td class="num">${a.wins}</td>
       <td>${day(a.createdAt)}</td>

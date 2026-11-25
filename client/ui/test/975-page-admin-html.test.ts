@@ -122,7 +122,7 @@ test('975 §6 unjudged reports from judges come first, highest level first BL-17
   assert.deepEqual(order(adminHtml(view({ reportRows: rows, onlyUnmarked: true }))), [5, 3, 8, 2, 9, 7, 4]);
   assert.deepEqual(rows.map(x => x.id), [9, 8, 7, 6, 5, 4, 3, 2], 'the view\'s own list is not reordered in place');
   // and the who column says what the filer was
-  assert.match(html, /Ops <span class="badgechip owner">owner<\/span> <span class="badgechip judge">Judge L1<\/span><\/td>/);
+  assert.match(html, /Ops <span class="badgechip owner"[^>]*>Owner<\/span> <span class="badgechip judge"[^>]*>Judge L1<\/span><\/td>/);
   assert.match(html, /<td>Pat<\/td>/, 'an unbadged filer is just a name');
   assert.match(html, /<td><i>signed out<\/i><\/td>/);
 });
