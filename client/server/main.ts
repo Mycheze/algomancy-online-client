@@ -114,7 +114,7 @@ import { emit, since as eventsSince, BOOT_ID } from './hooks.ts';
 import { CODE_ALPHABET } from './link.ts';
 import { deckForPlay, savedDeckNow } from './collection.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
-import { accountById, accountByName, accountForToken, gameHistory, issueSignupClaim, loadAccounts, privateView, seatBadge, setAdmin, setBadge, type SeatBadge } from './accounts.ts';
+import { accountById, accountByName, accountForToken, friendshipWith, gameHistory, issueSignupClaim, loadAccounts, privateView, seatBadge, setAdmin, setBadge, type SeatBadge } from './accounts.ts';
 import { loadLeague } from './league-store.ts';
 import { StoreLoadError } from './store-file.ts';
 // #190: the trio picker's history, draft rows only — a pure function so a test can hold it
@@ -269,13 +269,20 @@ function markOnline(userId: string, delta: 1 | -1): void {
 /** The accounts at a table that has been dealt and is not over — "in a game"
  * on a friends list, where an invite waits in the bell rather than popping up
  * over the board. A pass over every room, once per inbox poll. */
-function playingNow(): Set<string> {
-  const out = new Set<string>();
+function playingNow(): Map<string, { room: string; label: string }> {
+  const out = new Map<string, { room: string; label: string }>();
   for (const room of allRooms()) {
     if (roomWaiting(room) || gameDecided(room)) continue;
-    forEachSeat(s => { const u = room.users[s]; if (u && room.sockets[s]) out.add(u); });
+    forEachSeat(s => { const u = room.users[s]; if (u && room.sockets[s]) out.set(u, { room: room.code, label: roomLabel(room) }); });
   }
   return out;
+}
+
+/** what a room is called on an invite and on a friend's "playing" line */
+function roomLabel(room: Room): string {
+  return room.match ? 'Competitive match' : room.league ? 'League match'
+    : room.single ? 'Single Card Duel' : room.custom ? 'Custom live draft'
+      : room.mode === 'draft' ? 'Live draft' : room.mode === 'constructed' ? 'Constructed' : 'A game';
 }
 
 /** a room as an invite sees it (inbox.ts InviteRoom) */
@@ -283,8 +290,7 @@ function inviteRoom(room: Room): InviteRoom {
   return {
     code: room.code,
     mode: room.mode,
-    label: room.single ? 'Single Card Duel' : room.custom ? 'Custom live draft'
-      : room.mode === 'draft' ? 'Live draft' : room.mode === 'constructed' ? 'Constructed' : 'A game',
+    label: roomLabel(room),
     seatOf: id => room.users[0] === id ? 0 : room.users[1] === id ? 1 : null,
     // a seat somebody claimed — an account bound to it, or anybody connected
     // — is not free, and neither is any seat of a decided game
@@ -2330,6 +2336,14 @@ function sendGameOver(room: Room, seat: Seat, extra: {
     // absent, not zero, on a rejoin after a restart: the move was measured at the record
     ...((): object => { const r = ratingMoves.get(room)?.[seat]; return r ? { rating: r } : {}; })(),
     ...(extra.account ? { me: privateView(extra.account, isOnline) } : {}),
+    // the opponent, as a friend request would find them: both named accounts
+    ...((): object => {
+      const mine = extra.account ?? accountById(room.users[seat] ?? '');
+      const them = accountById(room.users[other(seat)] ?? '');
+      if (!mine || !them || mine.id === them.id || mine.provisional || them.provisional) return {};
+      const state = friendshipWith(mine, them);
+      return state === 'blocked' ? {} : { friend: { username: them.username, state } };
+    })(),
     // BL-28: "sign up now and this game is your first" — this seat's alone
     ...(extra.signup ? { signup: extra.signup } : {}),
     // a single card duel names both cards — the table has shown them by now

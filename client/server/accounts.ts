@@ -261,6 +261,11 @@ export interface Account {
   /** friend requests: ids who asked me / ids I asked */
   incoming: string[];
   outgoing: string[];
+  /** accounts this one blocked: their friend requests are dropped unseen */
+  blocked?: string[];
+  /** requester id → when this account turned their request down (epoch ms);
+   * they cannot ask again until REQUEST_COOLDOWN_MS has passed */
+  turnedDown?: Record<string, number>;
   /**
    * The saved deck collection (collection.ts). Optional and lazily seeded:
    * `undefined` is an account that has never opened the decks page and gets
@@ -970,21 +975,32 @@ export function logout(token: string): void {
 
 const dedupe = (xs: string[]): string[] => [...new Set(xs)];
 
+/** after a decline, how long before the same player may ask again */
+export const REQUEST_COOLDOWN_MS = 7 * 24 * 3600_000;
+
 /** Ask someone to be friends. If they already asked YOU, this accepts instead
  * — two people both hitting "add friend" should end up friends, not deadlocked
- * on two pending requests. */
-export function requestFriend(me: Account, targetName: string): { ok: boolean; error?: string; friends?: boolean } {
+ * on two pending requests. A request to someone who blocked you looks sent and
+ * never arrives: telling the sender would tell them they are blocked. */
+export function requestFriend(me: Account, targetName: string, now = Date.now()): { ok: boolean; error?: string; friends?: boolean } {
   const them = accountByName(targetName);
   if (!them) return { ok: false, error: `no player called "${targetName}"` };
   if (them.id === me.id) return { ok: false, error: 'you are already your own best friend' };
+  if (me.provisional) return { ok: false, error: 'name your account first — a guest has no friends list' };
+  if (them.provisional) return { ok: false, error: `${them.username} is playing as a guest and cannot be added yet` };
   if (me.friends.includes(them.id)) return { ok: false, error: `you and ${them.username} are already friends` };
+  if (me.blocked?.includes(them.id)) return { ok: false, error: `you blocked ${them.username} — unblock them first` };
   if (me.incoming.includes(them.id)) {
     acceptFriend(me, them.id);
     return { ok: true, friends: true };
   }
   if (me.outgoing.includes(them.id)) return { ok: false, error: `you already asked ${them.username}` };
+  const declined = them.turnedDown?.[me.id];
+  if (declined !== undefined && now - declined < REQUEST_COOLDOWN_MS) {
+    return { ok: false, error: `you asked ${them.username} recently — give it a few days` };
+  }
   me.outgoing = dedupe([...me.outgoing, them.id]);
-  them.incoming = dedupe([...them.incoming, me.id]);
+  if (!them.blocked?.includes(me.id)) them.incoming = dedupe([...them.incoming, me.id]);
   persist();
   return { ok: true, friends: false };
 }
@@ -1002,18 +1018,62 @@ export function acceptFriend(me: Account, theirId: string): { ok: boolean; error
 }
 
 /** Turn down a request, cancel one you sent, or unfriend — all the same edit,
- * so one endpoint covers all three and the UI never has to guess which. */
-export function removeFriend(me: Account, theirId: string): { ok: boolean; error?: string } {
+ * so one endpoint covers all three and the UI never has to guess which. A
+ * turned-down request is remembered, so it cannot be sent straight back. */
+export function removeFriend(me: Account, theirId: string, now = Date.now()): { ok: boolean; error?: string } {
   const them = accountById(theirId);
   if (!them) return { ok: false, error: 'that player is gone' };
-  me.friends = me.friends.filter(id => id !== them.id);
-  me.incoming = me.incoming.filter(id => id !== them.id);
-  me.outgoing = me.outgoing.filter(id => id !== them.id);
-  them.friends = them.friends.filter(id => id !== me.id);
-  them.incoming = them.incoming.filter(id => id !== me.id);
-  them.outgoing = them.outgoing.filter(id => id !== me.id);
+  if (me.incoming.includes(them.id)) me.turnedDown = { ...pruneTurnedDown(me.turnedDown, now), [them.id]: now };
+  sever(me, them);
   persist();
   return { ok: true };
+}
+
+/** every tie between two accounts, both ways: friends, requests either way */
+function sever(a: Account, b: Account): void {
+  a.friends = a.friends.filter(id => id !== b.id);
+  a.incoming = a.incoming.filter(id => id !== b.id);
+  a.outgoing = a.outgoing.filter(id => id !== b.id);
+  b.friends = b.friends.filter(id => id !== a.id);
+  b.incoming = b.incoming.filter(id => id !== a.id);
+  b.outgoing = b.outgoing.filter(id => id !== a.id);
+}
+
+/** declines older than the cooldown say nothing any more */
+function pruneTurnedDown(t: Record<string, number> | undefined, now: number): Record<string, number> {
+  return Object.fromEntries(Object.entries(t ?? {}).filter(([, at]) => now - at < REQUEST_COOLDOWN_MS));
+}
+
+/** Block a player: every tie to them goes, and their requests stop arriving.
+ * They are not told; their own side still shows a request they sent as waiting. */
+export function blockPlayer(me: Account, theirId: string): { ok: boolean; error?: string } {
+  const them = accountById(theirId);
+  if (!them) return { ok: false, error: 'that player is gone' };
+  if (them.id === me.id) return { ok: false, error: 'you cannot block yourself' };
+  const asked = them.outgoing.includes(me.id);
+  sever(me, them);
+  // a request they had waiting on me stays waiting on their side, as a new one would
+  if (asked) them.outgoing = dedupe([...them.outgoing, me.id]);
+  me.blocked = dedupe([...(me.blocked ?? []), them.id]);
+  persist();
+  return { ok: true };
+}
+
+export function unblockPlayer(me: Account, theirId: string): { ok: boolean; error?: string } {
+  me.blocked = (me.blocked ?? []).filter(id => id !== theirId);
+  if (!me.blocked.length) delete me.blocked;
+  persist();
+  return { ok: true };
+}
+
+/** where `me` stands with `them`, for a button that offers a friend request */
+export type Friendship = 'none' | 'friends' | 'asked' | 'theyAsked' | 'blocked';
+export function friendshipWith(me: Account, them: Account): Friendship {
+  if (me.friends.includes(them.id)) return 'friends';
+  if (me.blocked?.includes(them.id)) return 'blocked';
+  if (me.outgoing.includes(them.id)) return 'asked';
+  if (me.incoming.includes(them.id)) return 'theyAsked';
+  return 'none';
 }
 
 // ── recording games ───────────────────────────────────────────────────
@@ -1307,12 +1367,16 @@ export interface PublicView {
 export interface FriendView {
   id: string; username: string; online: boolean; games: number; wins: number;
   favoriteElement: Element | null; lastPlayed: string | null;
+  /** my record against them: games, and the ones that were decided */
+  vs: { games: number; wins: number; losses: number };
 }
 
 /** Everything the owner of an account may see about themselves. */
 export function privateView(account: Account, online: (id: string) => boolean): PublicView & {
   achievements: (AchievementState & { earnedAt: string | null })[];
   friends: FriendView[]; incoming: FriendView[]; outgoing: FriendView[];
+  /** the players this account blocked — private, never in publicView */
+  blocked: { id: string; username: string }[];
   history: MatchRow[];
   discord: string | null;
   provisional?: true;
@@ -1343,9 +1407,13 @@ export function privateView(account: Account, online: (id: string) => boolean): 
     achievements: evaluateAchievements(account.profile, account).map(a => ({
       ...a, earnedAt: account.achievements[a.id] ?? null,
     })),
-    friends: account.friends.map(id => friendView(id, online)).filter((f): f is FriendView => !!f),
-    incoming: account.incoming.map(id => friendView(id, online)).filter((f): f is FriendView => !!f),
-    outgoing: account.outgoing.map(id => friendView(id, online)).filter((f): f is FriendView => !!f),
+    friends: account.friends.map(id => friendView(account, id, online)).filter((f): f is FriendView => !!f),
+    incoming: account.incoming.map(id => friendView(account, id, online)).filter((f): f is FriendView => !!f),
+    outgoing: account.outgoing.map(id => friendView(account, id, online)).filter((f): f is FriendView => !!f),
+    blocked: (account.blocked ?? []).flatMap(id => {
+      const a = accountById(id);
+      return a ? [{ id, username: a.username }] : [];
+    }),
     history: recentGames(account.id, 25),
   };
 }
@@ -1436,14 +1504,16 @@ export function publicView(account: Account): PublicView {
   };
 }
 
-function friendView(id: string, online: (id: string) => boolean): FriendView | null {
+function friendView(me: Account, id: string, online: (id: string) => boolean): FriendView | null {
   const a = accountById(id);
   if (!a) return null;
+  const h = me.profile.opponents[id];
   return {
     id: a.id, username: a.username, online: online(a.id),
     games: a.profile.games, wins: a.profile.wins,
     favoriteElement: favoriteOf(a),
     lastPlayed: a.profile.lastPlayed,
+    vs: { games: h?.games ?? 0, wins: h?.wins ?? 0, losses: h?.losses ?? 0 },
   };
 }
 

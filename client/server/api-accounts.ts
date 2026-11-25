@@ -17,8 +17,8 @@ import { addrOf, json, readBody, str, tokenOf, rateLimited } from './api-util.ts
 import {
   claimGuest, registerGuest,
   accountByName, acceptFriend, accountForToken, changePassword, leaderboard,
-  login, logout, privateView, publicView, register, removeFriend, requestFriend,
-  setFavorite, type Account,
+  blockPlayer, login, logout, privateView, publicView, register, removeFriend, requestFriend,
+  setFavorite, unblockPlayer, type Account,
 } from './accounts.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
 import { publicDecksOf } from './publicdecks.ts';
@@ -237,6 +237,10 @@ export async function accountRoutes(
   if (path === '/api/friends/request' && req.method === 'POST') {
     const account = requireAuth();
     if (!account) return true;
+    // a person adds a friend at a time; this only stops a loop
+    if (rateLimited(addr, 'friendreq', 30, 60_000)) {
+      return json(res, { ok: false, error: 'too many requests — wait a minute' }, 429), true;
+    }
     const b = await readBody(req);
     const r = requestFriend(account, str(b['username'], 40));
     return json(res, { ...r, me: privateView(account, ctx.online) }), true;
@@ -257,6 +261,15 @@ export async function accountRoutes(
     if (!account) return true;
     const b = await readBody(req);
     const r = removeFriend(account, str(b['id'], 64));
+    return json(res, { ...r, me: privateView(account, ctx.online) }), true;
+  }
+
+  if ((path === '/api/friends/block' || path === '/api/friends/unblock') && req.method === 'POST') {
+    const account = requireAuth();
+    if (!account) return true;
+    const b = await readBody(req);
+    const id = str(b['id'], 64);
+    const r = path === '/api/friends/block' ? blockPlayer(account, id) : unblockPlayer(account, id);
     return json(res, { ...r, me: privateView(account, ctx.online) }), true;
   }
 

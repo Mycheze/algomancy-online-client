@@ -12,7 +12,7 @@
  */
 import { ALL_ELEMENTS } from '../../engine/src/apply.ts';
 import { currentUser, formatName, isGuest, signupNoteHtml, signupOutcome } from '../account.ts';
-import { button } from '../components/index.ts';
+import { button, statusMessage } from '../components/index.ts';
 import { scoreWords } from '../match.ts';
 import { concessionNote, elementsLine, matchLength, type GameOver, type SeatStats } from '../postgame.ts';
 import { esc } from '../util.ts';
@@ -247,6 +247,21 @@ function disputedNote(o: GameOver): string {
     ? `<div class="pgnote">${esc(o.names[opp] ?? 'Your opponent')} disputed this result.</div>` : '';
 }
 
+/** Add friend: only between two named accounts, and gone once you are friends */
+function befriendHtml(o: GameOver): string {
+  const f = o.friend;
+  if (!f || f.state === 'friends' && !o.friendNow) return '';
+  if (f.state === 'friends') return button({ label: `You and ${f.username} are friends`, disabled: true });
+  return f.state === 'asked' ? button({ label: 'Friend request sent', disabled: true })
+    : f.state === 'theyAsked' ? button({ label: `Accept ${f.username}'s friend request`, dataBtn: 'pg-befriend' })
+      : button({ label: `Add ${f.username} as a friend`, dataBtn: 'pg-befriend' });
+}
+
+/** a refusal from Add friend, as an error line */
+function befriendMsgHtml(o: GameOver): string {
+  return o.friendMsg ? statusMessage({ tone: 'error', className: 'pgnote', text: o.friendMsg }) : '';
+}
+
 /** Watch the replay — not while a Competitive match is open: the route refuses
  * its games until the match ends, so the next game's deck stays hidden (docs/22 §2.6) */
 function replayHtml(o: GameOver): string {
@@ -310,11 +325,13 @@ export function postGameHtml(v: PostGameView): string {
     ${disputedNote(o)}
     ${guestClaimHtml(v.guest)}
     ${signupClaimHtml(v.signup)}
+    ${befriendMsgHtml(o)}
 
     <div class="pgbtns">
       ${o.match ? matchButtonsHtml(o) : rematchHtml(o)}
       ${disputeHtml(o)}
       ${replayHtml(o)}
+      ${befriendHtml(o)}
       ${homeHtml(o)}
       ${button({ label: 'Find a game', dataBtn: 'pg-queue' })}
     </div>

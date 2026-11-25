@@ -24,7 +24,7 @@ import { USERNAME_MAX } from '../../shared/username.ts';
 import { ICON_BASE } from '../assets.ts';
 import { button, icon, type IconName, segmented, settingRow, statusMessage } from '../components/index.ts';
 import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
-import type { AchievementState, FriendView, LeaderRow, LeagueTrophy, Me, MatchRow } from '../account.ts';
+import type { AchievementState, FriendView, LeaderRow, LeagueTrophy, LiveFriend, Me, MatchRow } from '../account.ts';
 import type { PublicDeck } from '../meta.ts';
 import { elChip } from './signin.ts';
 
@@ -273,6 +273,12 @@ export interface ProfileState {
   friendMsg: string;
   /** the friend whose ✕ was pressed once: their row asks to be pressed again */
   removing?: string | null;
+  /** the friend whose Block was pressed once, the same way */
+  blocking?: string | null;
+  /** the friend whose card is open under their row */
+  openFriend?: string | null;
+  /** the friends as the inbox last polled them: who is playing what */
+  live?: readonly LiveFriend[];
   pwMsg: { text: string; ok: boolean } | null;
   /** why the last favourite-element pick did not take ('' when it did) */
   favMsg: string;
@@ -298,6 +304,9 @@ export interface ProfileView {
   connections: { linked: string | null; code: string | null; linkMsg: string } | null;
   friendMsg: string;
   removing: string | null;
+  blocking: string | null;
+  openFriend: string | null;
+  live: ReadonlyMap<string, LiveFriend>;
   pwMsg: { text: string; ok: boolean } | null;
   favMsg: string;
   claimMsg: string;
@@ -319,7 +328,8 @@ export function profileView(s: ProfileState, now = Date.now()): ProfileView {
   return {
     me: s.me, tab: s.tab, guest: !!s.me.provisional,
     connections: s.discordLinking ? { linked: s.me.discord ?? null, code: live, linkMsg: s.linkMsg } : null,
-    friendMsg: s.friendMsg, removing: s.removing ?? null, pwMsg: s.pwMsg, favMsg: s.favMsg, claimMsg: s.claimMsg,
+    friendMsg: s.friendMsg, removing: s.removing ?? null, blocking: s.blocking ?? null, openFriend: s.openFriend ?? null,
+    live: new Map((s.live ?? []).map(f => [f.id, f])), pwMsg: s.pwMsg, favMsg: s.favMsg, claimMsg: s.claimMsg,
     leaders: s.leaders, leadersFailed: s.leadersFailed, board: s.board, ladder: s.ladder, prefs: s.prefs,
     decks: (s.me.decks ?? []).map(deck => ({ deck, cover: deck.cover ? s.artFor(deck.cover) : null })),
     topCards: s.me.topCards.map(c => ({ ...c, art: s.artFor(c.card) })),
@@ -607,17 +617,68 @@ function removeFriendButton(f: FriendView, armed: boolean): string {
     : button({ label: '✕', variant: 'icon', size: 'sm', dataBtn: 'acct-friend-remove', title: `remove ${f.username}`, attrs: { 'data-id': f.id } });
 }
 
-function friendRow(f: FriendView, kind: 'friend' | 'incoming' | 'outgoing', removing: string | null = null): string {
-  return `<li class="pffriend">
-    ${presence(f.online, f.username)}
+/** Block asks twice on a friend (it ends the friendship); on a request it goes at once. */
+function blockButton(f: { id: string; username: string }, armed: boolean): string {
+  return armed
+    ? button({ label: `Press again to block ${f.username}`, variant: 'danger', size: 'sm', dataBtn: 'acct-friend-block', attrs: { 'data-id': f.id } })
+    : button({ label: 'Block', size: 'sm', dataBtn: 'acct-friend-block', title: `block ${f.username}: no more requests from them`, attrs: { 'data-id': f.id } });
+}
+
+/** "3–1" against them, or nothing before the first game */
+function vsHtml(f: FriendView): string {
+  const vs = f.vs;
+  if (!vs?.games) return '';
+  return `<span class="pfvs" title="your record against ${esc(f.username)}: ${vs.wins} won, ${vs.losses} lost">${vs.wins}–${vs.losses}</span>`;
+}
+
+/** the room link that opens a friend's live game as a spectator */
+const watchHref = (room: string): string => `/?ws=1&room=${encodeURIComponent(room)}&watch=1`;
+
+function friendRow(f: FriendView, kind: 'friend' | 'incoming' | 'outgoing', v?: ProfileView): string {
+  const live = v?.live.get(f.id);
+  const online = live ? live.status !== 'offline' : f.online;
+  const game = live?.status === 'playing' ? live.game ?? null : null;
+  const open = kind === 'friend' && v?.openFriend === f.id;
+  const name = kind === 'friend'
+    ? `<button class="pffriendname" data-btn="acct-friend-open" data-id="${esc(f.id)}" aria-expanded="${open}" title="${esc(f.username)}: your record and games together">${presence(online, f.username)}</button>`
+    : presence(online, f.username);
+  const actions = kind === 'incoming'
+    ? button({ label: 'Accept', variant: 'primary', size: 'sm', dataBtn: 'acct-friend-accept', attrs: { 'data-id': f.id } })
+      + button({ label: 'Decline', size: 'sm', dataBtn: 'acct-friend-remove', attrs: { 'data-id': f.id } })
+      + blockButton(f, false)
+    : kind === 'outgoing'
+      ? `<span class="pfaside">asked</span>${button({ label: 'Cancel', size: 'sm', dataBtn: 'acct-friend-remove', attrs: { 'data-id': f.id } })}`
+      : (game
+        ? button({ label: 'Watch', size: 'sm', variant: 'action', href: watchHref(game.room), title: `watch ${f.username}'s game` })
+        : button({ label: 'Play', size: 'sm', dataBtn: 'acct-friend-open', title: `play ${f.username}`, attrs: { 'data-id': f.id } }))
+        + removeFriendButton(f, v?.removing === f.id);
+  return `<li class="pffriend${open ? ' open' : ''}">
+    ${name}
     ${elChip(f.favoriteElement)}
+    ${kind === 'friend' ? vsHtml(f) : ''}
+    ${game ? `<span class="pfactivity">in a ${esc(game.label)}</span>` : ''}
     <span class="pfspacer"></span>
-    ${kind === 'incoming'
-      ? button({ label: 'Accept', variant: 'primary', size: 'sm', dataBtn: 'acct-friend-accept', attrs: { 'data-id': f.id } })
-        + button({ label: 'Decline', size: 'sm', dataBtn: 'acct-friend-remove', attrs: { 'data-id': f.id } })
-      : kind === 'outgoing'
-        ? `<span class="pfaside">asked</span>${button({ label: 'Cancel', size: 'sm', dataBtn: 'acct-friend-remove', attrs: { 'data-id': f.id } })}`
-        : removeFriendButton(f, removing === f.id)}
+    ${actions}
+  </li>${open && v ? friendCard(f, game, v) : ''}`;
+}
+
+/** Under an open friend's row: what you have played together, and the ways to play again. */
+function friendCard(f: FriendView, game: { room: string; label: string } | null, v: ProfileView): string {
+  const vs = f.vs;
+  const record = vs?.games
+    ? `You are <b>${vs.wins}–${vs.losses}</b> against ${esc(f.username)} over ${plural(vs.games, 'game')}.`
+    : `You have not played ${esc(f.username)} yet.`;
+  const together = v.me.history.filter(g => g.opponentId === f.id).slice(0, 5);
+  const games = together.length
+    ? `<table class="pftable pfgames pftogether"><tbody>${gameRowsHtml(together)}</tbody></table>` : '';
+  const play = game
+    ? button({ label: `Watch their ${game.label}`, variant: 'primary', size: 'sm', href: watchHref(game.room) })
+    : button({ label: 'Play a live draft', variant: 'primary', size: 'sm', dataBtn: 'acct-friend-play', attrs: { 'data-id': f.id, 'data-mode': 'draft' } })
+      + button({ label: 'Play constructed', size: 'sm', dataBtn: 'acct-friend-play', attrs: { 'data-id': f.id, 'data-mode': 'constructed' } });
+  return `<li class="pffriendcard">
+    <p class="pfvsline">${record}${f.games ? ` <span class="pfaside">${esc(f.username)} has played ${plural(f.games, 'game')} here.</span>` : ''}</p>
+    ${games}
+    <div class="pfcardbtns">${play}<span class="pfspacer"></span>${blockButton(f, v.blocking === f.id)}</div>
   </li>`;
 }
 
@@ -628,13 +689,17 @@ function friendsColumn(v: ProfileView): string {
       ${button({ label: 'Add', dataBtn: 'acct-friend-add' })}
     </div>
     ${v.friendMsg ? statusMessage({ tone: 'note', text: v.friendMsg }) : ''}`;
+  const blocked = me.blocked ?? [];
   return `<div class="pfsurface pfscroll pffriends" data-scroll="acct-friends">
     ${section('Add a friend', add)}
-    ${me.incoming.length ? section('Wants to be friends', `<ul class="pflist">${me.incoming.map(f => friendRow(f, 'incoming')).join('')}</ul>`) : ''}
+    ${me.incoming.length ? section('Wants to be friends', `<ul class="pflist">${me.incoming.map(f => friendRow(f, 'incoming', v)).join('')}</ul>`) : ''}
     ${section('Friends', me.friends.length
-      ? `<ul class="pflist">${me.friends.map(f => friendRow(f, 'friend', v.removing)).join('')}</ul>`
+      ? `<ul class="pflist">${me.friends.map(f => friendRow(f, 'friend', v)).join('')}</ul>`
       : '<p class="pfnone">Nobody yet.</p>', { aside: me.friends.length ? `<span class="pfaside">${me.friends.length}</span>` : '' })}
-    ${me.outgoing.length ? section('Waiting on', `<ul class="pflist">${me.outgoing.map(f => friendRow(f, 'outgoing')).join('')}</ul>`) : ''}
+    ${me.outgoing.length ? section('Waiting on', `<ul class="pflist">${me.outgoing.map(f => friendRow(f, 'outgoing', v)).join('')}</ul>`) : ''}
+    ${blocked.length ? section('Blocked', `<ul class="pflist">${blocked.map(b => `<li class="pffriend">
+      <span class="pfopp">${esc(b.username)}</span><span class="pfspacer"></span>
+      ${button({ label: 'Unblock', size: 'sm', dataBtn: 'acct-friend-unblock', attrs: { 'data-id': b.id } })}</li>`).join('')}</ul>`) : ''}
   </div>`;
 }
 
@@ -652,7 +717,7 @@ function friendsColumn(v: ProfileView): string {
  */
 function boardHtml(v: ProfileView): string {
   const me = v.me;
-  const known = new Set([me.id, ...me.friends.map(f => f.id), ...me.outgoing.map(f => f.id), ...me.incoming.map(f => f.id)]);
+  const known = new Set([me.id, ...me.friends.map(f => f.id), ...me.outgoing.map(f => f.id), ...me.incoming.map(f => f.id), ...(me.blocked ?? []).map(b => b.id)]);
   const addCell = (l: LeaderRow): string => known.has(l.id) ? ''
     : button({ label: 'Add friend', size: 'sm', dataBtn: 'acct-friend-add', title: `send ${l.username} a friend request`, attrs: { 'data-name': l.username } });
   const who = (l: LeaderRow): string => `${presence(l.online, l.username)} ${elChip(l.favoriteElement)}`;

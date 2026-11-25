@@ -25,6 +25,7 @@ import {
   type PlayersBoard, type ProfileTab,
 } from './pages/profile.ts';
 import { applyColourMode, isPrefName, readPrefs, setPref } from './prefs.ts';
+import { chosenClockMs } from './pages/clockpick.ts';
 
 /* The screens are drawn by ui/pages/signin.ts and ui/pages/profile.ts
  * (design-system round, 2026-11-03): pure functions of a view this module's
@@ -84,6 +85,14 @@ export interface AchievementState {
 export interface FriendView {
   id: string; username: string; online: boolean; games: number; wins: number;
   favoriteElement: string | null; lastPlayed: string | null;
+  /** my record against them (absent from an older server) */
+  vs?: { games: number; wins: number; losses: number };
+}
+
+/** a friend as the inbox's last poll saw them (server/api-inbox.ts InboxFriend) */
+export interface LiveFriend {
+  id: string; status: 'online' | 'playing' | 'offline';
+  game?: { room: string; label: string } | null;
 }
 
 export interface MatchRow {
@@ -124,6 +133,8 @@ export interface Me {
   opponents: { id: string; username: string; games: number; wins: number; losses: number }[];
   achievements: AchievementState[];
   friends: FriendView[]; incoming: FriendView[]; outgoing: FriendView[];
+  /** the players this account blocked (absent from an older server) */
+  blocked?: { id: string; username: string }[];
   history: MatchRow[];
   /** the decks this account has PUBLISHED — public only, so an unlisted deck
    * stays reachable by its link and by nothing else (server/publicdecks.ts) */
@@ -192,6 +203,15 @@ let tab: ProfileTab = 'overview';
 let friendMsg = '';
 /** the friend whose ✕ is armed (pages/profile.ts removeFriendButton); any other account button disarms it */
 let removing: string | null = null;
+/** the friend whose Block is armed, the same way */
+let blocking: string | null = null;
+/** the friend whose card is open under their row on the Players tab */
+let openFriend: string | null = null;
+/** the friends as the inbox polls them (ui/inbox.ts): who is playing what, right now */
+let liveFriends: () => readonly LiveFriend[] = () => [];
+export function setLiveFriends(get: () => readonly LiveFriend[]): void { liveFriends = get; }
+/** the inbox's friends moved: the Players tab redraws if it is showing */
+export function liveFriendsChanged(): void { if (view === 'profile' && tab === 'players') renderScreen(); }
 /** Add with the friend box empty (BL-10, docs/23-ui-inventory/01 §4 S16: it did nothing) */
 export const EMPTY_FRIEND_LINE = 'Type their username first.';
 /** #296: the change-password box's last answer (the server's error, or done) */
@@ -369,7 +389,8 @@ function renderAuth(): void {
 function renderProfile(): void {
   if (!me) { view = 'auth'; renderAuth(); return; }
   paintProfile($app!, profileView({
-    me, tab, discordLinking, linkCode, linkMsg, friendMsg, removing, pwMsg, favMsg, claimMsg, leaders, leadersFailed, board, ladder,
+    me, tab, discordLinking, linkCode, linkMsg, friendMsg, removing, blocking, openFriend, live: liveFriends(),
+    pwMsg, favMsg, claimMsg, leaders, leadersFailed, board, ladder,
     prefs: readPrefs(), artFor,
   }));
 }
@@ -466,6 +487,7 @@ export function handleButton(btn: HTMLElement): boolean {
   // place that knows how to set a session token.
   if (!b.startsWith('acct-') && b !== 'pg-claim' && b !== 'pg-signup') return false;
   if (removing && b !== 'acct-friend-remove') { removing = null; if (view === 'profile') renderScreen(); }
+  if (blocking && b !== 'acct-friend-block') { blocking = null; if (view === 'profile') renderScreen(); }
 
   switch (b) {
     case 'acct-open-auth':
@@ -671,6 +693,41 @@ export function handleButton(btn: HTMLElement): boolean {
         if (r.me) me = r.me;
         renderScreen();
         if (board === 'all') void loadLeaders();
+      }).catch(() => { friendMsg = 'could not reach the server'; renderScreen(); });
+      return true;
+    }
+
+    case 'acct-friend-open': {
+      const id = btn.dataset['id'] ?? '';
+      openFriend = openFriend === id ? null : id;
+      renderScreen();
+      return true;
+    }
+
+    // a room made for this friend: they are invited the moment you sit in it (ui/inbox.ts)
+    case 'acct-friend-play': {
+      const id = btn.dataset['id'] ?? '';
+      const mode = btn.dataset['mode'] === 'constructed' ? 'constructed' : 'draft';
+      void fetch('/api/new').then(r => r.json() as Promise<{ code?: string; error?: string }>).then(j => {
+        if (!j.code) { friendMsg = j.error ?? 'could not make a room'; renderScreen(); return; }
+        location.search = `?ws=1&room=${encodeURIComponent(j.code)}&seat=0&mode=${mode}&clock=${chosenClockMs(mode)}&invite=${encodeURIComponent(id)}`;
+      }).catch(() => { friendMsg = 'could not reach the server'; renderScreen(); });
+      return true;
+    }
+
+    case 'acct-friend-block':
+    case 'acct-friend-unblock': {
+      const id = btn.dataset['id'] ?? '';
+      // blocking a friend ends the friendship, so it asks twice; a stranger's request goes at once
+      if (b === 'acct-friend-block' && blocking !== id && me?.friends.some(f => f.id === id)) {
+        blocking = id; renderScreen(); return true;
+      }
+      blocking = null;
+      if (b === 'acct-friend-block' && openFriend === id) openFriend = null;
+      void post<{ me?: Me }>(b === 'acct-friend-block' ? '/api/friends/block' : '/api/friends/unblock', { id }).then(r => {
+        if (r.me) me = r.me;
+        friendMsg = r.ok ? '' : (r.error ?? 'that did not work');
+        renderScreen();
       }).catch(() => { friendMsg = 'could not reach the server'; renderScreen(); });
       return true;
     }

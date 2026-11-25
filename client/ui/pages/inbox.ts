@@ -89,6 +89,8 @@ export type FriendStatus = 'online' | 'playing' | 'offline';
 export interface RoomFriendView {
   id: string; username: string; favoriteElement: string | null;
   status: FriendStatus; invite: 'sent' | 'declined' | null;
+  /** while they play: the room and what it is (absent from an older server) */
+  game?: { room: string; label: string } | null;
 }
 export interface RoomFriendsView {
   /** a poll has answered */

@@ -126,7 +126,7 @@ import type {
 } from '../engine/src/types.ts';
 import * as acct from './account.ts';
 import { disputeAnswered, installReport, isReportOpen, openDispute, openReport, reportJustSent } from './report.ts';
-import { inboxListOpen, inboxUnread, installInbox } from './inbox.ts';
+import { inboxListOpen, inboxUnread, installInbox, inviteOnArrival, onShareFriends, shareFriends } from './inbox.ts';
 import * as amend from './amend.ts';
 import { installTouch, peekEnd, tapRead, touchSeen } from './touch.ts';
 import { installPressZoom } from './presszoom.ts';
@@ -12447,6 +12447,11 @@ installInbox({
   playLeague: lg.playMatch,
   leagueChanged: lg.refresh,
 });
+// the Players tab reads who is playing what off the inbox's poll
+acct.setLiveFriends(() => shareFriends().friends);
+onShareFriends(acct.liveFriendsChanged);
+// a room made from a friend's Play invites them once this seat is in it
+if (params.get('invite') && params.get('room') && params.get('watch') !== '1') inviteOnArrival(params.get('room')!.trim(), params.get('invite')!);
 // docs/22 §5.4: the sideboarding countdown, patched in place once a second
 mt.installCountdown();
 // BL-46: the agreed-fix dialog and the bar the other seat answers on — a layer

@@ -380,8 +380,8 @@ export const TUTORIAL: readonly TutorialSection[] = [
       },
       {
         label: 'Spectating',
-        text: 'A room link with “&watch=1” on the end opens the game as a spectator: you see both hands and nothing is clickable. The players '
-          + 'see how many people are watching.',
+        text: 'A friend who is playing has Watch beside their name on your profile\'s Players tab (and a cube event lists Watch beside its live '
+          + 'matches): it opens the game as a spectator, where you see both hands and nothing is clickable. The players see how many people are watching.',
       },
     ],
   },

@@ -258,11 +258,31 @@ export function shareFriends(): { loaded: boolean; friends: readonly RoomFriend[
   return deps?.token() ? { loaded, friends } : { loaded: false, friends: [] };
 }
 
-/* ONE LISTENER SLOT, like onInboxChange: the Decks page, whose Share sheet
- * lists the friends. Called when a poll changes the friends list (or is the
- * first to answer), so a sheet opened before the first poll fills in. */
-let friendsChanged: (() => void) | null = null;
-export function onShareFriends(cb: () => void): void { friendsChanged = cb; }
+/* The Decks page's Share sheet and the profile's Players tab both list the
+ * friends: each is told when a poll changes the list (or is the first to
+ * answer), so what was opened before the first poll fills in. */
+const friendsListeners = new Set<() => void>();
+export function onShareFriends(cb: () => void): void { friendsListeners.add(cb); }
+
+/** A room opened from a friend's Play (`&invite=<id>`): that friend is invited
+ * once this seat is in it. A refusal is tried again at the next poll, since the
+ * first polls can come before the seat is bound; an invite already shown ends it. */
+let pendingInvite: { room: string; to: string; tries: number; inFlight?: boolean } | null = null;
+export function inviteOnArrival(room: string, to: string): void {
+  pendingInvite = room && to ? { room: room.toUpperCase(), to, tries: 0 } : null;
+}
+function sendPendingInvite(): void {
+  const p = pendingInvite, room = deps?.room();
+  if (!p || !room || room.toUpperCase() !== p.room) return;
+  const f = friends.find(x => x.id === p.to);
+  if (f?.invite || p.tries >= 10) { pendingInvite = null; return; }
+  if (p.inFlight) return;
+  p.tries++;
+  p.inFlight = true;
+  void post('/api/invite', { to: p.to, room }).then(r => {
+    if (r.ok) { pendingInvite = null; pollSoon(); }
+  }).catch(() => undefined).finally(() => { p.inFlight = false; });
+}
 
 /** the pending invites, as ui/pages/inbox.ts inviteRowsHtml draws them */
 export function inviteRowsView(): InviteCardView[] {
@@ -401,7 +421,8 @@ function take(nextInvites: InviteView[], nextRequests: RequestView[], nextFriend
   if (loaded && JSON.stringify([notes.map(n => n.id), times]) !== leagueBefore) deps?.leagueChanged();
   loaded = true;
   saveSeen();
-  if (JSON.stringify(friends) !== friendsBefore) friendsChanged?.();
+  if (JSON.stringify(friends) !== friendsBefore) for (const cb of friendsListeners) cb();
+  sendPendingInvite();
   if (JSON.stringify([invites, requests, friends, notes, times, decks, cubeNotes, loaded]) === before) return;
   paint();
   paintPanel();

@@ -21,8 +21,9 @@ import type { Element } from '../engine/src/types.ts';
 export interface InboxContext {
   /** on the site at all — seated, or polling this (main.ts isOnline) */
   online: (userId: string) => boolean;
-  /** the accounts sitting at a table that has been dealt and is not over */
-  playing: () => Set<string>;
+  /** the accounts sitting at a table that has been dealt and is not over,
+   * with the room each is in and what it is called */
+  playing: () => ReadonlyMap<string, { room: string; label: string }>;
   lookup: RoomLookup;
 }
 
@@ -32,6 +33,8 @@ export type FriendStatus = 'online' | 'playing' | 'offline';
 export interface InboxFriend {
   id: string; username: string; favoriteElement: Element | null;
   status: FriendStatus;
+  /** while they are playing: the room (what Watch opens) and what it is */
+  game: { room: string; label: string } | null;
   /** only with `?room=`: whether they have been invited to it */
   invite: 'sent' | 'declined' | null;
 }
@@ -54,7 +57,7 @@ export async function inboxRoutes(
       const a = accountById(id);
       if (!a) return [];
       const status: FriendStatus = playing.has(id) ? 'playing' : ctx.online(id) ? 'online' : 'offline';
-      return [{ id, username: a.username, favoriteElement: favoriteOf(a), status, invite: sent.get(id) ?? null }];
+      return [{ id, username: a.username, favoriteElement: favoriteOf(a), status, game: playing.get(id) ?? null, invite: sent.get(id) ?? null }];
     }).sort((x, y) => ORDER[x.status] - ORDER[y.status] || x.username.localeCompare(y.username));
     return json(res, {
       ok: true,

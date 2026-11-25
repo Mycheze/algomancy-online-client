@@ -65,7 +65,7 @@ async function call(method: string, path: string, token: string, body?: unknown)
   const res = { writeHead() { return res; }, end(b?: string) { raw = b ?? ''; return res; } } as unknown as ServerResponse;
   const url = new URL(`http://x${path}`);
   assert.equal(await inboxRoutes(req, res, url.pathname, url, {
-    online: () => false, playing: () => new Set(), lookup: () => null,
+    online: () => false, playing: () => new Map(), lookup: () => null,
   }), true, `${method} ${path} not handled`);
   return JSON.parse(raw) as Record<string, unknown>;
 }

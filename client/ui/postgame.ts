@@ -15,7 +15,7 @@
  * pure helpers the page and the tests share.
  */
 import { esc } from './util.ts';
-import { gameElementsHtml } from './account.ts';
+import { authHeaders, gameElementsHtml, reloadMe } from './account.ts';
 import { matchLink, type MatchSummary } from './match.ts';
 import type { ClientMsg } from '../shared/protocol.ts';
 
@@ -103,6 +103,13 @@ export interface GameOver {
    * the match result. Updated by `{t:'match'}` while the screen is up.
    */
   match?: MatchSummary;
+  /** both seats are named accounts: the opponent, and where this player stands
+   * with them — what the Add friend button offers (absent otherwise) */
+  friend?: { username: string; state: 'none' | 'friends' | 'asked' | 'theyAsked' };
+  /** this screen's own note: why Add friend did not go */
+  friendMsg?: string;
+  /** Add friend made you friends on this screen (they had asked first) */
+  friendNow?: boolean;
 }
 
 /**
@@ -183,8 +190,25 @@ export function handlePostGameButton(btn: HTMLElement, a: PostGameActions): bool
     case 'pg-close': a.dismiss(); return true;
     case 'pg-replay': if (a.over.replay) location.href = replayLink(a.over.replay); return true;
     case 'pg-dispute': if (a.over.disputable && !a.over.disputed?.[a.over.seat]) a.dispute(); return true;
+    case 'pg-befriend': befriend(a); return true;
   }
   return false;
+}
+
+/** Add friend (or accept, when they asked first): the screen says what came of it */
+function befriend(a: PostGameActions): void {
+  const f = a.over.friend;
+  if (!f || f.state === 'friends' || f.state === 'asked') return;
+  void fetch('/api/friends/request', { method: 'POST', headers: authHeaders(), body: JSON.stringify({ username: f.username }) })
+    .then(r => r.json() as Promise<{ ok?: boolean; friends?: boolean; error?: string }>)
+    .then(r => {
+      a.over.friend = r.ok ? { ...f, state: r.friends ? 'friends' : 'asked' } : f;
+      a.over.friendNow = r.ok && r.friends === true;
+      a.over.friendMsg = r.ok ? undefined : r.error ?? 'that did not work';
+      if (r.ok) reloadMe();
+      a.rerender();
+    })
+    .catch(() => { a.over.friendMsg = 'could not reach the server'; a.rerender(); });
 }
 
 /** the replay viewer's address for a finished game (main.ts `?replay=`) */
