@@ -31,7 +31,7 @@ import {
 } from '../../engine/src/challenge.ts';
 import { apply } from '../../engine/src/apply.ts';
 import { register, registerGuest, useAccountsFile } from '../accounts.ts';
-import { challengeRoutes } from '../api-challenge.ts';
+import { challengeRoutes, gateVerifyForTests, verifyingForTests } from '../api-challenge.ts';
 import { useChallengeDir } from '../challenge-store.ts';
 import { stopChallengeWorker } from '../challenge-worker.ts';
 import { weekWindow } from '../challenges.ts';
@@ -210,14 +210,17 @@ test('challenge api §5 a valid run is accepted, scored by the server and ranked
   assert.equal(again.body['improved'], false);
   assert.deepEqual(again.body['newBest'], []);
 
-  // two at once from one account: one is checked, the other told to wait
-  const both = await Promise.all([
-    call('POST', '/api/challenge/run', BOB.token, { challengeId: W1.id, ...RUN_B }),
-    call('POST', '/api/challenge/run', BOB.token, { challengeId: W1.id, ...RUN_B }),
-  ]);
-  const st = both.map(x => x.status).sort();
-  assert.deepEqual(st, [200, 429], `one verification in flight per account (got ${st.join(', ')})`);
-  const b = both.find(x => x.status === 200)!;
+  // two at once from one account: one is checked, the other told to wait. The
+  // first is held in verification so the second surely arrives while it is in flight.
+  let release!: () => void;
+  gateVerifyForTests(new Promise<void>(r => { release = r; }));
+  const first = call('POST', '/api/challenge/run', BOB.token, { challengeId: W1.id, ...RUN_B });
+  for (const end = Date.now() + 10_000; !verifyingForTests(BOB.id) && Date.now() < end;) await new Promise(r => setTimeout(r, 5));
+  const second = await call('POST', '/api/challenge/run', BOB.token, { challengeId: W1.id, ...RUN_B });
+  gateVerifyForTests(null);
+  release();
+  const b = await first;
+  assert.deepEqual([b.status, second.status], [200, 429], `one verification in flight per account (got ${b.status}, ${second.status})`);
   assert.deepEqual(b.body['ranks'], allRanks(2), 'more cards, same turns and elements: second everywhere');
   bobRun = String(b.body['runId']);
 

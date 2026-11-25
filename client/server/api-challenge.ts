@@ -69,6 +69,10 @@ function view(def: ChallengeDef, now: number): ChallengeView {
 
 /** one verification in flight per account */
 const inFlight = new Set<string>();
+/** for tests: verification waits on this, so a second run provably arrives while one is in flight */
+let verifyGate: Promise<void> | null = null;
+export function gateVerifyForTests(gate: Promise<void> | null): void { verifyGate = gate; }
+export const verifyingForTests = (userId: string): boolean => inFlight.has(userId);
 
 const RUN_ID = /^[A-Za-z0-9_-]{6,40}$/;
 
@@ -188,6 +192,7 @@ async function submit(req: IncomingMessage, res: ServerResponse, now: number, ro
   if (inFlight.has(me.id)) { json(res, { ok: false, error: 'your last run is still being checked' }, 429); return true; }
   inFlight.add(me.id);
   try {
+    if (verifyGate) await verifyGate;
     const r = await verifyInWorker({ def, deck, actions, maxActions: MAX_ACTIONS });
     if (!r.ok) {
       json(res, { ok: false, error: r.error, ...(r.at !== undefined ? { at: r.at } : {}) }, 422);
