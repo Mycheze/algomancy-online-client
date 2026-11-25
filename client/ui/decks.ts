@@ -502,7 +502,7 @@ function tabletopHost(id: string, shared = false): tt.TableHost {
     pill: () => deckPill(deck() ?? { id, name: '', cards: [], cover: null }),
     titleBtn: 'deck-settings',
     // Build together opens this deck to friends (ui/collab.ts); a shared table draws its own Together button
-    toolsHtml: () => (shared ? '' : collabStartHtml()) + deckInfoButtonHtml(infoOpen),
+    toolsHtml: () => deckInfoButtonHtml(infoOpen) + (shared ? '' : collabStartHtml()),
     button: el => { if (!shared && el.dataset['btn'] === 'tt-collab-start') { flushSave(); co.startShared(id); } },
     closeSheet: () => { if (!infoOpen) return false; closeInfo(); return true; },
     sheetHtml: () => {

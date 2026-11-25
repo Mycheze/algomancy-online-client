@@ -201,6 +201,13 @@ export function previewFor(url: URL, ctx: PreviewCtx): Preview {
       : `A cube draft hosted by ${c.host}, under way. Open the link for the standings, or to watch a game.`);
   }
 
+  // ── a shared deck table (docs/26): never the deck's or the host's name, a link
+  // outlives its session and the deck may be private ─────────────────────
+  if (has('collab')) {
+    return make('play', 'Build a deck together on Algomancy',
+      'A friend has opened their deck builder to you. Sign in and open the link to move cards on the same table, live.');
+  }
+
   // ── the league ────────────────────────────────────────────────────────
   if (has('league')) {
     const want = val('league');

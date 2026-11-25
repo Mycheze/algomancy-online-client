@@ -76,11 +76,9 @@ let sheetMsg = '';
 const invited = new Set<string>();
 /** the deck page's host, wrapped (the host's own table only) */
 let base: tt.TableHost | null = null;
-/** the table is on screen */
-let tableUp = false;
+/** everyone else's last pointer, by account */
 const cursors = new Map<string, CollabCursor>();
 
-export const sessionCode = (): string | null => code;
 const key = (): string => `collab:${code}`;
 const onTable = (): boolean => !!code && tt.tableOpen() === key();
 
@@ -229,7 +227,6 @@ function putUp(): void {
   if (!view || !code) return;
   // the host's Deck info arrives once the collection has: the table goes up again then, once
   if (view.youHost && !base) base = deps?.hostBase(view.deck.id, () => { if (view && code && !base) putUp(); }) ?? null;
-  tableUp = true;
   tt.openTabletop(sharedHost());
   pollInboxNow();
 }
@@ -247,7 +244,7 @@ function over(why: string): void {
 /** forget the session */
 function reset(): void {
   closeSocket();
-  code = null; view = null; table = null; pending = []; ended = null; base = null; tableUp = false;
+  code = null; view = null; table = null; pending = []; ended = null; base = null;
   sheetOpen = false; note = null; copyMsg = '';
   cursors.clear();
   drawMarks();
@@ -324,7 +321,7 @@ function sharedHost(): tt.TableHost {
       // the host goes back to the deck page, the deck as the table left it
       if (view?.youHost) { leave(false); if (b2) b2.close(); else deps?.rerender(); return; }
       // a guest whose session ended sees why (and may still keep a copy); one who left goes home
-      if (ended) { tableUp = false; sheetOpen = false; deps?.rerender(); return; }
+      if (ended) { sheetOpen = false; deps?.rerender(); return; }
       leave();
     },
   };
@@ -534,7 +531,3 @@ function ensureListeners(): void {
   document.addEventListener('scroll', () => { if (onTable() && cursors.size) drawMarksSoon(); }, { passive: true, capture: true });
   if (typeof window !== 'undefined') window.addEventListener('resize', () => { if (onTable()) drawMarksSoon(); });
 }
-
-/** a test's look inside */
-export const collabState = (): { code: string | null; view: CollabView | null; table: DeckTable | null; pending: number; note: string | null; ended: string | null; tableUp: boolean } =>
-  ({ code, view, table, pending: pending.length, note, ended, tableUp });
