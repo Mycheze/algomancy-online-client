@@ -1,0 +1,12 @@
+# Every minute: a push to `staging` is live on staging.algomancy.online within
+# a minute plus the build (a few seconds; minutes when a lockfile changed).
+[Unit]
+Description=Algomancy staging: check origin/staging every minute
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=60s
+AccuracySec=5s
+
+[Install]
+WantedBy=timers.target

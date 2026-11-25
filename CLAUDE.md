@@ -167,13 +167,20 @@ words around it may be tightened.
 - Land anything large from a worktree, then `git push origin <branch>:master`.
 - **Cloud sessions** (claude.ai/code) cannot reach the VPS or the home box: no
   ssh, HTTPS to `algomancy.online` only. They work on their `claude/…` branch and
-  reach master only by a merged PR or when the owner says to push. A green master
+  reach master only by a merged PR or when the owner says to push. To SHOW the
+  owner work before that, force-push it to `staging` (below). A green master
   then deploys itself: the steward gates it and puts it live (`steward/README.md`,
   "Master the owner pushed"). Never try to deploy from one.
 - **The steward pushes too.** `steward/run-once.sh` on the home box lands its own
-  fixes on master at night and stages the rest as `steward/<item>` branches (the
-  only branches besides master that may exist). Review them with `steward/review.sh`.
-- **Master is the only branch.** Rounds used to leave their branch behind after
+  fixes on master at night and stages the rest as `steward/<item>` branches (with
+  `staging`, the only branches besides master that may exist). Review them with `steward/review.sh`.
+- **`staging` is scratch, and the one other branch everyone may push.** It is
+  what https://staging.algomancy.online runs (behind a password, on a copy of
+  production's data, `deploy/README.md` § Staging). A cloud session shows the
+  owner its work with `git push -f origin HEAD:staging`, standing permission,
+  no need to ask; it is live within a minute. Overwrite it freely. Never merge
+  FROM it, never base work on it, and never delete it.
+- **Master is the only branch** (besides `staging`, above). Rounds used to leave their branch behind after
   landing — 76 of them by 2026-09-20, every one already on master (rebased, so
   the stale tip was no longer an ancestor and each read as "1 ahead" of work
   nobody had merged). They were verified landed and pruned. The old tips are

@@ -18,6 +18,7 @@ directory is everything it takes to make one from a blank Ubuntu image.
 | `backup-var.sh` | tar `var/` into `~/algomancy-backups/` — gpg-encrypted, with the env files, when `ALGO_BACKUP_RECIPIENT` is set — and rsync it off the box when `ALGO_BACKUP_REMOTE` is set |
 | `algomancy-alert@.service` + `alert.sh` + `notify.sh` | a unit that fails posts "X failed on <host>" + its last ten journal lines to `ALGO_ALERT_WEBHOOK` (§ Alerts) |
 | `algomancy-heartbeat.service` + `.timer` + `heartbeat.sh` | 09:00 daily: backup age, disk, services, steward's last commit → the webhook; then pings `ALGO_HEARTBEAT_URL` |
+| `staging-setup.sh` + `staging.caddy` + `staging.env.example` + `algomancy-staging-*` + `staging-{fetch,build,refresh-data}.sh` | the **private staging copy** at `staging.algomancy.online`: the `staging` branch on a copy of production's data, behind a password (§ Staging) |
 | `restore-drill.sh` | NOT for the VPS: where the private backup key is, unpack the newest pulled backup and check the account store (§ Backups) |
 
 Every path in the units is absolute and assumes the repo at
@@ -186,6 +187,83 @@ before that restart. It still counts as `LLM_TIMEOUT`, now meaning seconds
 *per attempt*, so one attempt eats the whole 55 s `LLM_DEADLINE` and nothing is
 ever retried. The default (25 s, two attempts) is the one that fits inside the
 game server's 60 s judge proxy. Check with `grep -n TIMEOUT .env`.
+
+## Staging
+
+A private copy of the site at **https://staging.algomancy.online**, behind a
+password, for trying work before it reaches master. It runs whatever the
+`staging` branch on GitHub holds, on a copy of production's `var/` (real
+accounts, decks and games), and follows the branch by itself: a push to
+`staging` is live within a minute, plus the build (seconds; minutes when a
+lockfile changed). Cloud sessions put their work there with
+`git push -f origin HEAD:staging`. The branch is scratch: anybody may
+overwrite it, and nothing ever merges FROM it.
+
+| piece | what |
+|---|---|
+| `/home/bena/Documents/Algomancy-staging` | its own clone, on `origin/staging`, with its own `var/`, `staging.env`, `node_modules` |
+| `algomancy-staging-game.service` | the game server on **:5100**, loopback, sandboxed; builds itself first (`ExecStartPre=` → `staging-build.sh`) |
+| `algomancy-staging-fetch.timer` → `.service` | every minute, `staging-fetch.sh`: fetch `staging`; a new commit is reset into place and `.deployed` touched |
+| `algomancy-staging-restart.path` → `.service` | `.deployed` changed → root restarts the staging game unit (one fixed command) |
+| `staging.caddy` | the site, installed as `/etc/caddy/sites/staging.caddy`; the `Caddyfile` imports `sites/*.caddy` |
+| `/etc/caddy/staging-auth.caddy` | the `basic_auth` block (username + bcrypt hash); not in the repo |
+| `staging-refresh-data.sh` | production's `var/` over staging's again, server stopped meanwhile |
+
+**What separates it from production.** Staging runs code nobody has reviewed,
+so it is held apart. Its server reads only `staging.env`, never production's
+`.env` or `tester.env`, and its sandbox makes production's whole checkout
+(secrets, live `var/`) and the backups unreadable. The build runs inside that
+sandbox, so the branch's npm scripts cannot `sudo` or reach the ssh key. The
+fetch, the build logic and the data copy run from **root-owned copies** in
+`/usr/local/bin/` made from production's checkout (master), so a push to
+`staging` can never change them. There is no `ALGO_BOT_TOKEN`, so no Discord
+bot integration and nothing that can reach a real player. The judge box is off
+(`ALGO_JUDGE_OFF=1`): it would log into production's answer review and spend
+its LLM budget. The card inspector still asks production's rules app. No
+`OnFailure=` alerts: a red staging pages nobody.
+
+⚠ **It holds a copy of every account** (password hashes, sessions, history).
+That is what the password is for. Nobody is told it exists, and it says
+`noindex`. A session token from production does not sign you in there
+(localStorage is per origin): sign in with your password.
+
+**Install** (once, when nobody is in a game: it reloads Caddy):
+
+0. Cloudflare → `algomancy.online` → DNS → an `A` record `staging` → the box's IPv4, **DNS only (grey cloud)**.
+1. A `staging` branch on GitHub (any commit; a cloud session pushes one).
+2. On the box, as `bena`, after pulling a master that has this section:
+
+```bash
+bash ~/Documents/Algomancy/deploy/staging-setup.sh
+```
+
+**Before master has it** (staging is how unmerged work gets tried, so this is
+the usual first time): clone the branch by hand and run the script from there.
+It installs the copies beside it, from the `staging` branch as it is at that
+moment; re-run it from production's checkout once master has these files.
+
+```bash
+git clone --reference ~/Documents/Algomancy --dissociate -b staging \
+  "$(git -C ~/Documents/Algomancy remote get-url origin)" ~/Documents/Algomancy-staging
+bash ~/Documents/Algomancy-staging/deploy/staging-setup.sh --fresh-data
+```
+
+It clones, copies production's data, installs the scripts and units, asks for
+the staging username and password, starts the server (the first build takes
+minutes), then installs the site. It checks the new Caddy config before it
+reloads, and puts the old one back if Caddy refuses it. Safe to re-run;
+`--fresh-data` copies production's data again.
+
+**Verify:** the site asks for the password, then signs you in with your
+production password. `systemctl status algomancy-staging-game
+algomancy-staging-fetch.timer`. Push a commit to `staging` and watch
+`journalctl -u algomancy-staging-fetch -u algomancy-staging-game -f`.
+
+**After a change to any `staging-*.sh` or unit on master:** re-run
+`staging-setup.sh` (the root-owned copies are only made there).
+**Fresh data:** `algomancy-staging-refresh-data`.
+**Undo:** `sudo systemctl disable --now algomancy-staging-game algomancy-staging-fetch.timer algomancy-staging-restart.path`,
+`sudo rm /etc/caddy/sites/staging.caddy && sudo systemctl reload caddy`, then delete the checkout.
 
 ## Badges (who is who on the reports)
 
