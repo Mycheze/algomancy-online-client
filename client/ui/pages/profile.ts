@@ -632,6 +632,10 @@ function vsHtml(f: FriendView): string {
   return `<span class="pfvs" title="your record against ${esc(f.username)}: ${vs.wins} won, ${vs.losses} lost">${vs.wins}–${vs.losses}</span>`;
 }
 
+/** what a playing friend is in: the room's label is a bare name ("Live draft"),
+ * and the server's fallback for a plain room ("A game") names no format */
+const activityLine = (label: string): string => (label === 'A game' ? 'in a game' : `in a game: ${label}`);
+
 /** the room link that opens a friend's live game as a spectator */
 const watchHref = (room: string): string => `/?ws=1&room=${encodeURIComponent(room)}&watch=1`;
 
@@ -657,7 +661,7 @@ function friendRow(f: FriendView, kind: 'friend' | 'incoming' | 'outgoing', v?: 
     ${name}
     ${elChip(f.favoriteElement)}
     ${kind === 'friend' ? vsHtml(f) : ''}
-    ${game ? `<span class="pfactivity">in a ${esc(game.label)}</span>` : ''}
+    ${game ? `<span class="pfactivity">${esc(activityLine(game.label))}</span>` : ''}
     <span class="pfspacer"></span>
     ${actions}
   </li>${open && v ? friendCard(f, game, v) : ''}`;
@@ -673,7 +677,7 @@ function friendCard(f: FriendView, game: { room: string; label: string } | null,
   const games = together.length
     ? `<table class="pftable pfgames pftogether"><tbody>${gameRowsHtml(together)}</tbody></table>` : '';
   const play = game
-    ? button({ label: `Watch their ${game.label}`, variant: 'primary', size: 'sm', href: watchHref(game.room) })
+    ? button({ label: 'Watch their game', variant: 'primary', size: 'sm', href: watchHref(game.room), title: activityLine(game.label) })
     : button({ label: 'Play a live draft', variant: 'primary', size: 'sm', dataBtn: 'acct-friend-play', attrs: { 'data-id': f.id, 'data-mode': 'draft' } })
       + button({ label: 'Play constructed', size: 'sm', dataBtn: 'acct-friend-play', attrs: { 'data-id': f.id, 'data-mode': 'constructed' } });
   return `<li class="pffriendcard">

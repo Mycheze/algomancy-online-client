@@ -68,7 +68,9 @@ test('1521 §1 BL-67: a row says the record, and a playing friend has Watch and 
   const nyar = rowOf(h, 'Nyar'), karanda = rowOf(h, 'Karanda');
   assert.match(nyar, /class="pfvs"[^>]*>3–1</, 'Nyar: 3–1');
   assert.doesNotMatch(karanda, /pfvs/, 'no record before the first game');
-  assert.match(karanda, /pfactivity">in a Live draft</);
+  assert.match(karanda, /pfactivity">in a game: Live draft</);
+  const plain = rowOf(html({ live: [{ id: 'u3', status: 'playing', game: { room: 'WXYZ', label: 'A game' } }] }), 'Karanda');
+  assert.match(plain, /pfactivity">in a game</, 'a plain room names no format, and never reads "in a A game"');
   assert.match(karanda, /href="\/\?ws=1&amp;room=WXYZ&amp;watch=1"[^>]*>Watch|href="\/\?ws=1&room=WXYZ&watch=1"[^>]*>Watch/, 'Watch opens the room as a spectator');
   assert.match(karanda, /data-id="u3"[^>]*class="fdot on"|class="fdot on"/, 'a playing friend reads as on the site');
   assert.match(nyar, /data-btn="acct-friend-open"[^>]*data-id="u2"[^>]*>Play</, 'a friend not playing has Play, which opens their card');
@@ -88,7 +90,7 @@ test('1521 §2 the open card: record in words, games together, both Plays, Block
   assert.match(card, /data-btn="acct-friend-block"[^>]*data-id="u2"[^>]*>Block</);
   assert.match(html({ openFriend: 'u2', blocking: 'u2' }), /ui-button--danger[^>]*data-btn="acct-friend-block"[^>]*>Press again to block Nyar</);
   const playing = html({ openFriend: 'u3' });
-  assert.match(playing.slice(playing.indexOf('pffriendcard')), />Watch their Live draft</, 'a playing friend\'s card offers Watch, not Play');
+  assert.match(playing.slice(playing.indexOf('pffriendcard')), />Watch their game</, 'a playing friend\'s card offers Watch, not Play');
 });
 
 test('1521 §3 Block on a request, the Blocked list, and no Add for a blocked player', () => {
