@@ -22,7 +22,7 @@
 /* the marks: fixed over everything on the table, under a sheet, never in the way of a click */
 #collabmarks { position: fixed; inset: 0; pointer-events: none; z-index: 90; overflow: hidden; }
 .collabptr { position: absolute; left: 0; top: 0; color: var(--collab); transition: transform 80ms linear; will-change: transform; }
-.collabptr svg { display: block; fill: var(--collab); stroke: var(--color-bg); stroke-width: 1; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .5)); }
+.collabptr svg { display: block; fill: var(--collab); stroke: var(--color-bg); stroke-width: 1; filter: drop-shadow(0 1px 1px var(--color-bg)); }
 .collabtag { display: inline-block; margin: 2px 0 0 10px; padding: 1px 6px; border-radius: 8px; font-size: 11px; line-height: 16px;
   white-space: nowrap; background: var(--collab); color: var(--color-text-on-accent); font-weight: 600; }
 .collabheld { position: absolute; border: 3px solid var(--collab); border-radius: 8px;

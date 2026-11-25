@@ -157,9 +157,6 @@ function relay(s: Session, c: CollabCursor, except: WebSocket | null): void {
 
 // ── the socket ────────────────────────────────────────────────────────
 
-/** is this socket at a shared table? (main.ts: such a socket is in no room) */
-export const collabSubscribed = (ws: WebSocket): boolean => subs.has(ws);
-
 /** main.ts, above `join`: one `{t:'collab', …}` message */
 export function collabSocketMessage(ws: WebSocket, msg: Extract<Received, { t: 'collab' }>): void {
   const op = String(msg['op'] ?? '');
@@ -289,9 +286,6 @@ export function resetCollab(): void {
   sessions.clear(); byDeck.clear(); subs.clear(); byCode.clear(); cursors.clear();
   saveTimers.clear(); graceTimers.clear(); invites.clear();
 }
-
-/** a test's look at a session */
-export const collabSession = (code: string): Session | undefined => sessions.get(code);
 
 // ── HTTP ──────────────────────────────────────────────────────────────
 
