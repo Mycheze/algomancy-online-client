@@ -151,3 +151,34 @@ test('§7 the inbox poll tells a playing friend\'s room and what it is', async (
     ['Player1520', 'playing', { room: 'WXYZ', label: 'Live draft' }],
   ]);
 });
+
+test('§8 every friends list: on the site first (in a game counts), then most games together, then name', async () => {
+  const me = who('Sorter1520');
+  const names = ['Zed1520', 'Amy1520', 'Bo1520', 'Cy1520', 'Dee1520'];
+  const ids = new Map<string, string>();
+  for (const n of names) {
+    const f = who(n);
+    ids.set(n, f.account.id);
+    requestFriend(acct(me), n, NOW); acceptFriend(acct(f), me.account.id);
+  }
+  const games: Record<string, number> = { Zed1520: 9, Amy1520: 1, Bo1520: 5, Cy1520: 5, Dee1520: 0 };
+  for (const [n, g] of Object.entries(games)) acct(me).profile.opponents[ids.get(n)!] = { games: g, wins: 0, losses: 0 };
+  // Zed is the best friend but offline; Dee is in a game; the rest are online
+  const onSite = (id: string): boolean => id !== ids.get('Zed1520');
+  const want = ['Bo1520', 'Cy1520', 'Amy1520', 'Dee1520', 'Zed1520'];
+  assert.deepEqual(privateView(acct(me), onSite).friends.map(f => f.username), want, 'the profile');
+
+  const req = Object.assign(Readable.from([]), {
+    method: 'GET', headers: { authorization: `Bearer ${me.token}` }, socket: { remoteAddress: '10.3.0.2' },
+  }) as unknown as IncomingMessage;
+  let raw = '';
+  const res = { writeHead() { return res; }, end(b?: string) { raw = b ?? ''; return res; } } as unknown as ServerResponse;
+  const url = new URL('http://x/api/inbox');
+  await inboxRoutes(req, res, url.pathname, url, {
+    online: id => onSite(id) && id !== ids.get('Dee1520'),
+    playing: () => new Map([[ids.get('Dee1520')!, { room: 'QRST', label: 'Constructed' }]]),
+    lookup: () => null,
+  });
+  assert.deepEqual((JSON.parse(raw) as { friends: { username: string }[] }).friends.map(f => f.username), want,
+    'the inbox (a room\'s Invite a friend, the Share sheet)');
+});

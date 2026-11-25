@@ -17,6 +17,7 @@ import { clearDeckShare, deckSharesFor, sendDeck } from './deckshare.ts';
 import { markNotesRead, notesFor, timesAskedOf } from './league-store.ts';
 import { cubeNotesFor, markCubeNotesRead } from './cube-store.ts';
 import type { Element } from '../engine/src/types.ts';
+import { compareFriends } from '../shared/friend-order.ts';
 
 export interface InboxContext {
   /** on the site at all — seated, or polling this (main.ts isOnline) */
@@ -39,8 +40,6 @@ export interface InboxFriend {
   invite: 'sent' | 'declined' | null;
 }
 
-const ORDER: Record<FriendStatus, number> = { online: 0, playing: 1, offline: 2 };
-
 export async function inboxRoutes(
   req: IncomingMessage, res: ServerResponse, path: string, url: URL, ctx: InboxContext,
 ): Promise<boolean> {
@@ -53,12 +52,15 @@ export async function inboxRoutes(
     const code = str(url.searchParams.get('room'), 12).toUpperCase();
     const sent = code ? sentFrom(me.id, code) : new Map<string, 'sent' | 'declined'>();
     const playing = ctx.playing();
+    const orderKey = (f: InboxFriend) => ({
+      username: f.username, onSite: f.status !== 'offline', games: me.profile.opponents[f.id]?.games ?? 0,
+    });
     const friends: InboxFriend[] = me.friends.flatMap(id => {
       const a = accountById(id);
       if (!a) return [];
       const status: FriendStatus = playing.has(id) ? 'playing' : ctx.online(id) ? 'online' : 'offline';
       return [{ id, username: a.username, favoriteElement: favoriteOf(a), status, game: playing.get(id) ?? null, invite: sent.get(id) ?? null }];
-    }).sort((x, y) => ORDER[x.status] - ORDER[y.status] || x.username.localeCompare(y.username));
+    }).sort((x, y) => compareFriends(orderKey(x), orderKey(y)));
     return json(res, {
       ok: true,
       invites: invitesFor(me.id, ctx.lookup),

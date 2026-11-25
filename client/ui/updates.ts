@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-25', kind: 'change', text: 'Friends lists now show friends who are on the site first, then the ones you play most, wherever they appear: your profile, a room\'s Invite a friend list, and Send to a friend.' },
   { date: '2026-11-25', kind: 'new', text: 'Your friends list does more: each friend shows your record against them and what they are playing, Watch opens their game, and tapping a name shows your games together with Play buttons that invite them straight in.' },
   { date: '2026-11-25', kind: 'new', text: 'After a game against another player with an account, you can add them as a friend right from the results screen.' },
   { date: '2026-11-25', kind: 'new', text: 'You can block a player from a friend request or a friend\'s card. Their requests stop reaching you, and a request you turn down cannot be sent again for a week.' },

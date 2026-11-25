@@ -39,6 +39,7 @@ import { notePersist } from './store-health.ts';
 import { RULES_EDITOR } from './crreview.ts';
 import { canonicalCardName } from '../engine/src/cards/dsl.ts';
 import { USERNAME_MAX, USERNAME_MIN } from '../shared/username.ts';
+import { compareFriends } from '../shared/friend-order.ts';
 // CR D8.5: a conceded game weighs by the turn it was conceded on. The fold below
 // reads the stamp through this one function; the thresholds live over there.
 import { concessionWeight, type Concession, type ConcessionWeight } from './concession.ts';
@@ -1407,7 +1408,8 @@ export function privateView(account: Account, online: (id: string) => boolean): 
     achievements: evaluateAchievements(account.profile, account).map(a => ({
       ...a, earnedAt: account.achievements[a.id] ?? null,
     })),
-    friends: account.friends.map(id => friendView(account, id, online)).filter((f): f is FriendView => !!f),
+    friends: account.friends.map(id => friendView(account, id, online)).filter((f): f is FriendView => !!f)
+      .sort((a, b) => compareFriends({ ...a, onSite: a.online, games: a.vs.games }, { ...b, onSite: b.online, games: b.vs.games })),
     incoming: account.incoming.map(id => friendView(account, id, online)).filter((f): f is FriendView => !!f),
     outgoing: account.outgoing.map(id => friendView(account, id, online)).filter((f): f is FriendView => !!f),
     blocked: (account.blocked ?? []).flatMap(id => {

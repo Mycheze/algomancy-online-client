@@ -153,3 +153,22 @@ test('1521 §5 a room opened from Play sends its invite once, and stops when the
   pollInboxNow(); await settle();
   assert.equal(posts.length, 1, 'the poll shows it sent: no second invite');
 });
+
+test('1521 §6 the Players tab sorts on the live presence: on the site first, then most games together, then name', () => {
+  const me: Me = { ...ME, friends: [
+    friend('u10', 'Zed', { games: 9, wins: 5, losses: 4 }),
+    friend('u11', 'Amy', { games: 1, wins: 1, losses: 0 }),
+    friend('u12', 'Cy', { games: 5, wins: 2, losses: 3 }),
+    friend('u13', 'Bo', { games: 5, wins: 3, losses: 2 }),
+    { ...friend('u14', 'Dee'), online: true },
+  ] };
+  const live: LiveFriend[] = [
+    { id: 'u11', status: 'online' }, { id: 'u12', status: 'playing', game: { room: 'QRST', label: 'Constructed' } },
+    { id: 'u13', status: 'online' }, { id: 'u10', status: 'offline' },
+  ];
+  const h = html({ me, live });
+  const friendsPart = h.slice(h.indexOf('<h3>Friends</h3>'), h.indexOf('<h3>Blocked</h3>'));
+  const order = [...friendsPart.matchAll(/<span class="pfopp">(\w+)<\/span>/g)].map(m => m[1]);
+  assert.deepEqual(order, ['Bo', 'Cy', 'Amy', 'Dee', 'Zed'],
+    'Dee is on the site by the profile\'s own flag (no live row); Zed, the best friend, is offline');
+});

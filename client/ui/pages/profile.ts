@@ -21,6 +21,7 @@
 import { ALL_ELEMENTS } from '../../engine/src/apply.ts';
 import { elIcon, esc } from '../util.ts';
 import { USERNAME_MAX } from '../../shared/username.ts';
+import { compareFriends } from '../../shared/friend-order.ts';
 import { ICON_BASE } from '../assets.ts';
 import { button, icon, type IconName, segmented, settingRow, statusMessage } from '../components/index.ts';
 import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
@@ -682,6 +683,15 @@ function friendCard(f: FriendView, game: { room: string; label: string } | null,
   </li>`;
 }
 
+/** the friends in the one order every list uses, on the inbox's live presence where it has it */
+function sortedFriends(v: ProfileView): FriendView[] {
+  const key = (f: FriendView) => {
+    const live = v.live.get(f.id);
+    return { username: f.username, onSite: live ? live.status !== 'offline' : f.online, games: f.vs?.games ?? 0 };
+  };
+  return [...v.me.friends].sort((a, b) => compareFriends(key(a), key(b)));
+}
+
 function friendsColumn(v: ProfileView): string {
   const me = v.me;
   const add = `<div class="pfadd">
@@ -694,7 +704,7 @@ function friendsColumn(v: ProfileView): string {
     ${section('Add a friend', add)}
     ${me.incoming.length ? section('Wants to be friends', `<ul class="pflist">${me.incoming.map(f => friendRow(f, 'incoming', v)).join('')}</ul>`) : ''}
     ${section('Friends', me.friends.length
-      ? `<ul class="pflist">${me.friends.map(f => friendRow(f, 'friend', v)).join('')}</ul>`
+      ? `<ul class="pflist">${sortedFriends(v).map(f => friendRow(f, 'friend', v)).join('')}</ul>`
       : '<p class="pfnone">Nobody yet.</p>', { aside: me.friends.length ? `<span class="pfaside">${me.friends.length}</span>` : '' })}
     ${me.outgoing.length ? section('Waiting on', `<ul class="pflist">${me.outgoing.map(f => friendRow(f, 'outgoing', v)).join('')}</ul>`) : ''}
     ${blocked.length ? section('Blocked', `<ul class="pflist">${blocked.map(b => `<li class="pffriend">
