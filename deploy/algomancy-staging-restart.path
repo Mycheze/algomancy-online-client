@@ -1,0 +1,11 @@
+# staging-fetch.sh touches .deployed after it moves the checkout: restart the
+# staging server, which rebuilds before it starts.
+[Unit]
+Description=Algomancy staging: restart on a new commit
+
+[Path]
+PathChanged=/home/bena/Documents/Algomancy-staging/.deployed
+Unit=algomancy-staging-restart.service
+
+[Install]
+WantedBy=multi-user.target

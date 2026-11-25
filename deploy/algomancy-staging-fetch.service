@@ -1,0 +1,10 @@
+# Moves the staging checkout to origin/staging when it has moved
+# (deploy/staging-fetch.sh). Files only: no code from the branch runs here.
+[Unit]
+Description=Algomancy staging: follow origin/staging
+
+[Service]
+Type=oneshot
+User=bena
+ExecStart=/usr/local/bin/algomancy-staging-fetch
+NoNewPrivileges=yes

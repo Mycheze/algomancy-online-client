@@ -83,3 +83,8 @@ algomancy.online {
 algomancyonline.com, algomancy.benslanguagelab.com {
 	redir https://algomancy.online{uri} permanent
 }
+
+# Optional sites, one file each — the private staging copy (deploy/staging.caddy,
+# installed by staging-setup.sh). A glob that matches nothing is not an error,
+# so a box without staging loads exactly as before.
+import /etc/caddy/sites/*.caddy

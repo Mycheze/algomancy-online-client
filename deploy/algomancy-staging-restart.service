@@ -1,0 +1,8 @@
+# Root, but it runs one fixed command from this root-owned file: nothing the
+# staging branch holds can change what it does.
+[Unit]
+Description=Algomancy staging: restart the staging game server
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl restart algomancy-staging-game.service

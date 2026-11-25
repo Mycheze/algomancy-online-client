@@ -81,3 +81,9 @@ data/comprehensive-rules/Annex-D-Digital-Conventions.md
 data/comprehensive-rules/discrepancies.md
 data/comprehensive-rules/owner-questions.md
 data/comprehensive-rules/changelog.md
+
+# the private staging copy (deploy/README.md § Staging): its checkout-local files
+/staging.env
+/.deployed
+/.staging-locks
+/.npm-cache/
