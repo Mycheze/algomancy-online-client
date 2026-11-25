@@ -175,7 +175,7 @@ words around it may be tightened.
   fixes on master at night and stages the rest as `steward/<item>` branches (with
   `staging`, the only branches besides master that may exist). Review them with `steward/review.sh`.
 - **`staging` is scratch, and the one other branch everyone may push.** It is
-  what https://staging.algomancy.online runs (behind a password, on a copy of
+  what https://staging.algomancy.online runs (unlisted, on a copy of
   production's data, `deploy/README.md` § Staging). A cloud session shows the
   owner its work with `git push -f origin HEAD:staging`, standing permission,
   no need to ask; it is live within a minute. Overwrite it freely. Never merge

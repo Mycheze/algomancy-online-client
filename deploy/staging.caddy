@@ -1,12 +1,8 @@
-# deploy/staging.caddy — the private staging site, installed as
+# deploy/staging.caddy — the staging site, installed as
 # /etc/caddy/sites/staging.caddy by staging-setup.sh (deploy/README.md § Staging).
-#
-# Behind a password: /etc/caddy/staging-auth.caddy holds the `basic_auth` block
-# (the bcrypt hash `caddy hash-password` made). staging-setup.sh writes that
-# file BEFORE it installs this one, and this one imports it by its exact name:
-# an exact import that finds no file fails the reload, so staging can never come
-# up open. The main Caddyfile imports /etc/caddy/sites/*.caddy by glob, which
-# matches nothing on a box without staging, so production never depends on this.
+# Open, by the owner's choice: unlisted and noindex, never linked. The main
+# Caddyfile imports /etc/caddy/sites/*.caddy by glob, which matches nothing on
+# a box without staging, so production never depends on this file.
 #
 # Needs a grey-cloud A record `staging` → the box in Cloudflare first (§ Install, step 0).
 staging.algomancy.online {
@@ -18,8 +14,6 @@ staging.algomancy.online {
 		X-Content-Type-Options "nosniff"
 		-Server
 	}
-
-	import /etc/caddy/staging-auth.caddy
 
 	handle /robots.txt {
 		header Content-Type "text/plain; charset=utf-8"

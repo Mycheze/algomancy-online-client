@@ -18,7 +18,7 @@ directory is everything it takes to make one from a blank Ubuntu image.
 | `backup-var.sh` | tar `var/` into `~/algomancy-backups/` — gpg-encrypted, with the env files, when `ALGO_BACKUP_RECIPIENT` is set — and rsync it off the box when `ALGO_BACKUP_REMOTE` is set |
 | `algomancy-alert@.service` + `alert.sh` + `notify.sh` | a unit that fails posts "X failed on <host>" + its last ten journal lines to `ALGO_ALERT_WEBHOOK` (§ Alerts) |
 | `algomancy-heartbeat.service` + `.timer` + `heartbeat.sh` | 09:00 daily: backup age, disk, services, steward's last commit → the webhook; then pings `ALGO_HEARTBEAT_URL` |
-| `staging-setup.sh` + `staging.caddy` + `staging.env.example` + `algomancy-staging-*` + `staging-{fetch,build,refresh-data}.sh` | the **private staging copy** at `staging.algomancy.online`: the `staging` branch on a copy of production's data, behind a password (§ Staging) |
+| `staging-setup.sh` + `staging.caddy` + `staging.env.example` + `algomancy-staging-*` + `staging-{fetch,build,refresh-data}.sh` | the **staging copy** at `staging.algomancy.online`: the `staging` branch on a copy of production's data (§ Staging) |
 | `restore-drill.sh` | NOT for the VPS: where the private backup key is, unpack the newest pulled backup and check the account store (§ Backups) |
 
 Every path in the units is absolute and assumes the repo at
@@ -190,8 +190,8 @@ game server's 60 s judge proxy. Check with `grep -n TIMEOUT .env`.
 
 ## Staging
 
-A private copy of the site at **https://staging.algomancy.online**, behind a
-password, for trying work before it reaches master. It runs whatever the
+A copy of the site at **https://staging.algomancy.online**, unlisted and open
+(the owner's choice), for trying work before it reaches master. It runs whatever the
 `staging` branch on GitHub holds, on a copy of production's `var/` (real
 accounts, decks and games), and follows the branch by itself: a push to
 `staging` is live within a minute, plus the build (seconds; minutes when a
@@ -206,7 +206,6 @@ overwrite it, and nothing ever merges FROM it.
 | `algomancy-staging-fetch.timer` → `.service` | every minute, `staging-fetch.sh`: fetch `staging`; a new commit is reset into place and `.deployed` touched |
 | `algomancy-staging-restart.path` → `.service` | `.deployed` changed → root restarts the staging game unit (one fixed command) |
 | `staging.caddy` | the site, installed as `/etc/caddy/sites/staging.caddy`; the `Caddyfile` imports `sites/*.caddy` |
-| `/etc/caddy/staging-auth.caddy` | the `basic_auth` block (username + bcrypt hash); not in the repo |
 | `staging-refresh-data.sh` | production's `var/` over staging's again, server stopped meanwhile |
 
 **What separates it from production.** Staging runs code nobody has reviewed,
@@ -222,10 +221,14 @@ bot integration and nothing that can reach a real player. The judge box is off
 its LLM budget. The card inspector still asks production's rules app. No
 `OnFailure=` alerts: a red staging pages nobody.
 
-⚠ **It holds a copy of every account** (password hashes, sessions, history).
-That is what the password is for. Nobody is told it exists, and it says
-`noindex`. A session token from production does not sign you in there
-(localStorage is per origin): sign in with your password.
+⚠ **It holds a copy of every account**, and it is open: no password in front
+of it, by the owner's choice (2026-11-25), because nothing on it is worth
+anything to anybody else. It is unlisted and says `noindex`; never link to it.
+Do not put a password in front of it with Caddy's `basic_auth`: the app sends
+its own sign-in as `Authorization: Bearer …`, which takes basic_auth's place
+on every request after sign-in, so every page breaks once you are signed in.
+That is how the first version failed. A production session does not carry
+over (localStorage is per origin): sign in with your password.
 
 **Install** (once, when nobody is in a game: it reloads Caddy):
 
@@ -248,14 +251,13 @@ git clone --reference ~/Documents/Algomancy --dissociate -b staging \
 bash ~/Documents/Algomancy-staging/deploy/staging-setup.sh --fresh-data
 ```
 
-It clones, copies production's data, installs the scripts and units, asks for
-the staging username and password, starts the server (the first build takes
-minutes), then installs the site. It checks the new Caddy config before it
+It clones, copies production's data, installs the scripts and units, starts
+the server (the first build takes minutes), then installs the site. It checks the new Caddy config before it
 reloads, and puts the old one back if Caddy refuses it. Safe to re-run;
 `--fresh-data` copies production's data again.
 
-**Verify:** the site asks for the password, then signs you in with your
-production password. `systemctl status algomancy-staging-game
+**Verify:** the site signs you in with your production password, and the
+deck builder and a game both work after that. `systemctl status algomancy-staging-game
 algomancy-staging-fetch.timer`. Push a commit to `staging` and watch
 `journalctl -u algomancy-staging-fetch -u algomancy-staging-game -f`.
 
