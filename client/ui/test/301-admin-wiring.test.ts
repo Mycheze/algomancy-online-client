@@ -76,7 +76,7 @@ test('BL-16 §3 a report\'s implementation status is read-only — no control wr
 
 /** strip comments — a comment that MENTIONS ?admin=1 is documentation, and the
  *  claim here is about what the client BUILDS. Without this the test fails on
- *  the line in main.ts that explains why nothing links to the page. */
+ *  the line in main.ts that says where the page is. */
 const code = (src: string): string =>
   src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
 
