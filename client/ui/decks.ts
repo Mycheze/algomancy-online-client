@@ -46,8 +46,11 @@ import {
 } from './pages/decks.ts';
 import { chooseDeck, chosenDeck, copyText, downloadText } from './util.ts';
 import * as tt from './tabletop.ts';
+import * as co from './collab.ts';
+import { collabStartHtml } from './pages/collab.ts';
 import { onShareFriends, shareFriends } from './inbox.ts';
 import type { DeckPile } from './deckarrange.ts';
+import { crossCapRefusal } from './tableplace.ts';
 import { MATCH_COPY_CAP, SIDEBOARD_MAX, checkMatchDeck, type MatchConfig } from '../engine/src/matchdeck.ts';
 
 /** what an import says when its box is empty — the Decks page's import sheet
@@ -157,29 +160,9 @@ const current = (): DeckView | null => decks?.find(d => d.id === openId) ?? null
 const sideOf = (d: DeckView): string[] => d.sideboard ?? [];
 const boardsOf = (d: DeckView): MatchConfig => ({ main: d.cards, side: sideOf(d) });
 
-/**
- * THE COPY CAP ACROSS BOTH BOARDS (docs/22 §4.1), as a refusal: the reason a
- * move may not happen, or null. A move that raises a card above two copies
- * counted over the deck AND the sideboard is refused when the sideboard holds
- * that card — moving a copy between the boards never changes the count, so
- * it is never refused. A third copy in the deck alone is NOT refused here:
- * that stays what it always was, an affordance (the `+` goes at two) and a
- * red ×3, because a saved deck may be illegal while you build.
- */
-export function crossCapRefusal(before: MatchConfig, after: MatchConfig): string | null {
-  const tally = (b: MatchConfig): Map<string, number> => {
-    const m = new Map<string, number>();
-    for (const n of [...b.main, ...b.side]) m.set(n, (m.get(n) ?? 0) + 1);
-    return m;
-  };
-  const was = tally(before);
-  for (const [n, c] of tally(after)) {
-    if (c > MATCH_COPY_CAP && c > (was.get(n) ?? 0) && after.side.includes(n)) {
-      return `Max ${MATCH_COPY_CAP} of ${n} across the deck and sideboard.`;
-    }
-  }
-  return null;
-}
+/** the copy cap across both boards, as a refusal (ui/tableplace.ts — a
+ * shared table's server asks the same question) */
+export { crossCapRefusal };
 
 // ── talking to the server ─────────────────────────────────────────────
 
@@ -496,7 +479,7 @@ let pendingTable: string | null = null;
  * deck, which is why the host is only ever made by `tabletopHostFor`, which
  * opens this one first.
  */
-function tabletopHost(id: string): tt.TableHost {
+function tabletopHost(id: string, shared = false): tt.TableHost {
   const deck = (): DeckView | null => decks?.find(d => d.id === id) ?? null;
   return {
     kind: 'deck',
@@ -518,7 +501,9 @@ function tabletopHost(id: string): tt.TableHost {
     pool: true,
     pill: () => deckPill(deck() ?? { id, name: '', cards: [], cover: null }),
     titleBtn: 'deck-settings',
-    toolsHtml: () => deckInfoButtonHtml(infoOpen),
+    // Build together opens this deck to friends (ui/collab.ts); a shared table draws its own Together button
+    toolsHtml: () => (shared ? '' : collabStartHtml()) + deckInfoButtonHtml(infoOpen),
+    button: el => { if (!shared && el.dataset['btn'] === 'tt-collab-start') { flushSave(); co.startShared(id); } },
     closeSheet: () => { if (!infoOpen) return false; closeInfo(); return true; },
     sheetHtml: () => {
       const d = deck();
@@ -557,6 +542,35 @@ export function tabletopHostFor(id: string): tt.TableHost | null {
   open = true; openId = id; pageSheet = null; closeInfo();
   return tabletopHost(id);
 }
+
+/**
+ * A SHARED TABLE ON ONE OF MY DECKS (ui/collab.ts, docs/26): the deck's own
+ * host, for its Deck info, title and Back — or null while the collection
+ * loads (`then` fires when it lands). Unlike tabletopHostFor it never opens the
+ * table itself: the shared table does, with its own host wrapped round this one.
+ */
+export function sharedTableBase(id: string, then: () => void): tt.TableHost | null {
+  if (!acct.token()) return null;
+  if (!decks) { ensureCollection(then); return null; }
+  if (!decks.some(d => d.id === id)) return null;
+  if (openId !== id) { flushSave(); descOpen = false; }
+  open = true; openId = id; pageSheet = null; closeInfo();
+  return tabletopHost(id, true);
+}
+
+/** what a shared table holds of my deck, into the local copy — never saved
+ * from here: the session saves it on the server */
+export function adoptShared(id: string, t: { cards: string[]; maybe: string[]; side: string[]; piles: DeckPile[] }): void {
+  const d = decks?.find(x => x.id === id);
+  if (!d) return;
+  d.cards = [...t.cards];
+  d.maybe = [...t.maybe];
+  d.sideboard = [...t.side];
+  d.piles = t.piles.map(p => ({ ...p, cards: [...p.cards] }));
+}
+
+/** a write's answer from somewhere else (a shared table's Save a copy): the collection follows */
+export function adoptReply(reply: { ok: boolean; decks?: DeckView[] }): void { adopt(reply as DecksReply); }
 
 /** open deck `id` on the table, carrying `note` (an import's answer) */
 function openBuilder(id: string, note: string | null = null): void {

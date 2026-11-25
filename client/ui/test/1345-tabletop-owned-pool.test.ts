@@ -7,7 +7,7 @@
  *   §4 two owned: the second copy lands, a third is refused; the sideboard counts with the deck
  *   §5 the card menu's Add another is off at the owned ceiling
  *   §6 a host without `owned` is untouched: every playable card, no ×n badge, the old tile markup
- *   §7 source: the owned check sits in place(), beside the copy cap, and nowhere else decides it
+ *   §7 source: the owned check sits in applyPlace(), beside the copy cap, and nowhere else decides it
  *
  * Seeds: none. The table paints into a stand-in #app (no DOM): pages/frame.ts writes innerHTML.
  */
@@ -120,9 +120,9 @@ test('§6 a host without `owned` is as it was', () => {
   assert.match(poolHtml(v), new RegExp(`<div class="ttpooltile ttcap" data-btn="tt-add" data-tt-src="binder\\|${ONE}" data-card="${ONE}" data-zoom><img [^>]*><span class="ttpooln cap">2/2</span></div>`));
 });
 
-test('§7 source: the owned check is in place()', () => {
-  const src = readFileSync(new URL('../tabletop.ts', import.meta.url), 'utf8');
-  const body = src.slice(src.indexOf('export function place('), src.indexOf('export function tabletopChanged('));
-  assert.match(body, /const short = ownedNote\(h, carry, to\);\s*if \(short\) \{ note = short; paintPending = true; return false; \}/);
+test('§7 source: the owned check is in applyPlace() (the one door’s arithmetic)', () => {
+  const src = readFileSync(new URL('../tableplace.ts', import.meta.url), 'utf8');
+  const body = src.slice(src.indexOf('export function applyPlace('), src.indexOf('const capCount'));
+  assert.match(body, /const short = ownedNote\(h, carry, to\);\s*if \(short\) return no\(short\);/);
   assert.equal((src.match(/ownedNote\(/g) ?? []).length, 2, 'defined once, called once');
 });

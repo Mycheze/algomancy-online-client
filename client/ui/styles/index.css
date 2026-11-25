@@ -106,3 +106,5 @@
 @import "pages/57-cube-draft.css";
 /* the live draft step (main.ts draftPanelHtml): last, over the pick dialog's rules in 37-touch */
 @import "pages/58-draft-step.css";
+/* a shared deck table (docs/26): after the builder it draws over */
+@import "pages/59-collab.css";

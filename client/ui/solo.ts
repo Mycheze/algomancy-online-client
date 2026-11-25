@@ -308,7 +308,7 @@ export class SoloServer {
       case 'undo': return this.undo();
       // unanswered, as the client expects of a bot: no audience, no lobby, no
       // clock, no post-game, no fixes; the queue and cube have their own sockets
-      case 'watch': case 'queue': case 'cube': case 'cc': case 'concedeMatch': case 'rematch':
+      case 'watch': case 'queue': case 'cube': case 'collab': case 'cc': case 'concedeMatch': case 'rematch':
       case 'dispute': case 'lobby': case 'building': case 'passall': case 'autopass':
       case 'reporthold': case 'playbackdone': case 'amend':
         return;
