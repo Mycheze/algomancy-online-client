@@ -36,7 +36,7 @@ export const MAX_QUEUED = 4;
 /** one engine and one small game */
 export const WORKER_HEAP_MB = 256;
 
-interface Job { spec: unknown; engine: string; budgetMs?: number }
+interface Job { spec: unknown; engine: string; budgetMs?: number; stallMs?: number }
 
 // ── the worker half ───────────────────────────────────────────────────
 
@@ -44,6 +44,8 @@ if (!isMainThread && (workerData as { role?: string } | null)?.role === ROLE && 
   const port = parentPort;
   const { simulate } = await import('./simulate.ts');
   port.on('message', (msg: { id: number } & Job) => {
+    // a test's stall: the job overruns for certain, however busy the machine is
+    if (msg.stallMs) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, msg.stallMs);
     let out: SimResult;
     try {
       out = simulate(msg.spec, { engine: msg.engine, ...(msg.budgetMs !== undefined ? { budgetMs: msg.budgetMs } : {}) });
@@ -136,7 +138,7 @@ function pump(): void {
     void w.terminate();
   }, jobTimeoutMs);
   running = { ...next, timer, w };
-  w.postMessage({ id: next.id, ...next.job });
+  w.postMessage({ id: next.id, ...next.job, ...(stallMs ? { stallMs } : {}) });
 }
 
 /** Run one simulation off the main thread. Never rejects: every failure,
@@ -174,3 +176,6 @@ export async function stopSimulator(): Promise<void> {
 
 /** Tests only: lower the wall clock so an ordinary simulation overruns it. */
 export function setJobTimeoutForTests(ms: number): void { jobTimeoutMs = ms; }
+/** for tests: every job's worker sleeps this long before simulating (0: none) */
+let stallMs = 0;
+export function setWorkerStallForTests(ms: number): void { stallMs = ms; }

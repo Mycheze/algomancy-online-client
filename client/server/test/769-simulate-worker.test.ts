@@ -15,7 +15,7 @@ import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   BOOT_TIMEOUT_MS, JOB_TIMEOUT_MS, MAX_QUEUED, WORKER_HEAP_MB,
-  setJobTimeoutForTests, simulateInWorker, simulatorStats, stopSimulator, warmSimulator,
+  setJobTimeoutForTests, setWorkerStallForTests, simulateInWorker, simulatorStats, stopSimulator, warmSimulator,
 } from '../simulate-worker.ts';
 
 const SPEC = {
@@ -42,16 +42,21 @@ test('§1 a job runs in the worker and comes back whole', async () => {
 
 test('§2 ⭐ past the wall clock: killed, answered, and replaced', async () => {
   const before = simulatorStats().spawned;
-  setJobTimeoutForTests(1);   // an ordinary simulation now overruns
+  // the worker sleeps far past the clock, so the job overruns however loaded the
+  // machine is; a tiny clock alone can lose to a starved main thread, which
+  // takes the worker's answer before its own expired timer
+  setJobTimeoutForTests(50);
+  setWorkerStallForTests(10_000);
   try {
     const r = await simulateInWorker(SPEC, 'x');
-    assert.equal(r.ok, false);
+    assert.equal(r.ok, false, JSON.stringify(r));
     if (r.ok) return;
-    assert.match(r.error, /took longer than 0\.001 s and was stopped/);
+    assert.match(r.error, /took longer than 0\.05 s and was stopped/);
     assert.equal(r.limit, 'time');
     assert.equal(simulatorStats().alive, false, 'the overrunning worker is gone');
   } finally {
     setJobTimeoutForTests(JOB_TIMEOUT_MS);
+    setWorkerStallForTests(0);
   }
   const next = await simulateInWorker(SPEC, 'x');
   assert.equal(next.ok, true, `the next job gets a fresh worker: ${JSON.stringify(next)}`);
