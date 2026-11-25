@@ -122,10 +122,21 @@ class Client {
     }
   }
   /** Send an action and wait for the wire to settle again. */
+  /** Send an action and wait for the server's answer to it — its update or its
+   * refusal — then for the wire to settle. Waiting for silence alone let a
+   * loaded CPU answer after the silence, and the test read the board from before. */
   async act(a: Action): Promise<void> {
+    const from = this.msgs.length;
     this.lastAt = Date.now();
     this.send({ t: 'action', action: a });
+    await this.nextAfter(from, m => m.t === 'update' || m.t === 'error');
     await this.quiet();
+  }
+  /** the first message from index `from` on that matches */
+  nextAfter(from: number, pred: (m: Msg) => boolean, timeoutMs = 8000): Promise<Msg> {
+    const past = this.msgs.slice(from).find(pred);
+    if (past) return Promise.resolve(past);
+    return this.next(m => this.msgs.indexOf(m) >= from && pred(m), timeoutMs);
   }
 }
 
