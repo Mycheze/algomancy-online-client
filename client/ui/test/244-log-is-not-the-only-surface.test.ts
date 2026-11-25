@@ -521,6 +521,8 @@ function uiConsumers(): Map<string, string[]> {
     const strip: Record<string, string[]> = {
       'main.ts': ['LOG_EVENT_CLASS', 'LOG_PLUMBING'],
       'toast.ts': ['ZONE_CHANGE'],
+      // the privacy page's `covers` are account FIELD names; 'blocked' is one, not the combat event
+      'legal.ts': ['STORED_ACCOUNT'],
     };
     for (const n of strip[f] ?? []) {
       const i = t.indexOf(`const ${n}`);

@@ -73,7 +73,7 @@ test('§1 every page image is a real 1200×630 file, and the builder draws exact
 const NOT_A_PAGE: Record<string, string> = {
   at: 'a rule or a moment within the page', bo: 'a room setting (best of 1 or 3)', board: "a past week's board on the challenge page",
   c: 'a comment on the review page', cc: 'a room setting (join a Competitive match: pick a deck first)', ccdeck: 'a room setting (the deck picked for a Competitive match)', clock: 'a room setting', el: 'the learner\'s element',
-  els: 'a room setting', id: 'which challenge', mode: 'a room setting', new: 'a fresh lesson game',
+  els: 'a room setting', id: 'which challenge', invite: 'a room setting (the friend to invite once seated)', mode: 'a room setting', new: 'a fresh lesson game',
   q: 'the card search query', ranked: 'a queue setting', run: 'which challenge run',
   seat: 'which seat of a room', signin: 'sign in, then the page', single: 'a room setting',
   tips: 'a lesson game with the client tips only',
