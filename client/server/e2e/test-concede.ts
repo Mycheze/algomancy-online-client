@@ -75,6 +75,14 @@ class Client {
 
 const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
 
+/** Wait for what a step needs, never a guessed number of milliseconds: a
+ * loaded server answers late. False on the deadline, for the check to report. */
+async function until(cond: () => boolean, ms = 10_000): Promise<boolean> {
+  const end = Date.now() + ms;
+  while (!cond()) { if (Date.now() > end) return false; await sleep(5); }
+  return true;
+}
+
 /** Resolve once neither client has received a message for `quietMs` (the
  * CT-85 shape from test-clock.ts: never read a view with a known-pending
  * successor). */
@@ -209,8 +217,10 @@ try {
     who.send({ t: 'action', action: { type: 'concede', seat: conceder } });
     await other.next(m => m.t === 'update' && m.view?.winner !== null && m.view?.winner !== undefined, at);
     const over = await who.next(m => m.t === 'gameover', 0, 5000).catch(() => null);
-    await sleep(300);
-    const file = JSON.parse(readFileSync(gameFile(code), 'utf8'));
+    // the room file is written as the result lands: wait for it to say so
+    const read = (): any => { try { return JSON.parse(readFileSync(gameFile(code), 'utf8')); } catch { return null; } };
+    await until(() => read()?.winner !== undefined && read()?.winner !== null);
+    const file = read();
     p.ws.close(); q.ws.close();
     return { code, file, over };
   };

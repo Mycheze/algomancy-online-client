@@ -21,6 +21,14 @@ const ok = (cond: unknown, what: string): void => {
   if (!cond) failures++;
 };
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+/** Wait for what a step needs, never a guessed number of milliseconds: a
+ * loaded server answers late. False on the deadline, for the check to report. */
+async function until(cond: () => boolean, ms = 10_000): Promise<boolean> {
+  const end = Date.now() + ms;
+  while (!cond()) { if (Date.now() > end) return false; await sleep(5); }
+  return true;
+}
+const cols = (m: Record<string, unknown> | undefined): string => JSON.stringify(m?.['cols']);
 
 class Client {
   ws: WebSocket;
@@ -64,15 +72,15 @@ try {
 
   const a = new Client(PORT); await a.open();
   a.send({ t: 'join', room: ROOM, seat: 0, name: 'Watcher', mode: 'draft', els: ['water', 'metal', 'dark'] });
-  await sleep(300);
+  await until(() => a.seat === 0);
   const b = new Client(PORT); await b.open();
   b.send({ t: 'join', room: ROOM, seat: 1, name: 'Builder' });
-  await sleep(500);
+  await until(() => b.seat === 1);
   ok(a.seat === 0 && b.seat === 1, `both seats joined (${a.seat} / ${b.seat})`);
 
   // ── the relay ───────────────────────────────────────────────────────
   b.send({ t: 'building', cols: [[11], [12, 13]], send: [] });
-  await sleep(300);
+  await until(() => cols(a.last('building')) === '[[11],[12,13]]');
   const got = a.last('building');
   ok(!!got, 'the watcher is told what the builder is placing');
   ok(got?.['seat'] === 1, 'tagged with whose formation it is');
@@ -81,26 +89,26 @@ try {
 
   // ── it updates as they keep building ────────────────────────────────
   b.send({ t: 'building', cols: [[11], [12, 13], [14]], send: [15] });
-  await sleep(300);
+  await until(() => cols(a.last('building')) === '[[11],[12,13],[14]]');
   const got2 = a.last('building');
   ok(JSON.stringify(got2?.['cols']) === '[[11],[12,13],[14]]', 'a later placement replaces the earlier one');
   ok(JSON.stringify(got2?.['send']) === '[15]', 'counterattackers being set aside come through too');
 
   // ── clearing ────────────────────────────────────────────────────────
   b.send({ t: 'building', cols: [], send: [] });
-  await sleep(300);
+  await until(() => cols(a.last('building')) === '[]');
   const cleared = a.last('building');
   ok(JSON.stringify(cleared?.['cols']) === '[]' && JSON.stringify(cleared?.['send']) === '[]',
     'taking everything back out clears the watcher too');
 
   // ── a reconnect picks up the formation in progress ──────────────────
   b.send({ t: 'building', cols: [[21, 22]], send: [] });
-  await sleep(300);
+  // the relay reached the watcher, so the server holds it before the watcher leaves
+  await until(() => cols(a.last('building')) === '[[21,22]]');
   a.close();
-  await sleep(300);
   const a2 = new Client(PORT); await a2.open();
   a2.send({ t: 'join', room: ROOM, seat: 0, name: 'Watcher' });
-  await sleep(500);
+  await until(() => !!a2.last('joined'));
   const rejoined = a2.last('joined');
   ok(JSON.stringify((rejoined?.['building'] as { cols: number[][] })?.cols) === '[[21,22]]',
     'rejoining mid-declaration shows what is already placed, without waiting for the next move');
@@ -109,22 +117,22 @@ try {
   const view = rejoined?.['view'] as { players: { hand: string[] }[]; packs: string[][] };
   const hand = view.players[1]!.hand.length;
   b.send({ t: 'action', action: { type: 'draftCommit', seat: 1, packIndices: [] } });   // illegal on purpose
-  await sleep(300);
+  await until(() => !!b.last('error'));
   ok(!!b.last('error'), 'an illegal action is still refused (the relay changed nothing about that)');
 
   const a3n = a2.msgs.length;
   b.send({ t: 'building', cols: [[31]], send: [] });
-  await sleep(200);
+  await until(() => a2.msgs.slice(a3n).some(m => m['t'] === 'building' && cols(m) === '[[31]]'));
   // the builder commits their draft for real; the server must forget the draft formation
   const packLen = (rejoined?.['view'] as { packs: string[][] }).packs[1]?.length ?? 10;
+  const committed = b.msgs.length;
   b.send({ t: 'action', action: { type: 'draftCommit', seat: 1, packIndices: Array.from({ length: packLen }, (_, i) => hand + i) } });
-  await sleep(500);
+  await until(() => b.msgs.slice(committed).some(m => m['t'] === 'update' || m['t'] === 'error'));
   const a4 = new Client(PORT); await a4.open();
   a4.send({ t: 'join', room: ROOM, seat: 0, name: 'Watcher' });
-  await sleep(500);
+  await until(() => !!a4.last('joined'));
   ok(a4.last('joined')?.['building'] == null,
     'a committed action drops the in-progress formation — the real declaration supersedes it');
-  void a3n;
 
   a2.close(); a4.close(); b.close();
   console.log(failures ? `\n${failures} FAILURES` : '\nALL PASS');

@@ -40,6 +40,14 @@ function ok(cond: unknown, label: string): void {
 }
 const sleep = (ms: number): Promise<void> => new Promise(r => setTimeout(r, ms));
 
+/** Wait for what a step needs, never a guessed number of milliseconds: a
+ * loaded server answers late. False on the deadline, for the check to report. */
+async function until(cond: () => boolean, ms = 10_000): Promise<boolean> {
+  const end = Date.now() + ms;
+  while (!cond()) { if (Date.now() > end) return false; await sleep(5); }
+  return true;
+}
+
 // a stand-in for bot/app.py's /api/ask, so §5 can read what the judge proxy
 // actually forwards (the Learn to Play lesson rides along as `context`)
 const botBodies: Record<string, unknown>[] = [];
@@ -98,7 +106,7 @@ try {
   for (const frame of ['null', '[]', '1', '"x"', '{}', '{"t":5}', 'not json', '']) {
     msgs.length = 0;
     ws.send(frame);
-    await sleep(150);
+    await until(() => msgs.length > 0);
     ok(msgs.length === 1 && msgs[0]!.t === 'error',
       `${JSON.stringify(frame)} is answered with an error (got ${JSON.stringify(msgs)})`);
     ok(alive(), `…and the process is still there after ${JSON.stringify(frame)}`);

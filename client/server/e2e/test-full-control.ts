@@ -76,6 +76,24 @@ class Client {
     return (m?.['legal'] ?? []) as { type: string; seat: number }[];
   }
   close(): void { this.ws.close(); }
+  /** is this action type on offer to this seat */
+  offered(type: string): boolean { return this.legal().some(x => x.type === type); }
+  /** an update or refusal has arrived since message index `from` */
+  answeredSince(from: number): boolean {
+    return this.msgs.slice(from).some(m => m['t'] === 'update' || m['t'] === 'error');
+  }
+}
+
+/** Wait for what a step needs, never for a guessed number of milliseconds: a
+ * loaded machine answers late, and a fixed sleep then reads the board from
+ * before. False on the deadline, for the assertion after it to report. */
+async function until(cond: () => boolean, ms = 10_000): Promise<boolean> {
+  const end = Date.now() + ms;
+  while (!cond()) {
+    if (Date.now() > end) return false;
+    await sleep(5);
+  }
+  return true;
 }
 
 const srv = await spawnServer();
@@ -97,10 +115,15 @@ async function table(full: [boolean, boolean]): Promise<[Client, Client]> {
   const a = new Client(PORT), b = new Client(PORT);
   await a.open(); await b.open();
   a.send({ t: 'join', room, seat: 0, name: 'Ann', on: full[0] });
-  await sleep(120);
+  await until(() => a.seat === 0);
   b.send({ t: 'join', room, seat: 1, name: 'Bo', on: full[1] });
-  await sleep(300);
+  await dealt(a, b);
   return [a, b];
+}
+
+/** both seats are joined and being asked to plan: the game is dealt */
+async function dealt(a: Client, b: Client): Promise<void> {
+  await until(() => b.seat === 1 && a.offered('donePlanning') && b.offered('donePlanning'));
 }
 
 /** walk both seats out of planning and the haste step, into the battle where
@@ -108,10 +131,13 @@ async function table(full: [boolean, boolean]): Promise<[Client, Client]> {
 async function toBattle(a: Client, b: Client): Promise<void> {
   a.send({ t: 'action', action: { type: 'donePlanning', seat: 0 } });
   b.send({ t: 'action', action: { type: 'donePlanning', seat: 1 } });
-  await sleep(250);
+  await until(() => a.offered('doneHaste') && b.offered('doneHaste'));
+  // the drain runs inside the action that ends the haste step, so the board is
+  // final once neither seat is offered the haste step and someone is offered the
+  // next thing (between the two seats' answers, both can be offered nothing)
   a.send({ t: 'action', action: { type: 'doneHaste', seat: 0 } });
   b.send({ t: 'action', action: { type: 'doneHaste', seat: 1 } });
-  await sleep(300);
+  await until(() => !a.offered('doneHaste') && !b.offered('doneHaste') && a.legal().length + b.legal().length > 0);
 }
 
 console.log('\nBL-18 §1 — THE NEGATIVE CONTROL: with the switch OFF, nothing changes');
@@ -148,7 +174,7 @@ console.log('\nBL-18 §2/§3 — with it ON the board stops, and the seat is OFF
 
   // …and taking it moves the game on, which is the other half of "not a hang"
   a.send({ t: 'action', action: { type: 'declareAttack', seat: 0, columns: [] } });
-  await sleep(300);
+  await until(() => step(a) !== s);
   ok(step(a) !== s, `the offered action did not move the game (still "${step(a)}")`);
   a.close(); b.close();
 }
@@ -181,7 +207,7 @@ console.log('\nBL-18 §4 — NOT A DESYNC: the opponent did not opt in and does 
   // the seat that owes it switches OFF: the drain resumes and takes the step
   // belonging to somebody who no longer wants it…
   seats[mine]!.send({ t: 'fullcontrol', on: false });
-  await sleep(300);
+  await until(() => owedIn(a)?.seat === theirs && owedIn(b)?.seat === theirs && seats[theirs]!.offered(owedIn(a)!.type));
   const next = owedIn(a);
   ok(next !== null && next.seat === theirs,
     `seat ${mine} switched OFF and the board did not resume onto seat ${theirs}'s step `
@@ -215,12 +241,13 @@ console.log('\nBL-18 §5 — per-seat soft state: mid-game, and across a reconne
   const a = new Client(PORT), b = new Client(PORT);
   await a.open(); await b.open();
   a.send({ t: 'join', room, seat: 0, name: 'Ann', on: false });
-  await sleep(120);
+  await until(() => a.seat === 0);
   b.send({ t: 'join', room, seat: 1, name: 'Bo', on: false });
-  await sleep(300);
+  await dealt(a, b);
+  const flipped = a.msgs.length;
   a.send({ t: 'fullcontrol', on: true });
-  await sleep(200);
-  ok(a.last('update') !== undefined,
+  await until(() => a.msgs.slice(flipped).some(m => m['t'] === 'update'));
+  ok(a.msgs.slice(flipped).some(m => m['t'] === 'update'),
     'flipping the switch was not acknowledged with a view — the seat has just taken '
     + 'responsibility for a window and has to be shown it');
   await toBattle(a, b);
@@ -229,11 +256,10 @@ console.log('\nBL-18 §5 — per-seat soft state: mid-game, and across a reconne
   // …and a reconnect re-asserts it, because the browser owns it and the
   // server's copy is not persisted
   a.close();
-  await sleep(150);
   const a2 = new Client(PORT);
   await a2.open();
   a2.send({ t: 'join', room, seat: 0, name: 'Ann', on: true });
-  await sleep(300);
+  await until(() => a2.seat === 0 && a2.view() !== undefined && a2.offered('declareAttack'));
   ok(/declare/.test(step(a2)),
     'the reconnected seat lost its switch — the client re-asserts it on every join precisely so '
     + 'nothing has to be persisted');

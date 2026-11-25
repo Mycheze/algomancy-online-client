@@ -44,6 +44,14 @@ const ok = (cond: unknown, what: string): void => {
   if (!cond) failures++;
 };
 const sleep = (ms: number): Promise<void> => new Promise(r => setTimeout(r, ms));
+
+/** Wait for what a step needs, never a guessed number of milliseconds: a
+ * loaded server answers late. False on the deadline, for the check to report. */
+async function until(cond: () => boolean, ms = 10_000): Promise<boolean> {
+  const end = Date.now() + ms;
+  while (!cond()) { if (Date.now() > end) return false; await sleep(5); }
+  return true;
+}
 /** the clock is billed off wall time with a few ms of processing in every
  * interval; every interval asserted on here is hundreds of ms */
 const SLOP = 150;
@@ -79,13 +87,16 @@ class Client {
       setTimeout(() => rej(new Error('timeout waiting for a message')), timeoutMs);
     });
   }
+  /** the other seat at this table: an action's update reaches it too */
+  peer: Client | null = null;
   async act(a: Action, extra: Record<string, unknown> = {}): Promise<void> {
     const got = this.next(m => m.t === 'update' || m.t === 'error');
+    const theirs = this.peer?.msgs.length ?? 0;
     this.send({ t: 'action', action: a, ...extra });
     const m = await got;
     if (m.t === 'error') throw new Error(`${a.type} refused: ${m.msg}`);
-    // both seats are pushed the same tick; let the other one's copy land too
-    await sleep(150);
+    // both seats are pushed the same tick; wait for the other one's copy too
+    if (this.peer) await until(() => this.peer!.msgs.slice(theirs).some(x => x.t === 'update'), 5000);
   }
   /** arm or drop the standing pass, exactly as ui/main.ts NET.passAll sends
    * it, and return the clock the server answers with */
@@ -114,7 +125,8 @@ async function battleTable(): Promise<{ room: string; a: Client; b: Client; unit
   const jb = b.next(m => m.t === 'joined');
   b.send({ t: 'join', room, seat: 1, name: 'Bo' });
   await jb;
-  await sleep(150);
+  a.peer = b; b.peer = a;
+  await until(() => !!a.view && !!b.view);
   await a.act({ type: 'sandboxSpawn', seat: 0, card: 'Towering Colossus', to: 'play' } as Action);
   await a.act({ type: 'sandboxAdvance', seat: 0 } as Action);
   const unit = (Object.values(a.view.entities) as any[]).find(e => e.kind === 'unit' && e.controller === 0).id;
@@ -195,9 +207,13 @@ console.log('\n§3 — the backstop passes for a seat whose client does not');
   // must not land on seat 1's window (illegal) or on a later one of seat 0's
   const errs = a.msgs.filter(m => m.t === 'error').length;
   a.send({ t: 'action', action: { type: 'passPriority', seat: 0 }, at });
-  await sleep(400);
+  // a socket's messages are handled in order: once this refused probe is
+  // answered, the late pass before it has been handled too
+  const probe = a.next(m => m.t === 'error');
+  a.send({ t: 'action', action: { type: 'concede', seat: 1 } });
+  await probe;
   ok(savedActions(room).length === before + 1, 'the late pass for the backstopped window added nothing');
-  ok(a.msgs.filter(m => m.t === 'error').length === errs, 'and was dropped without an error on the player\'s screen');
+  ok(a.msgs.filter(m => m.t === 'error').length === errs + 1, 'and was dropped without an error on the player\'s screen (the one error is the probe\'s)');
 }
 
 console.log('\n§4 — a phase change clears the arm');
