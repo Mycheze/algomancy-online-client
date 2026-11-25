@@ -34,6 +34,9 @@ echo "staging-setup: checkout at $(git -C "$STAGE" log -1 --format='%h %s')"
 
 # 2. its env: never production's
 [ -f "$STAGE/staging.env" ] || cp "$DEPLOY/staging.env.example" "$STAGE/staging.env"
+# …and the brand font, which is gitignored and lives only on the box (§ The brand font)
+FONT=client/ui/fonts/Ethnocentric-Regular.woff2
+[ -f "$PROD/$FONT" ] && cp "$PROD/$FONT" "$STAGE/$FONT"
 
 # 3. production's data
 if [ "$fresh" = 1 ]; then
