@@ -53,10 +53,8 @@
 import { allRows } from './cardindex.ts';
 import { cardPanelHtml, similarQuery } from './cardpanel.ts';
 import { chipState, nextChipState, poolChosen, search as runSearch, type PoolGroup, withChip, withPoolGroup } from './cardsearch.ts';
-import {
-  deletePile, insertCard, movePile, movePileCard, newPileAt, reconcilePiles, removeAt, renamePile, seedPiles,
-  type DeckPile, type ResortBy,
-} from './deckarrange.ts';
+import { reconcilePiles, type DeckPile, type ResortBy } from './deckarrange.ts';
+import { applyPlace, atCap, pileZone, pilesOf as placePiles, type Carry, type Place, type PlaceHost, type TableNext } from './tableplace.ts';
 import { analyzeDeck, ELEMENTS } from './deckstats.ts';
 import { sampleOpeningHand } from '../engine/src/challenge.ts';
 import { addDragProvider, dragActive, type DragPlan, type DragProvider } from './drag.ts';
@@ -77,9 +75,7 @@ import type { TableMenu, TableMenuItem, TableView } from './pages/table.ts';
 
 // ── the host ──────────────────────────────────────────────────────────
 
-export interface TableNext { cards?: string[]; maybe?: string[]; sideboard?: string[]; piles?: DeckPile[] | null }
-
-export interface TableHost {
+export interface TableHost extends PlaceHost {
   /** deck: the piles ARE the deck. challenge: the piles are a scratch table
    * (not in the deck) and the deck is the ordered strip */
   kind: 'deck' | 'challenge';
@@ -112,8 +108,10 @@ export interface TableHost {
   strip?(): string;
   /** markup under the table: the challenge's deck strip (see STRIP below) */
   below?(): string;
-  /** THE ONE WAY IN — the host applies it through its own save funnel */
-  commit(next: TableNext): void;
+  /** THE ONE WAY IN — the host applies it through its own save funnel.
+   * `move` is the move that made it (null for an Undo or a Redo): a shared
+   * table sends it on, for the server to replay against its own copy */
+  commit(next: TableNext, move: TableMove | null): void;
   /** Back: save what is waiting and repaint the page underneath */
   close(): void;
 
@@ -170,7 +168,21 @@ export interface TableHost {
   /** false: the table is not written into the URL as `?table=` (a reload of
    *  the pick screen comes back through its event, not through a resolver) */
   inUrl?: boolean;
+
+  // ── a shared table (ui/collab.ts, docs/26). Optional; a host that sets
+  // none keeps its own snapshot history ──────────────────────────────────
+
+  /** Undo / Redo of this person's own changes, which the host asks the server
+   *  for: true when it was sent */
+  step?(op: 'undo' | 'redo'): boolean;
+  /** whether Undo and Redo have anything to do, when `step` is set */
+  canStep?(): { undo: boolean; redo: boolean };
+  /** the table has just been painted (a shared table redraws who holds what) */
+  painted?(): void;
 }
+
+/** a move, as place() was asked for it */
+export interface TableMove { carry: Carry | null; to: Place }
 
 /** the toolbar's count pill (TableHost.pill) */
 export interface TablePill {
@@ -181,41 +193,7 @@ export interface TablePill {
   problems: readonly string[];
 }
 
-/** Where a card is picked up from. Indexes are positions in the pile as drawn.
- * `binder` is the pool (the name it had when the pool was a binder; 536 and
- * 541 pin it as the pool's source). */
-export type Carry =
-  | { from: 'binder'; name: string }
-  | { from: 'pile'; pile: string; index: number; name: string }
-  | { from: 'maybe'; index: number; name: string }
-  | { from: 'side'; index: number; name: string }
-  | { from: 'strip'; index: number; name: string }
-  | { from: 'head'; pile: string };
-
-/** An arrangement edit: no card moves, but it is still a `place()` */
-export type Arrange =
-  | { op: 'rename'; pile: string; name: string }
-  | { op: 'delpile'; pile: string }
-  | { op: 'addpile' }
-  | { op: 'resort'; by: ResortBy }
-  | { op: 'undo' }
-  | { op: 'redo' }
-  /** the deck replaced whole (the challenge's Import a deck), undoably —
-   * with `side`, the sideboard too (a cube's Suggest a deck) */
-  | { op: 'set'; cards: string[]; side?: string[]; sort?: 'cost' };
-
-/** Where it goes. A destination index counts AFTER the carried card has left
- * (ui/deckarrange.ts); absent = the end. `binder` is the pool: out of the deck. */
-export type Place =
-  | { at: 'pile'; pile: string; index?: number }
-  | { at: 'newpile'; pos: number }
-  | { at: 'row'; pos: number }
-  | { at: 'maybe'; index?: number }
-  | { at: 'side'; index?: number }
-  | { at: 'strip'; index?: number }
-  | { at: 'binder' }
-  | { at: 'auto' }
-  | { at: 'arrange'; edit: Arrange };
+export type { Arrange, Carry, Place, TableNext } from './tableplace.ts';
 
 // ── state ─────────────────────────────────────────────────────────────
 
@@ -237,6 +215,8 @@ let sel: { key: string; carry: Carry } | null = null;
 let menuOpen = false;
 /** Move…: the next tap on a pile, a gap or a card puts `sel` there, whatever the pointer */
 let armed = false;
+/** the card a drag is carrying (its data-tt-src), while it is in the air */
+let airborne: string | null = null;
 /** the card just dropped, drawn in front of its pile until the next pickup */
 let front: { zone: string; index: number } | null = null;
 /** every change, to take back and put again */
@@ -291,16 +271,10 @@ export function registerTableResolver(kind: ResolverKind, fn: Resolve): void {
 
 const count = (list: readonly string[], name: string): number => list.filter(c => c === name).length;
 const same = (a: unknown, b: unknown): boolean => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
-const pileZone = (id: string): string => `pile|${id}`;
 const poolOn = (h: TableHost): boolean => h.pool !== false && !h.readOnly;
 
-/** the piles on the table: a deck's saved ones held to the deck (or, never
- * arranged, the deck by cost); a challenge's scratch piles as saved */
-function pilesOf(h: TableHost): DeckPile[] {
-  const saved = h.piles();
-  if (h.kind !== 'deck') return saved ? saved.map(p => ({ ...p, cards: [...p.cards] })) : [];
-  return saved ? reconcilePiles(h.cards(), saved) : seedPiles(h.cards(), 'cost');
-}
+/** the piles on the table (ui/tableplace.ts pilesOf) */
+const pilesOf = (h: TableHost): DeckPile[] => placePiles(h);
 
 /** everything the table edits, as it is now */
 const snapNow = (h: TableHost): Snap => ({
@@ -317,151 +291,56 @@ export function clearHistory(): void { hist = null; }
 
 /**
  * Put `carry` at `to` (or, with `carry` null, apply an arrangement edit).
- * Computes the next state with the pure edits of ui/deckarrange.ts (or the
- * history's snapshot) and hands it to the host's `commit` — the only call of
- * it in this file. False, and nothing committed, when nothing would change.
+ * Computes the next state with ui/tableplace.ts applyPlace (or the history's
+ * snapshot) and hands it to the host's `commit` — the only call of it in this
+ * file — with the move itself, which a shared table sends on. False, and
+ * nothing committed, when nothing would change.
  */
 export function place(h: TableHost, carry: Carry | null, to: Place): boolean {
-  const deckPiles = h.kind === 'deck';
-  let cards = [...h.cards()];
-  let maybe = h.maybe ? [...h.maybe()] : null;
-  let side = h.side ? [...h.side()] : null;
-  const saved = h.piles();
   note = null;
-  let piles = pilesOf(h);
+  const e = to.at === 'arrange' ? to.edit : null;
+  if (e && (e.op === 'undo' || e.op === 'redo')) {
+    // a shared table's history is the server's: each person's own changes
+    if (h.step) return h.step(e.op);
+  }
+  let next: TableNext;
   let landed: { zone: string; index: number } | null = null;
-  /** a snapshot's piles to restore, null = back to never arranged; undefined = none */
-  let restore: DeckPile[] | null | undefined;
   /** the history after an Undo or a Redo (else: record before the commit) */
   let stepped: History | null = null;
-
-  /** one copy of `name` out of the deck list (constructed: the last copy;
-   * order means nothing there) */
-  const cutOne = (name: string): void => { const i = cards.lastIndexOf(name); if (i >= 0) cards.splice(i, 1); };
-
-  if (to.at === 'arrange') {
-    const e = to.edit;
-    if (e.op === 'rename') piles = renamePile(piles, e.pile, e.name);
-    else if (e.op === 'delpile') piles = deletePile(piles, e.pile);
-    else if (e.op === 'addpile') piles = newPileAt(piles, piles.length);
-    else if (e.op === 'resort') piles = seedPiles(deckPiles ? cards : piles.flatMap(p => p.cards), e.by);
-    // a deck replaced whole may ask to be laid out as Re-sort lays it (the cube's Suggest), not heaped in one "New" pile
-    else if (e.op === 'set') { cards = [...e.cards]; if (e.side && side) side = [...e.side]; if (deckPiles && e.sort) piles = seedPiles(cards, e.sort); }
-    else {
-      const step = (e.op === 'undo' ? undoStep : redoStep)(histFor(h), snapNow(h));
-      if (!step) return false;
-      stepped = step.h;
-      cards = [...step.to.cards];
-      maybe = maybe && step.to.maybe ? [...step.to.maybe] : maybe;
-      side = side && step.to.side ? [...step.to.side] : side;
-      restore = step.to.piles ? step.to.piles.map(p => ({ ...p, cards: [...p.cards] })) : null;
-      if (restore && deckPiles) restore = reconcilePiles(cards, restore);
-    }
-  } else if (!carry) {
-    return false;
-  } else if (carry.from === 'head') {
-    if (to.at !== 'row') return false;
-    const from = piles.findIndex(p => p.id === carry.pile);
-    if (from < 0) return false;
-    piles = movePile(piles, from, to.pos);
-  } else {
-    const { name } = carry;
-    // 0 — a copy ENTERING the deck (a new one from the pool, tapped, dragged
-    // or Add another; or one from Maybe or the Sideboard) stops at the copy
-    // cap, the same note for all: nothing moves
-    const capped = capNote(h, carry, to);
-    if (capped) { note = capped; paintPending = true; return false; }
-    // …and a NEW copy stops at what a restricted pool holds (a cube's drafted cards)
-    const short = ownedNote(h, carry, to);
-    if (short) { note = short; paintPending = true; return false; }
-    // 1 — take it from where it was. A copy leaving the deck for good (the
-    // pool, Maybe) leaves the deck list; one moving inside the table does not
-    let piece: string | null = name;
-    if (carry.from === 'maybe') {
-      if (!maybe || maybe[carry.index] !== name) return false;
-      maybe.splice(carry.index, 1);
-    } else if (carry.from === 'side') {
-      if (!side || side[carry.index] !== name) return false;
-      side.splice(carry.index, 1);
-    } else if (carry.from === 'strip') {
-      if (cards[carry.index] !== name) return false;
-      cards.splice(carry.index, 1);
-    } else if (carry.from === 'pile') {
-      const p = piles.find(x => x.id === carry.pile);
-      if (!p || p.cards[carry.index] !== name) return false;
-      const movingInside = to.at === 'pile' || to.at === 'newpile';
-      if (!movingInside) {
-        const r = removeAt(piles, carry.pile, carry.index);
-        piles = r.piles;
-        piece = r.name;
-        if (deckPiles) cutOne(name);
-      }
-    }
-    if (!piece) return false;
-    // 2 — and put it where it goes
-    const intoNewPile = (pos: number): string => {
-      piles = newPileAt(piles, pos);
-      return piles[Math.max(0, Math.min(pos, piles.length - 1))]!.id;
-    };
-    if (to.at === 'binder') {
-      if (carry.from === 'binder') return false;
-    } else if (to.at === 'maybe') {
-      if (!maybe) return false;
-      const at = Math.max(0, Math.min(to.index ?? maybe.length, maybe.length));
-      maybe.splice(at, 0, name);
-      landed = { zone: 'maybe', index: at };
-    } else if (to.at === 'side') {
-      if (!side) return false;
-      const at = Math.max(0, Math.min(to.index ?? side.length, side.length));
-      side.splice(at, 0, name);
-      landed = { zone: 'side', index: at };
-    } else if (to.at === 'strip') {
-      if (deckPiles) return false;
-      const at = Math.max(0, Math.min(to.index ?? cards.length, cards.length));
-      cards.splice(at, 0, name);
-      landed = { zone: 'strip', index: at };
-    } else if (to.at === 'auto') {
-      if (carry.from !== 'binder' && carry.from !== 'maybe' && carry.from !== 'side') return false;
-      // the reconcile's rule: next to its other copies, else its Re-sort pile
-      cards.push(name);
-      if (!deckPiles) landed = { zone: 'strip', index: cards.length - 1 };
-    } else {
-      const pile = to.at === 'pile' ? to.pile : intoNewPile(to.pos);
-      const target = piles.find(p => p.id === pile);
-      if (!target) return false;
-      const index = to.at === 'pile' && to.index !== undefined ? to.index : Number.MAX_SAFE_INTEGER;
-      if (carry.from === 'pile') {
-        piles = movePileCard(piles, carry.pile, carry.index, pile, index);
-      } else {
-        piles = insertCard(piles, name, pile, index);
-        if (deckPiles) cards.push(name);
-      }
-      const now = piles.find(p => p.id === pile);
-      if (now) landed = { zone: pileZone(pile), index: Math.min(index, now.cards.length - 1) };
-    }
-  }
-
-  // the arrangement follows the deck, always
-  if (deckPiles && restore === undefined) piles = reconcilePiles(cards, piles);
-  const next: TableNext = {};
-  if (!same(cards, h.cards())) next.cards = cards;
-  if (maybe && !same(maybe, h.maybe?.())) next.maybe = maybe;
-  if (side && !same(side, h.side?.())) next.sideboard = side;
-  if (restore !== undefined) { if (!same(restore, saved)) next.piles = restore; } else if (!same(piles, saved)) next.piles = piles;
-  if (!Object.keys(next).length) {
+  if (e && (e.op === 'undo' || e.op === 'redo')) {
+    const step = (e.op === 'undo' ? undoStep : redoStep)(histFor(h), snapNow(h));
+    if (!step) return false;
+    next = restoreOf(h, step.to);
     // an Undo of a change that changed nothing visible still steps
-    if (stepped) hist = stepped;
-    return false;
+    if (!Object.keys(next).length) { hist = step.h; return false; }
+    stepped = step.h;
+  } else {
+    // a copy at the copy cap, past a restricted pool, or the host's rule:
+    // refused, nothing moves and the reason shows (a drop's paint waits for
+    // the card to land — `ended` — and a tap's caller paints)
+    const r = applyPlace(h, carry, to);
+    if (!r.ok) { if (r.note) { note = r.note; paintPending = true; } return false; }
+    next = r.next;
+    landed = r.landed;
   }
-  // the host's rule: refused, nothing moves and the reason shows (a drop's
-  // paint waits for the card to land — `ended` — and a tap's caller paints).
-  // A step through the history restores a state that was, and is never refused
-  const why = stepped ? null : h.refuse?.(next) ?? null;
-  if (why) { note = why; paintPending = true; return false; }
   hist = stepped ?? record(histFor(h), snapNow(h));
   front = landed;
-  h.commit(next);
+  h.commit(next, stepped ? null : { carry, to });
   return true;
+}
+
+/** what restoring snapshot `to` changes. A step through the history restores
+ * a state that was, and is never refused */
+function restoreOf(h: TableHost, to: Snap): TableNext {
+  const cards = [...to.cards];
+  let restore = to.piles ? to.piles.map(p => ({ ...p, cards: [...p.cards] })) : null;
+  if (restore && h.kind === 'deck') restore = reconcilePiles(cards, restore);
+  const next: TableNext = {};
+  if (!same(cards, h.cards())) next.cards = cards;
+  if (h.maybe && to.maybe && !same(to.maybe, h.maybe())) next.maybe = [...to.maybe];
+  if (h.side && to.side && !same(to.side, h.side())) next.sideboard = [...to.side];
+  if (!same(restore, h.piles())) next.piles = restore;
+  return next;
 }
 
 /** the host has applied a commit (or its deck changed some other way): the
@@ -545,38 +424,6 @@ function validSelection(h: TableHost, piles: DeckPile[]): void {
   if (!ok) putDown();
 }
 
-/** copies of `name` the cap counts: the deck and the sideboard together */
-const capCount = (h: TableHost, name: string): number => count(h.cards(), name) + count(h.side?.() ?? [], name);
-
-/** the refusal of a copy entering the deck at the copy cap — place() asks it
- * for every carry: a new copy from the pool (tapped or dragged) and one from
- * Maybe count against the deck and sideboard together; one from the Sideboard
- * is already counted, so it stops only when the deck itself is full. A copy
- * moving inside the deck adds nothing (an imported over-cap deck still saves,
- * flagged). Into the Sideboard is the host's rule */
-function capNote(h: TableHost, carry: Exclude<Carry, { from: 'head' }>, to: Place): string | null {
-  if (h.cap === undefined || h.kind !== 'deck') return null;
-  if (to.at === 'maybe' || to.at === 'side') return null;
-  if (to.at === 'binder') return null; // back to the pool: out of the deck
-  const { name } = carry;
-  const full = carry.from === 'binder' || carry.from === 'maybe' ? capCount(h, name) >= h.cap
-    : carry.from === 'side' ? count(h.cards(), name) >= h.cap : false;
-  return full ? `Max ${h.cap} of ${name}.` : null;
-}
-
-/** copies of `name` on the table at all: the deck, the sideboard and Maybe */
-const usedCount = (h: TableHost, name: string): number => capCount(h, name) + count(h.maybe?.() ?? [], name);
-
-/** the refusal of a NEW copy (from the pool, or Add another) past what a
- * restricted pool holds (TableHost.owned) — wherever it is put. A copy moving
- * on the table adds nothing, so only the pool's are counted */
-function ownedNote(h: TableHost, carry: Exclude<Carry, { from: 'head' }>, to: Place): string | null {
-  if (!h.owned || carry.from !== 'binder' || to.at === 'binder') return null;
-  const have = h.owned().get(carry.name) ?? 0;
-  if (usedCount(h, carry.name) < have) return null;
-  return have ? `You have ${have} ${carry.name}.` : `${carry.name} is not in your pool.`;
-}
-
 /** what can be done to what is picked — its whole menu */
 function menuOf(h: TableHost, piles: DeckPile[]): TableMenu | null {
   const c = selected(h);
@@ -595,8 +442,7 @@ function menuOf(h: TableHost, piles: DeckPile[]): TableMenu | null {
   }
   const deck = h.kind === 'deck';
   const inDeck = c.from === 'pile' ? deck : c.from === 'strip';
-  const full = (deck && h.cap !== undefined && capCount(h, c.name) >= h.cap)
-    || (!!h.owned && usedCount(h, c.name) >= (h.owned().get(c.name) ?? 0));
+  const full = atCap(h, c.name);
   const items: TableMenuItem[] = [];
   // a band instead of the pool (a cube draft): every card stays on the table, so none comes off it or is added
   const banded = !!h.band && !poolOn(h);
@@ -746,8 +592,8 @@ function viewOf(h: TableHost): Omit<BuilderView, 'chrome'> {
     pill: h.pill?.() ?? null,
     stripHtml: h.pill ? '' : h.strip?.() ?? '',
     hostToolsHtml: h.toolsHtml?.() ?? '',
-    canUndo: canUndo(hist, h.key),
-    canRedo: canRedo(hist, h.key),
+    canUndo: h.canStep ? h.canStep().undo : canUndo(hist, h.key),
+    canRedo: h.canStep ? h.canStep().redo : canRedo(hist, h.key),
     stats: deck,
     note: note ?? (armed && c ? 'Tap where it goes.' : null) ?? h.note?.() ?? null,
     pool: poolView(h),
@@ -773,6 +619,7 @@ function paint(): void {
     paneSeen = real;
     paintBuilder($app, builderView(viewOf(host)));
   }
+  host.painted?.();
 }
 
 /** typing in the pool: the results and the chips only — the box, its caret
@@ -1226,6 +1073,7 @@ const provider: DragProvider = {
     const carry = src.classList.contains('ttpile') && head
       ? carryOf(`head|${head.dataset['ttHead']}`) : carryOf(src.dataset['ttSrc']);
     if (!h || !carry || h.readOnly) return null;
+    airborne = srcKey(carry);
     const ok = (z: Element | null): z is HTMLElement =>
       !!z && legalZone(h, carry, (z as HTMLElement).dataset['ttZone'] ?? '');
     // a pile in the air shows where it would go as an edge, not a new pile's place
@@ -1259,6 +1107,7 @@ const provider: DragProvider = {
     for (const el of document.querySelectorAll('.ttpop')) el.remove();
   },
   ended() {
+    airborne = null;
     clearPreview();
     document.documentElement.classList.remove('ttcarrypile');
     if (paintPending) paint();
@@ -1270,6 +1119,14 @@ const provider: DragProvider = {
   },
 };
 addDragProvider(provider);
+/** the card (or pile) in the hand right now, as its `data-tt-src` (`head|<id>`
+ * for a pile): the one being dragged, else the one picked by a tap. A shared
+ * table shows everyone else's */
+export function heldSrc(): string | null {
+  if (airborne) return airborne;
+  return host && sel && sel.key === host.key ? srcKey(sel.carry) : null;
+}
+
 /** the table's one drag provider, for the tests that drop through it */
 export const tableDrag: DragProvider = provider;
 

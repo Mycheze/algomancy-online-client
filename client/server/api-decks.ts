@@ -20,6 +20,7 @@ import {
 } from './collection.ts';
 import { importDeckPaste, importDeckUrl } from './decks.ts';
 import { sharedDeck, sourceDeck } from './publicdecks.ts';
+import { collabDeckGone, collabDeckTouched, collabOpenOn } from './api-collab.ts';
 
 /** Handle a decks route. True when the request was ours. */
 export async function deckRoutes(
@@ -57,23 +58,27 @@ export async function deckRoutes(
   }
 
   if (path === '/api/decks/update') {
+    // a shared table open on this deck holds its cards (docs/26): a tab of the
+    // host's that sends them is a step behind it, and only its other fields land
+    const shared = collabOpenOn(id);
     const r = updateDeck(account, id, {
       // only the fields that were SENT are applied — see updateDeck
       ...('name' in b ? { name: b['name'] } : {}),
-      ...('cards' in b ? { cards: b['cards'] } : {}),
-      ...('maybe' in b ? { maybe: b['maybe'] } : {}),
+      ...('cards' in b && !shared ? { cards: b['cards'] } : {}),
+      ...('maybe' in b && !shared ? { maybe: b['maybe'] } : {}),
       ...('cover' in b ? { cover: b['cover'] } : {}),
       // publishing is a field like any other, and sending it alone is the
       // whole point: the visibility toggle must not have to re-send 30 cards
       ...('visibility' in b ? { visibility: b['visibility'] } : {}),
       ...('description' in b ? { description: b['description'] } : {}),
       // the tabletop's arrangement — never the deck, and clamped to it
-      ...('piles' in b ? { piles: b['piles'] } : {}),
+      ...('piles' in b && !shared ? { piles: b['piles'] } : {}),
       // the sideboard. Nothing here refuses an illegal CC deck: legality is
       // enforced where it is PLAYED. (An older client's `swaps` is not read.)
-      ...('sideboard' in b ? { sideboard: b['sideboard'] } : {}),
+      ...('sideboard' in b && !shared ? { sideboard: b['sideboard'] } : {}),
     });
     if (!r.ok) return json(res, r), true;
+    collabDeckTouched(r.deck.id);
     answer({ id: r.deck.id, ...(r.note ? { note: r.note } : {}) });
     return true;
   }
@@ -81,6 +86,7 @@ export async function deckRoutes(
   if (path === '/api/decks/delete') {
     const r = deleteDeck(account, id);
     if (!r.ok) return json(res, r), true;
+    collabDeckGone(id);
     answer();
     return true;
   }

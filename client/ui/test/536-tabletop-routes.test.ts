@@ -53,7 +53,7 @@ const TT = code('tabletop.ts');
 test('§1 the host’s commit is called once, and only from place()', () => {
   const calls = [...TT.matchAll(/\.commit\(/g)];
   assert.equal(calls.length, 1, `tabletop.ts calls commit ${calls.length} times — place() is the one door`);
-  assert.match(body(TT, 'export function place('), /h\.commit\(next\)/, 'and that one call is place()’s');
+  assert.match(body(TT, 'export function place('), /h\.commit\(next, stepped \? null : \{ carry, to \}\)/, 'and that one call is place()’s, with the move');
 });
 
 test('§2 a drop is a place(); so is every tap that moves a card, and the binder’s buttons', () => {

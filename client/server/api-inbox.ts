@@ -3,7 +3,7 @@
  * Every signed-in page polls GET /api/inbox (ui/inbox.ts). The answer is
  * everything the bell counts — invites to a game, friend requests, league
  * messages, a suggested match time waiting on an answer and decks friends
- * sent (deckshare.ts) — plus
+ * sent (deckshare.ts), invites to a shared deck table (api-collab.ts) — plus
  * the friends list with who is around, which the room's friends panel is
  * drawn from. `?room=CODE` adds, per friend, whether this player has
  * already invited them to that room. State and the rules about it are in
@@ -16,6 +16,7 @@ import { acceptInvite, declineInvite, invitesFor, sendInvite, sentFrom, touch, t
 import { clearDeckShare, deckSharesFor, sendDeck } from './deckshare.ts';
 import { markNotesRead, notesFor, timesAskedOf } from './league-store.ts';
 import { cubeNotesFor, markCubeNotesRead } from './cube-store.ts';
+import { collabInvitesFor } from './api-collab.ts';
 import type { Element } from '../engine/src/types.ts';
 
 export interface InboxContext {
@@ -73,6 +74,8 @@ export async function inboxRoutes(
       // cube events (docs/25): "the draft is starting", "round 2: you play
       // Bo", "exhibition found you an opponent", "the event is over"
       cube: cubeNotesFor(me.id, Date.now()),
+      // shared deck tables a friend asked them to (api-collab.ts, docs/26)
+      collab: collabInvitesFor(me.id),
     }), true;
   }
 

@@ -1,0 +1,31 @@
+/* A SHARED DECK TABLE (ui/collab.ts, ui/pages/collab.ts, docs/26): the Together
+   button's dots, its sheet, and everyone else's pointer and held card over the table.
+   Each person's colour arrives as --collab on the element. */
+
+.collabdots { display: inline-flex; gap: 3px; margin-left: -4px; align-items: center; }
+.collabdot { display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--collab); box-shadow: 0 0 0 1.5px var(--color-surface); flex: none; }
+
+.collabsheet .collablink { display: flex; gap: 8px; align-items: center; }
+.collabsheet .collablink input { flex: 1; min-width: 0; font-family: var(--font-mono, monospace); font-size: 12px; }
+.collabsheet .collabmsg { margin: 8px 0 0; color: var(--color-accent); }
+.collabpeople, .collabfriends { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.collabperson, .collabfriends li { display: flex; gap: 8px; align-items: center; min-height: 28px; }
+.collabperson.away { opacity: .6; }
+.collabname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.collabstate { font-size: 12px; }
+.collabfoot { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.collabfoot .dksheetnote { flex-basis: 100%; margin: 0; }
+
+.collabgate { max-width: 420px; margin: 48px auto; padding: 0 16px; text-align: center; display: grid; gap: 16px; justify-items: center; }
+
+/* the marks: fixed over everything on the table, under a sheet, never in the way of a click */
+#collabmarks { position: fixed; inset: 0; pointer-events: none; z-index: 90; overflow: hidden; }
+.collabptr { position: absolute; left: 0; top: 0; color: var(--collab); transition: transform 80ms linear; will-change: transform; }
+.collabptr svg { display: block; fill: var(--collab); stroke: var(--color-bg); stroke-width: 1; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .5)); }
+.collabtag { display: inline-block; margin: 2px 0 0 10px; padding: 1px 6px; border-radius: 8px; font-size: 11px; line-height: 16px;
+  white-space: nowrap; background: var(--collab); color: var(--color-text-on-accent); font-weight: 600; }
+.collabheld { position: absolute; border: 3px solid var(--collab); border-radius: 8px;
+  box-shadow: 0 0 0 1px var(--color-bg), 0 0 14px var(--collab); }
+.collabheld .collabtag { position: absolute; left: -3px; top: -20px; margin: 0; }
+@media (prefers-reduced-motion: reduce) { .collabptr { transition: none; } }

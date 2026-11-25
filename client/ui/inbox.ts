@@ -48,6 +48,8 @@ import {
 
 export interface InviteView { id: string; from: string; room: string; seat: number; mode: string; label: string; at: number }
 export interface RequestView { id: string; username: string }
+/** a shared deck table a friend asked them to (server/api-collab.ts collabInvitesFor) */
+export interface CollabInvite { code: string; from: string; deck: string; at: number }
 /** a deck a friend sent (server/deckshare.ts DeckShareView) */
 export interface DeckShareView extends DeckShareCardView { at: number }
 /** a friend in the waiting room's panel — the shape ui/pages/inbox.ts draws */
@@ -88,6 +90,8 @@ let times: TimeAsk[] = [];
 let cubeNotes: CubeNote[] = [];
 /** decks friends sent, until opened or dismissed (server/deckshare.ts) */
 let decks: DeckShareView[] = [];
+/** shared deck tables friends asked this player to (server/api-collab.ts) */
+let collabs: CollabInvite[] = [];
 /** docs/22 §5.6: this account's open Competitive matches (/api/matches/mine) */
 let matches: MyMatch[] = [];
 /** has a poll answered yet — the panel says "loading" until one has */
@@ -128,6 +132,8 @@ const noteKey = (n: LeagueNote): string => `L${n.id}`;
 const timeKey = (t: TimeAsk): string => `T${t.match}@${t.at}`;
 /** a sent deck — re-sending it is a new line, so a new id, so a new chime */
 const deckKey = (d: DeckShareView): string => `D${d.id}`;
+/** an ask to a shared table — asked again, it chimes again */
+const collabKey = (c: CollabInvite): string => `C${c.code}@${c.at}`;
 /** a match whose sideboarding window is running — once per game */
 const matchKey = (m: MyMatch): string => `M${m.id}@${m.game}`;
 /** the open matches worth a line: not the one whose room this page is */
@@ -141,7 +147,7 @@ const resumeKey = (m: MyMatch): string => `MR${m.id}@${m.pausedAt}`;
 
 function saveSeen(): void {
   // only the ones still waiting are worth keeping; the rest have gone
-  const live = new Set([...invites.map(i => i.id), ...notes.map(noteKey), ...times.map(timeKey), ...decks.map(deckKey), ...matches.map(matchKey),
+  const live = new Set([...invites.map(i => i.id), ...notes.map(noteKey), ...times.map(timeKey), ...decks.map(deckKey), ...collabs.map(collabKey), ...matches.map(matchKey),
     ...matches.map(resumeKey)]);
   try {
     sessionStorage.setItem(SEEN_KEY, JSON.stringify({
@@ -151,7 +157,7 @@ function saveSeen(): void {
 }
 
 /** what the bell counts: everything waiting on an answer, and league news not yet read */
-const unread = (): number => invites.length + requests.length + times.length + decks.length + notes.filter(n => !n.read).length
+const unread = (): number => invites.length + requests.length + times.length + decks.length + collabs.length + notes.filter(n => !n.read).length
   + cubeNotes.filter(n => !n.read).length
   + dueMatches().length + resumeAsks().length;
 
@@ -217,6 +223,7 @@ function listView(): InboxListView {
       when: timeText(t.at / 1000) })),
     requests,
     decks: decks.map(d => ({ id: d.id, from: d.from, deck: d.deck, name: d.name })),
+    collab: collabs.map(c => ({ code: c.code, from: c.from, deck: c.deck })),
     notes: notes.map(noteCard),
     cube: cubeNotes.map(n => ({ event: n.event, read: n.read, html: cubeNoteLine(n) })),
   };
@@ -337,9 +344,9 @@ function poll(): void {
   fetch(`/api/inbox${room ? `?room=${encodeURIComponent(room)}` : ''}`, { headers: deps.authHeaders() })
     .then(r => { servedBuild(r.headers?.get('x-algo-build')); return r.json(); })
     .then((r: { ok?: boolean; invites?: InviteView[]; requests?: RequestView[]; friends?: RoomFriend[];
-      league?: LeagueNote[]; times?: TimeAsk[]; decks?: DeckShareView[]; cube?: CubeNote[] }) => {
+      league?: LeagueNote[]; times?: TimeAsk[]; decks?: DeckShareView[]; cube?: CubeNote[]; collab?: CollabInvite[] }) => {
       if (!r.ok) return;
-      take(r.invites ?? [], r.requests ?? [], r.friends ?? [], r.league ?? [], r.times ?? [], r.decks ?? [], r.cube ?? []);
+      take(r.invites ?? [], r.requests ?? [], r.friends ?? [], r.league ?? [], r.times ?? [], r.decks ?? [], r.cube ?? [], r.collab ?? []);
     })
     .catch(() => { /* offline: keep what we had */ })
     .finally(() => { inFlight = false; schedule(); if (again) { again = false; dueAt = 0; } });
@@ -369,8 +376,9 @@ function pollMatches(): void {
 
 /** fold a poll's answer in, and say so only if something changed */
 function take(nextInvites: InviteView[], nextRequests: RequestView[], nextFriends: RoomFriend[],
-  nextNotes: LeagueNote[], nextTimes: TimeAsk[], nextDecks: DeckShareView[] = [], nextCube: CubeNote[] = []): void {
-  const before = JSON.stringify([invites, requests, friends, notes, times, decks, cubeNotes, loaded]);
+  nextNotes: LeagueNote[], nextTimes: TimeAsk[], nextDecks: DeckShareView[] = [], nextCube: CubeNote[] = [],
+  nextCollab: CollabInvite[] = []): void {
+  const before = JSON.stringify([invites, requests, friends, notes, times, decks, cubeNotes, collabs, loaded]);
   const friendsBefore = loaded ? JSON.stringify(friends) : '';
   const leagueBefore = JSON.stringify([notes.map(n => n.id), times]);
   invites = nextInvites;
@@ -380,11 +388,14 @@ function take(nextInvites: InviteView[], nextRequests: RequestView[], nextFriend
   times = nextTimes;
   decks = nextDecks;
   cubeNotes = nextCube;
+  // the table this page is at is no news
+  collabs = nextCollab.filter(c => c.code !== collabHere?.());
   // the things worth a chime: an invite, a time to answer, a match about to start
   const fresh: [string, string][] = [
     ...invites.map(i => [i.id, `${i.from} invited you`] as [string, string]),
     ...times.map(t => [timeKey(t), `${t.from} suggests a time`] as [string, string]),
     ...decks.map(d => [deckKey(d), `${d.from} sent you a deck`] as [string, string]),
+    ...collabs.map(c => [collabKey(c), `${c.from} wants to build a deck with you`] as [string, string]),
     ...reminders().map(r => [noteKey(r), 'Your league match is soon'] as [string, string]),
   ].filter(([k]) => !announced.has(k));
   // the first answer only fills the set: what was already waiting when the
@@ -402,7 +413,7 @@ function take(nextInvites: InviteView[], nextRequests: RequestView[], nextFriend
   loaded = true;
   saveSeen();
   if (JSON.stringify(friends) !== friendsBefore) friendsChanged?.();
-  if (JSON.stringify([invites, requests, friends, notes, times, decks, cubeNotes, loaded]) === before) return;
+  if (JSON.stringify([invites, requests, friends, notes, times, decks, cubeNotes, collabs, loaded]) === before) return;
   paint();
   paintPanel();
 }
@@ -538,6 +549,19 @@ function onClick(what: string, el: HTMLElement): void {
         .finally(() => { clearTimeout(fallback); go(); });
       return;
     }
+    // a shared deck table: Join opens it (a navigation from a game page, as a cube event is)
+    case 'collab-join':
+      collabs = collabs.filter(c => c.code !== id);
+      panelOpen = false;
+      paint();
+      if (openCollabFn && !deps?.room()) openCollabFn(id);
+      else location.search = `?collab=${encodeURIComponent(id)}`;
+      return;
+    case 'collab-decline':
+      collabs = collabs.filter(c => c.code !== id);
+      paint();
+      void post('/api/collab/decline', { code: id }).finally(pollSoon);
+      return;
     case 'deck-clear':
       decks = decks.filter(d => d.id !== id);
       paint();
@@ -562,6 +586,14 @@ let installed = false;
 let openCubeFn: ((code: string) => void) | null = null;
 /** the bell's cube lines open the event through this (ui/cube.ts openCube) */
 export function setCubeOpener(f: (code: string) => void): void { openCubeFn = f; }
+
+/* …and ui/collab.ts the same way, for the same reason */
+let openCollabFn: ((code: string) => void) | null = null;
+let collabHere: (() => string | null) | null = null;
+/** the bell's shared-table lines open it through `open`; `here` is the table this page is at */
+export function setCollabOpener(open: (code: string) => void, here: () => string | null): void {
+  openCollabFn = open; collabHere = here;
+}
 
 /** Mount the layer and start polling. Safe without a document (the headless
  * harness): nothing here is load-bearing for the game. */

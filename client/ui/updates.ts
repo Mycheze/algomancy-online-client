@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-25', kind: 'new', text: 'Build a deck together: press Build together in the deck builder, then invite friends or share the link. Everyone moves cards on one table live and sees each other\'s cursors; your search stays your own. It ends when the deck\'s owner leaves.' },
   { date: '2026-11-24', kind: 'fix', text: 'The column heads in the card search\'s syntax help now start with a capital, like every other table\'s.' },
   { date: '2026-11-24', kind: 'fix', text: 'Card stats\' filters, the Metagame sort, the card browser\'s Grid / List / Text switch and the "Working…" and "Sending…" buttons now start with a capital, like every other button.' },
   { date: '2026-11-23', kind: 'fix', text: 'With a screen reader, an achievement on your profile and in the end-of-game Unlocked list is read by its name alone, without its icon\'s emoji spoken first.' },

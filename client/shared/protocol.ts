@@ -43,6 +43,15 @@ export type ClientMsg =
   | { t: 'cube'; op: 'sub'; code: string; token: string | null }
   | { t: 'cube'; op: 'unsub' }
   | { t: 'cube'; op: 'reserve' | 'pick'; card: string }
+  /** a shared deck table (server/api-collab.ts, docs/26). `seq` counts this
+   * socket's own moves; every view answers with the last one it has handled */
+  | { t: 'collab'; op: 'sub'; code: string; token: string | null }
+  | { t: 'collab'; op: 'unsub' }
+  | { t: 'collab'; op: 'move'; seq: number; carry: unknown; to: unknown }
+  | { t: 'collab'; op: 'step'; seq: number; dir: 'undo' | 'redo' }
+  | { t: 'collab'; op: 'cursor'; at: { z: string; x: number; y: number } | null; held: string | null }
+  | { t: 'collab'; op: 'kick'; user: string }
+  | { t: 'collab'; op: 'end' }
   | { t: 'cc'; op: 'config'; main: CardName[]; side: CardName[] }
   | { t: 'cc'; op: 'ready'; ready: boolean; initiative?: number }
   | { t: 'cc'; op: 'pause' | 'unpause' | 'resume' }
@@ -68,7 +77,7 @@ export type ClientMsg =
 
 /** every tag, once: one added to the union and not here does not compile */
 const CLIENT_TAGS: Record<ClientMsg['t'], true> = {
-  watch: true, join: true, queue: true, cube: true, cc: true, concedeMatch: true, rematch: true,
+  watch: true, join: true, queue: true, cube: true, collab: true, cc: true, concedeMatch: true, rematch: true,
   dispute: true, lobby: true, action: true, building: true, fullcontrol: true, passall: true,
   autopass: true, reporthold: true, playbackdone: true, undo: true, amend: true,
 };
@@ -114,6 +123,8 @@ export interface Payloads {
   queue: Open;          // main.ts queueStateFor, beside `t`
   cubeView: unknown;    // cube-types.ts CubeView
   cubeMatch: unknown;   // cube-types.ts CubeMatchView
+  collabView: unknown;  // collab.ts CollabView
+  collabCursor: unknown; // collab.ts CollabCursor
 }
 type S<P, K extends keyof Payloads> = K extends keyof P ? P[K] : Payloads[K];
 
@@ -181,7 +192,14 @@ export type ServerMsg<P = Payloads> =
   | ({ t: 'queue'; matched?: never } & S<P, 'queue'>)
   | { t: 'cube'; view: S<P, 'cubeView'> }
   | { t: 'cube'; error: string }
-  | { t: 'cube'; matched: S<P, 'cubeMatch'> };
+  | { t: 'cube'; matched: S<P, 'cubeMatch'> }
+  | { t: 'collab'; view: S<P, 'collabView'> }
+  | { t: 'collab'; cursor: S<P, 'collabCursor'> }
+  /** one of this socket's moves was not made: why, for the note row */
+  | { t: 'collab'; refused: { seq: number; note: string } }
+  /** the session is over for this socket (the host left or ended it, or removed them) */
+  | { t: 'collab'; ended: string }
+  | { t: 'collab'; error: string };
 
 /** a message without the fields its sender fills in, over each variant */
 export type Body<M, K extends PropertyKey = 't'> = M extends unknown ? Omit<M, K> : never;

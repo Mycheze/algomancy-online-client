@@ -10,7 +10,7 @@
  *      the deck is the same, and the note is the tap's own words
  *   §2 a drag of a copy under the cap lands (the refusal is the cap, not the drag)
  *   §3 the tap at the cap still refuses with the same note
- *   §4 source: the cap check is inside place(), and no caller checks it beside it
+ *   §4 source: the cap check is inside applyPlace() (place()'s arithmetic), and no caller checks it beside it
  *
  * Seeds: none. The deck is real cards, served by the driver's fetch seam.
  */
@@ -104,7 +104,12 @@ test('§3 the tap at the cap says the same', () => {
 test('§4 the refusal is inside the one door', () => {
   const tt = code('tabletop.ts');
   const place = tt.slice(tt.indexOf('export function place('), tt.indexOf('export function tabletopChanged('));
-  assert.match(place, /const capped = capNote\(h, carry, to\);\s*if \(capped\) \{ note = capped; paintPending = true; return false; \}/,
-    'place() refuses a new copy at the cap, before anything is taken or put');
-  assert.equal([...tt.matchAll(/capNote\(/g)].length, 2, 'its definition and place(): no caller checks beside it');
+  assert.match(place, /const r = applyPlace\(h, carry, to\);\s*if \(!r\.ok\) \{ if \(r\.note\) \{ note = r\.note; paintPending = true; \} return false; \}/,
+    'place() takes every move through applyPlace, and shows its refusal');
+  const tp = code('tableplace.ts');
+  const apply = tp.slice(tp.indexOf('export function applyPlace('), tp.indexOf('const capCount'));
+  assert.match(apply, /const capped = capNote\(h, carry, to\);\s*if \(capped\) return no\(capped\);/,
+    'applyPlace refuses a new copy at the cap, before anything is taken or put');
+  assert.equal([...tp.matchAll(/capNote\(/g)].length, 2, 'its definition and applyPlace: no caller checks beside it');
+  assert.doesNotMatch(tt, /capNote\(/, 'and the table has no check of its own');
 });
