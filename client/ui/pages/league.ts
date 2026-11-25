@@ -26,6 +26,7 @@ import { statusMessage, type StatusTone } from '../components/status.ts';
 import { frameChromeView, frameHtml, paintFrame, type FrameChrome } from './frame.ts';
 import { table } from '../components/table.ts';
 import { esc } from '../util.ts';
+import { statCell } from './statcell.ts';
 import { USERNAME_MAX } from '../../shared/username.ts';
 import { wallClock, zonedEpoch } from '../zonetime.ts';
 
@@ -826,10 +827,10 @@ function seasonCardHtml(s: SeasonView, v: LeagueView): string {
   return panel({ className: 'lgspan2', title: s.name,
     titleHtml: `${s.hidden ? '<span class="lgtag">hidden</span>' : ''}${s.hold ? '<span class="lgtag">on hold</span>' : ''}`, bodyHtml: `
     <div class="statgrid">
-      <div class="statcell"><div class="statval lgphase">${esc(s.label)}</div><div class="statlab">now</div></div>
-      <div class="statcell"><div class="statval">${active}</div><div class="statlab">players</div></div>
-      <div class="statcell"><div class="statval">${s.perWeek}</div><div class="statlab">opponents a week</div></div>
-      <div class="statcell"><div class="statval">${s.weeks}</div><div class="statlab">weeks + a final</div></div>
+      ${statCell('now', s.label, { valueClass: 'lgphase' })}
+      ${statCell('players', active)}
+      ${statCell('opponents a week', s.perWeek)}
+      ${statCell('weeks + a final', s.weeks)}
     </div>
     <p>${s.phase < 0 ? `Sign-ups open <b>${when(s.signupOpens, v.tz)}</b>. ` : ''}Week 1 starts <b>${wk1 ? when(wk1.at, v.tz) : '?'}</b>,
       the final <b>${fin ? when(fin.at, v.tz) : '?'}</b>, and the season ends <b>${end ? when(end.at, v.tz) : '?'}</b>
