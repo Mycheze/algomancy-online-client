@@ -132,12 +132,13 @@ async function toBattle(a: Client, b: Client): Promise<void> {
   a.send({ t: 'action', action: { type: 'donePlanning', seat: 0 } });
   b.send({ t: 'action', action: { type: 'donePlanning', seat: 1 } });
   await until(() => a.offered('doneHaste') && b.offered('doneHaste'));
-  // the drain runs inside the action that ends the haste step, so the board is
-  // final once neither seat is offered the haste step and someone is offered the
-  // next thing (between the two seats' answers, both can be offered nothing)
+  // every landed action is pushed to both seats, and the drain runs inside the
+  // one that ends the step: each seat's second update from here is the final board
+  const ma = a.msgs.length, mb = b.msgs.length;
+  const updatesSince = (c: Client, from: number): number => c.msgs.slice(from).filter(m => m['t'] === 'update').length;
   a.send({ t: 'action', action: { type: 'doneHaste', seat: 0 } });
   b.send({ t: 'action', action: { type: 'doneHaste', seat: 1 } });
-  await until(() => !a.offered('doneHaste') && !b.offered('doneHaste') && a.legal().length + b.legal().length > 0);
+  await until(() => updatesSince(a, ma) >= 2 && updatesSince(b, mb) >= 2);
 }
 
 console.log('\nBL-18 §1 — THE NEGATIVE CONTROL: with the switch OFF, nothing changes');
