@@ -59,7 +59,7 @@ test('§4 the divider', () => {
 test('§5 the history goes through the one door', () => {
   const tt = readFileSync(new URL('../tabletop.ts', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/.*$/gm, '$1');
   const place = tt.slice(tt.indexOf('export function place('), tt.indexOf('export function tabletopChanged('));
-  assert.match(place, /hist = stepped \?\? record\(histFor\(h\), snapNow\(h\)\);\s*front = landed;\s*h\.commit\(next\);/,
+  assert.match(place, /hist = stepped \?\? record\(histFor\(h\), snapNow\(h\)\);\s*front = landed;\s*h\.commit\(next, stepped \? null : \{ carry, to \}\);/,
     'recorded just before the one commit');
   assert.match(place, /\(e\.op === 'undo' \? undoStep : redoStep\)\(histFor\(h\), snapNow\(h\)\)/, 'Undo and Redo are snapshots committed here');
   assert.match(tt, /case 'tt-undo':\s*case 'tt-redo':[\s\S]*?place\(h, null, \{ at: 'arrange', edit: \{ op:/);

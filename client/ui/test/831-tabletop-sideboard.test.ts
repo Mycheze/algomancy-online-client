@@ -145,9 +145,12 @@ test('§6 a drop is the same door, and the side zone is a card’s to drop on', 
   assert.match(tt, /if \(kind === 'side'\) return \{ at: 'side' \};/, 'a tap on the pile is a place()');
   assert.match(tt, /case 'tt-toside': put\(\{ at: 'side' \}\); return true;/, 'the menu’s To sideboard is a place()');
   assert.match(tt, /const to: Place = target === 'side' && h\.side \? \{ at: 'side' \}/, 'the pool’s tap with Add to: Side is a place() there');
-  assert.match(tt, /if \(to\.at === 'maybe' \|\| to\.at === 'side'\) return null;/, 'and the cap there is the host’s rule, not the tap’s');
+  // place()'s arithmetic is ui/tableplace.ts applyPlace, which a shared table's server runs too
+  const tp = code('tableplace.ts');
+  assert.match(tp, /if \(to\.at === 'maybe' \|\| to\.at === 'side'\) return null;/, 'and the cap there is the host’s rule, not the tap’s');
+  assert.match(tp, /const why = h\.refuse\?\.\(next\) \?\? null;\s*if \(why\) return no\(why\);/,
+    'the host refuses inside applyPlace(), before place()’s one commit');
   // (BL-65: a step through the history restores a state that was, and is never refused)
-  assert.match(tt, /const why = stepped \? null : h\.refuse\?\.\(next\) \?\? null;\s*if \(why\) \{ note = why; paintPending = true; return false; \}/,
-    'the host refuses inside place(), before its one commit');
+  assert.doesNotMatch(code('tabletop.ts').slice(code('tabletop.ts').indexOf('function restoreOf(')), /refuse\?\./, 'an Undo is never refused');
   assert.match(code('decks.ts'), /refuse: next => \{[\s\S]*?crossCapRefusal\(/, 'and the deck page’s rule is the cap across both');
 });

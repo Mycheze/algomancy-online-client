@@ -165,10 +165,22 @@ words around it may be tightened.
   have never seen is someone else's half-written work, not yours; `git diff
   --stat` tells them apart.
 - Land anything large from a worktree, then `git push origin <branch>:master`.
+- **Cloud sessions** (claude.ai/code) cannot reach the VPS or the home box: no
+  ssh, HTTPS to `algomancy.online` only. They work on their `claude/…` branch and
+  reach master only by a merged PR or when the owner says to push. To SHOW the
+  owner work before that, force-push it to `staging` (below). A green master
+  then deploys itself: the steward gates it and puts it live (`steward/README.md`,
+  "Master the owner pushed"). Never try to deploy from one.
 - **The steward pushes too.** `steward/run-once.sh` on the home box lands its own
-  fixes on master at night and stages the rest as `steward/<item>` branches (the
-  only branches besides master that may exist). Review them with `steward/review.sh`.
-- **Master is the only branch.** Rounds used to leave their branch behind after
+  fixes on master at night and stages the rest as `steward/<item>` branches (with
+  `staging`, the only branches besides master that may exist). Review them with `steward/review.sh`.
+- **`staging` is scratch, and the one other branch everyone may push.** It is
+  what https://staging.algomancy.online runs (unlisted, on a copy of
+  production's data, `deploy/README.md` § Staging). A cloud session shows the
+  owner its work with `git push -f origin HEAD:staging`, standing permission,
+  no need to ask; it is live within a minute. Overwrite it freely. Never merge
+  FROM it, never base work on it, and never delete it.
+- **Master is the only branch** (besides `staging`, above). Rounds used to leave their branch behind after
   landing — 76 of them by 2026-09-20, every one already on master (rebased, so
   the stale tip was no longer an ancestor and each read as "1 ahead" of work
   nobody had merged). They were verified landed and pruned. The old tips are
@@ -196,7 +208,9 @@ Same repo path. All three services are systemd units — `algomancy-game`
 hand-started `run-server.sh` loop until 2026-09-03; that script is gone, and
 starting anything with `setsid nohup` beside its unit duplicates it. Secrets
 come from the gitignored `.env` (and `client/server/tester.env`) through
-`EnvironmentFile=`, never from the command line. A client-only change needs no
+`EnvironmentFile=`, never from the command line. A push to master needs no
+hand deploy: the steward deploys a master that is green on its gate and ahead
+of the box, once no one is in a game. A client-only change needs no
 restart — rebuild the bundle and the next page load has it (the page reloads
 itself when it reconnects to a restarted server). Logs are in the journal, not
 `var/logs/`.

@@ -28,6 +28,9 @@ export interface InviteCardView { id: string; from: string; label: string }
 export interface TimeAskCardView { season: string; seasonName: string; match: string; from: string; when: string }
 /** a friend request */
 export interface RequestCardView { id: string; username: string }
+/** a shared deck table a friend asked them to (server/api-collab.ts): Join opens it */
+export interface CollabInviteCardView { code: string; from: string; deck: string }
+
 /** a deck a friend sent (server/deckshare.ts DeckShareView): View opens it */
 export interface DeckShareCardView { id: string; from: string; deck: string; name: string }
 /** a league note: its sentence (trusted markup, leaguenotes.ts noteLine) and its one button */
@@ -71,6 +74,8 @@ export interface InboxListView {
   requests: RequestCardView[];
   /** decks friends sent (absent = none) */
   decks?: DeckShareCardView[];
+  /** shared deck tables friends asked them to (absent = none) */
+  collab?: CollabInviteCardView[];
   notes: NoteCardView[];
   /** cube events' notes (absent = none) */
   cube?: CubeNoteCardView[];
@@ -203,6 +208,17 @@ function deckShareHtml(d: DeckShareCardView): string {
     </div>`;
 }
 
+/** a friend asks them to build a deck together: Join opens the shared table */
+function collabInviteHtml(c: CollabInviteCardView): string {
+  return `<div class="invitecard collabinvite">
+      <div><b>${esc(c.from)}</b> invites you to build <b>${esc(c.deck)}</b> together.</div>
+      <div class="invbtns">
+        <button class="primary" data-inbox="collab-join" data-id="${esc(c.code)}">Join</button>
+        <button data-inbox="collab-decline" data-id="${esc(c.code)}">No thanks</button>
+      </div>
+    </div>`;
+}
+
 /** The pending invites as rows, for a sheet that lists them inside the page
  * (the home's Join sheet, docs/24): the same sentence and the same
  * `data-inbox="join"` / `"decline"` buttons as the popup, so the click goes
@@ -224,6 +240,7 @@ export function inboxListHtml(v: InboxListView): string {
   const rows = [
     ...v.matches.map(matchCardHtml),
     ...v.invites.map(i => inviteCardHtml(i, false)),
+    ...(v.collab ?? []).map(collabInviteHtml),
     ...v.times.map(timeAskHtml),
     ...v.requests.map(requestHtml),
     ...(v.decks ?? []).map(deckShareHtml),

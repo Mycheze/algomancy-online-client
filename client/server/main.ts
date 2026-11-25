@@ -108,6 +108,7 @@ import { challengeNow } from './challenges.ts';
 import { recordPlayed as leagueRecordPlayed, roomModeOf, tick as leagueTick, type LeagueFormat } from './league-store.ts';
 import { installLeagueMatchHooks, openLeagueMatch } from './league-match.ts';
 import { cubeRoutes, cubeSocketClosed, cubeSocketMessage, pushCube, pushMatched } from './api-cube.ts';
+import { collabRoutes, collabSocketClosed, collabSocketMessage } from './api-collab.ts';
 import { cubeMatchEnded, reconcileCubes, setCubeHooks, sweepCubes } from './cube.ts';
 import { cubeCodeTaken, getCube, loadCubes } from './cube-store.ts';
 import { emit, since as eventsSince, BOOT_ID } from './hooks.ts';
@@ -726,6 +727,8 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // cube draft events (docs/25): the event's ops; its live half is the
   // room-less `{t:'cube'}` socket channel below (api-cube.ts)
   if (await cubeRoutes(req, res, path)) return;
+  // docs/26: a shared deck table's start and invites; its live half is the `{t:'collab'}` channel below
+  if (await collabRoutes(req, res, path)) return;
 
   // weekly challenges (docs/21-weekly-challenges.md): the calendar, the
   // boards, and run submission — every submitted run is replayed in a worker
@@ -2845,6 +2848,13 @@ wss.on('connection', (ws, req) => {
       return;
     }
 
+    /* docs/26 — A SHARED DECK TABLE'S CHANNEL, room-less like the cube's: it
+     * never reaches `conns`. */
+    if (msg.t === 'collab') {
+      collabSocketMessage(ws, msg);
+      return;
+    }
+
     if (msg.t === 'join') {
       const token = typeof msg.token === 'string' ? msg.token : undefined;
       const code = (typeof msg.room === 'string' ? msg.room : '').toUpperCase().trim();
@@ -3526,6 +3536,7 @@ wss.on('connection', (ws, req) => {
      * other side is released rather than left watching a countdown for
      * somebody who has closed the tab. */
     cubeSocketClosed(ws);
+    collabSocketClosed(ws);
     const wasQueued = queueUser.has(ws);
     const droppedOffer = leaveQueue(ws);
     if (droppedOffer) resolveOffer(droppedOffer, false);

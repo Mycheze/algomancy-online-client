@@ -1,0 +1,44 @@
+# The staging copy of the game server on :5100, loopback only, behind
+# staging.algomancy.online (deploy/staging.caddy). It runs the
+# `staging` branch — work nobody has reviewed yet — on a copy of production's
+# data (deploy/README.md § Staging). Installed by staging-setup.sh.
+#
+# Its sandbox is production's (algomancy-game.service) and more: production's
+# whole checkout is unreadable to it (.env and tester.env hold production's
+# secrets, var/ the live accounts), and so are the backups. The build runs in
+# here too (ExecStartPre=), so nothing the branch's npm scripts do can sudo or
+# reach an ssh key. No OnFailure= alert: a red staging is not a page to anyone.
+[Unit]
+StartLimitIntervalSec=300
+StartLimitBurst=5
+Description=Algomancy STAGING game server (:5100, loopback)
+After=network.target
+
+[Service]
+Type=simple
+User=bena
+WorkingDirectory=/home/bena/Documents/Algomancy-staging/client/server
+# the ONLY env file: never production's .env or tester.env
+EnvironmentFile=/home/bena/Documents/Algomancy-staging/staging.env
+Environment=PORT=5100
+Environment=HOST=127.0.0.1
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+ExecStartPre=/usr/local/bin/algomancy-staging-build
+ExecStart=/usr/bin/node main.ts
+TimeoutStartSec=900
+Restart=on-failure
+RestartSec=10
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/bena/Documents/Algomancy-staging
+InaccessiblePaths=-/home/bena/.ssh -/home/bena/Documents/Algomancy -/home/bena/algomancy-backups
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+
+[Install]
+WantedBy=multi-user.target

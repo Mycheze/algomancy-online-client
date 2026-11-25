@@ -95,6 +95,17 @@ const PACE = ['pace.ts'] as const;
  */
 const WIRE = ['crtypes.ts', 'judgetypes.ts'] as const;
 
+/**
+ * The deck builder's move arithmetic (docs/26). A shared deck table's server
+ * replays every move a browser makes and must decide it exactly as the
+ * builder did: which card is under (pile, index), the copy cap, where a card
+ * lands. A second copy of that on the server is the drift the search trio was
+ * let in to avoid. tableplace.ts is applyPlace and the shared Undo; it builds
+ * on the piles (deckarrange.ts), which lay out by decklayout.ts and the deck
+ * analysis already in TRANSITIVE. §1 holds all three to the same no-DOM terms.
+ */
+const TABLE = ['tableplace.ts', 'deckarrange.ts', 'decklayout.ts'] as const;
+
 const readUi = (f: string): string => readFileSync(new URL(f, UI), 'utf8');
 
 /* ══ §1 — no DOM in the three files the server compiles ════════════════ */
@@ -110,7 +121,7 @@ test('BL-41 §1 ⭐ the files the server compiles name no DOM type', () => {
     'HTMLElement', 'HTMLInputElement', 'querySelector', 'addEventListener',
     'createElement', 'innerHTML', 'textContent', 'requestAnimationFrame',
   ];
-  for (const file of [...TRIO, ...TRANSITIVE]) {
+  for (const file of [...TRIO, ...TRANSITIVE, ...TABLE]) {
     const src = readUi(file);
     for (const id of DOM) {
       assert.ok(
@@ -140,7 +151,7 @@ test('BL-41 §2 ⭐ server/ imports only the search trio from ui/', () => {
   const files = readdirSync(SERVER).filter(f => f.endsWith('.ts'));
   assert.ok(files.length > 20, 'non-vacuous: the server really was scanned');
 
-  const allowed = new Set<string>([...TRIO, ...PASS, ...PACE, ...WIRE]);
+  const allowed = new Set<string>([...TRIO, ...PASS, ...PACE, ...WIRE, ...TABLE]);
   let sawTheEdge = false;
 
   for (const f of files) {
@@ -154,7 +165,7 @@ test('BL-41 §2 ⭐ server/ imports only the search trio from ui/', () => {
         `server/${f} imports ui/${target}. The server may reach into ui/ for the `
         + `card query language and the deck format ONLY (${TRIO.join(', ')}), `
         + `plus the standing pass's release list (${PASS.join(', ')}), the recap tempo (${PACE.join(', ')}) `
-        + `and the rules review's wire types (${WIRE.join(', ')}). `
+        + `the rules review's wire types (${WIRE.join(', ')}) and the deck builder's move arithmetic (${TABLE.join(', ')}). `
         + 'Importing anything else makes the game server depend on the browser page.',
       );
     }

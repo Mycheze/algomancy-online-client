@@ -262,3 +262,9 @@ test('§9 a cube draft link (docs/25): its name and seats while open, a plain li
   const unknown = at('?cube=ZZZZ');
   assert.equal(unknown.title, 'Cube draft on Algomancy', 'an unknown code says what a cube draft is, never "no such event"');
 });
+
+test('§10 a shared deck table link (docs/26): a plain line, naming neither the deck nor its host', () => {
+  const p = at('?collab=ABCDEFGHJK');
+  assert.equal(p.title, 'Build a deck together on Algomancy');
+  assert.match(p.description, /same table, live/);
+});

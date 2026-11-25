@@ -262,6 +262,36 @@ master_gate() { # make $MG describe origin/master; 0 = green
   return 0
 }
 
+# ── master the runner did not push: put it live ─────────────────────────────
+# The owner's own pushes (cloud sessions among them) cannot reach the VPS, so a
+# master that is green on its own gate here and ahead of the box goes out through
+# try_deploy: the idle wait, the health check, the rollback. A rolled-back commit
+# is never retried; the next master is. A box that is not behind is left alone.
+deploy_master() {
+  local sha vh pol why n f
+  sha=$(g rev-parse origin/master)
+  mg_green_at "$sha" || return 0
+  for f in "$VH" "$STATE/rolled-back-sha" "$STATE/master-deploy-queued"; do
+    [ "$(cat "$f" 2>/dev/null)" = "$sha" ] && return 0
+  done
+  vh=$(vps "git -C $VREPO rev-parse HEAD" 2>/dev/null) || { log "deploy-master: VPS unreachable, will retry"; return 0; }
+  echo "$vh" > "$VH"
+  [ "$vh" = "$sha" ] && return 0
+  if ! g merge-base --is-ancestor "$vh" "$sha" 2>/dev/null; then
+    echo "$sha" > "$STATE/master-deploy-queued"
+    log "deploy-master: the VPS is on $vh, not behind master $(g rev-parse --short "$sha") — left alone"; return 0
+  fi
+  pol=$(policy "$vh" "$sha") || { log "deploy-master: the policy could not run"; return 0; }
+  echo "$sha" > "$STATE/master-deploy-queued"
+  if [ "$(jq -r .deploy.needed <<<"$pol")" != true ]; then
+    log "deploy-master: master $(g rev-parse --short "$sha") changes nothing the box serves"; return 0
+  fi
+  n=$(g rev-list --count "$vh..$sha")
+  why="master $(g rev-parse --short "$sha") ($n commit$([ "$n" = 1 ] || echo s), last: $(g log -1 --format=%s "$sha" | cut -c1-80))"
+  log "deploy-master: $why"
+  want_deploy "$(jq .deploy.restartGame <<<"$pol")" "$(jq .deploy.restartBot <<<"$pol")" "$why"
+}
+
 # ── the fetched report snapshot belongs to triage alone ─────────────────────
 # fetch-reports writes the server's new rows into client/ledgers/*.snapshot.jsonl.
 # Committed by any other item (the runner's own "uncommitted work" commit swept
@@ -368,6 +398,7 @@ gate() {
 
 # ── deploy ─────────────────────────────────────────────────────────────────
 vps() { ssh -o BatchMode=yes -o ConnectTimeout=15 "$VPS" "$@"; }
+VH="$STATE/vps-head"   # the commit the VPS was last seen on: a cache, so a quiet tick needs no ssh
 
 # merge a deploy request into state/pending-deploy (flags OR together)
 want_deploy() { # restartGame restartBot why
@@ -413,9 +444,11 @@ try_deploy() {
   done
   if [ $ok = 1 ]; then
     log "deployed $(awk '/^PREV/{print $4}' <<<"$out") (was $prev)"; journal deploy deployed sha="$(awk '/^PREV/{print $4}' <<<"$out")" units="$units" why="$why"
+    awk '/^PREV/{print $4}' <<<"$out" > "$VH"
     rm -f "$STATE/pending-deploy"; notify "deployed: $why"
   else
     log "deploy FAILED health check → rolling back to $prev"
+    awk '/^PREV/{print $4}' <<<"$out" > "$STATE/rolled-back-sha"; echo "$prev" > "$VH"
     vps "set -e; cd $VREPO; git reset -q --hard $prev; npm --prefix client/ui run build >/dev/null 2>&1; ${units:+for u in $units; do sudo -n systemctl restart \$u; done}" || true
     journal deploy deploy-rolled-back sha="$prev" why="$why"
     touch "$STATE/paused"; notify "⚠ deploy failed its health check and was ROLLED BACK to $prev; steward paused. Why: $why"
@@ -838,6 +871,7 @@ main() {
   # colour, and re-gate what was red only because of it — so the night starts on
   # a known-green master instead of spending its first hours on gates
   master_gate && regate_master_red
+  deploy_master
   try_deploy
   # the morning summary: the first tick from STEWARD_SUMMARY_HOUR on (discord.mjs posts it once a day)
   in_hours "$((10#$STEWARD_SUMMARY_HOUR))" 24 && [ -f "$BIN/discord.mjs" ] && { discord summary 2>>"$LOGS/runner.log" || true; }

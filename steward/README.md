@@ -13,6 +13,7 @@ review is a few minutes of `steward/review.sh`.
    └─ run-once.sh  ── the RUNNER: deterministic bash, owns every side effect
         1. any hour   deploy that was waiting for a quiet server
                       land approved branches (steward-approved/*): rebase → full gate → master → deploy
+                      gate master; green and ahead of the VPS → deploy (the owner's own pushes)
         2. inside STEWARD_WINDOW (23-08 Prague, or "always"), unless paused / backing off:
                       fetch reports → queue.mjs → ONE `claude -p` (the steward skill)
                       → outcome.json → full gate HERE → policy.mjs → ship | stage
@@ -79,6 +80,18 @@ the governor keeps it silent), into `state/master-gate.json`. Red → a journal 
 master was red is marked `masterRed` and, once master is green, re-gated by the
 runner alone (rebase + gate, no Claude) and shipped or staged as the agent
 meant — only a branch still red after that reaches the agent as a repair.
+
+### Master the owner pushed
+
+The owner's pushes to master (from the laptop or a cloud session, which cannot
+reach the VPS) go live through the runner too. Once master's own gate is green
+here, `deploy_master` asks the VPS which commit it is on; if it is behind, the
+policy's deploy rules over that range choose the restarts, and the deploy goes
+out like any other: after 10 quiet minutes, health-checked, rolled back and the
+steward paused on a failure. A rolled-back commit is not retried
+(`state/rolled-back-sha`); the next master is. A VPS that is not behind master
+(a hand deploy of something else) is left alone. `state/vps-head` caches the
+box's commit, so a quiet tick needs no ssh. Pausing the steward pauses this too.
 
 The fetched report rows (`client/ledgers/*.snapshot.jsonl`) belong to the
 triage item alone; on any other item the runner puts them back to master's

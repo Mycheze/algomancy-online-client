@@ -1,0 +1,35 @@
+# deploy/staging.caddy — the staging site, installed as
+# /etc/caddy/sites/staging.caddy by staging-setup.sh (deploy/README.md § Staging).
+# Open, by the owner's choice: unlisted and noindex, never linked. The main
+# Caddyfile imports /etc/caddy/sites/*.caddy by glob, which matches nothing on
+# a box without staging, so production never depends on this file.
+#
+# Needs a grey-cloud A record `staging` → the box in Cloudflare first (§ Install, step 0).
+staging.algomancy.online {
+	encode zstd gzip
+
+	header {
+		X-Robots-Tag "noindex, nofollow, noarchive, noimageindex"
+		Referrer-Policy "no-referrer"
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+
+	handle /robots.txt {
+		header Content-Type "text/plain; charset=utf-8"
+		respond <<ROBOTS
+			User-agent: *
+			Disallow: /
+			ROBOTS 200
+	}
+
+	# the bot token's routes are the box's own, as on production
+	@botonly path /api/bot/* /api/league/bot/* /api/cr/editor*
+	handle @botonly {
+		respond "not found" 404
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:5100
+	}
+}

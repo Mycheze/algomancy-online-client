@@ -10,7 +10,7 @@
  *   §3 Maybe → To deck under the cap lands (the refusal is the cap, not the move)
  *   §4 Sideboard → deck when the deck already holds two: refused, tap and drag
  *   §5 Sideboard → deck under the cap lands (a copy between the boards adds nothing)
- *   §6 source: one capNote call in place(), for every carry
+ *   §6 source: one capNote call in applyPlace() (ui/tableplace.ts, place()'s arithmetic), for every carry
  *
  * Seeds: none. The deck is real cards, served by the driver's fetch seam. Its
  * sideboard is over the cap on purpose (an imported deck may be) — the only way
@@ -122,10 +122,10 @@ test('§5 Sideboard → deck under the cap lands', () => {
   ui.click({ btn: 'tt-undo' });
 });
 
-test('§6 place() asks the cap for every carry, once', () => {
-  const tt = code('tabletop.ts');
-  const place = tt.slice(tt.indexOf('export function place('), tt.indexOf('export function tabletopChanged('));
-  assert.match(place, /const capped = capNote\(h, carry, to\);\s*if \(capped\) \{ note = capped; paintPending = true; return false; \}/,
+test('§6 applyPlace() asks the cap for every carry, once', () => {
+  const tt = code('tableplace.ts');
+  const place = tt.slice(tt.indexOf('export function applyPlace('), tt.indexOf('const capCount'));
+  assert.match(place, /const capped = capNote\(h, carry, to\);\s*if \(capped\) return no\(capped\);/,
     'one check, before anything is taken or put');
   assert.match(tt, /carry\.from === 'binder' \|\| carry\.from === 'maybe' \? capCount\(h, name\) >= h\.cap/,
     'a copy from Maybe counts like a new one');

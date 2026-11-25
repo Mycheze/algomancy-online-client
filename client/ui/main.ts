@@ -168,6 +168,7 @@ import * as rp from './ride-picker.ts';
 import * as mm from './queue.ts';
 import { installLegal } from './legal.ts';
 import * as tt from './tabletop.ts';
+import * as co from './collab.ts';
 // CR D8.4 — the scenario tester's runner strip (docs/14 §3/§5). It draws nothing
 // unless a SERVER push says this room was dealt with a scenario, so nothing a
 // client can set makes it appear over a real game.
@@ -9463,6 +9464,8 @@ function renderHome(): void {
   // the challenge page that opened it (both stay open under it, so Back is a
   // repaint of that page)
   if (tt.screen()) { tt.renderScreen(); return; }
+  // …and a shared table's own page while its table is not up (joining, signed out, over)
+  if (co.screen()) { co.renderScreen(); return; }
   // …and the Decks page
   if (dk.screen()) { dk.renderScreen(); return; }
   // …and the metagame list / a shared deck, which is where a `?deck=` link lands
@@ -11151,6 +11154,8 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   if (dk.handleButton(btn)) return;
   // and the tabletop deck builder everything prefixed tt-
   if (tt.handleButton(btn)) return;
+  // and a shared table's page everything prefixed collab- (docs/26)
+  if (co.handleButton(btn)) return;
   // and the card browser everything prefixed cards-
   if (cb.handleButton(btn)) return;
   // and the metagame page everything prefixed meta-
@@ -12380,6 +12385,11 @@ tt.initTabletop({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 // a reload on `?table=<deck id>` comes back to the table (docs/19)
 tt.registerTableResolver('deck', dk.tabletopHostFor);
 tt.registerTableResolver('challenge', chal.tabletopHostFor);
+// docs/26 — a shared deck table, at ?collab=<code>: the builder on a session the server holds
+co.initCollab({
+  app: $app, rerender: () => { if (!inGame) renderHome(); },
+  hostBase: dk.sharedTableBase, adopt: dk.adoptShared, adoptReply: dk.adoptReply,
+});
 cb.initCards({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 meta.initMeta({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 lg.initLeague({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
