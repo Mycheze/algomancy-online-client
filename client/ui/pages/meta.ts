@@ -292,7 +292,7 @@ function deckGrid(d: PublicDeck, deckGroup: DeckGrouping, statsOpen: boolean): s
   const a = analyzeDeck(d.cards);
   const sections = deckSections(a, deckGroup);
   return `<div class="dktoolbar">
-      <span class="zonelabel">group by</span>
+      <span class="zonelabel">Group by</span>
       ${GROUPINGS.map(g => `<button class="dkkind${deckGroup === g.id ? ' on' : ''}" aria-pressed="${deckGroup === g.id}"
         data-btn="meta-group" data-group="${g.id}" title="${esc(g.hint)}">${esc(g.label)}</button>`).join('')}
       <span class="dkfilterspacer"></span>
@@ -312,7 +312,7 @@ function exportHtml(v: MetaView): string {
   const file = v.exporting === 'file';
   return `<div class="dkexport">
     <div class="dktoolbar">
-      <span class="zonelabel">export</span>
+      <span class="zonelabel">Export</span>
       <button class="dkkind${file ? '' : ' on'}" aria-pressed="${!file}" data-btn="meta-export" data-format="text">Card list</button>
       <button class="dkkind${file ? ' on' : ''}" aria-pressed="${!!file}" data-btn="meta-export" data-format="file">Deck file (JSON)</button>
       <span class="dkfilterspacer"></span>

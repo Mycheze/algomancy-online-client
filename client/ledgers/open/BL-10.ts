@@ -571,5 +571,8 @@ export default {
     + 'Left: card stats\' `zonelabel` captions; the admin\'s ✕ clear title; the deck stats\' battle-cards hover spells {Battle} literally.'
     + '\n\n2026-11-26 (steward): the deck stats\' battle-cards hover says "cards with the Battle icon", not {Battle} (a title is plain text; the only token hover in ui/). '
     + 'Guarded by ui/test/1536-hovers-carry-no-card-text-tokens.test.ts (every story drawn, and every title literal in ui/). '
-    + 'Left: card stats\' `zonelabel` captions; the admin\'s ✕ clear title.',
+    + 'Left: card stats\' `zonelabel` captions; the admin\'s ✕ clear title.'
+    + '\n\n2026-11-26 (steward): every caption outside the game is written with a capital — card stats\' Format / Played / Min games, the metagame deck\'s Group by / Export (CSS uppercases them; nothing looks different). '
+    + 'Guarded by ui/test/1537-captions-start-with-a-capital.test.ts (page stories drawn, and the pages\' and components\' source). The admin\'s ✕ "clear — set by" title stays: hovers in pages/ are lower-case phrases throughout (the card search\'s ✕ is "clear"). '
+    + 'Left: nothing from the inventory\'s lists that earlier entries named.',
 } satisfies BacklogTicket;

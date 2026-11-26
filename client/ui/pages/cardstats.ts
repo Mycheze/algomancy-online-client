@@ -196,9 +196,9 @@ function headerHtml(v: CardStatsView): string {
     <div class="framebar csfilters">
       ${seg('Section', 'meta-cs-section', v.section, [['cards', 'Cards'], ['elements', 'Elements'], ['highlights', 'Highlights'], ['game', 'Games']])}
       <span class="framespacer"></span>
-      <span class="zonelabel">format</span>
+      <span class="zonelabel">Format</span>
       ${seg('Format', 'meta-cs-mode', v.mode, [['all', 'Both'], ['draft', 'Draft'], ['constructed', 'Constructed']] as [Mode, string][])}
-      <span class="zonelabel">played</span>
+      <span class="zonelabel">Played</span>
       ${seg('Played', 'meta-cs-range', v.range, [['all', 'Ever'], ['30', 'Last 30 days'], ['7', 'Last 7 days']] as [Range, string][])}
     </div>
     <div class="framebar csline">
@@ -248,7 +248,7 @@ function tableHtml(v: CardStatsView): string {
 
 /** the "at least N games" stepper, on the card table and over the highlights */
 function minGamesHtml(v: CardStatsView): string {
-  return `<span class="csstep"><span class="zonelabel">min games</span>
+  return `<span class="csstep"><span class="zonelabel">Min games</span>
     <button data-btn="meta-cs-min" data-v="-1" aria-label="Min games: one less">−</button><b class="csmin">${v.minGames}</b><button data-btn="meta-cs-min" data-v="1" aria-label="Min games: one more">+</button></span>`;
 }
 
