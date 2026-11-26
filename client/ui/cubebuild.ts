@@ -97,7 +97,7 @@ export function cubeDeckProblems(main: readonly string[], side: readonly string[
 function toolsHtml(b: Build): string {
   const submitted = !!b.view.myDeck && sameCards(b.main, b.view.myDeck.main) && sameCards(b.side, b.view.myDeck.side);
   return button({ label: 'Suggest', size: 'sm', dataBtn: 'tt-cube-suggest', disabled: b.busy, className: 'cbtool',
-    title: 'a deck from what you drafted' })
+    title: b.view.config.format === 'sealed' ? 'a deck from your sealed pool' : 'a deck from what you drafted' })
     + button({
       label: submitted ? 'Submitted' : 'Submit deck', variant: 'primary', size: 'sm', dataBtn: 'tt-cube-submit', className: 'cbtool',
       disabled: b.busy || submitted,

@@ -16,6 +16,18 @@ export type CubeSource =
 
 export type Tournament = 'swiss' | 'roundrobin' | 'exhibition';
 export type CubeRules = 'casual' | 'competitive';
+/** a pod draft, or sealed: every player is dealt a pool and goes straight to building */
+export type CubeFormat = 'draft' | 'sealed';
+
+/** sealed's numbers (docs/25 §14) */
+export interface SealedConfig {
+  /** cards in each player's pool */
+  cards: number;
+  /** copies of each card in the cube the pools are dealt from: 1 singleton, 2 repeats */
+  copies: 1 | 2;
+  /** every player is dealt the same pool (else each a different one, without replacement) */
+  same: boolean;
+}
 
 export interface CubeConfig {
   name: string;
@@ -33,6 +45,10 @@ export interface CubeConfig {
   swissRounds: number;
   rules: CubeRules;
   bestOf: 1 | 3;
+  /** absent = draft (an event made before sealed) */
+  format?: CubeFormat;
+  /** sealed's numbers; kept while the format is draft so switching back keeps them */
+  sealed?: SealedConfig;
 }
 
 export type CubePhase = 'lobby' | 'drafting' | 'building' | 'playing' | 'done' | 'cancelled';
@@ -43,7 +59,7 @@ export interface CubePlayer {
   name: string;            // display name at join
   joinedAt: number;
   dropped?: boolean;
-  /** the drafted cards (names, with multiplicity), set when the draft ends */
+  /** the drafted cards (names, with multiplicity), set when the draft ends; sealed: the dealt pool */
   pool?: string[];
   /** the last submitted deck */
   deck?: { main: string[]; side: string[]; at: number };
@@ -178,6 +194,8 @@ export interface CubeNote {
   read: boolean;
   round?: number;
   opponent?: string | null;
+  /** a sealed event (its 'starting' line says the pools are dealt, not that a draft starts) */
+  sealed?: boolean;
 }
 
 /** GET /api/cube/mine — one row per event I host or play in (not cancelled, not long done) */
@@ -234,6 +252,9 @@ export interface CubeMatchView {
   winner: string | null;
 }
 
+/** can the cube deal `seats` pools of `cards`? `need` cards of the `have` the cube holds */
+export interface SealedMath { seats: number; cards: number; need: number; have: number; ok: boolean }
+
 export interface CubeView {
   now: number;
   code: string;
@@ -247,6 +268,8 @@ export interface CubeView {
   /** pool size and the pack math for the current count and for a full table */
   poolSize: number;
   packMath: { seats: number; packs: number; packSize: number; ok: boolean }[];
+  /** sealed: the dealing math for the current count and for a full table; null = a draft */
+  sealedMath?: SealedMath[] | null;
   draft: CubeDraftView | null;
   /** building+: my drafted cards and my submitted deck */
   myPool: string[] | null;

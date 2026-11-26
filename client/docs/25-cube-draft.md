@@ -236,3 +236,23 @@ Reserved test numbers **1300–1349**: 1300–1309 draft+bot, 1310–1319 tourne
 - The divider behaves like the builder's: the user's size always wins.
 - The arrangement made during the draft is kept on the server and is what the builder opens on.
 - When the draft ends, each player is put straight into deck building, not the event page.
+
+## 14. Sealed (owner's request 2026-11-26)
+A cube event's **format** is Draft or **Sealed**. Sealed skips the draft: at the start every player is dealt a
+pool from the cube and goes straight to the builder (§6), the same builder with the same filters and search,
+restricted to that pool. Submitting, the break and the tournament are exactly a draft's.
+
+- `CubeConfig.format?: 'draft' | 'sealed'` (absent = draft) and `sealed?: {cards, copies, same}`
+  (`server/cube-sealed.ts`, pure: `sealedCube`, `sealedMath`, `dealSealed`).
+- **cards**: each pool's size, 30–150 (a pool holds at least a deck), default **75**, the form steps by 5.
+- **copies** (Repeats): the cube the pools come from is each distinct card of the event's pool, 1× (singleton)
+  or 2× (two of each). It applies to a pasted list too: its own counts are replaced by the setting. Never more
+  than 2, the constructed copy cap.
+- **same**: everyone is dealt the exact same pool (needs `cards` in the cube), else each a different one,
+  dealt **without replacement** (needs `players × cards`). The seed decides the deal.
+- **No bots**: bots only draft. The seat count is the people in the lobby. The form refuses a config that cannot
+  deal a full table (`maxPlayers`), and says how many players the cube can serve; Start refuses one the cube
+  cannot deal for the people present ("this cube is too small for 5 pools of 75").
+- The view carries `sealedMath: [now, full table]` (null for a draft). The host's button is "Open the pools".
+- The bell's `starting` line reads "Your sealed pool is ready" (`CubeNote.sealed`).
+- Tests: 1332 (server), 1333 (page).

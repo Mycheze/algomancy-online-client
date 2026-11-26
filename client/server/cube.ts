@@ -40,6 +40,7 @@ import { draftDeckList } from '../engine/src/cards/registry.ts';
 import { importDeckText } from './decks.ts';
 import { MIN_PICKS, advance, draftView, packMath, pick, reserve, seatOf, startDraft } from './cube-draft.ts';
 import { autoBuild, botPick, type WinRates } from './cube-bot.ts';
+import { SEALED_DEFAULT, SEALED_MAX, SEALED_MIN, dealSealed, sealedCube, sealedMath } from './cube-sealed.ts';
 import { pairExhibition, pairSwiss, roundDone, roundRobin, scoreLine, standings, swapPlayers } from './cube-tourney.ts';
 import { addNote, allCubes, getCube, saveCube } from './cube-store.ts';
 import { matchRules, registerSeat, reserveMatchId, startMatch, voidMatch } from './match.ts';
@@ -47,7 +48,7 @@ import { getMatch, matchOpen, matchScore, saveMatch, type Match } from './match-
 import { MATCH_CLOCK_MS, closeMatchRoom, createRoom, getRoom } from './rooms.ts';
 import type {
   CubeConfig, CubeEvent, CubeMatchView, CubeMine, CubePlayer, CubeSource, CubeView, Pairing,
-  PairingOutcome, Tournament,
+  PairingOutcome, SealedConfig, Tournament,
 } from './cube-types.ts';
 
 /* ── HOOKS ─────────────────────────────────────────────────────────────── */
@@ -133,6 +134,10 @@ export const CUBE_LIMITS = {
   copies: 2,
 } as const;
 const TOURNAMENTS: Tournament[] = ['swiss', 'roundrobin', 'exhibition'];
+
+/** a sealed event: pools are dealt at the start, and there is no draft */
+export const isSealed = (c: CubeConfig): boolean => c.format === 'sealed';
+const sealedOf = (c: CubeConfig): SealedConfig => c.sealed ?? { cards: SEALED_DEFAULT, copies: 1, same: false };
 
 type Raw = Record<string, unknown>;
 const isObj = (v: unknown): v is Raw => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -235,8 +240,19 @@ export function parseConfig(raw: unknown, hostName: string, now: number, prev?: 
   const rules = pickRaw('rules') === 'competitive' ? 'competitive' : 'casual';
   const bo = Number(pickRaw('bestOf') ?? 1);
   if (bo !== 1 && bo !== 3) return { error: 'best of 1 or 3' };
+  const fv = pickRaw('format');
+  const format = fv === undefined || fv === 'draft' ? 'draft' : fv === 'sealed' ? 'sealed' : null;
+  if (!format) return { error: 'unknown format' };
+  const sRaw: Raw = isObj(o['sealed']) ? o['sealed'] : {};
+  const sBase = base.sealed;
+  const sPick = (k: keyof SealedConfig): unknown => (k in sRaw ? sRaw[k] : sBase?.[k]);
+  const cards = intIn(sPick('cards'), SEALED_MIN, SEALED_MAX, SEALED_DEFAULT, 'Cards each');
+  if (typeof cards === 'string') return { error: cards };
+  const cp = Number(sPick('copies') ?? 1);
+  if (cp !== 1 && cp !== 2) return { error: 'copies of a card: 1 or 2' };
+  const sealed: SealedConfig = { cards, copies: cp, same: sPick('same') === true };
   return {
-    config: { name, source, packs, packSize, minPlayers, maxPlayers, fillBots, startAt, tournament, swissRounds, rules, bestOf: bo },
+    config: { name, source, packs, packSize, minPlayers, maxPlayers, fillBots, startAt, tournament, swissRounds, rules, bestOf: bo, format, sealed },
     pool,
   };
 }
@@ -304,7 +320,7 @@ export function leaveCube(e: CubeEvent, me: Actor, now: number): Op {
 
 export function configCube(e: CubeEvent, by: Actor, raw: unknown, now: number): Op {
   if (e.host !== by.id) return HOST_ONLY();
-  if (e.phase !== 'lobby') return no('settings can only change before the draft');
+  if (e.phase !== 'lobby') return no(isSealed(e.config) ? 'settings can only change before the start' : 'settings can only change before the draft');
   const c = parseConfig(raw, nameOf(e, e.host) || by.username, now, { config: e.config, pool: e.pool });
   if ('error' in c) return no(c.error);
   if (e.players.length > c.config.maxPlayers) return no(`${e.players.length} players have already joined`);
@@ -329,12 +345,41 @@ export function kickPlayer(e: CubeEvent, by: Actor, user: string, now: number): 
   return dropPlayer(e, user, true, now, 'removed');
 }
 
-/** the seats a draft would have now, and for a full table */
+/** the seats a draft would have now, and for a full table (sealed: people only, never bots) */
 function seatCounts(e: CubeEvent): [number, number] {
   if (e.draft) return [e.draft.seats.length, e.draft.seats.length];
   const humans = e.players.length;
   const full = Math.max(e.config.maxPlayers, humans);
-  return [e.config.fillBots ? full : humans, full];
+  return [e.config.fillBots && !isSealed(e.config) ? full : humans, full];
+}
+
+/** the sealed dealing math for `seats` players */
+function sealedMathOf(e: CubeEvent, seats: number): ReturnType<typeof sealedMath> {
+  const s = sealedOf(e.config);
+  return sealedMath(sealedCube(e.pool, s.copies).length, seats, s.cards, s.same);
+}
+
+/** the lobby's Start: the draft, or the sealed pools */
+const beginEvent = (e: CubeEvent, now: number): Op => (isSealed(e.config) ? beginSealed(e, now) : beginDraft(e, now));
+
+/** sealed: deal every player a pool and go straight to building (docs/25 §14) */
+function beginSealed(e: CubeEvent, now: number): Op {
+  const humans = e.players.filter(p => !p.dropped);
+  if (humans.length < e.config.minPlayers) return no(`at least ${e.config.minPlayers} players are needed`);
+  if (humans.length < 2) return no('at least 2 players are needed');
+  const s = sealedOf(e.config);
+  const cube = sealedCube(e.pool, s.copies);
+  if (!sealedMath(cube.length, humans.length, s.cards, s.same).ok) {
+    return no(s.same ? `this cube has fewer than ${s.cards} cards` : `this cube is too small for ${humans.length} pools of ${s.cards}`);
+  }
+  const pools = dealSealed(cube, humans.length, s.cards, s.same, e.seed ?? 0);
+  humans.forEach((p, i) => { p.pool = pools[i]!; });
+  e.phase = 'building';
+  e.startedAt = now;
+  for (const p of humans) addNote(e, p.user, 'starting', now);
+  console.log(`[cube] ${e.code}: sealed — ${humans.length} pools of ${s.cards}${s.same ? ' (the same)' : ''}, ${cube.length} in the cube`);
+  touch(e);
+  return OK;
 }
 
 function beginDraft(e: CubeEvent, now: number): Op {
@@ -363,7 +408,7 @@ function beginDraft(e: CubeEvent, now: number): Op {
 /** Start: the draft from the lobby, or (building) the tournament, dropping whoever has no deck */
 export function startCube(e: CubeEvent, by: Actor, now: number): Op<{ dropped?: string[] }> {
   if (e.host !== by.id) return HOST_ONLY();
-  if (e.phase === 'lobby') return beginDraft(e, now);
+  if (e.phase === 'lobby') return beginEvent(e, now);
   if (e.phase === 'building') {
     const ready = active(e).filter(p => p.deck);
     if (ready.length < 2) return no('at least 2 players need a submitted deck');
@@ -436,7 +481,7 @@ export function submitDeck(e: CubeEvent, user: string, main: unknown, side: unkn
   if (!p) return no('you are not in this event');
   if (p.dropped) return no('you have left this event');
   if (e.phase !== 'building' && e.phase !== 'playing') return no('decks are built after the draft');
-  if (!p.pool) return no('you have no drafted cards');
+  if (!p.pool) return no(isSealed(e.config) ? 'you have no pool yet' : 'you have no drafted cards');
   if (inLiveMatch(e, user)) return no('finish your match first');
   const c = checkMatchDeck(main, side ?? []);
   if (!c.ok) return no(c.error);
@@ -444,7 +489,10 @@ export function submitDeck(e: CubeEvent, user: string, main: unknown, side: unkn
   for (const x of p.pool) have.set(x, (have.get(x) ?? 0) + 1);
   for (const x of [...c.main, ...c.side]) {
     const k = have.get(x) ?? 0;
-    if (k <= 0) return no(p.pool.includes(x) ? `you drafted fewer copies of ${x}` : `you did not draft ${x}`);
+    if (k <= 0) {
+      if (isSealed(e.config)) return no(p.pool.includes(x) ? `your pool has fewer copies of ${x}` : `${x} is not in your pool`);
+      return no(p.pool.includes(x) ? `you drafted fewer copies of ${x}` : `you did not draft ${x}`);
+    }
     have.set(x, k - 1);
   }
   const first = !p.deck;
@@ -460,7 +508,7 @@ export function submitDeck(e: CubeEvent, user: string, main: unknown, side: unkn
 /** "Suggest a deck": the bot's 30 + 7 from my drafted cards */
 export function suggestDeck(e: CubeEvent, user: string): Op<{ main: string[]; side: string[] }> {
   const p = playerOf(e, user);
-  if (!p?.pool) return no('you have no drafted cards');
+  if (!p?.pool) return no(isSealed(e.config) ? 'you have no pool yet' : 'you have no drafted cards');
   return { ok: true, ...autoBuild(p.pool, winRatesOf(e)) };
 }
 
@@ -502,7 +550,7 @@ export function arrangeCards(e: CubeEvent, user: string, raw: unknown): Op {
   for (const x of held) have.set(x, (have.get(x) ?? 0) + 1);
   for (const x of [...(piles as string[][]).flat(), ...side, ...maybe]) {
     const k = have.get(x) ?? 0;
-    if (k <= 0) return no(held.includes(x) ? `you have fewer copies of ${x}` : `you did not draft ${x}`);
+    if (k <= 0) return no(held.includes(x) ? `you have fewer copies of ${x}` : isSealed(e.config) ? `${x} is not in your pool` : `you did not draft ${x}`);
     have.set(x, k - 1);
   }
   p.arrange = { piles: (piles as string[][]).map(x => [...x]), ...(titles ? { names: [...titles] } : {}), side: [...side], maybe: [...maybe], from };
@@ -849,7 +897,7 @@ function sweepOne(e: CubeEvent, now: number): void {
   if (e.phase === 'lobby') {
     if (e.config.startAt !== null && now >= e.config.startAt && e.players.length >= e.config.minPlayers
       && startRefused.get(e.code) !== JSON.stringify(e.config) + e.players.length) {
-      const r = beginDraft(e, now);
+      const r = beginEvent(e, now);
       if (!r.ok) {
         startRefused.set(e.code, JSON.stringify(e.config) + e.players.length);
         console.log(`[cube] ${e.code}: scheduled start refused — ${r.error}`);
@@ -923,6 +971,7 @@ export function viewFor(e: CubeEvent, userId: string | null, now: number): CubeV
     })),
     poolSize: e.pool.length,
     packMath: [packMath(e.pool.length, cur, e.config.packs, e.config.packSize), packMath(e.pool.length, full, e.config.packs, e.config.packSize)],
+    sealedMath: isSealed(e.config) ? [sealedMathOf(e, cur), sealedMathOf(e, full)] : null,
     draft,
     myPool: me?.pool ? [...me.pool] : null,
     myDeck: me?.deck ? { main: [...me.deck.main], side: [...me.deck.side] } : null,

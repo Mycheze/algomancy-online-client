@@ -12,7 +12,7 @@ import type { CubeNote, CubeNoteKind } from '../server/cube-types.ts';
 const ev = (n: CubeNote): string => `<b>${esc(n.eventName || 'the cube event')}</b>`;
 
 const CUBE_LINES: Record<CubeNoteKind, (n: CubeNote) => string> = {
-  starting: n => `The draft is starting — ${ev(n)}.`,
+  starting: n => (n.sealed ? `Your sealed pool is ready — ${ev(n)}.` : `The draft is starting — ${ev(n)}.`),
   // Swiss: the round and who you play (null = a bye); round robin: the whole schedule at once
   round: n => n.round === undefined
     ? `The schedule is posted — ${ev(n)}.`

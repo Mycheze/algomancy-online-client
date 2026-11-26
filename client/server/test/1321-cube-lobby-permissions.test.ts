@@ -48,6 +48,7 @@ test('§2 the config is checked', () => {
   assert.deepEqual({ ...d.config, source: undefined }, {
     name: "Ann's cube", source: undefined, packs: null, packSize: null, minPlayers: 2, maxPlayers: 8, fillBots: true,
     startAt: null, tournament: 'swiss', swissRounds: 3, rules: 'casual', bestOf: 1,
+    format: 'draft', sealed: { cards: 75, copies: 1, same: false },
   });
   assert.deepEqual(d.config.source, { kind: 'elements', elements: ['fire', 'water', 'earth', 'wood', 'metal'] });
   const bad = (raw: unknown, re: RegExp): void => {
@@ -61,6 +62,9 @@ test('§2 the config is checked', () => {
   bad({ bestOf: 2 }, /best of/);
   bad({ tournament: 'sealed' }, /tournament/);
   bad({ startAt: clock.T - 1 }, /future/);
+  bad({ format: 'cube' }, /format/);
+  bad({ format: 'sealed', sealed: { cards: 29 } }, /Cards each/);
+  bad({ format: 'sealed', sealed: { copies: 3 } }, /copies/);
   bad({ source: { kind: 'elements', elements: ['plasma'] } }, /element/);
   bad({ source: { kind: 'list', text: 'Not A Card\nAlso Not One' } }, /not cards in the game: Not A Card, Also Not One/);
   // a pasted list: copies capped at 2

@@ -3,7 +3,7 @@
  * draft itself is the pick screen's story (pages/cubedraft.ts). The views are the page tests'
  * (ui/test/cube-fixture.ts), so a story and its test show the same event. */
 import { CHROME, overlay, page } from './_page.ts';
-import { cubeHtml, cubeJoinRowsHtml, defaultForm, formPool, packMath, type CubeForm } from '../../../ui/pages/cube.ts';
+import { cubeHtml, cubeJoinRowsHtml, defaultForm, formMathOf, type CubeForm } from '../../../ui/pages/cube.ts';
 import { eventView, match, NOW, pageView, PLAYERS } from '../../../ui/test/cube-fixture.ts';
 import type { CubeMine } from '../../../server/cube-types.ts';
 
@@ -17,10 +17,9 @@ const MINE: CubeMine[] = [
 const show = (v: Parameters<typeof pageView>[0]): string => overlay(page(cubeHtml(pageView({ chrome: CHROME, ...v }))), 760);
 
 function withForm(f: CubeForm, kind: 'new' | 'edit' = 'new'): string {
-  const pool = formPool(f);
   return show({
     code: null, list: MINE, sheet: { kind }, form: f,
-    formMath: { pool, full: packMath(pool, f.maxPlayers, f.packs, f.packSize), least: packMath(pool, f.minPlayers, f.packs, f.packSize) },
+    formMath: formMathOf(f),
     days: ['Today', 'Tomorrow', 'Mon 16', 'Tue 17', 'Wed 18', 'Thu 19', 'Fri 20'].map((label, i) => ({ label, offset: i, on: i === 1 })),
     startText: 'Sun 15 Nov, 19:00',
   });
@@ -43,6 +42,8 @@ export const NewEventScheduled = {
   render: () => withForm({ ...defaultForm('Ann', NOW), start: 'time', tournament: 'roundrobin', fillBots: false, packSize: 12 }),
 };
 export const NewEventPasted = { name: 'New event, a pasted list', render: () => withForm({ ...defaultForm('Ann', NOW), source: 'list', listText: '2 Fire Spirit\n2 Golem\nWater Wisp' }) };
+export const NewEventSealed = { name: 'New event, sealed', render: () => withForm({ ...defaultForm('Ann', NOW), format: 'sealed', maxPlayers: 4 }) };
+export const NewEventSealedTooSmall = { name: 'New event, sealed, too few cards for a full table', render: () => withForm({ ...defaultForm('Ann', NOW), format: 'sealed' }) };
 export const NewEventTooSmall = { name: 'New event, too few cards', render: () => withForm({ ...defaultForm('Ann', NOW), elements: ['fire'], maxPlayers: 12 }) };
 
 export const LobbyHost = { name: 'Lobby, the host', render: () => show({ event: eventView('lobby') }) };
@@ -50,6 +51,13 @@ export const LobbyPlayer = { name: 'Lobby, a player', render: () => show({ event
 export const LobbyVisitor = {
   name: 'Lobby, not in yet, a set start',
   render: () => show({ event: eventView('lobby', { me: 'u9', joined: false, config: { ...eventView('lobby').config, startAt: NOW + 2 * 3_600_000, fillBots: false } }) }),
+};
+export const LobbySealed = {
+  name: 'Lobby, sealed',
+  render: () => show({ event: eventView('lobby', {
+    config: { ...eventView('lobby').config, format: 'sealed', sealed: { cards: 75, copies: 2, same: false } },
+    sealedMath: [{ seats: 3, cards: 75, need: 225, have: 640, ok: true }, { seats: 8, cards: 75, need: 600, have: 640, ok: true }],
+  }) }),
 };
 export const Drafting = { name: 'Drafting, stepped out of the pick screen', render: () => show({ event: eventView('drafting') }) };
 export const Building = { name: 'Building decks, the host', render: () => show({ event: eventView('building') }) };

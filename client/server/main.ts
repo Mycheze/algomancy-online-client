@@ -388,6 +388,7 @@ function previewCtx(req: import('node:http').IncomingMessage): PreviewCtx {
         name: e.config.name, host: e.players.find(p => p.user === e.host)?.name ?? accountById(e.host)?.username ?? "a player",
         tournament: e.config.tournament, players: e.players.length, maxPlayers: e.config.maxPlayers,
         open: e.phase === 'lobby' && e.players.length < e.config.maxPlayers, done: e.phase === 'done',
+        ...(e.config.format === 'sealed' ? { sealed: true } : {}),
       };
     },
     challenge: () => {

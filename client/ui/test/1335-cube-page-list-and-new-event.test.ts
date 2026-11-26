@@ -8,7 +8,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  cubeHtml, defaultForm, formConfig, formFromConfig, formPool, packMath, parseList, type CubeForm,
+  cubeHtml, defaultForm, formConfig, formFromConfig, formMathOf, formPool, packMath, parseList, type CubeForm,
 } from '../pages/cube.ts';
 import { btns, NOW, pageView, tagOf } from './cube-fixture.ts';
 import type { CubeMine } from '../../server/cube-types.ts';
@@ -20,9 +20,8 @@ const MINE: CubeMine[] = [
 ];
 
 function withForm(f: CubeForm, over = {}): ReturnType<typeof pageView> {
-  const pool = formPool(f);
   return pageView({ code: null, list: [], sheet: { kind: 'new' }, form: f,
-    formMath: { pool, full: packMath(pool, f.maxPlayers, f.packs, f.packSize), least: packMath(pool, f.minPlayers, f.packs, f.packSize) },
+    formMath: formMathOf(f),
     days: [{ label: 'Today', offset: 0, on: true }, { label: 'Tomorrow', offset: 1, on: false }], startText: 'Sat 14 Nov, 19:00', ...over });
 }
 

@@ -20,7 +20,7 @@
  * under the pointer.
  */
 import type {
-  CubeConfig, CubeMatchView, CubeMine, CubePhase, CubeRules, CubeView, StandingRow, Tournament,
+  CubeConfig, CubeFormat, CubeMatchView, CubeMine, CubePhase, CubeRules, CubeView, SealedMath, StandingRow, Tournament,
 } from '../../server/cube-types.ts';
 import type { Element } from '../../engine/src/types.ts';
 import { ALL_ELEMENTS } from '../../engine/src/apply.ts';
@@ -44,6 +44,21 @@ export const BASE_ELEMENTS: readonly Element[] = ['fire', 'water', 'earth', 'woo
 export const PACK_MIN = 5;
 /** a pasted list keeps at most this many of a card (§3, the constructed copy cap) */
 export const LIST_COPY_CAP = 2;
+
+/** sealed (§14): cards in each pool — at least a deck, 75 unless the host says otherwise */
+export const SEALED_MIN = 30;
+export const SEALED_MAX = 150;
+export const SEALED_DEFAULT = 75;
+export const SEALED_STEP = 5;
+
+/** the sealed cube's size: each distinct card of the pool, `copies` times (server/cube-sealed.ts) */
+export const sealedCubeSize = (pool: readonly string[], copies: 1 | 2): number => new Set(pool).size * copies;
+
+/** §14: unique pools are dealt without replacement (seats × cards); one shared pool needs cards */
+export function sealedMath(cube: number, seats: number, cards: number, same: boolean): SealedMath {
+  const need = same ? cards : seats * cards;
+  return { seats, cards, need, have: cube, ok: seats >= 1 && cards >= SEALED_MIN && need <= cube };
+}
 
 /** §3's auto numbers: 3 packs, as many cards each as the pool allows (15 at most) */
 export function packMath(pool: number, seats: number, packs: number | null, packSize: number | null):
@@ -73,6 +88,11 @@ export function parseList(text: string): string[] {
 
 export interface CubeForm {
   name: string;
+  format: CubeFormat;
+  /** sealed: cards in each pool, copies of each card in the cube, everyone the same pool */
+  sealedCards: number;
+  sealedCopies: 1 | 2;
+  sealedSame: boolean;
   source: 'elements' | 'list';
   elements: Element[];
   listText: string;
@@ -95,7 +115,8 @@ export const laterHour = (now: number): number => Math.ceil(now / 3_600_000) * 3
 
 export function defaultForm(hostName: string, now: number): CubeForm {
   return {
-    name: hostName ? `${hostName}'s cube` : 'Cube draft', source: 'elements', elements: [...BASE_ELEMENTS], listText: '',
+    name: hostName ? `${hostName}'s cube` : 'Cube draft', format: 'draft', sealedCards: SEALED_DEFAULT, sealedCopies: 1, sealedSame: false,
+    source: 'elements', elements: [...BASE_ELEMENTS], listText: '',
     packs: null, packSize: null, minPlayers: 2, maxPlayers: 8, fillBots: true, start: 'host', startAt: laterHour(now),
     tournament: 'swiss', swissRounds: 3, rules: 'casual', bestOf: 1,
   };
@@ -103,7 +124,9 @@ export function defaultForm(hostName: string, now: number): CubeForm {
 
 export function formFromConfig(c: CubeConfig, now: number): CubeForm {
   return {
-    name: c.name, source: c.source.kind, elements: c.source.kind === 'elements' ? [...c.source.elements] : [...BASE_ELEMENTS],
+    name: c.name, format: c.format ?? 'draft', sealedCards: c.sealed?.cards ?? SEALED_DEFAULT, sealedCopies: c.sealed?.copies ?? 1,
+    sealedSame: c.sealed?.same ?? false,
+    source: c.source.kind, elements: c.source.kind === 'elements' ? [...c.source.elements] : [...BASE_ELEMENTS],
     listText: c.source.kind === 'list' ? listText(c.source.names) : '',
     packs: c.packs, packSize: c.packSize, minPlayers: c.minPlayers, maxPlayers: c.maxPlayers, fillBots: c.fillBots,
     start: c.startAt === null ? 'host' : 'time', startAt: c.startAt ?? laterHour(now),
@@ -126,12 +149,18 @@ export function formConfig(f: CubeForm): CubeConfig {
     packs: f.packs, packSize: f.packSize, minPlayers: f.minPlayers, maxPlayers: f.maxPlayers, fillBots: f.fillBots,
     startAt: f.start === 'time' ? f.startAt : null,
     tournament: f.tournament, swissRounds: f.swissRounds, rules: f.rules, bestOf: f.bestOf,
+    format: f.format, sealed: { cards: f.sealedCards, copies: f.sealedCopies, same: f.sealedSame },
   };
 }
 
-/** the form's pool size: the elements' deck-legal cards, or the pasted names */
-export const formPool = (f: CubeForm): number =>
-  f.source === 'elements' ? draftDeckList(f.elements).length : parseList(f.listText).length;
+/** the form's cards: the elements' deck-legal cards, or the pasted names */
+const formCards = (f: CubeForm): string[] => (f.source === 'elements' ? draftDeckList(f.elements) : parseList(f.listText));
+
+/** the form's pool size */
+export const formPool = (f: CubeForm): number => formCards(f).length;
+
+/** sealed: the cube the pools are dealt from, as many cards as it holds */
+export const formSealedCube = (f: CubeForm): number => sealedCubeSize(formCards(f), f.sealedCopies);
 
 // ── the view ──────────────────────────────────────────────────────────
 
@@ -180,7 +209,9 @@ export interface CubePageView extends Omit<CubeRaw, 'skew'> {
   /** the event's link to share */
   shareUrl: string;
   /** the form's numbers: its pool, and the packs at a full table and with the fewest players */
-  formMath: { pool: number; full: ReturnType<typeof packMath>; least: ReturnType<typeof packMath> } | null;
+  formMath: { pool: number; full: ReturnType<typeof packMath>; least: ReturnType<typeof packMath>;
+    /** sealed: the dealing at a full table and with the fewest players */
+    sealedFull: SealedMath; sealedLeast: SealedMath } | null;
   /** the scheduled start's day buttons and its words */
   days: CubeDayChoice[];
   startText: string;
@@ -190,6 +221,15 @@ const browserTz = (): string => {
   try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch { return 'UTC'; }
 };
 
+/** the form's numbers: the packs and the sealed pools, at a full table and with the fewest players */
+export function formMathOf(f: CubeForm): NonNullable<CubePageView['formMath']> {
+  const pool = formPool(f), cube = formSealedCube(f);
+  return {
+    pool, full: packMath(pool, f.maxPlayers, f.packs, f.packSize), least: packMath(pool, f.minPlayers, f.packs, f.packSize),
+    sealedFull: sealedMath(cube, f.maxPlayers, f.sealedCards, f.sealedSame), sealedLeast: sealedMath(cube, f.minPlayers, f.sealedCards, f.sealedSame),
+  };
+}
+
 /** the day's local start (ms) of `ms` in the browser's zone */
 function dayStart(ms: number): number { const d = new Date(ms); d.setHours(0, 0, 0, 0); return d.getTime(); }
 
@@ -198,7 +238,6 @@ export function cubeView(raw: CubeRaw): CubePageView {
   const now = Date.now() + raw.skew;
   const tz = browserTz();
   const f = raw.form;
-  const pool = f ? formPool(f) : 0;
   const today = dayStart(Date.now());
   const days: CubeDayChoice[] = f ? Array.from({ length: 7 }, (_, i) => {
     const at = new Date(today); at.setDate(at.getDate() + i);
@@ -213,7 +252,7 @@ export function cubeView(raw: CubeRaw): CubePageView {
   return {
     ...rest, chrome: frameChromeView(), now, tz,
     shareUrl: `${origin}/?cube=${encodeURIComponent(raw.code ?? '')}`,
-    formMath: f ? { pool, full: packMath(pool, f.maxPlayers, f.packs, f.packSize), least: packMath(pool, f.minPlayers, f.packs, f.packSize) } : null,
+    formMath: f ? formMathOf(f) : null,
     days,
     startText: f ? fmt(f.startAt, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }, tz) : '',
   };
@@ -250,6 +289,20 @@ const tournamentLine = (c: CubeConfig): string =>
 
 const mathLine = (m: { seats: number; packs: number; packSize: number }, pool: number): string =>
   `${m.seats} players · ${m.packs} packs of ${m.packSize} · ${pool} cards`;
+
+/** "8 pools of 75 · 600 of the cube's 640 cards", or "Everyone opens the same 75 of 320 cards" */
+export const sealedLine = (m: SealedMath, same: boolean): string => same
+  ? `Everyone opens the same ${m.cards} of ${m.have} cards`
+  : `${m.seats} pools of ${m.cards} · ${m.need} of the cube's ${m.have} cards`;
+
+/** why that dealing cannot happen */
+export const sealedShort = (m: SealedMath, same: boolean): string => same
+  ? `The cube has only ${m.have} cards, fewer than ${m.cards}`
+  : `Too few cards for ${m.seats} pools of ${m.cards}: the cube has ${m.have}, they need ${m.need}`;
+
+const sealedOf = (c: CubeConfig): { cards: number; copies: 1 | 2; same: boolean } =>
+  c.sealed ?? { cards: SEALED_DEFAULT, copies: 1, same: false };
+const isSealed = (c: CubeConfig): boolean => c.format === 'sealed';
 
 const nameOf = (v: CubeView, user: string): string => v.players.find(p => p.user === user)?.name ?? '?';
 
@@ -310,7 +363,7 @@ function listHtml(v: CubePageView): string {
       actionHtml: button({ label: 'Sign in', variant: 'primary', dataBtn: 'acct-open-auth' }) });
   }
   const rows = v.list ?? [];
-  const bar = `<div class="framebar"><p class="framenote">Draft packs from a shared cube with up to ${PLAYERS_MAX} players, then play a tournament with what you drafted.</p>
+  const bar = `<div class="framebar"><p class="framenote">Draft packs from a shared cube with up to ${PLAYERS_MAX} players, or open sealed pools from it, then play a tournament with the decks you build.</p>
     <span class="framespacer"></span>${button({ label: 'New event', variant: 'primary', dataBtn: 'cube-new' })}</div>`;
   if (!v.list) return `${bar}<p class="dim cubeloading">${v.listMissed ? 'Could not load your events just now.' : 'Loading…'}</p>`;
   if (!rows.length) {
@@ -345,10 +398,14 @@ function factsHtml(v: CubePageView, e: CubeView): string {
   const cards = c.source.kind === 'elements'
     ? `<span class="cubeels">${c.source.elements.map(el => `<span class="cubeel">${elIcon(el, el)}${esc(cap(el))}</span>`).join('')}</span>`
     : `A pasted list`;
+  const sl = sealedOf(c);
   const rows: [string, string][] = [
+    ['Format', esc(isSealed(c)
+      ? `Sealed · ${sl.cards} cards each · ${sl.same ? 'everyone the same pool' : 'a different pool each'} · ${sl.copies === 2 ? 'two of each card' : 'one of each card'}`
+      : 'Draft')],
     // the count on its own line under the elements: wrapped after them it began a line with "·"
     ['Cards', `${cards}<span class="dim cubepoolsize">${e.poolSize} cards</span>`],
-    ['Players', esc(`${c.minPlayers} to ${c.maxPlayers}${c.fillBots ? ', bots fill the table' : ''}`)],
+    ['Players', esc(`${c.minPlayers} to ${c.maxPlayers}${c.fillBots && !isSealed(c) ? ', bots fill the table' : ''}`)],
     ['Tournament', esc(tournamentLine(c))],
     ['Games', esc(`${cap(c.rules)} · best of ${c.bestOf}`)],
     ['Host', esc(e.host.name)],
@@ -361,8 +418,16 @@ function factsHtml(v: CubePageView, e: CubeView): string {
   return `<dl class="cubefacts">${rows.map(([k, x]) => `<dt>${esc(k)}</dt><dd>${x}</dd>`).join('')}</dl>`;
 }
 
-/** the pack line(s): now, and for a full table when that differs */
+/** the pack line(s): now, and for a full table when that differs (sealed: the pools') */
 function packsHtml(e: CubeView): string {
+  if (e.sealedMath) {
+    const same = sealedOf(e.config).same;
+    const [now, full] = e.sealedMath;
+    if (!now) return '';
+    const line = (label: string, m: SealedMath): string =>
+      `<p class="cubepacks${m.ok ? '' : ' bad'}">${label ? `<span class="dim">${esc(label)}:</span> ` : ''}${esc(m.ok ? sealedLine(m, same) : sealedShort(m, same))}</p>`;
+    return full && !same && full.seats !== now.seats ? line('Now', now) + line('Full table', full) : line('', now);
+  }
   const [now, full] = e.packMath;
   if (!now) return '';
   const line = (label: string, m: CubeView['packMath'][number]): string =>
@@ -390,18 +455,19 @@ function lobbyHtml(v: CubePageView, e: CubeView): string {
   const c = e.config;
   const seats = Array.from({ length: Math.max(c.maxPlayers, e.players.length) }, (_, i) => e.players[i] ?? null);
   const seatHtml = seats.map(p => {
-    if (!p) return `<li class="cubeseat empty">${c.fillBots ? 'Bot' : 'Open'}</li>`;
+    if (!p) return `<li class="cubeseat empty">${c.fillBots && !isSealed(c) ? 'Bot' : 'Open'}</li>`;
     const host = p.user === e.host.user;
     return `<li class="cubeseat${p.user === e.me ? ' me' : ''}"><span class="cubeseatname">${esc(p.name)}</span>
       ${host ? chip({ label: 'Host', tone: 'accent' }) : ''}${p.user === e.me ? chip({ label: 'You' }) : ''}
       ${e.isHost && !host ? armed(v, `kick:${p.user}`, 'Remove', 'Remove?', 'cube-kick', { 'data-user': p.user }, 'sm') : ''}</li>`;
   }).join('');
   const short = c.minPlayers - e.players.length;
-  const startOk = short <= 0 && (e.packMath[0]?.ok ?? false);
+  const sealed = !!e.sealedMath;
+  const startOk = short <= 0 && ((sealed ? e.sealedMath![0]?.ok : e.packMath[0]?.ok) ?? false);
   const actions = !v.signedIn
     ? button({ label: 'Sign in to join', variant: 'primary', dataBtn: 'acct-open-auth' })
     : e.isHost
-      ? `${button({ label: 'Start draft', variant: 'primary', dataBtn: 'cube-start', disabled: !startOk || v.busy,
+      ? `${button({ label: sealed ? 'Open the pools' : 'Start draft', variant: 'primary', dataBtn: 'cube-start', disabled: !startOk || v.busy,
           title: short > 0 ? `needs ${short} more` : startOk ? undefined : 'too few cards for this table' })}
         ${button({ label: 'Edit settings', dataBtn: 'cube-edit' })}
         ${armed(v, 'cancel', 'Call off', 'Call off the event?', 'cube-cancel')}`
@@ -455,7 +521,7 @@ function buildingHtml(v: CubePageView, e: CubeView): string {
       ${me ? `<div class="cubeyours">
         <h2 class="cubehead">Your deck</h2>
         <p>${deck ? `Submitted: ${deck.main.length} cards${deck.side.length ? ` and ${deck.side.length} in the sideboard` : ''}. You can change it until your first match.`
-          : `At least 30 cards and up to 7 in the sideboard, from the ${e.myPool?.length ?? 0} you drafted.`}</p>
+          : `At least 30 cards and up to 7 in the sideboard, from the ${e.myPool?.length ?? 0} ${isSealed(e.config) ? 'in your sealed pool' : 'you drafted'}.`}</p>
         ${button({ label: deck ? 'Edit your deck' : 'Build your deck', variant: 'primary', dataBtn: 'cube-build' })}
       </div>` : ''}
       <h2 class="cubehead">Decks <span class="dim">${e.players.length - waiting.length} of ${e.players.length} in</span></h2>
@@ -729,38 +795,57 @@ function formHtml(v: CubePageView, f: CubeForm): string {
       <span class="cubestep" role="group" aria-label="Time">${[-60, -15].map(d => button({ label: d === -60 ? '−1h' : '−15m', size: 'sm', dataBtn: 'cube-f-time',
         attrs: { 'data-d': String(d) } })).join('')}<b class="cubestepval">${esc(fmt(f.startAt, { hour: '2-digit', minute: '2-digit' }, v.tz))}</b>${[15, 60].map(d => button({
         label: d === 60 ? '+1h' : '+15m', size: 'sm', dataBtn: 'cube-f-time', attrs: { 'data-d': String(d) } })).join('')}</span></div>` : '');
-  return `<div class="cubeform">
-    ${row('Name', `<input id="cube-f-name" class="cubeinput" maxlength="40" aria-label="the event's name" value="${esc(f.name)}">`)}
-    ${row('Cards', seg('Cards', 'source', [['elements', 'Elements'], ['list', 'Paste a list']], f.source) + cards,
-      f.source === 'elements' ? 'Every deck card of the chosen elements, one copy each.' : 'At most 2 copies of a card.')}
-    ${row('Players', `<span class="cuberange">${stepper('minPlayers', String(f.minPlayers), f.minPlayers > PLAYERS_MIN, f.minPlayers < f.maxPlayers, 'fewest players')}
-      <span class="dim">to</span>${stepper('maxPlayers', String(f.maxPlayers), f.maxPlayers > f.minPlayers, f.maxPlayers < PLAYERS_MAX, 'most players')}</span>`)}
-    ${row('Bots', toggle({ label: f.fillBots ? 'Bots fill empty seats' : 'No bots', on: f.fillBots, dataBtn: 'cube-f-bots' }),
+  const sealed = f.format === 'sealed';
+  const cardsHint = f.source === 'list' ? 'At most 2 copies of a card.'
+    : sealed ? 'Every deck card of the chosen elements.' : 'Every deck card of the chosen elements, one copy each.';
+  // sealed: no bots and no packs, the pools' own numbers instead
+  const sm = m.sealedFull;
+  const sealedMathHtml = !m.pool ? '<p class="cubepacks bad">No cards yet.</p>'
+    : f.sealedSame || sm.ok ? `<p class="cubepacks${sm.ok ? '' : ' bad'}">${esc(sm.ok ? sealedLine(sm, f.sealedSame) : sealedShort(sm, f.sealedSame))}${
+        !f.sealedSame && sm.ok ? ' <span class="dim">(a full table)</span>' : ''}</p>`
+      : `<p class="cubepacks bad">${esc(sealedShort(sm, false))}</p>`
+        + `<p class="cubepacks dim">${esc(`Enough for ${Math.floor(sm.have / sm.cards)} player${Math.floor(sm.have / sm.cards) === 1 ? '' : 's'}: lower the most players, pick Two of each, or open fewer cards.`)}</p>`;
+  const drafting = `${row('Bots', toggle({ label: f.fillBots ? 'Bots fill empty seats' : 'No bots', on: f.fillBots, dataBtn: 'cube-f-bots' }),
       'Bots only draft. The tournament is people only.')}
     ${row('Packs', autoNumber('packs', 'packs', f.packs, 3, 1, PACKS_MAX))}
     ${row('Pack size', autoNumber('packSize', 'cards a pack', f.packSize, packMath(m.pool, shown.seats, f.packs, null).packSize, PACK_MIN, 20))}
-    <div class="cubemath">${math}</div>
+    <div class="cubemath">${math}</div>`;
+  const sealing = `${row('Pool size', stepper('sealedCards', `${f.sealedCards} cards`, f.sealedCards > SEALED_MIN, f.sealedCards < SEALED_MAX, 'cards each'),
+      'How many cards each player opens.')}
+    ${row('Repeats', seg('Repeats', 'sealedCopies', [['1', 'Singleton'], ['2', 'Two of each']], String(f.sealedCopies)),
+      f.sealedCopies === 2 ? 'The cube holds two copies of every card.' : 'The cube holds one copy of every card.')}
+    ${row('Pools', seg('Pools', 'sealedSame', [['unique', 'Each their own'], ['same', 'Everyone the same']], f.sealedSame ? 'same' : 'unique'),
+      f.sealedSame ? 'Every player builds from the exact same cards.' : 'Pools are dealt from the cube without replacement, so no two share a copy.')}
+    <div class="cubemath">${sealedMathHtml}</div>`;
+  return `<div class="cubeform">
+    ${row('Name', `<input id="cube-f-name" class="cubeinput" maxlength="40" aria-label="the event's name" value="${esc(f.name)}">`)}
+    ${row('Format', seg('Format', 'format', [['draft', 'Draft'], ['sealed', 'Sealed']], f.format),
+      sealed ? 'Each player opens a pool and builds a deck from it. No draft.' : 'Pass packs around the table, then build from your picks.')}
+    ${row('Cards', seg('Cards', 'source', [['elements', 'Elements'], ['list', 'Paste a list']], f.source) + cards, cardsHint)}
+    ${row('Players', `<span class="cuberange">${stepper('minPlayers', String(f.minPlayers), f.minPlayers > PLAYERS_MIN, f.minPlayers < f.maxPlayers, 'fewest players')}
+      <span class="dim">to</span>${stepper('maxPlayers', String(f.maxPlayers), f.maxPlayers > f.minPlayers, f.maxPlayers < PLAYERS_MAX, 'most players')}</span>`)}
+    ${sealed ? sealing : drafting}
     ${row('Tournament', seg('Tournament', 'tournament', [['swiss', 'Swiss'], ['roundrobin', 'Round robin'], ['exhibition', 'Exhibition']], f.tournament)
       + (f.tournament === 'swiss' ? stepper('swissRounds', `${f.swissRounds} rounds`, f.swissRounds > 1, f.swissRounds < ROUNDS_MAX, 'rounds') : ''),
       f.tournament === 'swiss' ? 'Players with the same record meet.' : f.tournament === 'roundrobin' ? 'Everyone plays everyone once, at any time.'
         : 'Play whoever is free and new to you, as often as you like.')}
     ${row('Rules', seg('Rules', 'rules', [['casual', 'Casual'], ['competitive', 'Competitive']], f.rules))}
     ${row('Best of', seg('Best of', 'bestOf', [['1', '1 game'], ['3', '3 games']], String(f.bestOf)))}
-    ${row('Start', start, f.start === 'time' ? esc(v.startText) : 'You start the draft from the event page.')}
+    ${row('Start', start, f.start === 'time' ? esc(v.startText) : sealed ? 'You open the pools from the event page.' : 'You start the draft from the event page.')}
   </div>`;
 }
 
-/** why the form cannot be sent, or '' */
+/** why the form cannot be sent, or '' (`fullOk`: the packs, or sealed's pools, deal at a full table) */
 export function formProblem(f: CubeForm, pool: number, fullOk: boolean): string {
   if (f.source === 'elements' && !f.elements.length) return 'Pick at least one element';
   if (!pool) return f.source === 'list' ? 'Paste a list first' : 'No cards in those elements';
-  if (!fullOk) return 'Too few cards for a full table';
+  if (!fullOk) return f.format === 'sealed' && f.sealedSame ? 'Too few cards for one pool' : 'Too few cards for a full table';
   return '';
 }
 
 function formFooterHtml(v: CubePageView, f: CubeForm, kind: 'new' | 'edit'): string {
   const m = v.formMath!;
-  const why = formProblem(f, m.pool, m.full.ok);
+  const why = formProblem(f, m.pool, f.format === 'sealed' ? m.sealedFull.ok : m.full.ok);
   return `${button({ label: kind === 'new' ? 'Create event' : 'Save', variant: 'primary', dataBtn: kind === 'new' ? 'cube-create' : 'cube-save',
     disabled: !!why || v.busy, title: why || undefined })}${button({ label: 'Cancel', dataBtn: 'cube-sheet-close' })}
     ${why ? `<span class="cubewhy">${esc(why)}</span>` : ''}

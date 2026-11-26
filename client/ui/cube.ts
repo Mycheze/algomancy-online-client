@@ -29,7 +29,7 @@ import { pollInboxNow, setCubeOpener } from './inbox.ts';
 import type { CubeArrange, CubeMatchView, CubeMine, CubeView } from '../server/cube-types.ts';
 import { sendMsg, type ClientMsg, type ServerMsg } from '../shared/protocol.ts';
 import {
-  CUBE_TABS, PACKS_MAX, PLAYERS_MAX, PLAYERS_MIN, ROUNDS_MAX, PACK_MIN,
+  CUBE_TABS, PACKS_MAX, PLAYERS_MAX, PLAYERS_MIN, ROUNDS_MAX, PACK_MIN, SEALED_MAX, SEALED_MIN, SEALED_STEP,
   cubeJoinRowsHtml, cubeView, defaultForm, formConfig, formFromConfig, liveBanner, paintCube, untilText,
   type CubeForm, type CubeHooks, type CubeSheet, type CubeTab,
 } from './pages/cube.ts';
@@ -530,6 +530,7 @@ function formStep(k: string, d: number): void {
     case 'swissRounds': f.swissRounds = Math.max(1, Math.min(ROUNDS_MAX, f.swissRounds + d)); break;
     case 'packs': f.packs = Math.max(1, Math.min(PACKS_MAX, (f.packs ?? 3) + d)); break;
     case 'packSize': f.packSize = Math.max(PACK_MIN, Math.min(20, (f.packSize ?? 13) + d)); break;
+    case 'sealedCards': f.sealedCards = Math.max(SEALED_MIN, Math.min(SEALED_MAX, f.sealedCards + d * SEALED_STEP)); break;
   }
 }
 
@@ -538,6 +539,9 @@ function formSet(k: string, v: string): void {
   if (!f) return;
   switch (k) {
     case 'source': if (v === 'elements' || v === 'list') f.source = v; break;
+    case 'format': if (v === 'draft' || v === 'sealed') f.format = v; break;
+    case 'sealedCopies': f.sealedCopies = v === '2' ? 2 : 1; break;
+    case 'sealedSame': f.sealedSame = v === 'same'; break;
     case 'tournament': if (v === 'swiss' || v === 'roundrobin' || v === 'exhibition') f.tournament = v; break;
     case 'rules': if (v === 'casual' || v === 'competitive') f.rules = v; break;
     case 'bestOf': f.bestOf = v === '3' ? 3 : 1; break;

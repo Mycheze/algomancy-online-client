@@ -102,6 +102,7 @@ export function cubeNotesFor(userId: string, now: number): CubeNote[] {
         id: `${e.code}:${r.n}`, event: e.code, eventName: e.config.name, kind: r.kind, at: r.at, read: !!r.readAt,
         ...(r.round !== undefined ? { round: r.round } : {}),
         ...(r.opponent !== undefined ? { opponent: r.opponent } : {}),
+        ...(e.config.format === 'sealed' ? { sealed: true } : {}),
       });
     }
   }

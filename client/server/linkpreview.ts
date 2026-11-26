@@ -69,6 +69,8 @@ export interface CubePreview {
   /** still taking players */
   open: boolean;
   done: boolean;
+  /** a sealed event: pools are dealt, nobody drafts */
+  sealed?: boolean;
 }
 
 export interface LeaguePreview {
@@ -192,13 +194,15 @@ export function previewFor(url: URL, ctx: PreviewCtx): Preview {
     const c = val('cube') && val('cube') !== '1' ? ctx.cube(val('cube').toUpperCase()) : null;
     if (!c) return make('play', 'Cube draft on Algomancy', `${how} Host a table of your own from the home page.`);
     const kind = c.tournament === 'swiss' ? 'a Swiss tournament' : c.tournament === 'roundrobin' ? 'a round robin' : 'open play';
+    const what = c.sealed ? 'cube sealed event' : 'cube draft';
+    const how2 = c.sealed ? 'Open a sealed pool from the cube, build a deck from it, then play it out.' : how;
     if (c.open) {
       return make('play', `Join ${c.name}`,
-        `${c.host} is hosting a cube draft: ${c.players} of ${c.maxPlayers} seats taken. ${how} The games are ${kind}. Open the link to take a seat.`);
+        `${c.host} is hosting a ${what}: ${c.players} of ${c.maxPlayers} seats taken. ${how2} The games are ${kind}. Open the link to take a seat.`);
     }
     return make('play', c.name, c.done
-      ? `A cube draft hosted by ${c.host}, now finished. Open the link for the final standings.`
-      : `A cube draft hosted by ${c.host}, under way. Open the link for the standings, or to watch a game.`);
+      ? `A ${what} hosted by ${c.host}, now finished. Open the link for the final standings.`
+      : `A ${what} hosted by ${c.host}, under way. Open the link for the standings, or to watch a game.`);
   }
 
   // ── a shared deck table (docs/26): never the deck's or the host's name, a link
