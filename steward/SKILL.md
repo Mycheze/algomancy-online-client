@@ -56,7 +56,11 @@ verdict, your handoff, notes and scratch files.
    before you touch one: a polish item that needs one is not a `ship` (2026-11-21,
    BL-10: a stylesheet sweep added one path constant to `paths.mjs` for its new
    test, said `ship`, and was held for the owner's approval). Do without it, or
-   choose `stage` yourself and write the handoff. `steward/`
+   choose `stage` yourself and write the handoff. **A new or deleted file under
+  `client/ui/` or `client/storybook/`** (tests, `updates.ts` and
+  `does-lines.json` aside) is staged too: the policy reads it as a new screen.
+  A shared helper goes into an existing module, or the outcome is `stage`
+  (2026-11-25, BL-10: `pages/statcell.ts`, a helper, said `ship`, held). `steward/`
    (your own harness) you MAY fix when the item's fault is there, and in a
    `retro` (§15). This skill is **`steward/SKILL.md`** — edit it there with
    Edit like any file (`.claude/skills/steward/SKILL.md` is only a symlink to
@@ -485,6 +489,9 @@ notes before editing. Then:
   (2026-11-11, BL-03: two new cards, the run fixed the ones its own grep for
   `496` with a regex found and missed 207 and 209 — red gate, a repair run);
   a page or URL parameter → `server/test/771-link-preview`;
+  a file added to or removed from `ui/pages/` or `ui/components/` →
+  `ui/test/996-design-system-docs-current` (that folder's README table needs its
+  row; 2026-11-25, BL-10 `statcell.ts`: red gate, a repair run);
   any new text under `client/` — a test fixture included — with an `R<digits>`
   word or a `CR <number>` in it → `engine/test/184-ruling-register` (it reads
   all of `client/` for retired register numbers and dead CR citations; name fixture rooms
