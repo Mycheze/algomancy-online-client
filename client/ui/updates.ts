@@ -45,6 +45,7 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-26', kind: 'fix', text: 'Hovering "battle cards" in a deck\'s stats now says "cards with the Battle icon", instead of a code in curly braces.' },
   { date: '2026-11-25', kind: 'change', text: 'Typed your own username and password into Create an account by mistake? You are now simply signed in, instead of being told the name is taken.' },
   { date: '2026-11-25', kind: 'new', text: 'Build a deck together: press Build together in the deck builder, then invite friends or share the link. Everyone moves cards on one table live and sees each other\'s cursors; your search stays your own. It ends when the deck\'s owner leaves.' },
   { date: '2026-11-24', kind: 'fix', text: 'The column heads in the card search\'s syntax help now start with a capital, like every other table\'s.' },

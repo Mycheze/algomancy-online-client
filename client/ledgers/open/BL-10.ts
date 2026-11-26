@@ -568,5 +568,8 @@ export default {
     + 'Left: §8.8 items 50 (the stat cell drawn three times) and 51 (the unresolved-games count said three times on the Stats tab); card stats\' `zonelabel` captions; the admin\'s ✕ clear title.'
     + '\n\n2026-11-25 (steward): §8.8 item 50 — the stat cell is drawn once, pages/statcell.ts statCell, by the league season card, the deck stats and a challenge score (byte-identical markup); item 51 was already gone (the profile redesign says the unresolved count once, as the Record tile\'s hover). '
     + 'Guarded by ui/test/1535-stat-cell-drawn-once.test.ts (a census of ui/ for the cell\'s markup). '
-    + 'Left: card stats\' `zonelabel` captions; the admin\'s ✕ clear title; the deck stats\' battle-cards hover spells {Battle} literally.',
+    + 'Left: card stats\' `zonelabel` captions; the admin\'s ✕ clear title; the deck stats\' battle-cards hover spells {Battle} literally.'
+    + '\n\n2026-11-26 (steward): the deck stats\' battle-cards hover says "cards with the Battle icon", not {Battle} (a title is plain text; the only token hover in ui/). '
+    + 'Guarded by ui/test/1536-hovers-carry-no-card-text-tokens.test.ts (every story drawn, and every title literal in ui/). '
+    + 'Left: card stats\' `zonelabel` captions; the admin\'s ✕ clear title.',
 } satisfies BacklogTicket;

@@ -44,7 +44,7 @@ test('BL-10: statCell draws value over label, escaped, with its hover', () => {
 
 test('BL-10: the deck stats and a challenge score still draw their cells', () => {
   const html = deckStatsHtml(analyzeDeck(DECK_LIST.slice(0, 30)));
-  assert.match(html, /<div class="statcell" title="cards printed \{Battle\}[^"]*"><div class="statval">\d+<\/div><div class="statlab">battle cards<\/div>/);
+  assert.match(html, /<div class="statcell" title="cards with the Battle icon[^"]*"><div class="statval">\d+<\/div><div class="statlab">battle cards<\/div>/);
   assert.match(html, /<div class="statlab">different cards<\/div>/);
   const score = scoreHtml({ turns: 5, cards: 30, extra: 0, elements: 2, debt: 0, debtTurns: 0 } as Parameters<typeof scoreHtml>[0]);
   assert.equal((score.match(/class="statcell"/g) ?? []).length, 3, 'turns, cards, elements; no extra copies');
