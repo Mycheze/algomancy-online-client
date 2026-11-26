@@ -312,6 +312,8 @@ let retries = 0;
 const BACKOFF_MS = [1000, 2000, 4000, 8000, 15_000, 30_000];
 
 const socketUp = (): boolean => !!ws && ws.readyState === 1;
+/** the token the live subscription was sent with: the server pushes the view of THAT account */
+let subbedAs: string | null | undefined;
 
 function connect(): void {
   if (!open || !code) return;
@@ -337,7 +339,14 @@ function connect(): void {
 
 function sub(): void {
   if (!ws || ws.readyState !== 1 || !code) return;
-  sendMsg(ws, { t: 'cube', op: 'sub', code, token: acct.token() });
+  subbedAs = acct.token();
+  sendMsg(ws, { t: 'cube', op: 'sub', code, token: subbedAs });
+}
+
+/** signed in, out or as someone else since subscribing (the page opened signed out, then the
+ * player logged in to join): subscribe again, or every push is a visitor's view, with no pool */
+function resubIfAccountChanged(): void {
+  if (socketUp() && subbedAs !== acct.token()) sub();
 }
 
 function send(msg: ClientMsg): void {
@@ -482,6 +491,7 @@ const BUILD_ACTS: CubeBuildActs = {
  * first, and calls renderScreen, `force`, once it is gone): a push then only refreshes the table. */
 function paint(force = false): void {
   if (!$app || !open) return;
+  resubIfAccountChanged();
   if (!force && cubeBuild()?.open) return;
   const v = view;
   if (v && v.phase === 'drafting' && v.joined && v.draft && !draftHidden) {
@@ -506,6 +516,7 @@ async function act(op: string, body: Record<string, unknown> = {}, done = ''): P
   arming = null;
   paint();
   const r = await post(eventPath(code, op), body);
+  resubIfAccountChanged();
   if (r.ok) { if (done || msgTone === 'error') say(done, 'ok'); } else say(r.error ?? 'that did not work', 'error');
   if (r['view']) take(r['view'] as CubeView);
   else if (r.ok && !socketUp()) load();
