@@ -18,7 +18,6 @@ g['__UI_DRIVER_FETCH'] = (url: string, init?: { method?: string }) => {
 };
 const { client } = await import('./ui-driver.ts');
 const ui = await client();
-const settle = async (): Promise<void> => { for (let i = 0; i < 5; i++) await new Promise(r => setImmediate(r)); };
 /** every subscription so far, by its token (ui.sent() hands over what is new since the last call) */
 const seen: unknown[] = [];
 const subs = (): unknown[] => { seen.push(...ui.sent().filter(m => m['t'] === 'cube' && m['op'] === 'sub').map(m => m['token'])); return seen; };
