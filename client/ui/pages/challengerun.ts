@@ -14,10 +14,7 @@
 import { BOARD_KINDS, type BoardKind, type RunScore } from '../../engine/src/challenge.ts';
 import type { SubmitReply, SubmitState } from '../challengerun.ts';
 import { esc } from '../util.ts';
-
-/** one number in a stat grid — account.ts's `.statcell`, value over label */
-export const statCell = (label: string, value: string | number): string =>
-  `<div class="statcell"><div class="statval">${esc(String(value))}</div><div class="statlab">${esc(label)}</div></div>`;
+import { statCell } from './statcell.ts';
 
 /** what the run took — turns first, the hardest to cut; extra copies only when there are any */
 export function scoreHtml(s: RunScore): string {

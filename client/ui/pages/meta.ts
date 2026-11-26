@@ -267,7 +267,7 @@ function deckTile(name: string, n: number): string {
   // box and takes whatever artHtml gives it.
   const art = (cls: string): string => (r ? artHtml(r, cls) : `<div class="${cls} cbnoart">${esc(name)}</div>`);
   // `--d` is the stack DEPTH, and the CSS derives the whole pile geometry from
-  // it (see the .dkstack block in ui/style.css) rather than casing on a count.
+  // it (see the .dkstack block in ui/styles/pages/23-decks.css) rather than casing on a count.
   return `<div class="dktile${layers.length ? ' dkstack' : ''}"
       ${layers.length ? `style="--d:${layers.length}"` : ''}
       data-prev="${esc(name)}" data-btn="meta-focus" data-card="${esc(name)}" data-zoom

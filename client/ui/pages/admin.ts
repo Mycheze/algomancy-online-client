@@ -6,8 +6,7 @@
  * element, `renderScreen()` paints it, `handleButton()` is offered every click
  * (everything here is prefixed `admin-`), and the state lives in this file.
  *
- * Moved from ui/admin.ts to ui/pages/ in the design-system round (2026-11-03)
- * and split by the page contract (pages/README.md): adminView() gathers the
+ * Split by the page contract (pages/README.md): adminView() gathers the
  * state, adminHtml(view) draws it from the ui- components (buttons, tabs, the
  * error line), paintAdmin() puts it on #app. The tables and chips keep the
  * page's own markup: `.admintable` is denser than ui-table (no capitals, solid
@@ -15,9 +14,9 @@
  * redesign's call, not a conversion's.
  *
  * THE URL IS THE PAGE: `?admin=1`, written with replaceState like every other
- * page here. There is no link to it anywhere in the client — not in a menu,
- * not in a footer, not behind a role check. You reach it by typing the query
- * parameter, and what decides whether you see anything is the SERVER.
+ * page here. The one way in is the Admin button on an admin's own profile,
+ * drawn from the `admin` flag the server sends that account alone; no menu or
+ * footer links it. What decides whether you see anything is the SERVER.
  *
  * ⚠ HIDING IS NOT A PERMISSION, and nothing on this page pretends otherwise.
  * Every route it calls 404s to a non-admin (server/api-admin.ts), so a curious
@@ -33,9 +32,9 @@
  * three are server state.
  *
  * Not editable, and it is not an oversight: a report's IMPLEMENTATION STATUS.
- * That lives in client/ledgers/playtest-ledger.ts, which is committed source —
- * a report is `fixed` when somebody wrote an entry naming the test that keeps
- * it fixed. Editing it from a browser would write to a source file on the
+ * That lives in client/ledgers/settled.jsonl, which is committed source —
+ * a report is `fixed` when its row says so and a test's title carries its
+ * tag. Editing it from a browser would write to a source file on the
  * deploy box and be destroyed by the next `git pull`. So the status column is
  * read-only and shows the status OF THE RUNNING BUILD, which is the only
  * version of the question an operator has: "is this fixed in what these people

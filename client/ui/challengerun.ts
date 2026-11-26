@@ -260,8 +260,6 @@ export function startRun(id: string | null, opts: { onBotStuck?: (why: string) =
 let layer: HTMLElement | null = null;
 let hooks: { home: () => void; page: () => void; signIn: () => void; retry: (run: ChallengeRun) => void; rewind: (run: ChallengeRun) => void } | null = null;
 
-export { scoreHtml, statCell } from './pages/challengerun.ts';
-
 /** owner 2026-11-02 ("data-losing only"): Give up throws the run away, so it
  * asks twice — the league's press-again pattern (league.ts `arming`,
  * `button.danger`). Any other run button disarms it. test/901. */

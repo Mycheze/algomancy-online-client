@@ -12396,9 +12396,9 @@ lg.initLeague({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 chal.initChallenge({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 // docs/25 — a cube draft event, at ?cube=<CODE> (or ?cube=1, my events)
 cube.initCube({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
-// BL-16: the operator dashboard, at ?admin=1. Nothing links to it and every
-// route it calls 404s to a non-admin, so this costs a signed-out browser one
-// refused fetch and nothing else.
+// BL-16: the operator dashboard, at ?admin=1 or from an admin's own profile.
+// Every route it calls 404s to a non-admin, so this costs a signed-out browser
+// one refused fetch and nothing else.
 admin.initAdmin({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 // BL-17: the judges' review of the rules bot's answers, at ?judging=1 or from a
 // judge's or the owner's profile; its routes 404 to anybody else

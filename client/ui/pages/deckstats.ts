@@ -17,6 +17,7 @@ import { artHtml } from '../cardpanel.ts';
 import { noImgDrag } from '../piletable.ts';
 import { ELEMENTS, cardFacts, curveByElement, deckElements, type CardFacts, type DeckAnalysis } from '../deckstats.ts';
 import { esc, elIcon } from '../util.ts';
+import { statCell } from './statcell.ts';
 import { button, icon } from '../components/index.ts';
 
 /* ── the full stats panel (moved from ui/decks.ts) ──────────────────────── */
@@ -112,12 +113,12 @@ export function deckStatsHtml(a: DeckAnalysis): string {
     <section class="acctcard">
       <h3>What is in it</h3>
       <div class="statgrid">
-        <div class="statcell"><div class="statval">${a.units}</div><div class="statlab">units (${pct(a.units)})</div></div>
-        <div class="statcell"><div class="statval">${a.spells}</div><div class="statlab">spells (${pct(a.spells)})</div></div>
-        ${a.spellUnits ? `<div class="statcell"><div class="statval">${a.spellUnits}</div><div class="statlab">spell units</div></div>` : ''}
-        <div class="statcell" title="cards printed {Battle} — playable during a battle rather than in deployment"><div class="statval">${a.battle}</div><div class="statlab">battle cards</div></div>
-        ${a.haste ? `<div class="statcell"><div class="statval">${a.haste}</div><div class="statlab">haste cards</div></div>` : ''}
-        <div class="statcell"><div class="statval">${a.copies.length}</div><div class="statlab">different cards</div></div>
+        ${statCell(`units (${pct(a.units)})`, a.units)}
+        ${statCell(`spells (${pct(a.spells)})`, a.spells)}
+        ${a.spellUnits ? statCell('spell units', a.spellUnits) : ''}
+        ${statCell('battle cards', a.battle, { title: 'cards printed {Battle} — playable during a battle rather than in deployment' })}
+        ${a.haste ? statCell('haste cards', a.haste) : ''}
+        ${statCell('different cards', a.copies.length)}
       </div>
     </section>
     <section class="acctcard">

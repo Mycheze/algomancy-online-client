@@ -284,14 +284,20 @@ function forgetSignupClaim(): void {
   try { localStorage.removeItem(SIGNUP_KEY); } catch { /* nothing to forget */ }
 }
 /** how the post-game sign-up went, for the ticket it was made with */
-let signedUpWith: { ticket: string; claimed: boolean } | null = null;
-export const signupOutcome = (ticket: string): 'claimed' | 'lapsed' | null =>
-  signedUpWith?.ticket === ticket ? (signedUpWith.claimed ? 'claimed' : 'lapsed') : null;
+export type SignupOutcome = 'claimed' | 'lapsed' | 'signed-in';
+let signedUpWith: { ticket: string; how: SignupOutcome } | null = null;
+export const signupOutcome = (ticket: string): SignupOutcome | null =>
+  signedUpWith?.ticket === ticket ? signedUpWith.how : null;
+/** `signedIn`: the name was already theirs, and the server signed them in instead */
+const outcomeOf = (r: { claimed?: number; signedIn?: boolean }): SignupOutcome =>
+  r.signedIn ? 'signed-in' : r.claimed ? 'claimed' : 'lapsed';
 /** what the post-game screen says once the sign-up is done */
-export const signupNoteHtml = (how: 'claimed' | 'lapsed'): string =>
+export const signupNoteHtml = (how: SignupOutcome): string =>
   `<div class="pgnote">${how === 'claimed'
     ? 'Signed up — this game is the first one on your profile.'
-    : 'Signed up. The offer for this game had run out, so your profile starts with your next one.'}</div>`;
+    : how === 'signed-in'
+      ? 'Signed in — that account was already yours. This game was played signed out, so it is not on your profile.'
+      : 'Signed up. The offer for this game had run out, so your profile starts with your next one.'}</div>`;
 export const currentUser = (): Me | null => me;
 /** A stored token is being checked and has not answered yet. While it is, the
  * identity bar says so instead of "Playing signed out — Log in / Sign up",
@@ -413,13 +419,13 @@ async function submitAuth(): Promise<void> {
     // carries that game's ticket (the post-game screen's own form is the
     // usual way in)
     const claim = authMode === 'register' ? pendingSignupClaim() : null;
-    const r = await post<{ token?: string; me?: Me; claimed?: number }>(
+    const r = await post<{ token?: string; me?: Me; claimed?: number; signedIn?: boolean }>(
       authMode === 'register' ? '/api/auth/register' : '/api/auth/login',
       { username, password, ...(claim ? { claim: claim.ticket } : {}) });
     busy = false;
     if (!r.ok || !r.token || !r.me) { authMsg = r.error ?? 'that did not work'; renderAuth(); return; }
     localStorage.setItem(TOKEN_KEY, r.token);
-    if (claim) { signedUpWith = { ticket: claim.ticket, claimed: !!r.claimed }; forgetSignupClaim(); }
+    if (claim) { signedUpWith = { ticket: claim.ticket, how: outcomeOf(r) }; forgetSignupClaim(); }
     // the seat name the game server files stats under is the account name, so
     // keep the home screen's name box in step rather than letting them differ
     localStorage.setItem('algoName', r.me.username);
@@ -568,18 +574,18 @@ export function handleButton(btn: HTMLElement): boolean {
       const claim = pendingSignupClaim();
       void (async () => {
         try {
-          const body = await post<{ token?: string; me?: Me; claimed?: number }>('/api/auth/register',
+          const body = await post<{ token?: string; me?: Me; claimed?: number; signedIn?: boolean }>('/api/auth/register',
             { username: name, password: pw, ...(claim ? { claim: claim.ticket } : {}) });
           if (body.ok && body.token && body.me) {
             localStorage.setItem(TOKEN_KEY, body.token);
             localStorage.setItem('algoName', body.me.username);
             me = body.me;
-            if (claim) signedUpWith = { ticket: claim.ticket, claimed: !!body.claimed };
+            if (claim) signedUpWith = { ticket: claim.ticket, how: outcomeOf(body) };
             forgetSignupClaim();
             // in a game the host repaint is a no-op, so the form is swapped
             // here (as pg-claim does); the next board paint agrees with it
             const form = document.getElementById('pg-su-form');
-            if (form) form.outerHTML = signupNoteHtml(body.claimed ? 'claimed' : 'lapsed');
+            if (form) form.outerHTML = signupNoteHtml(outcomeOf(body));
             rerenderHost();
           } else if (errBox) {
             errBox.textContent = body.error ?? 'that did not work';

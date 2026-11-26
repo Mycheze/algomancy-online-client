@@ -562,5 +562,11 @@ export default {
     + 'and the two chips only this page draws, Owner and Admin, say what they are on hover, written with a capital (CSS uppercases all three). '
     + 'Left: §8.8 item 48, the stale "There is no link to it anywhere in the client" in pages/admin.ts\'s head and main.ts (the profile has an '
     + 'Admin button for an admin). Guarded by ui/test/1519-admin-badges-are-the-profile-chips.test.ts (§2 a census: only the profile writes a '
-    + 'judge chip). Nothing a player sees; reasoned, not looked at (no browser).',
+    + 'judge chip). Nothing a player sees; reasoned, not looked at (no browser).'
+    + '\n\n2026-11-25 (steward): §8.8 item 48 — the admin page\'s head and main.ts name the profile\'s Admin button as the way in, and the comments in pages/ that named moved files (ui/admin.ts, ui/style.css, ledgers/playtest-ledger.ts) name the live ones. '
+    + 'Guarded by ui/test/1534-page-comments-name-live-files.test.ts (a census of every repo path pages/ names). '
+    + 'Left: §8.8 items 50 (the stat cell drawn three times) and 51 (the unresolved-games count said three times on the Stats tab); card stats\' `zonelabel` captions; the admin\'s ✕ clear title.'
+    + '\n\n2026-11-25 (steward): §8.8 item 50 — the stat cell is drawn once, pages/statcell.ts statCell, by the league season card, the deck stats and a challenge score (byte-identical markup); item 51 was already gone (the profile redesign says the unresolved count once, as the Record tile\'s hover). '
+    + 'Guarded by ui/test/1535-stat-cell-drawn-once.test.ts (a census of ui/ for the cell\'s markup). '
+    + 'Left: card stats\' `zonelabel` captions; the admin\'s ✕ clear title; the deck stats\' battle-cards hover spells {Battle} literally.',
 } satisfies BacklogTicket;

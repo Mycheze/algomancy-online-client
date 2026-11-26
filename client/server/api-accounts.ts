@@ -98,6 +98,17 @@ export async function accountRoutes(
   if (path === '/api/auth/register' && req.method === 'POST') {
     if (signupBrake()) return true;
     const b = await readBody(req);
+    // a taken name with its own password is its owner on the wrong form:
+    // signed in, as the login route would. A wrong one counts as a failed login.
+    if (accountByName(str(b['username'], 40))) {
+      if (throttled(addr)) {
+        return json(res, { ok: false, error: 'too many failed attempts — wait a minute' }), true;
+      }
+      const r = login(str(b['username'], 40), str(b['password']));
+      if (!r.ok) { noteFailure(addr); return json(res, { ok: false, error: 'that username is taken' }), true; }
+      failures.delete(addr);
+      return json(res, { ok: true, token: r.token, me: privateView(r.account, ctx.online), claimed: 0, signedIn: true }), true;
+    }
     // BL-28: `claim` is the sign-up ticket the post-game screen was handed —
     // the one way a new account starts with a game in it
     const r = register(str(b['username'], 40), str(b['password']), str(b['claim'], 100) || undefined);
