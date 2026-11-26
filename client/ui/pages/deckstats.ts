@@ -116,7 +116,7 @@ export function deckStatsHtml(a: DeckAnalysis): string {
         ${statCell(`units (${pct(a.units)})`, a.units)}
         ${statCell(`spells (${pct(a.spells)})`, a.spells)}
         ${a.spellUnits ? statCell('spell units', a.spellUnits) : ''}
-        ${statCell('battle cards', a.battle, { title: 'cards printed {Battle} — playable during a battle rather than in deployment' })}
+        ${statCell('battle cards', a.battle, { title: 'cards with the Battle icon — playable only during a battle, not in deployment' })}
         ${a.haste ? statCell('haste cards', a.haste) : ''}
         ${statCell('different cards', a.copies.length)}
       </div>
