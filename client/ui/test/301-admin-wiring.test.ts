@@ -67,8 +67,8 @@ test('BL-16 §2 main.ts registers the page: init, screen and handleButton', () =
 test('BL-16 §3 a report\'s implementation status is read-only — no control writes the ledger', () => {
   // the three writes this page is allowed to make, and no more
   const posts = [...admin.matchAll(/post\('([^']+)'/g)].map(m => m[1]).sort();
-  assert.deepEqual([...new Set(posts)], ['/api/admin/mark', '/api/admin/setadmin', '/api/admin/setbadge'],
-    'exactly three writes: the triage mark, a judge badge and the admin flag. A fourth that '
+  assert.deepEqual([...new Set(posts)], ['/api/admin/mark', '/api/admin/setadmin', '/api/admin/setbadge', '/api/admin/setdesigner'],
+    'exactly four writes: the triage mark, a judge badge, the admin flag and the designer flag. A fifth that '
     + 'set a ledger STATUS would be writing to committed source on the deploy box, and the '
     + 'next git pull would destroy it');
   assert.ok(/read-only/i.test(admin), 'and the page says so where an operator will read it');

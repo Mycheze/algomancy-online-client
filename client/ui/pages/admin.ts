@@ -28,8 +28,8 @@
  *
  * ── WHAT IS EDITABLE HERE AND WHAT IS NOT ────────────────────────────
  *
- * Editable: a judge badge, the admin flag, and a report's TRIAGE MARK. All
- * three are server state.
+ * Editable: a judge badge, the admin flag, the designer flag, and a report's
+ * TRIAGE MARK. All four are server state.
  *
  * Not editable, and it is not an oversight: a report's IMPLEMENTATION STATUS.
  * That lives in client/ledgers/settled.jsonl, which is committed source —
@@ -51,7 +51,7 @@ import { frameChromeView, frameHtml, restoreScrolls, scrollsIn, type FrameChrome
 export interface Badge { owner?: true; judge?: 1 | 2 | 3; since: string }
 
 export interface AccountRow {
-  id: string; username: string; createdAt: string; admin: boolean;
+  id: string; username: string; createdAt: string; admin: boolean; designer?: boolean;
   badge?: Badge | null; games: number; wins: number;
   lastPlayed: string | null; friends: number; decks: number; discord: string | null;
 }
@@ -259,11 +259,12 @@ function badgeChips(b: { owner?: boolean; judge?: number } | null | undefined): 
 }
 
 const ADMIN_CHIP = ' <span class="badgechip admin" title="can open this page">Admin</span>';
+const DESIGNER_CHIP = ' <span class="badgechip designer" title="can edit cards">Designer</span>';
 
 function accountsHtml(accounts: AccountRow[], over: Overview | null): string {
   const rows = accounts.map(a => `
     <tr>
-      <td><b>${esc(a.username)}</b> ${badgeChips(a.badge)}${a.admin ? ADMIN_CHIP : ''}</td>
+      <td><b>${esc(a.username)}</b> ${badgeChips(a.badge)}${a.admin ? ADMIN_CHIP : ''}${a.designer ? DESIGNER_CHIP : ''}</td>
       <td class="num">${a.games}</td>
       <td class="num">${a.wins}</td>
       <td>${day(a.createdAt)}</td>
@@ -274,11 +275,14 @@ function accountsHtml(accounts: AccountRow[], over: Overview | null): string {
     button({ label, dataBtn: 'admin-judge', attrs: { 'data-name': a.username, 'data-level': level } })).join('\n        ')}
         ${button({ label: a.admin ? 'Revoke admin' : 'Make admin', dataBtn: 'admin-flag',
     attrs: { 'data-name': a.username, 'data-want': a.admin ? '0' : '1' } })}
+        ${button({ label: a.designer ? 'Revoke designer' : 'Make designer', dataBtn: 'admin-designer',
+    attrs: { 'data-name': a.username, 'data-want': a.designer ? '0' : '1' } })}
       </td>
     </tr>`).join('');
   return `<p class="adminnote">${accounts.length} account(s) · ${over?.admins ?? '?'} admin(s).
     A judge badge and the admin flag are independent — a judge is a trusted voice on rules,
-    an admin can change other people's accounts. The last admin cannot be revoked.</p>
+    an admin can change other people's accounts. The last admin cannot be revoked.
+    A designer may edit cards and nothing else; an admin may edit cards without it.</p>
     <div class="admintablewrap" data-scroll="admin-accounts"><table class="admintable">
     <thead><tr><th>Account</th><th>Games</th><th>Wins</th><th>Joined</th><th>Last played</th>
       <th>Discord</th><th>Actions</th></tr></thead>
@@ -617,6 +621,15 @@ export function handleButton(btn: HTMLElement): boolean {
     const name = btn.dataset['name'] ?? '';
     const want = btn.dataset['want'] === '1';
     void post('/api/admin/setadmin', { name, admin: want }).then(r => {
+      if (r && r['ok'] === false) msg = String(r['error'] ?? 'refused');
+      void load();
+    });
+    return true;
+  }
+  if (b === 'admin-designer') {
+    const name = btn.dataset['name'] ?? '';
+    const want = btn.dataset['want'] === '1';
+    void post('/api/admin/setdesigner', { name, designer: want }).then(r => {
       if (r && r['ok'] === false) msg = String(r['error'] ?? 'refused');
       void load();
     });

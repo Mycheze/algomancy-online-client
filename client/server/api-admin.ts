@@ -25,7 +25,7 @@
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { json, readBody, str } from './api-util.ts';
-import { accountByName, setAdmin, setBadge } from './accounts.ts';
+import { accountByName, setAdmin, setBadge, setDesigner } from './accounts.ts';
 import {
   accountRows, adminCount, adminFor, gameRows, marks, reportRows, roomRows, setMark,
 } from './admin.ts';
@@ -163,6 +163,17 @@ export async function adminRoutes(
       // this one the operator can act on: grant somebody else first
       json(res, { ok: false, error: err instanceof Error ? err.message : String(err) });
     }
+    return true;
+  }
+
+  // the card editor's permission (designer.ts); no last-holder guard, an admin can regrant
+  if (path === '/api/admin/setdesigner' && req.method === 'POST') {
+    const b = await readBody(req);
+    const account = accountByName(str(b['name'], 40));
+    if (!account) { json(res, { ok: false, error: 'no such player' }); return true; }
+    const now = setDesigner(account, b['designer'] === true);
+    console.log(`[admin] ${me.username} ${now ? 'granted' : 'revoked'} designer on ${account.username}`);
+    json(res, { ok: true, name: account.username, designer: now });
     return true;
   }
 

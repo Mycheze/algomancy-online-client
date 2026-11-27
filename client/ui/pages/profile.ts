@@ -880,6 +880,7 @@ function staffSection(me: Me): string {
   const btns = [
     me.admin ? button({ label: 'Admin', size: 'sm', dataBtn: 'nav-admin', title: 'the operator dashboard' }) : '',
     me.admin ? button({ label: 'Design (Storybook)', size: 'sm', dataBtn: 'nav-storybook', title: 'the design system\'s components, in Storybook (opens a new window)' }) : '',
+    me.designer || me.admin ? button({ label: 'Card editor', size: 'sm', dataBtn: 'nav-cardeditor', title: 'propose a change to a card' }) : '',
     me.badge?.owner || me.badge?.judge ? button({ label: 'Rules review', size: 'sm', dataBtn: 'nav-crreview', title: 'the comprehensive rules, open for review and comments' }) : '',
     me.badge?.owner || me.badge?.judge ? button({ label: 'Judge review', size: 'sm', dataBtn: 'nav-judging', title: 'the rules bot\'s answers, to flag the wrong ones' }) : '',
   ].filter(Boolean);

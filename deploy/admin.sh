@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
-# BL-16 — grant or revoke the ADMIN flag on THIS box.
+# BL-16 — grant or revoke the ADMIN flag (or the designer flag) on THIS box.
 #
-#   deploy/admin.sh mycheze            make them an admin
-#   deploy/admin.sh someone --revoke   take it away
+#   deploy/admin.sh mycheze                     make them an admin
+#   deploy/admin.sh someone --revoke            take it away
+#   deploy/admin.sh designer someone [--revoke] the card editor's flag instead
+#
+# The designer flag lets an account propose card edits and nothing else; an
+# admin may edit cards without it. Admins also set it from the dashboard.
 #
 # The admin flag is NOT the judge badge — see deploy/badge.sh for that one.
 # A judge is a trusted voice on rules; an admin can change other people's
@@ -27,19 +31,26 @@ ENV_FILE="$REPO/client/server/tester.env"
 set -a; . "$ENV_FILE"; set +a
 : "${ALGO_TESTER_TOKEN:?tester.env sets no ALGO_TESTER_TOKEN, so the admin route does not exist on this server}"
 
-[ $# -ge 1 ] || { sed -n 2,5p "$0"; exit 2; }
+usage() { sed -n 2,6p "$0"; exit 2; }
+[ $# -ge 1 ] || usage
+# a leading `designer` followed by a name picks that flag; the admin flag of
+# a player actually called designer is `deploy/admin.sh -- designer`
+flag=admin
+if [ "$1" = designer ] && [ $# -ge 2 ] && [ "${2#--}" = "$2" ]; then flag=designer; shift
+elif [ "$1" = -- ]; then shift; fi
+[ $# -ge 1 ] || usage
 name="$1"; shift
-admin=true
+want=true
 while [ $# -gt 0 ]; do
   case "$1" in
-    --revoke) admin=false ;;
-    --grant) admin=true ;;
+    --revoke) want=false ;;
+    --grant) want=true ;;
     *) echo "unknown option $1" >&2; exit 2 ;;
   esac
   shift
 done
 
 curl -sS -X POST -H 'content-type: application/json' -H "x-algo-tester: $ALGO_TESTER_TOKEN" \
-  --data "{\"name\":\"$name\",\"admin\":$admin}" \
+  --data "{\"name\":\"$name\",\"$flag\":$want}" \
   "http://127.0.0.1:${PORT:-5000}/api/admin/grant"
 echo

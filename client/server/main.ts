@@ -115,7 +115,7 @@ import { emit, since as eventsSince, BOOT_ID } from './hooks.ts';
 import { CODE_ALPHABET } from './link.ts';
 import { deckForPlay, savedDeckNow } from './collection.ts';
 import { ACHIEVEMENTS } from './achievements.ts';
-import { accountById, accountByName, accountForToken, friendshipWith, gameHistory, issueSignupClaim, loadAccounts, privateView, seatBadge, setAdmin, setBadge, type SeatBadge } from './accounts.ts';
+import { accountById, accountByName, accountForToken, friendshipWith, gameHistory, issueSignupClaim, loadAccounts, privateView, seatBadge, setAdmin, setBadge, setDesigner, type SeatBadge } from './accounts.ts';
 import { loadLeague } from './league-store.ts';
 import { StoreLoadError } from './store-file.ts';
 // #190: the trio picker's history, draft rows only — a pure function so a test can hold it
@@ -955,7 +955,8 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // dashboard and an SSH session with a JSON editor. `setAdmin`'s last-admin
   // guard leans on this existing.
   //
-  // On the box: deploy/admin.sh <name> [--revoke].
+  // On the box: deploy/admin.sh <name> [--revoke], and deploy/admin.sh designer
+  // <name> [--revoke] for the card editor's flag.
   if (path === '/api/admin/grant' && req.method === 'POST') {
     if (!testerHeaderAllowed(req)) {
       res.writeHead(404, { 'content-type': 'text/plain' });
@@ -967,6 +968,13 @@ async function handleRequest(req: import('node:http').IncomingMessage,
     if (!account) {
       res.writeHead(404, { 'content-type': 'application/json' });
       return res.end(JSON.stringify({ ok: false, error: `no player called "${name}"` }));
+    }
+    // a body naming `designer` sets that flag and leaves admin alone
+    if ('designer' in b) {
+      const now = setDesigner(account, b['designer'] !== false);
+      console.log(`[admin] ${account.username}: designer ${now ? 'granted' : 'revoked'} (tester token)`);
+      res.writeHead(200, { 'content-type': 'application/json' });
+      return res.end(JSON.stringify({ ok: true, name: account.username, designer: now }));
     }
     try {
       const now = setAdmin(account, b['admin'] !== false);

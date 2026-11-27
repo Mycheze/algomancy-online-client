@@ -158,6 +158,7 @@ export interface AdminAccountRow {
   username: string;
   createdAt: string;
   admin: boolean;
+  designer: boolean;
   badge: Account['badge'];
   games: number;
   wins: number;
@@ -190,6 +191,7 @@ export function accountRows(): AdminAccountRow[] {
       username: a.username,
       createdAt: a.createdAt,
       admin: a.admin === true,
+      designer: a.designer === true,
       badge: a.badge,
       games: played.get(a.id) ?? 0,
       wins: a.profile?.wins ?? 0,

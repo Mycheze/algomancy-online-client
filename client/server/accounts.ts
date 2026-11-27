@@ -318,6 +318,13 @@ export interface Account {
   admin?: true;
 
   /**
+   * May propose card edits (the card editor). A permission, not a badge: nobody
+   * else sees it, and it grants no admin power. Granted only by an admin or by
+   * the tester-token bootstrap; an admin may edit without it (designer.ts).
+   */
+  designer?: true;
+
+  /**
    * Decks friends have sent this account (deckshare.ts, owner 2026-11-10):
    * the bell's "<friend> sent you <deck>" lines, until opened or dismissed.
    * Ids only — the deck's name and visibility are read off the sender's
@@ -1382,6 +1389,7 @@ export function privateView(account: Account, online: (id: string) => boolean): 
   discord: string | null;
   provisional?: true;
   admin?: true;
+  designer?: true;
   favoritePicked: Element | null;
   availability: { tz: string; grid: string } | null;
 } {
@@ -1400,6 +1408,8 @@ export function privateView(account: Account, online: (id: string) => boolean): 
      * cannot tell the page exists — and it is only a button: every admin
      * route is gated on the server, never on this. */
     admin: account.admin === true ? true : undefined,
+    /** the account's own Card editor button; every card-edit route asks the server */
+    designer: account.designer === true ? true : undefined,
     /** the favourite the player CHOSE, or null when it is the one played most */
     favoritePicked: account.favorite ?? null,
     /** the league availability — private, see `Account.league` */
@@ -1481,6 +1491,15 @@ export function setAdmin(account: Account, want: boolean): boolean {
   else delete account.admin;
   persist();
   return account.admin === true;
+}
+
+/** Grant or revoke the designer flag; returns what the account now carries.
+ *  No last-holder guard: an admin can always grant it again. */
+export function setDesigner(account: Account, want: boolean): boolean {
+  if (want) account.designer = true;
+  else delete account.designer;
+  persist();
+  return account.designer === true;
 }
 
 /** Every account holding the admin flag. Used by the last-admin guard above
