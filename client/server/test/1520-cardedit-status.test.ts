@@ -3,7 +3,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { NO_ANSWER_NOTE, statusOf, type CardEdit, type EditCommand, type EditEvent, type RunnerRow } from '../cardedit.ts';
+import { NO_ANSWER_NOTE, POSTED_LATE, statusOf, type CardEdit, type EditCommand, type EditEvent, type RunnerRow } from '../cardedit.ts';
 import type { OracleRow } from '../../ui/cardnotation.ts';
 
 const ID = 'ce-20261127-murkstalker-7f3a';
@@ -48,6 +48,11 @@ const CASES: [string, CardEdit, RunnerRow[], string[], ReturnType<typeof statusO
   ['a steward edit goes live the same way', edit([cmd(true, ANSWERED)], { road: 'steward', why: ['the text changed'] }), rows(['to-steward']), [ID], { status: 'live' }],
   ['another edit live', edit([cmd(true, ANSWERED)]), [], ['ce-20261127-murkstalker-0000'], { status: 'applying', note: 'waiting for the home box' }],
   ['cancelled', edit([cmd(false)], { events: [ev('cancelled')] }), [], [], { status: 'cancelled' }],
+  ['a complexity command answered in words', edit([{ ...cmd(true, { at: 't', echo: 'Set the complexity of murkstalker to Simple' }), field: 'complexity' }], { road: 'steward', why: ['the complexity changed'] }), [], [],
+    { status: 'steward', note: 'queued for the steward: the complexity changed' }],
+  ['words do not answer a command that draws a picture', edit([cmd(true, { at: 't', echo: 'Set the complexity of murkstalker to Simple' })], { events: [ev('posted')] }), [], [], { status: 'waiting' }],
+  ['a new value posted after pickup', edit([cmd(true, ANSWERED)], { events: [ev('posted-late')] }), rows(['picked']), [], { status: 'applying', note: POSTED_LATE }],
+  ['and still once live', edit([cmd(true, ANSWERED)], { events: [ev('posted-late')] }), rows(['landed']), [ID], { status: 'live', note: POSTED_LATE }],
 ];
 
 test('1520 statusOf, one case per row of the status table', () => {

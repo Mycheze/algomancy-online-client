@@ -142,9 +142,17 @@ export interface StatusNote { status: EditStatus; note?: string }
 
 export const NO_ANSWER_NOTE = "FriendlyBot hasn't answered: is it running? Post the command again.";
 
-/** Every command posted and answered with pictures. */
-export const picturesCaught = (e: CardEdit): boolean =>
-  e.commands.length > 0 && e.commands.every(c => c.posted && c.reply?.fileName !== undefined);
+/** FriendlyBot answers `$simple`/`$complex` with one line of text and no picture. */
+export const drawsPicture = (c: Pick<EditCommand, 'field'>): boolean => c.field !== 'complexity';
+
+/** Posted and answered: with pictures, or for a complexity command with its one line. */
+export const isAnswered = (c: EditCommand): boolean =>
+  c.posted !== null && c.reply !== null && (c.reply.fileName !== undefined || (!drawsPicture(c) && c.reply.echo !== undefined));
+
+/** Every command posted and answered: the edit is ready for the home box. */
+export const allAnswered = (e: CardEdit): boolean => e.commands.length > 0 && e.commands.every(isAnswered);
+
+export const POSTED_LATE = 'posted after the change was picked up: make a new edit';
 
 const isCancelled = (e: CardEdit): boolean => e.events.some(ev => ev.what === 'cancelled');
 
@@ -153,10 +161,12 @@ export function statusOf(
   edit: CardEdit, rows: readonly RunnerRow[], liveIds: ReadonlySet<string> | readonly string[],
 ): StatusNote {
   const isLive = liveIds instanceof Set ? liveIds.has(edit.id) : (liveIds as readonly string[]).includes(edit.id);
-  if (isLive) return { status: 'live' };
+  // a command posted after the runner took the edit changed FriendlyBot's card, not ours
+  const late = edit.events.some(ev => ev.what === 'posted-late') ? { note: POSTED_LATE } : {};
+  if (isLive) return { status: 'live', ...late };
   if (isCancelled(edit)) return { status: 'cancelled' };
   if (!edit.commands.some(c => c.posted)) return { status: 'submitted' };
-  if (!picturesCaught(edit)) {
+  if (!allAnswered(edit)) {
     const last = [...edit.events].reverse()
       .find(ev => ['posted', 'reply', 'no-answer', 'reply-error', 'wrong-card'].includes(ev.what));
     if (last?.what === 'wrong-card') {
@@ -169,11 +179,11 @@ export function statusOf(
     return { status: 'waiting' };
   }
   const handed = [...rows].reverse().find(r => r.step === 'to-steward');
-  if (handed) return { status: 'steward', note: `queued for the steward: ${handed.why || 'the tests went red'}` };
-  if (edit.road === 'steward') return { status: 'steward', note: `queued for the steward: ${edit.why.join('; ')}` };
+  if (handed) return { status: 'steward', note: `queued for the steward: ${handed.why || 'the tests went red'}`, ...late };
+  if (edit.road === 'steward') return { status: 'steward', note: `queued for the steward: ${edit.why.join('; ')}`, ...late };
   const steps = new Set(rows.map(r => r.step));
-  if (steps.has('landed') || steps.has('deployed')) return { status: 'applying', note: 'passed the tests: live with the next deploy' };
-  if (steps.has('picked') || steps.has('gate-red')) return { status: 'applying', note: 'testing' };
+  if (steps.has('landed') || steps.has('deployed')) return { status: 'applying', note: 'passed the tests: live with the next deploy', ...late };
+  if (steps.has('picked') || steps.has('gate-red')) return { status: 'applying', note: 'testing', ...late };
   return { status: 'applying', note: 'waiting for the home box' };
 }
 
@@ -233,16 +243,22 @@ export function statusNow(edit: CardEdit): StatusNote {
   return statusOf(edit, runnerRows(edit.id), liveEditIds());
 }
 
-export interface IndexEntry { id: string; card: string; road: Road }
+/** `pictures`: FriendlyBot's before.jpg and after.jpg are stored. False only for an edit whose
+ * every command is a complexity command, which FriendlyBot answers without a picture. */
+export interface IndexEntry { id: string; card: string; road: Road; pictures: boolean }
 export interface CardEditIndex { v: 1; edits: IndexEntry[] }
 
-/** The edits the runner may take, oldest first: every picture caught, not cancelled, and not yet
+/** The edits the runner may take, oldest first: every command answered, not cancelled, and not yet
  * landed or handed to the steward. Built from the files alone, so either writer may rebuild it. */
 export function indexEntries(): IndexEntry[] {
   return allEdits()
-    .filter(e => !isCancelled(e) && picturesCaught(e) && !runnerRows(e.id).some(r => RUNNER_DONE.has(r.step)))
-    .map(e => ({ id: e.id, card: e.card, road: e.road }));
+    .filter(e => !isCancelled(e) && allAnswered(e) && !runnerRows(e.id).some(r => RUNNER_DONE.has(r.step)))
+    .map(e => ({ id: e.id, card: e.card, road: e.road, pictures: hasPictures(e) }));
 }
+
+/** Both of FriendlyBot's pictures are stored for this edit. */
+export const hasPictures = (e: CardEdit): boolean =>
+  (['before', 'after'] as const).every(w => e.events.some(ev => ev.what === 'picture' && ev['which'] === w));
 
 export function rewriteIndex(): void {
   mkdirSync(cardEditsDir(), { recursive: true });
@@ -342,10 +358,11 @@ export function rederive(edit: CardEdit): void {
   edit.why = r.why;
 }
 
-/** Edits whose commands still wait on a post or an answer: what the bot polls. */
+/** What the bot polls: every edit the home box has not taken yet, answered or not, because
+ * Caleb may re-post a command with a new value after FriendlyBot answered it. */
 export function pendingEdits(): CardEdit[] {
   const liveIds = liveEditIds();
-  return allEdits().filter(e => !isCancelled(e) && !liveIds.has(e.id) && !picturesCaught(e));
+  return allEdits().filter(e => !isCancelled(e) && !liveIds.has(e.id) && runnerRows(e.id).length === 0);
 }
 
 const commandAt = (edit: CardEdit, i: unknown): EditCommand | undefined =>
@@ -367,8 +384,18 @@ export function recordSeen(edit: CardEdit, b: SeenBody, now = new Date()): Outco
   if (field !== c.field) return refuse(409, `that message does not set ${c.field}`);
   const at = typeof b.at === 'string' ? b.at : now.toISOString();
   const before = c.posted;
+  if (runnerRows(edit.id).length) {
+    // the home box is applying the value posted before: the same value again changes nothing,
+    // and a new one is only remembered, because it reached FriendlyBot's card and not ours
+    if (before?.content === b.content) return { ok: true, value: edit };
+    if (!edit.events.some(ev => ev.what === 'posted-late' && ev['messageId'] === b.messageId)) {
+      edit.events.push({ at: now.toISOString(), what: 'posted-late', i: b.i, messageId: b.messageId, content: b.content.slice(0, 2500) });
+      writeEdit(edit);
+    }
+    return refuse(409, POSTED_LATE);
+  }
   // a re-post of the same value keeps FriendlyBot's earlier answer; a new value, or a retry after a failure, waits for a new one
-  if (c.reply && (before?.content !== b.content || c.reply.fileName === undefined)) c.reply = null;
+  if (c.reply && (before?.content !== b.content || !isAnswered(c))) c.reply = null;
   c.posted = { messageId: b.messageId, channelId: b.channelId, content: b.content, at };
   if (before?.messageId !== b.messageId || before.content !== b.content) {
     edit.events.push({ at: now.toISOString(), what: 'posted', i: b.i, messageId: b.messageId });
@@ -411,7 +438,7 @@ export function recordReply(edit: CardEdit, b: ReplyBody, now = new Date()): Out
   const stamp = now.toISOString();
   if (b.noAnswer === true || typeof b.error === 'string') {
     // a later failure never undoes an answer already caught: the card did change
-    if (c.reply?.fileName === undefined) {
+    if (!isAnswered(c)) {
       c.reply = b.noAnswer === true ? { at, noAnswer: true } : { at, error: String(b.error).slice(0, 500) };
       edit.events.push(b.noAnswer === true
         ? { at: stamp, what: 'no-answer', i: b.i }
@@ -420,6 +447,7 @@ export function recordReply(edit: CardEdit, b: ReplyBody, now = new Date()): Out
     }
     return { ok: true, value: edit };
   }
+  if (!drawsPicture(c) && typeof b.fileName !== 'string') return complexityAnswer(edit, c, b, at, stamp);
   if (typeof b.fileName !== 'string') return refuse(400, 'fileName is required');
   const key = attachmentFileKey(b.fileName);
   if (key !== friendlyBotFileKey(edit.card)) {
@@ -431,8 +459,8 @@ export function recordReply(edit: CardEdit, b: ReplyBody, now = new Date()): Out
   const after = jpeg(b.after);
   if (!before || !after) return refuse(400, 'before and after must be JPEG pictures, base64');
   mkdirSync(join(cardEditsDir(), edit.id), { recursive: true });
-  // before: FriendlyBot's card before the edit, so the earliest answer to the first command
-  if (b.i === 0 && pictureAts(edit, 'before').every(t => at < t)) {
+  // before: FriendlyBot's card before the edit, so the earliest answer to the first command that draws one
+  if (b.i === edit.commands.findIndex(drawsPicture) && pictureAts(edit, 'before').every(t => at < t)) {
     writeAtomic(picturePath(edit.id, 'before'), before);
     edit.events.push({ at: stamp, what: 'picture', which: 'before', replyAt: at });
   }
@@ -442,6 +470,19 @@ export function recordReply(edit: CardEdit, b: ReplyBody, now = new Date()): Out
     edit.events.push({ at: stamp, what: 'picture', which: 'after', replyAt: at });
   }
   c.reply = { at, ...(typeof b.echo === 'string' ? { echo: b.echo.slice(0, 2500) } : {}), fileName: b.fileName.slice(0, 300) };
+  edit.events.push({ at: stamp, what: 'reply', i: b.i });
+  writeEdit(edit);
+  return { ok: true, value: edit };
+}
+
+const COMPLEXITY_ECHO = /^Set the complexity of .+ to (Simple|Complex)\s*$/s;
+
+/** FriendlyBot's one-line answer to `$simple`/`$complex`; it must name the value posted. */
+function complexityAnswer(edit: CardEdit, c: EditCommand, b: ReplyBody, at: string, stamp: string): Outcome<CardEdit> {
+  const said = typeof b.echo === 'string' ? COMPLEXITY_ECHO.exec(b.echo)?.[1] : undefined;
+  const posted = parseCommand(c.posted!.content)?.value;
+  if (!said || said !== posted) return refuse(409, `that answer does not set the complexity to ${posted ?? '?'}`);
+  c.reply = { at, echo: String(b.echo).slice(0, 2500) };
   edit.events.push({ at: stamp, what: 'reply', i: b.i });
   writeEdit(edit);
   return { ok: true, value: edit };

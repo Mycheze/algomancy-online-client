@@ -11,7 +11,7 @@ import { json, readBody } from './api-util.ts';
 import { designerFor } from './designer.ts';
 import { editable } from '../ui/cardnotation.ts';
 import {
-  REPLY_BODY_BYTES, allEdits, cancelEdit, diffSummary, isEditId, mayRead, openEditFor, oracleRow,
+  REPLY_BODY_BYTES, allEdits, cancelEdit, diffSummary, isAnswered, isEditId, mayRead, openEditFor, oracleRow,
   pendingEdits, picturePath, readEdit, recordReply, recordSeen, rowHash, statusNow, submitEdit,
   type CardEdit, type Outcome,
 } from './cardedit.ts';
@@ -35,7 +35,7 @@ function detail(e: CardEdit): Record<string, unknown> {
   return {
     id: e.id, card: e.card, by: { name: e.by.name }, createdAt: e.createdAt,
     edit: e.edit, diff: e.diff, summary: diffSummary(e), road: e.road, why: e.why,
-    commands: e.commands.map(c => ({ text: c.text, field: c.field, posted: c.posted?.content ?? null, answered: c.reply?.fileName !== undefined })),
+    commands: e.commands.map(c => ({ text: c.text, field: c.field, posted: c.posted?.content ?? null, answered: isAnswered(c) })),
     status, note: note ?? null,
     pictures: {
       before: e.events.some(ev => ev.what === 'picture' && ev['which'] === 'before'),
@@ -112,7 +112,7 @@ export async function cardEditBotRoutes(req: IncomingMessage, res: ServerRespons
         return {
           id: e.id, card: e.card, discord: e.by.discord, since: e.createdAt,
           ...(hint ? { channelHint: hint } : {}),
-          commands: e.commands.map((c, i) => ({ i, text: c.text, field: c.field, posted: c.posted !== null, done: c.reply?.fileName !== undefined })),
+          commands: e.commands.map((c, i) => ({ i, text: c.text, field: c.field, posted: c.posted !== null, done: isAnswered(c) })),
         };
       }),
     });

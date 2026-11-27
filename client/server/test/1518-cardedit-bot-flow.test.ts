@@ -5,13 +5,16 @@
  * §2 a repeated reply only updates; a reply for a command never seen is refused
  * §3 the runner's row says testing, and the build's Card-Edit trailer says live
  * §4 a reply carrying two full-size renders fits the route's body cap
+ * §5 a new value re-posted after FriendlyBot answered waits for its own answer, and leaves
+ *    the index meanwhile; once the home box has the edit, a new value is refused and noted
+ * §6 a complexity command is answered with one line and no picture
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { editorFields } from '../../ui/cardnotation.ts';
-import { NO_ANSWER_NOTE, appendRunnerRow, oracleRow, rowHash, useLiveEditIds } from '../cardedit.ts';
+import { NO_ANSWER_NOTE, POSTED_LATE, appendRunnerRow, oracleRow, readEdit, rowHash, useLiveEditIds } from '../cardedit.ts';
 import { cardEditsDir } from '../statepaths.ts';
 import { account, bodyReq, botGet, botPost, fbFile, jpegB64, page, silentReq } from './cardedit-fixture.ts';
 
@@ -81,8 +84,10 @@ test('1518 §1 from submitted through waiting for FriendlyBot to applying', asyn
   assert.deepEqual(r1.body, { ok: true, road: 'fast', status: 'applying', note: 'waiting for the home box' });
   assert.equal(picture(ID, 'before'), jpegB64('B0'), 'before: the first command\'s from-this');
   assert.equal(picture(ID, 'after'), jpegB64('A1'), 'after: the newest render');
-  assert.deepEqual(index(), { v: 1, edits: [{ id: ID, card: 'Murkstalker', road: 'fast' }] });
-  assert.deepEqual((await botGet('/api/bot/cardedit/pending')).body, { ok: true, edits: [] }, 'nothing left for the bot');
+  assert.deepEqual(index(), { v: 1, edits: [{ id: ID, card: 'Murkstalker', road: 'fast', pictures: true }] });
+  const still = (await botGet('/api/bot/cardedit/pending')).body['edits'] as { id: string; commands: { posted: boolean; done: boolean }[] }[];
+  assert.deepEqual(still.map(e => [e.id, e.commands.map(c => [c.posted, c.done])]), [[ID, [[true, true], [true, true]]]],
+    'answered, and still watched until the home box takes it');
 
   const img = await page(silentReq('GET', DEE).req, `/api/cardedit/edits/${ID}/image/after`);
   assert.equal(img.type, 'image/jpeg');
@@ -135,7 +140,9 @@ test('1518 §2 a repeated reply only updates; a reply before the command was see
 test('1518 §3 the runner says testing, and the build carrying the trailer says live', async () => {
   appendRunnerRow(ID, 'picked');
   assert.deepEqual(await status(ID), { status: 'applying', note: 'testing' });
-  assert.deepEqual(index(), { v: 1, edits: [{ id: ID, card: 'Murkstalker', road: 'fast' }] }, 'picked stays in the index');
+  assert.deepEqual(index(), { v: 1, edits: [{ id: ID, card: 'Murkstalker', road: 'fast', pictures: true }] }, 'picked stays in the index');
+  const watched = (await botGet('/api/bot/cardedit/pending')).body['edits'] as { id: string }[];
+  assert.ok(!watched.some(e => e.id === ID), 'taken by the home box: no longer watched');
   appendRunnerRow(ID, 'landed');
   assert.deepEqual(index(), { v: 1, edits: [] }, 'landed leaves it');
   useLiveEditIds([ID]);
@@ -157,4 +164,74 @@ test('1518 §4 two full-size renders fit the reply route', async () => {
   const r = await botPost('/api/bot/cardedit/reply', { id, i: 0, fileName: fbFile('Dune_Drifter'), before: big, after: big });
   assert.equal(r.status, 200, r.raw.slice(0, 200));
   assert.equal(r.body['status'], 'applying');
+});
+
+async function submitOn(card: string, change: Record<string, string>): Promise<string> {
+  const row = oracleRow(card)!;
+  const r = await page(bodyReq(DEE, { card, rowHash: rowHash(row), fields: { ...editorFields(row), ...change } }), '/api/cardedit/edits');
+  assert.equal(r.status, 200, r.raw);
+  return String(r.body['id']);
+}
+const inIndex = (id: string): boolean => (index() as { edits: { id: string }[] }).edits.some(e => e.id === id);
+interface Pending { id: string; commands: { posted: boolean; done: boolean }[] }
+const pendingOf = async (id: string): Promise<Pending | undefined> =>
+  ((await botGet('/api/bot/cardedit/pending')).body['edits'] as Pending[]).find(e => e.id === id);
+const flags = (p: Pending | undefined): [boolean, boolean][] => (p?.commands ?? []).map(c => [c.posted, c.done]);
+
+test('1518 §5 a tweaked re-post after the answer waits for its own answer; after pickup it is refused', async () => {
+  const id = await submitOn('Angel of Anguish', { 'total cost': '3' });
+  const post = (messageId: string, value: string, at: string) => botPost('/api/bot/cardedit/seen',
+    { id, i: 0, messageId, channelId: 'c1', content: `$modify angel of anguish|total cost|${value}`, at });
+  const answer = (tag: string, at: string) => botPost('/api/bot/cardedit/reply',
+    { id, i: 0, fileName: fbFile('Angel_of_Anguish'), before: jpegB64(`b${tag}`), after: jpegB64(`a${tag}`), at });
+  await post('p1', '3', '2026-11-27T19:01:00Z');
+  assert.equal((await answer('3', '2026-11-27T19:01:10Z')).body['status'], 'applying');
+  assert.ok(inIndex(id));
+  assert.deepEqual(flags(await pendingOf(id)), [[true, true]], 'answered, and still watched');
+
+  const tweak = await post('p2', '5', '2026-11-27T19:02:00Z');
+  assert.equal(tweak.status, 200);
+  assert.equal(tweak.body['status'], 'waiting', 'the old answer was for the old value');
+  assert.deepEqual(readEdit(id)!.after, { total_cost: '5' });
+  assert.equal(inIndex(id), false, 'not offered to the home box while the new value waits');
+  assert.deepEqual(flags(await pendingOf(id)), [[true, false]]);
+  assert.equal((await answer('5', '2026-11-27T19:02:10Z')).body['status'], 'applying');
+  assert.ok(inIndex(id));
+  assert.equal((await post('p3', '5', '2026-11-27T19:03:00Z')).body['status'], 'applying', 'the same value again keeps its answer');
+
+  appendRunnerRow(id, 'picked');
+  assert.equal(await pendingOf(id), undefined, 'taken by the home box: no longer watched');
+  const late = await post('p4', '6', '2026-11-27T19:04:00Z');
+  assert.deepEqual([late.status, late.body['error']], [409, POSTED_LATE]);
+  const e = readEdit(id)!;
+  assert.deepEqual(e.after, { total_cost: '5' }, 'what the home box took is unchanged');
+  assert.ok(e.events.some(ev => ev.what === 'posted-late' && ev['content'] === '$modify angel of anguish|total cost|6'));
+  const shown = (await page(silentReq('GET', DEE).req, `/api/cardedit/edits/${id}`)).body;
+  assert.deepEqual([shown['status'], shown['note']], ['applying', POSTED_LATE]);
+  assert.equal((await post('p3', '5', '2026-11-27T19:03:00Z')).status, 200, 'a repeat of the value taken is harmless');
+});
+
+test('1518 §6 a complexity command is answered with its one line and needs no picture', async () => {
+  const row = oracleRow('Arbiter of Armistice')!;
+  const want = row.complexity === 'Simple' ? 'Complex' : 'Simple';
+  const id = await submitOn('Arbiter of Armistice', { complexity: want });
+  const verb = `$${want.toLowerCase()} arbiter of armistice`;
+  assert.equal(readEdit(id)!.road, 'steward');
+  assert.equal(readEdit(id)!.commands[0]!.text, verb);
+  await botPost('/api/bot/cardedit/seen', { id, i: 0, messageId: 'x1', channelId: 'c1', content: verb });
+  const other = await botPost('/api/bot/cardedit/reply', { id, i: 0, echo: `Set the complexity of arbiter of armistice to ${row.complexity}`, at: '2026-11-27T20:00:00Z' });
+  assert.equal(other.status, 409, 'an answer naming the other value');
+  const r = await botPost('/api/bot/cardedit/reply', { id, i: 0, echo: `Set the complexity of arbiter of armistice to ${want}`, at: '2026-11-27T20:00:05Z' });
+  assert.deepEqual(r.body, { ok: true, road: 'steward', status: 'steward', note: 'queued for the steward: the complexity changed' });
+  assert.deepEqual((index() as { edits: { id: string }[] }).edits.find(x => x.id === id),
+    { id, card: 'Arbiter of Armistice', road: 'steward', pictures: false });
+  const d = (await page(silentReq('GET', DEE).req, `/api/cardedit/edits/${id}`)).body;
+  assert.deepEqual(d['pictures'], { before: false, after: false });
+  assert.equal((d['commands'] as { answered: boolean }[])[0]!.answered, true);
+  assert.deepEqual(flags(await pendingOf(id)), [[true, true]]);
+
+  const numbers = await submitOn('Abyssal Extortionist', { power: '9' });
+  await botPost('/api/bot/cardedit/seen', { id: numbers, i: 0, messageId: 'x2', channelId: 'c1', content: '$modify abyssal extortionist|power|9' });
+  const noPicture = await botPost('/api/bot/cardedit/reply', { id: numbers, i: 0, echo: 'Set the complexity of abyssal extortionist to Complex' });
+  assert.equal(noPicture.status, 400, 'only a complexity command may be answered without a picture');
 });

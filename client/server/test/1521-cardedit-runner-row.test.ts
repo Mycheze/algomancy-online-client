@@ -3,7 +3,7 @@
  * §1 the script refuses a bad id, an unknown step and an edit that does not exist,
  *    writing nothing, and appends one row for a good call
  * §2 index.json lists exactly the edits ready for the home box, oldest first: every
- *    picture caught, not cancelled, not yet landed or handed to the steward
+ *    command answered, not cancelled, not yet landed or handed to the steward
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -38,8 +38,10 @@ function edit(id: string, createdAt: string, commands: EditCommand[], extra: Par
 const READY = 'ce-20261127-murkstalker-aaaa';
 const STEWARD = 'ce-20261126-good-whale-bbbb';
 
+const PICTURES = [{ at: 't', what: 'picture', which: 'before' }, { at: 't', what: 'picture', which: 'after' }];
+
 test('1521 §1 the runner-row script refuses what it does not know and appends what it does', () => {
-  edit(READY, '2026-11-27T10:00:00Z', [caught]);
+  edit(READY, '2026-11-27T10:00:00Z', [caught], { events: [{ at: 't', what: 'submitted' }, ...PICTURES] });
   for (const [args, why] of [
     [['../etc-passwd', 'picked'], /not an edit id/],
     [['ce-20261127-Murkstalker-aaaa', 'picked'], /not an edit id/],
@@ -63,17 +65,18 @@ test('1521 §1 the runner-row script refuses what it does not know and appends w
 });
 
 test('1521 §2 index.json is the edits ready for the home box, oldest first', () => {
-  edit(STEWARD, '2026-11-26T10:00:00Z', [caught, caught], { card: 'Good Whale', road: 'steward', why: ['the text changed'] });
+  const complexity: EditCommand = { ...caught, field: 'complexity', reply: { at: 't', echo: 'Set the complexity of good whale to Complex' } };
+  edit(STEWARD, '2026-11-26T10:00:00Z', [complexity], { card: 'Good Whale', road: 'steward', why: ['the complexity changed'] });
   edit('ce-20261127-dune-drifter-cccc', '2026-11-27T11:00:00Z', [caught, waiting], { card: 'Dune Drifter' });
   edit('ce-20261127-air-plant-dddd', '2026-11-27T12:00:00Z', [caught], { card: 'Air Plant', events: [{ at: 't', what: 'cancelled' }] });
   edit('ce-20261127-angel-of-anguish-eeee', '2026-11-27T13:00:00Z', [{ ...caught, posted: null, reply: null }], { card: 'Angel of Anguish' });
   assert.deepEqual(index(), {
     v: 1,
     edits: [
-      { id: STEWARD, card: 'Good Whale', road: 'steward' },
-      { id: READY, card: 'Murkstalker', road: 'fast' },
+      { id: STEWARD, card: 'Good Whale', road: 'steward', pictures: false },
+      { id: READY, card: 'Murkstalker', road: 'fast', pictures: true },
     ],
-  }, 'a command still waiting, a cancelled edit and an unposted one are left out');
+  }, 'a command still waiting, a cancelled edit and an unposted one are left out; a complexity edit needs no picture');
   assert.equal(run(STEWARD, 'to-steward', 'the text changed').status, 0);
   assert.equal(run(READY, 'landed').status, 0);
   assert.deepEqual(index(), { v: 1, edits: [] }, 'handed to the steward, and landed, leave it');
