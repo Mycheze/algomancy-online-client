@@ -8,7 +8,7 @@
 set -euo pipefail
 ROOT=$(readlink -f "${1:-/home/bena/Documents/Algomancy}")   # $1 is the test seam: ssh cannot pass arguments to a forced command
 p="${SSH_ORIGINAL_COMMAND:-}"
-allowed() { [[ "$1" =~ ^var/(games/[A-Za-z0-9_-]+\.json|challenges/[A-Za-z0-9_./-]+\.json|report-runs\.jsonl|issues\.jsonl|verdicts\.jsonl)$ ]] && [[ "$1" != *..* ]]; }
+allowed() { [[ "$1" =~ ^var/(games/[A-Za-z0-9_-]+\.json|challenges/[A-Za-z0-9_./-]+\.json|report-runs\.jsonl|issues\.jsonl|verdicts\.jsonl|card-edits/index\.json|card-edits/ce-[0-9]{8}-[a-z0-9]+(-[a-z0-9]+)*-[0-9a-f]{4}(\.json|/(before|after)\.jpg))$ ]] && [[ "$1" != *..* ]]; }
 allowed "$p" || { echo "steward-fetch: refusing '$p'" >&2; exit 2; }
 # …and so is the file it names, once every link is followed
 f=$(readlink -f "$ROOT/$p") && allowed "${f#"$ROOT"/}" && [ -f "$f" ] || { echo "steward-fetch: no such file $p" >&2; exit 1; }

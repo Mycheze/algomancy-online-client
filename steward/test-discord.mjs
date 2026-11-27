@@ -177,6 +177,27 @@ try {
       'after the tick it is written from Discord\'s copy, on the thread it already has');
   }
 
+  // a card edit the RUNNER queued for the steward: its own private thread, pictures attached, once
+  {
+    const slug = 'card-ce-20261127-murkstalker-7f3a', dir = join(STATE, 'inbox', slug);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(STATE, 'inbox', `${slug}.md`), '# Card edit from Caleb: Murkstalker (ce-20261127-murkstalker-7f3a)\n\nCaleb changed Murkstalker with FriendlyBot on 2026-11-27.\n\nWhy this is not the fast path: the text changed.\n');
+    writeFileSync(join(dir, 'before.jpg'), JPG); writeFileSync(join(dir, 'after.jpg'), JPG); writeFileSync(join(dir, 'request.json'), '{}');
+    const n0 = threads.size;
+    ok((await run('sync')) === '' && threads.size === n0 + 1, 'a request the runner wrote gets a thread on the next sync, and no action');
+    const it = db().items[slug]; const th = it && threads.get(it.thread);
+    const first = th?.msgs[0];
+    ok(it?.inbox && /Murkstalker/.test(th?.name || '') && /the text changed/.test(first?.content || '') && /Queued for the steward as `card-ce-/.test(first?.content || ''),
+      'the thread is named for the card and quotes why it went to the steward');
+    ok(first && ['before.jpg', 'after.jpg', `${slug}.md`].every(f => first.files.includes(f)) && !first.files.includes('request.json'), `it carries the write-up and both pictures (${first?.files})`);
+    if (KIND === 0) ok(th?.members.includes(OWNER) && !th?.onMessage, 'in a text channel it is a private thread with the owner, not one on a message');
+    ok((await run('sync')) === '' && threads.size === n0 + 1, 'the next sync does not post it again');
+    appendFileSync(join(STATE, 'journal.jsonl'), JSON.stringify({ ts: new Date().toISOString(), item: slug, outcome: 'to-steward', why: 'the text changed' }) + '\n');
+    await run('sync'); ok(it && !threads.get(it.thread).archived, 'queued for the steward, it stays open');
+    appendFileSync(join(STATE, 'journal.jsonl'), JSON.stringify({ ts: new Date().toISOString(), item: slug, outcome: 'shipped', title: 'Murkstalker drains 1', summary: 'Rewrote it from the new scan.' }) + '\n');
+    await run('sync'); ok(it && threads.get(it.thread).archived && /shipped — Murkstalker drains 1/.test(threads.get(it.thread).msgs.at(-1).content), 'once the steward ships it the thread closes with what was done');
+  }
+
   owner(t2, 'reject: wrong approach, do it in one batch');
   ok((await run('sync')) === 'reject CT-2 wrong approach, do it in one batch', 'reject carries its reason');
 

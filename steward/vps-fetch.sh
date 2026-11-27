@@ -5,13 +5,13 @@
 #   steward/vps-fetch.sh var/games/QJEY.json
 #   steward/vps-fetch.sh var/report-runs.jsonl
 #
-# Only game, challenge-run and report files: never accounts.json (password
-# hashes) or anything outside var/. Re-fetch before every replay: a stale copy
-# replays clean and lies (playtest-report-loop, 2026-08-24).
+# Only game, challenge-run and report files, and the card editor's requests with their two
+# pictures: never accounts.json (password hashes) or anything outside var/. Re-fetch
+# before every replay: a stale copy replays clean and lies (playtest-report-loop, 2026-08-24).
 set -euo pipefail
 p="${1:?usage: steward/vps-fetch.sh var/games/<ROOM>.json}"
-[[ "$p" =~ ^var/(games/[A-Za-z0-9_-]+\.json|challenges/[A-Za-z0-9_./-]+\.json|report-runs\.jsonl|issues\.jsonl|verdicts\.jsonl)$ ]] && [[ "$p" != *..* ]] \
-  || { echo "vps-fetch: refusing '$p' (games, challenge runs and report journals only)" >&2; exit 2; }
+[[ "$p" =~ ^var/(games/[A-Za-z0-9_-]+\.json|challenges/[A-Za-z0-9_./-]+\.json|report-runs\.jsonl|issues\.jsonl|verdicts\.jsonl|card-edits/index\.json|card-edits/ce-[0-9]{8}-[a-z0-9]+(-[a-z0-9]+)*-[0-9a-f]{4}(\.json|/(before|after)\.jpg))$ ]] && [[ "$p" != *..* ]] \
+  || { echo "vps-fetch: refusing '$p' (games, challenge runs, report journals and card-edit requests only)" >&2; exit 2; }
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 mkdir -p "$REPO/$(dirname "$p")"
 if [ -n "${STEWARD_FETCH_KEY:-}" ]; then

@@ -6,7 +6,8 @@
 #
 #   1. mechanics, any hour, no Claude:  a deploy that was waiting for a quiet
 #      server; branches the owner approved (steward-approved/*) → rebase, gate,
-#      master, deploy
+#      master, deploy; one card edit from the card editor (STEWARD_CARD_EDITS=1):
+#      apply → gate → master, or the steward's inbox
 #   2. inside the night window only:    fetch reports → build the queue → one
 #      fresh `claude -p` running the steward skill on ONE item → read its
 #      verdict → run the full gate HERE → apply steward/policy.mjs → ship
@@ -44,11 +45,15 @@ OUTBOX="$ROOT/outbox"; mkdir -p "$OUTBOX/handoffs"
 : "${STEWARD_MODEL:=opus}"
 : "${STEWARD_RUN_HOURS:=4}"           # one item's hard cap
 : "${STEWARD_GATE_MIN:=120}"
+: "${STEWARD_CARDEDIT_MIN:=240}"      # the card edit's apply job: four scan readers over every scan, ~14 min on the laptop
 : "${STEWARD_IDLE_MIN:=10}"           # a game file touched this recently = someone is playing
 # TEST SEAMS, and nothing else: steward/test-runner.sh swaps in a stub Claude and a stub gate
 : "${STEWARD_CLAUDE_BIN:=claude}"
 : "${STEWARD_GATE_CMD:=npm --prefix $REPO/client run check}"
 : "${STEWARD_FETCH_CMD:=node $REPO/client/engine/scripts/fetch-reports.mjs}"
+# …and for the card editor's step: how a var/card-edits file comes down, and the apply job
+: "${STEWARD_CARDEDIT_FETCH:=bash $REPO/steward/vps-fetch.sh}"
+: "${STEWARD_CARDEDIT_APPLY:=$REPO/.venv/bin/python $REPO/bot/pipeline/apply_card_edit.py}"
 VPS=algomancy-vps
 VREPO=/home/bena/Documents/Algomancy
 SITE=https://algomancy.online
@@ -607,6 +612,265 @@ redgate() { # branch item log intent base_sha
     '{branch:$b,item:$i,log:$l,intent:$in,sha:$s,tries:$t,masterRed:$mr}' > "$f"
 }
 
+# ── 1b. card edits: the designer's changes from the card editor (client/docs/card-editor.md §6) ──
+# Inert unless the config says STEWARD_CARD_EDITS=1. The game server lists the edits whose every
+# picture is caught (var/card-edits/index.json, oldest first); this takes the oldest it has not
+# handled, ONE a tick, at any hour (no Claude is spent). The fast road is the apply job, fenced like
+# the gate, then the gate, the policy and ship_head as for any ship; anything else, and any red,
+# becomes an inbox item for the steward. Each step goes back to the VPS as a runner row, over the
+# runner's own ssh (the fetch key cannot write). $CE is this runner's memory of what it handled.
+CE="$STATE/card-edits.json"
+CE_ID='^ce-[0-9]{8}-[a-z0-9]+(-[a-z0-9]+)*-[0-9a-f]{4}$'
+ce_on() { [ "${STEWARD_CARD_EDITS:-}" = 1 ]; }
+ce_val() { jq -r --arg i "$1" ".[\$i]${2:-} // empty" "$CE" 2>/dev/null; }   # id [jq path] → the record's value
+ce_set() { # id jq-update [--arg/--argjson …] → one edit's record changed in place
+  local id="$1" expr="$2"; shift 2
+  [ -s "$CE" ] || echo '{}' > "$CE"
+  jq --arg i "$id" "$@" ".[\$i] = ((.[\$i] // {}) | $expr)" "$CE" > "$CE.t" && mv "$CE.t" "$CE"
+}
+sq() { printf "'%s'" "${1//\'/\'\\\'\'}"; }   # one word for the remote shell, whatever it holds
+dryp() { [ "$STEWARD_MODE" = live ] || echo dry-; }
+
+# a runner row for the server's status (cardedit-runner-row.ts); one the VPS did not take is sent
+# again on a later tick, in order, so Caleb's page never stops on a step this runner has passed
+card_row() { # id step [why]
+  local why; why=$(printf '%s' "${3:-}" | tr '\n\t\r' '   ' | tr -s ' ' | cut -c1-300)
+  ce_set "$1" '.rows = ((.rows // []) + [{step:$s, why:$w, at:$t, sent:false}])' --arg s "$2" --arg w "$why" --arg t "$(date -u +%FT%TZ)"
+  card_rows_send "$1"
+}
+card_rows_send() { # id
+  local id="$1" n k step why rc
+  n=$(jq --arg i "$id" '(.[$i].rows // []) | length' "$CE")
+  for ((k = 0; k < n; k++)); do
+    [ "$(jq -r --arg i "$id" --argjson k "$k" '.[$i].rows[$k].sent' "$CE")" = false ] || continue
+    step=$(jq -r --arg i "$id" --argjson k "$k" '.[$i].rows[$k].step' "$CE"); why=$(jq -r --arg i "$id" --argjson k "$k" '.[$i].rows[$k].why' "$CE")
+    if [ "$STEWARD_MODE" != live ]; then log "DRY: would write runner row: $id $step${why:+ — $why}"; rc=dry
+    else
+      vps "cd $VREPO && node client/server/cardedit-runner-row.ts $id $step $(sq "$why")" >>"$LOGS/card-edits.log" 2>&1; rc=$?
+      # 2 = the script refused (a bad id or step, no such edit): sending it again cannot help
+      if [ "$rc" = 2 ]; then log "card edit $id: the VPS refused the $step row (card-edits.log)"; rc=refused
+      elif [ "$rc" != 0 ]; then log "card edit $id: the $step row did not reach the VPS — next tick"; return 0
+      else rc=true; fi
+    fi
+    ce_set "$id" '.rows[$k].sent = (if $r == "true" then true else $r end)' --argjson k "$k" --arg r "$rc"
+  done
+}
+
+card_fetch() { # var/card-edits/… → a fresh copy at that path in the clone; 0 = it came down
+  rm -f "$REPO/$1"
+  (cd "$REPO" && bash -c "$STEWARD_CARDEDIT_FETCH \"\$1\"" _ "$1") >>"$LOGS/card-edits.log" 2>&1 && [ -s "$REPO/$1" ]
+}
+# the request, and FriendlyBot's two pictures unless the index says it drew none (a complexity-only edit)
+card_fetch_all() { # id [pictures: true|false]
+  card_fetch "var/card-edits/$1.json" || return 1
+  if [ "${2:-true}" = false ]; then rm -f "$REPO/var/card-edits/$1/"{before,after}.jpg; return 0; fi
+  card_fetch "var/card-edits/$1/before.jpg" && card_fetch "var/card-edits/$1/after.jpg"
+}
+
+# a gate log's first failure, in words a player can read ("challenge reference runs")
+red_words() { # log
+  local f; f=$(grep -m1 -E '^not ok' "$1" 2>/dev/null | sed -E 's/^not ok [0-9]+ - //')
+  [ -n "$f" ] || f=$(grep -m1 -E '^ +✗ ' "$1" 2>/dev/null | sed -E 's/^ +✗ +[0-9]+ s +//')
+  [[ "$f" =~ (\.test\.[a-z]+|\.py)$ ]] && f=$(sed -E 's#^.*/##; s/\.test\.[a-z]+$|\.py$//; s/^(test_)?[0-9]*[-_ ]*//; s/[-_]+/ /g' <<<"$f")
+  f=$(cut -c1-160 <<<"$f"); echo "${f:-a test}"
+}
+
+# state/inbox/card-<id>.md, in card-editor.md §8's shape, with its files beside it
+card_inbox() { # id why [note] [file-to-attach …]
+  local id="$1" why="${2%.}" note="${3:-}" d="$STATE/inbox/card-$1" e="$REPO/var/card-edits/$1" f; shift 3 2>/dev/null || shift $#
+  mkdir -p "$d"
+  cp -f "$e.json" "$d/request.json" 2>/dev/null; cp -f "$e/before.jpg" "$d/before.jpg" 2>/dev/null; cp -f "$e/after.jpg" "$d/after.jpg" 2>/dev/null
+  for f in "$@"; do [ -s "$f" ] && cp -f "$f" "$d/$(case "${f##*/}" in gate-*.log) echo gate.log ;; *.json) echo apply.json ;; *) echo apply.log ;; esac)"; done
+  {
+    jq -r --arg why "$why" --arg note "$note" '
+      def cell: (if . == null then "—" elif type == "array" then join(", ") elif type == "string" then . else tostring end)
+        | gsub("\\|"; "\\|") | gsub("[\r\n]+"; " ");
+      (.by.name // "The designer") as $who |
+      "# Card edit from \($who): \(.card) (\(.id))", "",
+      "\($who) changed \(.card) with FriendlyBot on \(.createdAt[0:10]). Re-implement it by the card-update",
+      "recipe (skill §14). The scan is the authority. Put `Card-Edit: \(.id)` on the landing commit.", "",
+      "Why this is not the fast path: \($why).", "",
+      (if $note != "" then $note, "" else empty end),
+      "| field | before | after |", "|---|---|---|",
+      ((.diff // [])[] | "| \(.field) | \(.from | cell) | \(.to | cell) |"), "",
+      "Commands as posted:",
+      ((.commands // [])[] | "    \(.posted.content // .text)"), ""' "$d/request.json"
+    echo "Files, beside this one in $d/:"
+    [ -f "$d/before.jpg" ] && echo "- before.jpg: FriendlyBot's picture of the card before the edit"
+    [ -f "$d/after.jpg" ] && echo "- after.jpg: FriendlyBot's picture after it, the new scan"
+    echo "- request.json: the whole edit"
+    [ -f "$d/gate.log" ] && echo "- gate.log: the full gate that went red"
+    [ -f "$d/apply.json" ] && echo "- apply.json: what the apply job measured"
+    [ ! -f "$d/apply.log" ] || echo "- apply.log: the apply job's own output"
+  } > "$STATE/inbox/card-$id.md.t" && mv "$STATE/inbox/card-$id.md.t" "$STATE/inbox/card-$id.md"
+}
+
+card_to_steward() { # id why [note] [file …]
+  local id="$1" why="$2" card; card=$(jq -r '.card // "?"' "$REPO/var/card-edits/$id.json" 2>/dev/null)
+  card_inbox "$@"
+  ce_set "$id" '.state = "steward" | .card = $c | .why = $w' --arg c "$card" --arg w "$why"
+  card_row "$id" to-steward "$why"
+  journal "card-$id" to-steward card="$card" why="$why"
+  log "card edit $id ($card) → the steward: $why"; notify "card edit: $card → queued for the steward ($why)"
+}
+
+# the prose that names the card (lessons, scenarios, rulings…) is the steward's to read, never a reason to hold the edit
+card_followup() { # id
+  local id="$1" n card; n=$(jq --arg i "$id" '(.[$i].followups // []) | length' "$CE"); card=$(ce_val "$id" .card)
+  [ "$n" -gt 0 ] || return 0
+  jq -r --arg i "$id" '.[$i] as $r |
+    "# Card edit follow-up: prose names \($r.card) (\($i))", "",
+    "\($r.card) changed through the card editor (\($i)), and the engine and the card already say so. These lines of",
+    "hand-written prose name it: check each against the new card, fix the ones that are now wrong, leave the rest.", "",
+    ($r.followups[] | "- `\(.file):\(.line)` \(.text)")' "$CE" > "$STATE/inbox/card-$id-followup.md"
+  card_row "$id" followup "$n line(s) of prose name $card"
+  journal "card-$id-followup" followup card="$card" note="$n line(s) of prose name it"
+}
+
+card_landed() { # id sha [quiet: no journal row, the landing loop wrote it]
+  local id="$1" card; card=$(ce_val "$id" .card)
+  ce_set "$id" '.state = "landed" | .sha = $s' --arg s "$2"
+  card_row "$id" landed
+  [ -n "${3:-}" ] || journal "card-$id" "$(dryp)landed" card="$card" sha="$2"
+  notify "card edit: $card landed$([ "$STEWARD_MODE" = live ] || echo ' (dry)')"
+  card_followup "$id"
+}
+
+card_retry() { # id why → another go on a later tick from a fresh master, the steward's after three
+  local id="$1" tries; tries=$(ce_val "$id" .tries); tries=$(( ${tries:-0} + 1 ))
+  ce_set "$id" '.state = "retry" | .tries = $n' --argjson n "$tries"
+  journal "card-$id" retry card="$(ce_val "$id" .card)" note="$2 (try $tries)"
+  [ "$tries" -lt 3 ] || card_to_steward "$id" "$2, three times"
+}
+
+# what happened to an edit after this runner handed it on: rows the VPS did not take, a staged one the
+# owner approved (land_approved journals it) or rejected, and a landed one a deploy now carries
+card_followthrough() {
+  ce_on && [ -s "$CE" ] || return 0
+  local id last dsha
+  for id in $(jq -r 'to_entries[] | select(any(.value.rows[]?; .sent == false)) | .key' "$CE"); do card_rows_send "$id"; done
+  for id in $(jq -r 'to_entries[] | select(.value.state == "staged") | .key' "$CE"); do
+    last=$(jq -rs --arg i "card-$id" 'map(select(.item == $i)) | last | "\(.outcome // "")\t\(.sha // "")\t\(.note // "")"' "$STATE/journal.jsonl" 2>/dev/null)
+    case "${last%%$'\t'*}" in
+      landed) last="${last#*$'\t'}"; card_landed "$id" "${last%%$'\t'*}" quiet ;;
+      rejected|rejected-retry) card_fetch_all "$id" && card_to_steward "$id" "the owner held the fast path's change back: ${last##*$'\t'}" ;;
+    esac
+  done
+  dsha=$(jq -rs 'map(select(.item == "deploy" and .outcome == "deployed")) | last | .sha // empty' "$STATE/journal.jsonl" 2>/dev/null)
+  [ -n "$dsha" ] || return 0
+  for id in $(jq -r 'to_entries[] | select(.value.state == "landed") | .key' "$CE"); do
+    g merge-base --is-ancestor "$(ce_val "$id" .sha)" "$dsha" 2>/dev/null || continue
+    ce_set "$id" '.state = "deployed"'; card_row "$id" deployed
+  done
+}
+
+card_edit_one() {
+  ce_on || return 0
+  card_followthrough
+  clean_tree origin/master
+  card_fetch var/card-edits/index.json || { log "card edits: no index came down (card-edits.log)"; return 0; }
+  local id="" i p pics s card
+  while read -r i p; do
+    [[ "$i" =~ $CE_ID ]] || continue
+    s=$(ce_val "$i" .state); [ -z "$s" ] || [ "$s" = retry ] && { id="$i"; pics="$p"; break; }
+  done < <(jq -r 'select(.v == 1) | .edits[]? | "\(.id) \(.pictures != false)"' "$REPO/var/card-edits/index.json" 2>/dev/null)
+  [ -n "$id" ] || return 0
+  card_fetch_all "$id" "$pics" || { log "card edit $id: its request or pictures did not come down — next tick"; return 0; }
+  local e="$REPO/var/card-edits/$id"
+  if ! jq -e --arg i "$id" '.id == $i and (.card | type) == "string" and (.road | IN("fast", "steward"))' "$e.json" >/dev/null 2>&1; then
+    [ -n "$(ce_val "$id" .state)" ] || notify "card edit $id: its request does not read as one; it is left alone"
+    ce_set "$id" '.state = "unreadable"'; log "card edit $id: the request does not read — left alone"; return 0
+  fi
+  card=$(jq -r .card "$e.json")
+  ce_set "$id" '.card = $c' --arg c "$card"
+  if [ "$(jq -r .road "$e.json")" != fast ] || [ "$pics" = false ]; then
+    card_to_steward "$id" "$(jq -r '(.why // []) | join("; ") | if . != "" then . elif .road == "fast" then "FriendlyBot sent no pictures of it" else "it is not a numbers or art change" end' "$e.json")"
+    return 0
+  fi
+  # the gate below would be red with master: the edit waits for a green one
+  mg_green_at "$(g rev-parse origin/master)" || { log "card edit $id waits for a green master"; return 0; }
+  governor_on || return 0
+  deps
+  jq -e --arg i "$id" 'any(.[$i].rows[]?; .step == "picked")' "$CE" >/dev/null || card_row "$id" picked
+  # a command re-posted between the index and `picked` changed FriendlyBot's card: take it only as it
+  # stands now, answered and on the same road. The bot stops watching it once a runner row exists.
+  cp -f "$e.json" "$e.first.json"
+  if ! card_fetch "var/card-edits/$id.json" || ! jq -e --slurpfile a "$e.first.json" '.road == "fast" and .commands == $a[0].commands
+      and all(.commands[]; .reply != null and ((.reply.fileName | type) == "string" or (.field == "complexity" and (.reply.echo | type) == "string")))' "$e.json" >/dev/null 2>&1; then
+    log "card edit $id changed while it was being taken — left for a later tick"
+    if [ "$(ce_val "$id" .raced)" != true ]; then
+      ce_set "$id" '.raced = true'; journal "card-$id" changed-while-taken card="$card"
+      notify "card edit: $card was posted to again while the runner took it; it waits for FriendlyBot's new answer, and the bot no longer watches it once picked, so it may need a look"
+    fi
+    return 0
+  fi
+  local out="$LOGS/card-$TS-$id.json" err="$LOGS/card-$TS-$id.err" rc
+  log "card edit $id ($card): the apply job"
+  # it writes the tree and nothing else: fenced like the gate (no network, no secrets, .git read-only)
+  fenced gate GIT_SSH_COMMAND="$BIN/git-ssh-guard" timeout "$((STEWARD_CARDEDIT_MIN * 60))" \
+    bash -c "$STEWARD_CARDEDIT_APPLY \"\$@\"" _ "$e.json" "$e/before.jpg" "$e/after.jpg" --repo "$REPO" >"$out" 2>"$err"; rc=$?
+  log "card edit $id: the apply job exited $rc"
+  # 2: the box lacks an input (the rulings export, PyMuPDF, a pipeline script), checked before any write.
+  # The box's problem, not the edit's: said once, and the edit waits for the box to be fixed.
+  if [ $rc = 2 ]; then
+    log "card edit $id: the apply job is missing an input: $(tail -n 1 "$err")"
+    if [ "$(ce_val "$id" .missing)" != true ]; then
+      ce_set "$id" '.missing = true'; journal "card-$id" apply-missing card="$card" log="$err" note="$(tail -n 1 "$err")"
+      notify "⚠ card edit: $card waits — the apply job is missing something on the box: $(tail -n 1 "$err")"
+    fi
+    clean_tree; return 0
+  fi
+  # 3: the steward's; whatever it already wrote (`touched`) goes with the tree
+  if [ $rc = 3 ]; then
+    local why; why=$(jq -r '.why // empty' "$out" 2>/dev/null)
+    clean_tree; card_to_steward "$id" "${why:-the apply job sent it to the steward}" "" "$out"; return 0
+  fi
+  if [ $rc != 0 ] || ! jq -e '.commitMessage | type == "string"' "$out" >/dev/null 2>&1; then
+    journal "card-$id" apply-crashed card="$card" exit="$rc" log="$err"
+    tail -n 60 "$err" > "$err.tail"; clean_tree
+    card_to_steward "$id" "the apply job stopped with an error (exit $rc)" "" "$err.tail"; return 0
+  fi
+  ce_set "$id" '.followups = $f' --argjson f "$(jq -c '.followups // []' "$out")"
+  g add -A
+  if g diff --cached --quiet; then clean_tree; card_to_steward "$id" "the apply job changed nothing" "" "$out"; return 0; fi
+  local msg; msg=$(jq -r .commitMessage "$out")
+  grep -qx "Card-Edit: $id" <<<"$msg" || msg="$msg"$'\n\n'"Card-Edit: $id"
+  g commit -q -F - <<<"$msg" || { clean_tree; card_retry "$id" "the commit failed"; return 0; }
+
+  # the same road as any ship: the full gate here, the policy, then master or a staged branch
+  local slug="card-$id" pol glog grc shrc
+  pol=$(policy origin/master HEAD)
+  glog=$(gate "$slug"); grc=$?
+  if [ $grc = 0 ] && [ "$(jq -r .verdict <<<"$pol")" = ship ]; then
+    ship_head "$slug" >/dev/null; shrc=$?
+    if [ $shrc = 0 ]; then card_landed "$id" "$(g rev-parse HEAD)"; clean_tree; return 0; fi
+    # 3: green on the old master, red on the one it moved to — the edit's red only if that master is green
+    if [ $shrc = 3 ]; then
+      glog="$SHIP_GLOG"; local rsha; rsha=$(g rev-parse HEAD)
+      if master_gate >/dev/null; then clean_tree "$rsha"; grc=1; else clean_tree; card_retry "$id" "master moved and is red on its own gate"; return 0; fi
+    else clean_tree; card_retry "$id" "it could not land on a moving master"; return 0; fi
+  fi
+  if [ $grc != 0 ]; then
+    # red: archived like a branch the worker could not get green, never staged, and the steward's
+    local words; words=$(red_words "$glog")
+    if [ "$STEWARD_MODE" = live ]; then g push -q origin "HEAD:refs/archive/steward/$slug-red" || log "could not archive $slug"
+    else log "DRY: would archive $slug at refs/archive/steward/$slug-red"; fi
+    card_row "$id" gate-red "$words"
+    journal "$slug" gate-red card="$card" gate="$glog" sha="$(g rev-parse HEAD)"
+    card_to_steward "$id" "a test went red: $words" \
+      "The fast path applied it and the full gate went red on: $words. Find out why, and fix the code or the test (skill §14). Its commit is \`$(g rev-parse --short HEAD)\` in this clone, archived as \`refs/archive/steward/$slug-red\`." "$glog"
+    clean_tree; return 0
+  fi
+  # green, and the policy holds it for the owner: staged with a handoff, landed by his approval
+  local b reasons; b=$(stage_head "$slug"); reasons=$(jq -r '.reasons | join("; ")' <<<"$pol")
+  printf '# %s — %s changed through the card editor\n\n**Needs from you:** OK to put this live? Reply **approve**, or say what to change.\n\n## In short\nThe designer changed %s with FriendlyBot. The fast path applied it and every test passed, but the ship rules hold it for you because it %s.\n\n## Details\nBranch `%s`.\n' \
+    "$slug" "$card" "$card" "$reasons" "$b" > "$STATE/handoffs/$slug.md"
+  ce_set "$id" '.state = "staged"'
+  journal "$slug" "$(dryp)staged" card="$card" branch="$b" gate="$glog" policy="$reasons"
+  notify "card edit: $card → staged for you ($reasons)"
+  clean_tree
+}
+
 # ── what the agent may read but never change ───────────────────────────────
 # All of $STATE (the owner's answers and requests, the journal, the queue, the flags), the judged
 # copies in $BIN, the config the next tick sources, and the clone's git config and remote refs (they
@@ -873,6 +1137,11 @@ main() {
   master_gate && regate_master_red
   deploy_master
   try_deploy
+  # the designer's card edits, one a tick, before the agent's own work: after master's colour is known
+  # (a red master would send a fast-path edit to the steward for nothing). A deploy waiting for a quiet
+  # server does not hold it back: landing and deploying are apart here, and that deploy carries it too.
+  card_edit_one
+  ce_on && { try_deploy; card_followthrough; }
   # the morning summary: the first tick from STEWARD_SUMMARY_HOUR on (discord.mjs posts it once a day)
   in_hours "$((10#$STEWARD_SUMMARY_HOUR))" 24 && [ -f "$BIN/discord.mjs" ] && { discord summary 2>>"$LOGS/runner.log" || true; }
   if ! in_window; then discord_sync; exit 0; fi

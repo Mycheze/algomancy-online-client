@@ -204,7 +204,8 @@ later one, the reasons go in `skipped`, not the summary):
 Queue line kinds: `fix-master` (master's own gate is red — §12), `repair
 <branch>` (a staged branch whose gate went red — fix it on that branch, see §9),
 `resume <item>` (answered — finish it), `triage #a-#b` (new reports — see §10),
-`inbox inbox-<id>` (a request the owner typed into #steward — §13),
+`inbox inbox-<id>` (a request the owner typed into #steward — §13), `inbox card-<id>`
+(a card edit the runner could not land alone — §14a),
 `retro retro-<day>` (the daily look at your own weak points — §15),
 `CT-N`, `BL-N`, `tidy` (§11). A report is worked through the ticket that
 carries it (its settled row's `to`).
@@ -745,7 +746,7 @@ behave — but still prove before you change: reproduce a bug, find the rule for
 rules point (§5), find the code for a UI point.
 
 - **A card changed** — a new scan, new text, a new cost, "X has the wrong
-  version": §14, the whole recipe, in this one run. A card update is never "too
+  version": §14, the whole recipe, in this one run (a `card-<id>` item: §14a). A card update is never "too
   big for one run" and never half-shipped.
 - **Small and clear** (a wording, a value, a bug he describes exactly): do it,
   the usual way — evidence, fix, guard, mutation check. Outcome by §8 (a fix ships; only a
@@ -843,6 +844,40 @@ typed text is the source; say in the summary that the scan is still the old one.
 
 The summary he reads lists each card and what changed on it (cost, text, art),
 and anything you could not do, plainly — never "see the commit".
+
+### 14a. `inbox card-<id>` — a card edit from the card editor
+
+Caleb also changes cards himself, through the card editor: he posts FriendlyBot
+commands, our bot catches FriendlyBot's before and after pictures, and the runner
+applies a numbers-or-art edit without you (the fast path). Everything else comes
+to you as `$STEWARD_STATE/inbox/card-<id>.md`, written by the runner, not the owner:
+why it is not the fast path, the before/after table, the commands as posted, and
+the files beside it (`card-<id>/`: `before.jpg`, `after.jpg`, `request.json`, and
+`gate.log` or `apply.json` when the fast path tried first).
+
+- **It is §14, the whole recipe.** **FriendlyBot's `after.jpg` is the new scan**
+  (step 1, resized to 720x1000), and the scan is the authority: read every field
+  off it, not just the ones the table names. The table is what he meant to change;
+  the scan is what he got.
+- **The landing commit carries the trailer** the item names, as its own last line:
+  `Card-Edit: <id>`. It is how his page knows the edit is live, so a card edit
+  shipped without it never says "live". Every commit of a card edit carries it,
+  on this road and the fast one.
+- **The fast path went red** (`gate.log`; its commit is named in the item): find
+  out why, then fix the code or the test. A test that pins the old number is
+  rewritten for the new card. The drift guard's practice games (`800`'s fuzz
+  entries) are re-recorded **when the edit is the measured reason they moved**,
+  measured as §8a and 800's header say, and named in the commit message. The
+  Weekly Challenges' reference solutions are **never** re-recorded to make a test
+  pass: a stored run the edit breaks is step 7's case.
+- Item id is the `card-<id>` token (`"item": "card-ce-…"`); outcome by §8, as for
+  any card update. The summary is what the owner reads when the thread closes.
+
+`inbox card-<id>-followup` is the fast path's leftover: the edit landed, and the
+item lists hand-written prose that names the card (lessons, scenarios, generated
+rulings, the eval set, the CR records). Check each line against the new card and
+fix the ones that are now wrong (a CR record through `cr/`, never its output);
+`ship`, or `not-a-bug` when none is.
 
 ## 15. `retro retro-<day>` — make tomorrow's runs better than today's
 

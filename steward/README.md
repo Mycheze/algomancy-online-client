@@ -14,6 +14,7 @@ review is a few minutes of `steward/review.sh`.
         1. any hour   deploy that was waiting for a quiet server
                       land approved branches (steward-approved/*): rebase → full gate → master → deploy
                       gate master; green and ahead of the VPS → deploy (the owner's own pushes)
+                      one card edit (STEWARD_CARD_EDITS=1): apply → full gate → master | the steward's inbox
         2. inside STEWARD_WINDOW (23-08 Prague, or "always"), unless paused / backing off:
                       fetch reports → queue.mjs → ONE `claude -p` (the steward skill)
                       → outcome.json → full gate HERE → policy.mjs → ship | stage
@@ -121,6 +122,24 @@ new version", the scan attached or linked). The skill's §14 is the whole recipe
 engine, tests, challenges, the bot's corpus, the update line — and a short
 message is the whole brief. The scan is the authority; algomancer.cc is not
 evidence (the bot's daily check against it was retired the same day).
+
+### Card edits (the card editor)
+
+Caleb can also change a card himself, from the client (`client/docs/card-editor.md`).
+The game server keeps each request in `var/card-edits/` with FriendlyBot's before and
+after pictures, and the runner takes one a tick, at any hour, before the agent's item
+(`card_edit_one` in `run-once.sh`; off until the config says `STEWARD_CARD_EDITS=1`).
+The request comes down through the fetch key (which can read `var/card-edits/index.json`,
+`<id>.json` and `<id>/before|after.jpg`, nothing else there); every step goes back to
+Caleb's page as a runner row, over the runner's own ssh. A numbers-or-art edit runs
+the apply job (`bot/pipeline/apply_card_edit.py`, fenced like the gate) once master is green, is committed
+with its `Card-Edit: <id>` trailer, and takes the same road as any ship: the full gate,
+the policy, master, the deploy. Anything else, a picture check that fails, or a red
+gate (the branch archived, never staged) becomes `state/inbox/card-<id>.md` with the
+pictures and the log beside it, gets a thread in #steward like the owner's own asks,
+and is worked by the skill's §14a. The runner's memory of what it handled is
+`state/card-edits.json`. Turning it on needs the fetch key's script reinstalled on
+the VPS (Install §6, the `sudo install` line), since that copy is root's.
 
 ### Rules questions
 
@@ -317,7 +336,7 @@ Done on 2026-11-03; kept here so it can be redone.
 - **Game files come down through their own key.** `vps-fetch.sh` with
   `STEWARD_FETCH_KEY` set uses only that key, which the VPS answers with
   `deploy/steward-fetch.sh` (a forced command): one file from the allowed list
-  (games, challenge runs, the report journals) to stdout, nothing else — no
+  (games, challenge runs, the report journals, card-edit requests) to stdout, nothing else — no
   shell, no `accounts.json`, no `.env`, no link out of `var/`. The VPS runs a
   root-owned copy in `/usr/local/bin`, not the checkout's, so no commit (the
   steward's or one you approved) changes what the key can read until you

@@ -21,7 +21,8 @@
  * not in a thread — is a request, taken like a report. It becomes
  * state/inbox/inbox-<message id>.md (screenshots saved beside it), the queue
  * offers it right after triage, and a thread opened ON his message is where the
- * worker asks, shows, and says it is done.
+ * worker asks, shows, and says it is done. A request the runner writes there itself (a card edit
+ * for the steward) gets a private thread of its own on the next sync, with its pictures attached.
  *
  * Only the owner's messages count (STEWARD_DISCORD_OWNER): anyone else in the
  * server could otherwise approve code onto the live site. A ✅ says one was taken.
@@ -422,11 +423,31 @@ async function queueRequest(db, slug, text, files, from, onMessage, thread) {
   return thread;
 }
 
+/** A request the RUNNER wrote (state/inbox/<slug>.md with no thread yet: a card edit for the steward,
+ *  its follow-up) gets a private thread like the owner's own asks, so he sees it and can answer there.
+ *  The owner's requests (inbox-<message id>) are made with their thread and never reach this. */
+const RUNNER_FILES = /\.(jpe?g|png|log)$/i;
+async function postRequest(db, slug) {
+  const md = readFileSync(join(STATE, 'inbox', `${slug}.md`), 'utf8');
+  const dir = join(STATE, 'inbox', slug);
+  const files = [...mdFile(slug, md), ...ls(dir).filter(f => RUNNER_FILES.test(f)).sort()
+    .map(f => ({ name: f, data: readFileSync(join(dir, f)) }))].slice(0, 10);
+  const body = md.replace(/^# .*\n+/, '').trim();
+  const thread = await openThread(db, clip(titleOf(md, slug), 100),
+    `> ${clip(body, 1500).replace(/\n/g, '\n> ')}\n\nQueued for the steward as \`${slug}\`. It will ask here if it needs anything, and say here when it is done.`, files);
+  db.items[slug] = { thread, hash: null, lastSeen: thread, closed: false, inbox: true };
+  save(db);
+}
+
 async function sync() {
   const db = load(); const actions = [];
   // replies first: an approval should land on this very tick
   await readReplies(db, actions);
   await readInbox(db);
+  for (const f of ls(join(STATE, 'inbox')).filter(f => f.endsWith('.md')).sort()) {
+    const slug = f.replace(/\.md$/, '');
+    if (!slug.startsWith('inbox-') && !db.items[slug]) await postRequest(db, slug);
+  }
   const open = ls(HANDOFFS).filter(f => f.endsWith('.md')).map(f => f.replace(/\.md$/, ''));
   for (const slug of open) {
     const md = readFileSync(join(HANDOFFS, `${slug}.md`), 'utf8');

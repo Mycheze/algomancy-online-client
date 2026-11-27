@@ -322,6 +322,112 @@ if run fence; then # STEWARD_SANDBOX=bwrap: the agent cannot reach the config, t
   [ "$(fx var/games/TEST.json)" = '{"room":1}' ] && [ -z "$(fx var/accounts.json)$(fx var/challenges/x.json)$(fx 'var/games/TEST.json; cat var/accounts.json')" ] \
     && ok "the fetch key's forced command sends a game file, and nothing outside the list" || bad "steward-fetch.sh: $(fx var/accounts.json; fx var/challenges/x.json)"
 fi
+if run card-edits; then # the card editor's step against a fake VPS directory and a stub apply job
+  V="$T/vps/var/card-edits"; rm -rf "$T/vps"; mkdir -p "$V"; echo secret > "$T/vps/var/accounts.json"; echo '{"v":1,"edits":[]}' > "$V/index.json"
+  # the VPS's own forced command over that directory: what vps-fetch.sh brings down with the fetch key
+  cat > "$T/bin/fake-vps-fetch.sh" <<EOF
+#!/bin/sh
+mkdir -p "\$(dirname "\$1")" && SSH_ORIGINAL_COMMAND="\$1" bash "$T/repo/deploy/steward-fetch.sh" "$T/vps" > "\$1.part" && mv "\$1.part" "\$1"
+# a race: once this request has come down, Caleb posts again and FriendlyBot has not answered yet
+r="$T/bin/race-\$(basename "\$1" .json)"; [ -f "\$r" ] && rm -f "\$r" && jq -c '.commands += [{text:"\$modify murkstalker|power|4",field:"power",posted:{content:"x"},reply:null}]' "$T/vps/\$1" > "\$r.t" && mv "\$r.t" "$T/vps/\$1"
+exit 0
+EOF
+  cat > "$T/bin/apply-stub" <<'EOF'
+#!/usr/bin/env bash
+# a fake apply_card_edit.py <edit.json> <before> <after> --repo <clone>: what apply-scenario says
+id=$(sed -nE 's/.*"id":"([^"]+)".*/\1/p' "$1"); repo="$5"
+case "$(cat "$(dirname "$0")/apply-scenario")" in
+  green) echo "<!-- card edit $id -->" >> "$repo/client/ledgers/README.md"
+         printf '{"commitMessage":"Card edit: Murkstalker now costs 2 (was 3).\\n\\nCaleb changed it.\\n","followups":[{"file":"client/ui/lessons.ts","line":12,"text":"Murkstalker costs 3"}]}\n' ;;
+  steward) echo '{"why":"FriendlyBot'"'"'s before picture is not our scan: 3 tiles differ.","measurements":{"drift":0.31}}'; exit 3 ;;
+  crash) echo 'Traceback: the stub fell over' >&2; exit 1 ;;
+  missing) echo 'apply_card_edit: the rulings export is not in data/rulings/exports' >&2; exit 2 ;;
+esac
+EOF
+  chmod +x "$T/bin/fake-vps-fetch.sh" "$T/bin/apply-stub"
+  ce() { # id road [pictures] → an edit on the fake VPS, last in its index
+    mkdir -p "$V/$1"; [ "${3:-true}" = false ] || { printf '\xff\xd8\xff\xe0 before %s' "$1" > "$V/$1/before.jpg"; printf '\xff\xd8\xff\xe0 after %s' "$1" > "$V/$1/after.jpg"; }
+    jq -cn --arg i "$1" --arg r "$2" '{v:1,id:$i,card:"Murkstalker",by:{name:"Caleb"},createdAt:"2026-11-27T10:00:00Z",road:$r,
+      why:(if $r == "steward" then ["the text changed"] else [] end),diff:[{field:"total_cost",from:3,to:2},{field:"text",from:"a | b",to:null}],
+      commands:[{text:"$modify murkstalker|total cost|2",field:"total cost",posted:{content:"$modify murkstalker|total cost|2"},reply:{fileName:"Murkstalker.jpg"}}]}' > "$V/$1.json"
+    jq -c --arg i "$1" --arg r "$2" --argjson p "${3:-true}" '.edits += [{id:$i,card:"Murkstalker",road:$r,pictures:$p}]' "$V/index.json" > "$V/i.t" && mv "$V/i.t" "$V/index.json"
+  }
+  cetick() { # apply-scenario [gate] — any hour: the window excludes now, so no Claude runs at all
+    printf '%s' "$1" > "$T/bin/apply-scenario"
+    STEWARD_CARD_EDITS="${CE_ON-1}" STEWARD_CARDEDIT_FETCH="$T/bin/fake-vps-fetch.sh" STEWARD_CARDEDIT_APPLY="$T/bin/apply-stub" tick skip "${2:-true}" >/dev/null
+  }
+  rows() { jq -r --arg i "$1" '[.[$i].rows[]?.step] | join(" ")' "$T/state/card-edits.json" 2>/dev/null; }
+  dryref() { git -C "$T/repo" fetch -q origin "+refs/steward-dry/card-$1:refs/steward-dry/card-$1" 2>/dev/null && git -C "$T/repo" rev-parse -q --verify "refs/steward-dry/card-$1"; }
+  h=$(( 10#$(TZ=Europe/Prague date +%H) )); sed -i "s/^STEWARD_WINDOW=.*/STEWARD_WINDOW=$(printf %02d $(( (h + 2) % 24 )))-$(printf %02d $(( (h + 3) % 24 )))/" "$T/env"
+  jq -cn --arg s "$(git -C "$T/repo" rev-parse origin/master)" '{sha:$s,rc:0,log:"(test)",failures:[]}' > "$T/state/master-gate.json"
+  rm -f "$T/state/card-edits.json" "$T/state/inbox/card-"*.md; rm -rf "$T/state/inbox/card-"*
+
+  a=ce-20261127-murkstalker-0a01; ce "$a" fast
+  CE_ON= cetick green
+  [ ! -s "$T/state/card-edits.json" ] && ! grep -qs '"item":"card-' "$T/state/journal.jsonl" && [ -z "$(dryref "$a")" ] \
+    && ok "card edits: without STEWARD_CARD_EDITS=1 the step is inert" || bad "card edits ran without the switch: $(rows "$a")"
+  cetick green; ref=$(dryref "$a")
+  [ "$(rows "$a")" = "picked landed followup" ] && [ -n "$ref" ] && grep -q "\"item\":\"card-$a\",\"outcome\":\"dry-landed\"" "$T/state/journal.jsonl" \
+    && [ "$(git -C "$T/repo" log -1 --format='%(trailers:key=Card-Edit,valueonly)' "$ref" | head -1)" = "$a" ] \
+    && [ "$(git -C "$T/repo" log -1 --format=%s "$ref")" = "Card edit: Murkstalker now costs 2 (was 3)." ] \
+    && ok "fast and green → the apply job's commit lands, with the Card-Edit trailer the runner makes sure of (picked, landed rows)" || bad "fast green: rows '$(rows "$a")', ref '$ref', $(grep "card-$a" "$T/state/journal.jsonl" | tail -1)"
+  f="$T/state/inbox/card-$a-followup.md"
+  [ -f "$f" ] && grep -q 'client/ui/lessons.ts:12' "$f" && [ ! -f "$T/state/inbox/card-$a.md" ] \
+    && ok "…the prose that names the card is a follow-up inbox item (followup row), not a steward item" || bad "no follow-up at $f"
+  jq -cn --arg s "$ref" '{ts:"2099-01-01T00:00:00Z",item:"deploy",outcome:"deployed",sha:$s}' >> "$T/state/journal.jsonl"
+  cetick green
+  [ "$(rows "$a")" = "picked landed followup deployed" ] && ok "…and a deploy that carries it adds the deployed row, once" || bad "after the deploy: rows '$(rows "$a")'"
+
+  b=ce-20261127-murkstalker-0b02; ce "$b" fast
+  cetick green 'echo "not ok 7 - test/506-challenge-reference-runs.test.ts"; false'; f="$T/state/inbox/card-$b.md"
+  [ "$(rows "$b")" = "picked gate-red to-steward" ] && [ "$(jq -r --arg i "$b" '.[$i].rows[2].why' "$T/state/card-edits.json")" = "a test went red: challenge reference runs" ] \
+    && [ -z "$(dryref "$b")" ] && [ ! -f "$T/state/redgate/card-$b.json" ] \
+    && ok "fast and red → no branch, no repair: gate-red then to-steward, the red test named in words" || bad "fast red: rows '$(rows "$b")', why '$(jq -r --arg i "$b" '.[$i].rows[-1].why' "$T/state/card-edits.json")', ref '$(dryref "$b")'"
+  [ -f "$f" ] && [ -s "$T/state/inbox/card-$b/gate.log" ] && grep -q '^| total_cost | 3 | 2 |$' "$f" && grep -q '^| text | a \\| b | — |$' "$f" \
+    && grep -q 'Card-Edit: '"$b"'` on the landing commit' "$f" && grep -q '^    \$modify murkstalker|total cost|2$' "$f" && [ -s "$T/state/inbox/card-$b/after.jpg" ] \
+    && ok "…its inbox item is the before/after table, the commands, the trailer to carry, the pictures and the gate log" || bad "inbox item $f: $(head -c 600 "$f" 2>/dev/null)"
+  nq=$(cd "$T/repo" && STEWARD_STATE="$T/state" node steward/queue.mjs 2>/dev/null | grep "card-$b")
+  grep -q "^inbox card-$b " <<<"$nq" && ok "…and the queue offers it to the steward" || bad "card-$b is not offered: $(cd "$T/repo" && STEWARD_STATE="$T/state" node steward/queue.mjs --why 2>&1 | grep "card-$b")"
+
+  c=ce-20261127-murkstalker-0c03; ce "$c" fast; cetick steward
+  [ "$(rows "$c")" = "picked to-steward" ] && grep -q "Why this is not the fast path: FriendlyBot's before picture is not our scan: 3 tiles differ\.$" "$T/state/inbox/card-$c.md" \
+    && [ -s "$T/state/inbox/card-$c/apply.json" ] && [ -z "$(dryref "$c")" ] && ! grep -q "card edit $c" "$T/repo/client/ledgers/README.md" \
+    && ok "the apply job says steward (exit 3) → inbox item with its measurement, no branch" || bad "exit 3: rows '$(rows "$c")'"
+  d=ce-20261127-murkstalker-0d04; ce "$d" steward; cetick green
+  [ "$(rows "$d")" = "to-steward" ] && grep -q 'Why this is not the fast path: the text changed\.$' "$T/state/inbox/card-$d.md" && [ -z "$(dryref "$d")" ] \
+    && ok "the steward road → inbox item at once, no apply job, no branch" || bad "steward road: rows '$(rows "$d")'"
+  k=ce-20261127-murkstalker-0f07; ce "$k" steward false; cetick green
+  [ "$(rows "$k")" = "to-steward" ] && [ -f "$T/state/inbox/card-$k.md" ] && [ ! -e "$T/state/inbox/card-$k/after.jpg" ] && ! grep -q 'after.jpg' "$T/state/inbox/card-$k.md" \
+    && ok "an edit FriendlyBot drew no picture for (complexity only) → inbox item without pictures" || bad "no pictures: rows '$(rows "$k")'"
+  x=ce-20261127-murkstalker-0e05; ce "$x" fast; cetick crash
+  [ "$(rows "$x")" = "picked to-steward" ] && grep -q 'stopped with an error (exit 1)' "$T/state/inbox/card-$x.md" && grep -q 'stub fell over' "$T/state/inbox/card-$x/apply.log" \
+    && grep -q "\"item\":\"card-$x\",\"outcome\":\"apply-crashed\"" "$T/state/journal.jsonl" \
+    && ok "the apply job crashes → journalled, and the steward gets it with the error's tail" || bad "crash: rows '$(rows "$x")'"
+  m=ce-20261127-murkstalker-1a08; ce "$m" fast; cetick missing; cetick missing
+  [ "$(rows "$m")" = "picked" ] && [ ! -f "$T/state/inbox/card-$m.md" ] && [ "$(grep -c "\"item\":\"card-$m\",\"outcome\":\"apply-missing\"" "$T/state/journal.jsonl")" = 1 ] \
+    && ok "the box lacks an input (exit 2) → said once, never the steward's, and the edit waits" || bad "missing: rows '$(rows "$m")', $(grep -c "card-$m" "$T/state/journal.jsonl") journal rows"
+  jq --arg i "$m" 'del(.[$i])' "$T/state/card-edits.json" > "$T/state/ce.t" && mv "$T/state/ce.t" "$T/state/card-edits.json"
+  jq -c --arg i "$m" '.edits |= map(select(.id != $i))' "$V/index.json" > "$V/i.t" && mv "$V/i.t" "$V/index.json"
+  q=ce-20261127-murkstalker-1b09; ce "$q" fast; touch "$T/bin/race-$q"; cetick green
+  [ "$(rows "$q")" = "picked" ] && [ -z "$(dryref "$q")" ] && grep -q "\"item\":\"card-$q\",\"outcome\":\"changed-while-taken\"" "$T/state/journal.jsonl" \
+    && ok "a command posted again while the runner takes the edit → nothing more is written, and the owner hears of it" || bad "race: rows '$(rows "$q")', ref '$(dryref "$q")'"
+  jq -c '.commands[1].reply = {fileName:"Murkstalker.jpg"}' "$V/$q.json" > "$V/q.t" && mv "$V/q.t" "$V/$q.json"; cetick green
+  [ "$(rows "$q")" = "picked landed followup" ] && [ -n "$(dryref "$q")" ] && ok "…and once FriendlyBot has answered it lands as it stands then, picked once" || bad "after the race: rows '$(rows "$q")'"
+  n0=$(jq '[.[].rows | length] | add' "$T/state/card-edits.json"); cetick green; n1=$(jq '[.[].rows | length] | add' "$T/state/card-edits.json")
+  [ "$n0" = "$n1" ] && ok "every edit in the index is handled once" || bad "a handled edit was taken again ($n0 → $n1 rows)"
+
+  # the fetch key's two ends allow the new paths and still refuse the rest (a fake ssh: nothing leaves the box)
+  mkdir -p "$T/fakessh"; printf '#!/bin/sh\nfor a; do p="$a"; done\nSSH_ORIGINAL_COMMAND="$p" exec bash "%s/repo/deploy/steward-fetch.sh" "%s/vps"\n' "$T" "$T" > "$T/fakessh/ssh"; chmod +x "$T/fakessh/ssh"
+  vf() { PATH="$T/fakessh:$PATH" STEWARD_FETCH_KEY="$T/no-such-key" bash "$T/repo/steward/vps-fetch.sh" "$1" >/dev/null 2>&1; echo $?; }
+  got="$(vf var/card-edits/index.json) $(vf "var/card-edits/$a.json") $(vf "var/card-edits/$a/after.jpg")"
+  refused="$(vf var/accounts.json) $(vf var/card-edits/../accounts.json) $(vf "var/card-edits/$a/../../accounts.json") $(vf "var/card-edits/$a.runner.jsonl") $(vf var/card-edits/ce-bad.json) $(vf "var/card-edits/$a/other.jpg")"
+  ln -sf ../accounts.json "$V/ce-20261127-link-0f06.json"
+  [ "$got" = "0 0 0" ] && [ "$refused" = "2 2 2 2 2 2" ] && [ "$(vf var/card-edits/ce-20261127-link-0f06.json)" != 0 ] && cmp -s "$T/repo/var/card-edits/$a/after.jpg" "$V/$a/after.jpg" \
+    && ok "the fetch key brings an edit and its pictures down, and refuses accounts.json, .., runner rows and links out" || bad "fetch: allowed '$got', refused '$refused'"
+  sed -i "s/^STEWARD_WINDOW=.*/STEWARD_WINDOW=$(printf %02d $h)-$(printf %02d $(( (h + 3) % 24 )))/" "$T/env"
+  rm -rf "$T/state/inbox/card-"* "$T/vps" "$T/fakessh"
+  for r in $(git -C "$T/repo" for-each-ref --format='%(refname)' refs/steward-dry/); do git -C "$T/repo" update-ref -d "$r"; done
+fi
 if run pause; then touch "$T/state/paused"; r=$(tick skip); [ -z "$r" ] && ok "paused → nothing runs" || bad "ran while paused: $r"; rm -f "$T/state/paused"; fi
 
 # clean the dry refs this test left on origin
