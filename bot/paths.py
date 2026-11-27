@@ -124,6 +124,28 @@ NEEDS_OCR = RULINGS_DIR / "needs_ocr.jsonl"     # untracked: image-only messages
 
 # ── the bot's own things ────────────────────────────────────────────────────
 WEB_DIR = BOT_DIR / "web"          # the FastAPI app's front-end, still served at /static
+#: the scripts that BUILD data/; run by hand or by the steward runner, never on a request
+PIPELINE_DIR = BOT_DIR / "pipeline"
+#: the judge's graded question set (eval/evallib.py reads it as GOLD)
+EVAL_GOLD = BOT_DIR / "eval" / "gold.jsonl"
+
+# ── what the card editor's apply job (pipeline/apply_card_edit.py) touches ──
+# Every one is resolved against the clone the job runs in (`--repo`), so a test
+# can hand it a scratch tree: the job takes these as offsets from REPO_ROOT.
+CLIENT_DIR = REPO_ROOT / "client"
+#: `npm --prefix ENGINE_DIR run extract` rebuilds printed.json and catalogue.json
+ENGINE_DIR = CLIENT_DIR / "engine"
+#: the home page's "Recent updates" list; a new line goes at the top of UPDATES
+UPDATES_TS = CLIENT_DIR / "ui" / "updates.ts"
+#: client/ui/cardnotation.ts for Python: an edit's diff, road and update line
+CARD_EDIT_CLI = ENGINE_DIR / "scripts" / "card-edit-cli.mjs"
+#: rewrites the face a card() definition quotes above itself (`--rewrite <Name>`)
+FACE_COMMENT_MJS = ENGINE_DIR / "scripts" / "face-comment.mjs"
+#: prose that can name a card's numbers and that nothing checks against the oracle
+LESSONS_TS = CLIENT_DIR / "ui" / "lessons.ts"
+DOES_LINES = CLIENT_DIR / "ui" / "does-lines.json"
+SCENARIOS_DIR = CLIENT_DIR / "server"            # scenarios-*.ts
+LD_TRANSCRIPTION_NOTES = CARDS_DIR / "light-and-dark-transcription-notes.json"
 
 # ── runtime state: append-only, gitignored, and the only copy there is ──────
 # responses/feedback are the training + eval record; games.jsonl is real user
