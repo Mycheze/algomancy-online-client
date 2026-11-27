@@ -75,6 +75,8 @@ subsystem and is kept current when that subsystem changes.
 | [`16-divergence-inventory.md`](docs/16-divergence-inventory.md) | everything known to differ from printed text, across all card-set files |
 | [`17-oracle-text-audit.md`](docs/17-oracle-text-audit.md) | the whole-pool oracle-text typo sweep |
 | [`18-board-layout-v2.md`](docs/18-board-layout-v2.md) | the regions board, the only board since 2026-10-29: two interlocking Ls, region ≠ control, never scrolls |
+| [`friendlybot.md`](docs/friendlybot.md) | the designer's card bot, read off the Discord exports: its commands, its notation, what it posts back |
+| [`card-editor.md`](docs/card-editor.md) | DESIGN, awaiting review: the designer edits his cards from the client, through FriendlyBot, to the steward |
 | `questions-round*.md` | the open-question sheets put to the owner each round, live: `engine/test/238-question-sheets.test.ts` cross-checks every answer against the owner calls recorded in the comprehensive rules |
 
 **The July 2026 research pass**, `01` to `06`: what the bot project already
