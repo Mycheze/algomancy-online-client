@@ -6,7 +6,8 @@ Run: `.venv/bin/python bot/test/test_cardedits.py`. No Discord, no game server.
 
 §1 the parse mirror: client/ui/cardnotation.ts's rules, on 1506's quoted commands
 §2 a clean edit: the command is seen, the four messages collected, the right bodies
-§3 a re-post: the last complete answer is the one that stands
+§3 a re-post: the last complete answer is the one that stands, answered or not
+§3c complexity: one line, no picture
 §4 a loose name, a malformed command, two answers interleaved
 §5 FriendlyBot silent, cut off, or `Something went wrong`
 §6 what is ignored: another author, another channel, an edit nobody submitted
@@ -65,9 +66,9 @@ def load(name, *, channel=CHANNEL, authors=None):
                 [Att(a, m["id"]) for a in m["attachments"]]) for m in doc["messages"]]
 
 
-def edit(eid, card, *commands, discord=CALEB, since="2020-01-01T00:00:00.000Z"):
+def edit(eid, card, *commands, discord=CALEB, since="2020-01-01T00:00:00.000Z", done=False):
     return {"id": eid, "card": card, "discord": discord, "since": since,
-            "commands": [{"i": i, "text": t, "field": f, "posted": False, "done": False}
+            "commands": [{"i": i, "text": t, "field": f, "posted": done, "done": done}
                          for i, (t, f) in enumerate(commands)]}
 
 
@@ -207,18 +208,30 @@ check("⭐ the last reply is the last answer's new picture: the server keeps the
       acts[-1].after is msgs[-1].attachments[0] and acts[-1].body["at"] == ce.iso(msgs[-1].at))
 check("the Seer edit between them went to nobody",
       all("Seer" not in a.body.get("fileName", "") for a in acts))
-# once the server has the answer, the command is done and a later post is not reported
+# the server lists an answered command as done until the home box picks it up
+answered = edit(every["id"], "The Everywhere", (posts[0].content, "text"), done=True)
+acts = run(msgs, answered, until=msgs[-1].at + 600)
+check(f"⭐ a command already answered still matches a re-post, which is seen and collected ({kinds(acts)})",
+      kinds(acts) == ["seen", "reply"] * 4
+      and [a.body["content"] for a in acts if a.kind == "seen"] == [p.content for p in posts])
+
+print("\n[§3c complexity]")
+msgs = load("complexity")
+eel = edit("ce-20240303-nimbus-eel-ee1e", "Nimbus Eel", ("$complex nimbus eel", "complexity"))
+acts = run(msgs, eel, until=msgs[-1].at + 600)
+check(f"$complex: seen, then the one line as its answer ({kinds(acts)})", kinds(acts) == ["seen", "reply"])
+check("⭐ the answer is the line alone: no file name, no pictures",
+      acts[1].body == {"id": eel["id"], "i": 0, "echo": "Set the complexity of nimbus eel to Complex",
+                       "at": ce.iso(by_id(msgs, "1213637085110739114").at)} and acts[1].before is None)
+cap = edit("ce-20240303-noxious-deathcap-dcap", "Noxious Deathcap", ("$complex noxious deathcap", "complexity"))
+acts = run(msgs, cap)
+check("a $simple posted for a $complex command is seen as posted; the server decides",
+      kinds(acts) == ["seen", "reply"] and acts[0].body["content"] == "$simple noxious deathcap"
+      and acts[1].body["echo"] == "Set the complexity of noxious deathcap to Simple")
+check("other cards' complexity lines go to nobody", all(a.body["id"] == cap["id"] for a in acts))
 m = Matcher(FB, {CHANNEL})
-m.set_pending([every])
-first = []
-for msg in msgs:
-    got = m.feed(msg)
-    for a in got:
-        if a.kind == "reply":
-            m.mark_done(a.body["id"], a.body["i"])
-    first += got
-check(f"a command answered is done: later posts of it are not matched ({kinds(first)})",
-      kinds(first) == ["seen", "reply"])
+acts = run(msgs[4:5], eel, matcher=m)
+check("no line within a minute: no answer", kinds(acts) == ["seen"] and kinds(m.tick(msgs[4].at + 61)) == ["noAnswer"])
 
 print("\n[§3b re-posted before the answer came back]")
 msgs = load("blights-end-repost")
@@ -407,7 +420,6 @@ async def cog_tests():
     check("⭐ both pictures downloaded and sent, base64, the right one each way",
           base64.b64decode(body["before"]) == by_id(msgs, "1563217539180265503").attachments[0].data
           and base64.b64decode(body["after"]) == by_id(msgs, "1563217560097529868").attachments[0].data)
-    check("the answered command is done for the next post", (murk["id"], 0) in cog.matcher.done)
     server.pending = []
     check("nothing pending: idle", await cog.poll_once(now=end + 10) is False)
 
@@ -457,7 +469,7 @@ async def cog_tests():
     check(f"⭐ a silent FriendlyBot is reported by the poll ({server.calls[-1]})",
           [c[0] for c in server.calls] == ["seen", "reply"] and server.calls[-1][1].get("noAnswer") is True)
 
-    # a refused reply is not resent, and does not mark the command done
+    # a refused reply is not resent
     class Refusing(FakeServer):
         async def cardedit_reply(self, body):
             self.calls.append(("reply", body))
@@ -467,8 +479,39 @@ async def cog_tests():
     await cog.poll_once(now=end + 5)
     cog.next_catchup = 0
     await cog.poll_once(now=end + 6)
-    check("a refused reply is sent once and leaves the command open",
-          [c[0] for c in server.calls] == ["seen", "reply"] and (murk["id"], 0) not in cog.matcher.done)
+    check("a refused reply is sent once", [c[0] for c in server.calls] == ["seen", "reply"])
+
+    # ⭐ posted after the home box picked the edit up: the server refuses the seen
+    class Late(FakeServer):
+        async def cardedit_seen(self, body):
+            self.calls.append(("seen", body))
+            return {"ok": False, "error": "posted after the change was picked up: make a new edit"}
+    server = Late([edit(murk["id"], "Murkstalker", ("$modify murkstalker|total cost|2", "total cost"), done=True)])
+    cog = cog_for(server, {CHANNEL: FakeChannel(msgs)})
+    await cog.poll_once(now=end + 5)
+    cog.next_catchup = 0
+    await cog.poll_once(now=end + 6)
+    check(f"⭐ a refused seen is sent once, and its answer is not sent at all ({[c[0] for c in server.calls]})",
+          [c[0] for c in server.calls] == ["seen"])
+    # the live re-post of an answered command: seen and collected again
+    every = edit("ce-20261023-the-everywhere-0b1c", "The Everywhere",
+                 ("$modify the everywhere|text|x", "text"), done=True)
+    server = FakeServer([every])
+    cog = cog_for(server, {CHANNEL: FakeChannel([])})
+    emsgs = load("everywhere-reposted")
+    await cog.poll_once(now=emsgs[0].at - 60)
+    for m in emsgs:
+        await cog.on_message(discord_message(m))
+    check("live, every re-post of the answered command is sent with its answer",
+          [c[0] for c in server.calls] == ["seen", "reply"] * 4)
+    # complexity: the reply carries no pictures
+    cmsgs = load("complexity")
+    eel = edit("ce-20240303-nimbus-eel-ee1e", "Nimbus Eel", ("$complex nimbus eel", "complexity"))
+    server = FakeServer([eel])
+    cog = cog_for(server, {CHANNEL: FakeChannel(cmsgs)})
+    await cog.poll_once(now=cmsgs[-1].at + 5)
+    check("a complexity answer is sent as {id, i, echo, at}",
+          [c[0] for c in server.calls] == ["seen", "reply"] and set(server.calls[1][1]) == {"id", "i", "echo", "at"})
 
     # the game server down: nothing is lost, the next catch-up sends it
     class Down(FakeServer):

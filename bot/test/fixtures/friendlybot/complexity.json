@@ -1,0 +1,62 @@
+{
+ "about": "2024-03-03: four $complex/$simple commands, each answered by one line and no picture, with the name as typed.",
+ "source": "#card-changes export, events.jsonl rows 47812-47819; Caleb's and FriendlyBot's messages only, attachment URLs dropped",
+ "messages": [
+  {
+   "id": "1213636858794348574",
+   "at": "2024-03-02T23:59:35.419Z",
+   "author": "calebgannon",
+   "content": "$complex meteor shower",
+   "attachments": []
+  },
+  {
+   "id": "1213636875919826964",
+   "at": "2024-03-02T23:59:39.502Z",
+   "author": "FriendlyBot",
+   "content": "Set the complexity of meteor shower to Complex",
+   "attachments": []
+  },
+  {
+   "id": "1213637011110625411",
+   "at": "2024-03-03T00:00:11.734Z",
+   "author": "calebgannon",
+   "content": "$simple noxious deathcap",
+   "attachments": []
+  },
+  {
+   "id": "1213637023399944263",
+   "at": "2024-03-03T00:00:14.664Z",
+   "author": "FriendlyBot",
+   "content": "Set the complexity of noxious deathcap to Simple",
+   "attachments": []
+  },
+  {
+   "id": "1213637068148838400",
+   "at": "2024-03-03T00:00:25.333Z",
+   "author": "calebgannon",
+   "content": "$complex nimbus eel",
+   "attachments": []
+  },
+  {
+   "id": "1213637085110739114",
+   "at": "2024-03-03T00:00:29.377Z",
+   "author": "FriendlyBot",
+   "content": "Set the complexity of nimbus eel to Complex",
+   "attachments": []
+  },
+  {
+   "id": "1213637140664287333",
+   "at": "2024-03-03T00:00:42.622Z",
+   "author": "calebgannon",
+   "content": "$simple orblish horroth",
+   "attachments": []
+  },
+  {
+   "id": "1213637156971749396",
+   "at": "2024-03-03T00:00:46.510Z",
+   "author": "FriendlyBot",
+   "content": "Set the complexity of orblish horroth to Simple",
+   "attachments": []
+  }
+ ]
+}

@@ -220,6 +220,24 @@ async def tests():
                   ce.attachment_file_key(acts[1].body["fileName"]) != ce.friendlybot_file_key("Murkstalker"))
 
 
+    # a complexity command: one line, no picture, read by the watcher as its answer
+    fake, _ = make()
+    ch = FakeChannel()
+    await say(fake, "$simple murkstalker", ch)
+    check("$simple: one line, no picture", [(s.content, s.filename) for s in ch.sent]
+          == [("Set the complexity of murkstalker to Simple", None)])
+    m = ce.Matcher(BOT, {CHANNEL})
+    m.set_pending([{"id": "ce-20261127-murkstalker-7f3a", "card": "Murkstalker", "discord": CALEB,
+                    "since": "2026-11-27T00:00:00.000Z",
+                    "commands": [{"i": 0, "text": "$simple murkstalker", "field": "complexity",
+                                  "posted": False, "done": False}]}])
+    t = time.time()
+    acts = m.feed(ce.Msg("1", CHANNEL, CALEB, "$simple murkstalker", t))
+    acts += m.feed(ce.Msg("2", CHANNEL, BOT, ch.sent[0].content, t + 3))
+    check("⭐ the watcher reads the fake complexity line as the answer",
+          [a.kind for a in acts] == ["seen", "reply"]
+          and acts[1].body["echo"] == "Set the complexity of murkstalker to Simple" and "fileName" not in acts[1].body)
+
 asyncio.run(tests())
 
 print(f"\ntest_fakefriendlybot: {PASS} passed, {FAILED} failed")

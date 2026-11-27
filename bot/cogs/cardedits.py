@@ -156,10 +156,12 @@ def view(message):
 @dataclass
 class Action:
     """One request to the game server. `key` makes it idempotent across replays;
-    a reply's pictures are read from `before`/`after` when it is sent."""
+    `post` is the command message it answers; a reply's pictures are read from
+    `before`/`after` when it is sent."""
     kind: str          # seen | reply | error | noAnswer
     body: dict
     key: tuple
+    post: str
     before: object = None
     after: object = None
 
@@ -204,15 +206,11 @@ class Matcher:
         self.friendlybot = str(friendlybot)
         self.channels = {str(c) for c in channels}
         self.pending = []            # the server's /pending edits
-        self.done = set()            # (edit, i) answered since the last poll
         self.fed = set()             # message ids already read
         self._ch = {}
 
     def set_pending(self, edits):
         self.pending = sorted(edits or [], key=lambda e: str(e.get("since") or ""))
-
-    def mark_done(self, edit, i):
-        self.done.add((edit, i))
 
     def _channel(self, cid):
         return self._ch.setdefault(cid, _Channel())
@@ -243,22 +241,20 @@ class Matcher:
                                   parsed["verb"] != "modify"))
         body = {"id": edit, "i": i, "messageId": msg.id, "channelId": msg.channel,
                 "content": msg.content, "at": iso(msg.at)}
-        return [Action("seen", body, ("seen", edit, i, msg.id))]
+        return [Action("seen", body, ("seen", edit, i, msg.id), msg.id)]
 
     def _match(self, author, parsed):
-        """(edit id, command index) of a not-yet-answered command this one posts."""
+        """(edit id, command index) of the command this one posts. An answered command
+        matches too: a re-post may carry a new value, and the server decides what it changes."""
         for edit in self.pending:
             if str(edit.get("discord") or "") != author:
                 continue
             for c in edit.get("commands") or []:
-                i = c.get("i")
-                if c.get("done") or (edit["id"], i) in self.done:
-                    continue
                 if parsed["field"] != fold_field(str(c.get("field") or "")):
                     continue
                 ours = parse_command(str(c.get("text") or ""))
                 if name_matches(parsed["name"], str(edit.get("card") or ""), ours and ours["name"]):
-                    return edit["id"], i
+                    return edit["id"], c.get("i")
         return None
 
     def _friendlybot(self, ch, msg):
@@ -271,7 +267,7 @@ class Matcher:
             posted = self._take_waiting(ch, text, complexity=True)
             if posted:
                 out.append(Action("reply", {"id": posted.edit, "i": posted.i, "echo": text, "at": iso(msg.at)},
-                                  ("reply", posted.edit, posted.i, msg.id)))
+                                  ("reply", posted.edit, posted.i, msg.id), posted.msg))
         elif text == "To this":
             a = next((a for a in ch.answers if a.before is not None and not a.to_this), None)
             if a:
@@ -302,7 +298,7 @@ class Matcher:
                 if p is None:
                     return []
                 body = {"id": p.edit, "i": p.i, "echo": a.echo, "fileName": att.filename, "at": iso(msg.at)}
-                return [Action("reply", body, ("reply", p.edit, p.i, msg.id), before=a.before, after=att)]
+                return [Action("reply", body, ("reply", p.edit, p.i, msg.id), p.msg, before=a.before, after=att)]
         return []
 
     def _went_wrong(self, ch, msg):
@@ -320,7 +316,7 @@ class Matcher:
     @staticmethod
     def _failed(p, msg, error):
         return Action("error", {"id": p.edit, "i": p.i, "error": error, "at": iso(msg.at)},
-                      ("error", p.edit, p.i, msg.id))
+                      ("error", p.edit, p.i, msg.id), p.msg)
 
     # ── time ──
     def tick(self, now):
@@ -339,7 +335,7 @@ class Matcher:
     @staticmethod
     def _silent(p, now):
         return Action("noAnswer", {"id": p.edit, "i": p.i, "noAnswer": True, "at": iso(now)},
-                      ("noAnswer", p.edit, p.i, p.msg))
+                      ("noAnswer", p.edit, p.i, p.msg), p.msg)
 
 
 # ── configuration ─────────────────────────────────────────────────────
@@ -372,6 +368,7 @@ class CardEdits(commands.Cog):
         self.lock = asyncio.Lock()
         self.sent = set()             # Action.key of every request the server has answered
         self.unsent = set()           # (edit, i) with a request that failed: the rest waits for the replay
+        self.refused = set()          # command messages the server would not take: their answers go nowhere
         self.known = set()            # the pending edit ids of the last poll
         self.next_catchup = 0.0
         self._last_down = 0.0
@@ -422,7 +419,6 @@ class CardEdits(commands.Cog):
         self.known = ids
         async with self.lock:
             self.matcher.set_pending(edits)
-            self.matcher.done = {d for d in self.matcher.done if d[0] in ids}
             if edits and (fresh or now >= self.next_catchup):
                 await self._catch_up(edits, now)
             await self._run(self.matcher.tick(now))
@@ -440,7 +436,6 @@ class CardEdits(commands.Cog):
             msgs += await self._history(cid, since)
         fresh = Matcher(self.friendlybot, self.channels)
         fresh.set_pending(edits)
-        fresh.done = set(self.matcher.done)
         self.unsent.clear()
         actions = []
         for m in sorted(msgs, key=lambda m: (m.at, int(m.id))):
@@ -472,8 +467,8 @@ class CardEdits(commands.Cog):
     async def _run(self, actions):
         for a in actions:
             cmd = (a.body.get("id"), a.body.get("i"))
-            if a.key in self.sent or cmd in self.unsent:
-                continue             # an answer is never sent ahead of its unsent command
+            if a.key in self.sent or cmd in self.unsent or a.post in self.refused:
+                continue             # an answer is never sent ahead of its unsent command, nor after a refused one
             try:
                 if a.kind == "seen":
                     res = await self.server.cardedit_seen(a.body)
@@ -494,7 +489,8 @@ class CardEdits(commands.Cog):
                 continue
             self.sent.add(a.key)
             if res.get("ok") is False:
+                # a refusal is the server's answer (a post after pickup, another card's picture): never resent
                 print(f"[cardedits] {a.kind} for {a.body.get('id')} #{a.body.get('i')} "
                       f"refused: {res.get('error')}")
-            elif a.kind == "reply" and a.before is not None:
-                self.matcher.mark_done(a.body["id"], a.body["i"])
+                if a.kind == "seen":
+                    self.refused.add(a.post)
