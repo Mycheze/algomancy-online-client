@@ -60,7 +60,7 @@ The editor copies that exactly:
 
 - `Account.designer?: true`, granted and revoked by an admin from the dashboard's Accounts tab
   (one more toggle beside admin), and by `deploy/admin.sh designer <name>` for the bootstrap.
-- `designerFor(req)` in a new `server/cardedit.ts` returns the account when it holds `designer`
+- `designerFor(req)` in `server/designer.ts` returns the account when it holds `designer`
   **or** `admin`, so the owner can test without granting himself anything. It is the one place
   the question is asked.
 - Every `/api/cardedit/*` route asks it first and answers 404 otherwise.
@@ -241,6 +241,15 @@ before the edit.
 it reads the channel's history since the oldest pending edit's `createdAt` and matches it the
 same way. A restart in the middle of an edit loses nothing.
 
+**Complexity.** `$simple`/`$complex` is answered with one line, `Set the complexity of <name> to
+Complex`, and no picture. The bot reports that line, and the server takes it as the answer for a
+complexity command only. Such an edit reaches the steward with no new scan.
+
+**Re-posts after an answer.** An edit stays on the bot's pending list until the home box picks it
+up. A re-post with a new value re-opens that command and waits for the new answer (the edit leaves
+the runner's index meanwhile). After pickup, a re-post is refused and the edit says "posted after
+the change was picked up: make a new edit".
+
 **Ordering.** FriendlyBot answers one command at a time, in order. A re-posted identical command
 before the reply came back produces two answers, and the bot takes the last complete one. Two
 designers editing at once is not a case: there is one.
@@ -301,7 +310,7 @@ they are measurements the apply job takes from FriendlyBot's pictures (§6):
 - **a stray change**: the "after" picture differs from the "before" outside the regions the
   changed fields print in;
 - **a banner card**: the card has a hand-added Prophecy or Ambush banner, which the render drops
-  (`card-faces.json` knows which cards; eleven today).
+  (`card-faces.json` knows which cards; nine today).
 
 An affinity change also moves the card's colours. The oracle keeps them beside the cost, in
 `factions` and in `Deck` ("Light & Dark (Light/Dark)"). The card audit (ui test 211,
@@ -318,29 +327,36 @@ on master by the same road (decision 6).
 
 **How it gets the edit.** The read-only fetch key, which today can read games, challenge runs and
 the report journals (`deploy/steward-fetch.sh`, mirrored in `steward/vps-fetch.sh`). Its allow-list
-gains `var/card-edits/index.json` (a list of open edit ids the server rewrites on every change),
+gains `var/card-edits/index.json` (the edits ready for the home box, `{v, edits:[{id, card, road, pictures}]}`, rewritten on every change),
 `var/card-edits/<id>.json` and `var/card-edits/<id>/(before|after).jpg`. `deploy/` and `steward/`
 are protected paths, so this change is staged for the owner's **approve protected**, and the
 VPS's root-owned copy of the fetch script is reinstalled by hand once, as the README says.
 
 **How it reports.** The runner's own ssh to the VPS (`vps` in `run-once.sh`, the one it deploys
-with) runs `node client/server/scripts/cardedit-runner-row.mjs <id> <step> [why]`. That script
+with) runs `node client/server/cardedit-runner-row.ts <id> <step> [why]`. That script
 appends one row to `<id>.runner.jsonl`. The agent never has that ssh, and the fetch key cannot
 write.
 
-**The job**, one edit per tick, oldest first, on a fresh branch `steward/card-<id>`:
+**The job** (`bot/pipeline/apply_card_edit.py`; exit 0 applied, 3 to the steward with one sentence,
+2 a missing input, checked before anything is written), one edit per tick, oldest first, on a fresh
+branch `steward/card-<id>`. Measured end to end on the dev laptop: 13½ minutes, nearly all of it
+the four scan readers (`build_anchors.py` alone 525 s).
 
 1. **Picture checks** (`bot/pipeline/apply_card_edit.py`, Python like the other scan readers):
    - the name in FriendlyBot's attachment is the edit's card (the server checked once; this is
      the second line);
-   - **drift**: after scaling both to 720 × 1000, the "before" render and our scan differ by more
-     than 24 grey levels on at most 0.5% of pixels, the banner strip excluded. The thresholds come
-     from `friendlybot.md`: 317 of 513 recent renders were under 0.2% against the scan, and a real
-     text difference moves several percent;
-   - **regions**: "after" differs from "before" only inside the regions of the changed fields:
-     the cost orb (`cost`, `total_cost`), the stat box (`power`, `toughness`), the art window
-     (`image`). The type bar and the text box start at the card's `textTop` from
-     `data/cards/text-boxes.json`, so the line is the card's own, not a guess;
+   - **drift**: after scaling both to 720 × 1000, no 20 × 16 tile of the "before" render differs
+     from our scan by more than 24 grey levels on more than 20% of its pixels (a 16 px border and
+     the banner strip excluded). A share of the whole card does not work: real one-word and
+     one-digit changes move under 0.5% of the pixels. Over the 513 render/scan pairs in
+     `var/records/card-changes/latest-images`, renderer-only differences reach 0.203 of a tile;
+     real changes start at 0.263 (a typo fix), 0.287 (one digit), 0.431 (a cost numeral);
+   - **regions**: for a numbers edit, no tile outside the changed field's box has more than 2%
+     changed: the cost orb (20,20)–(140,140) for `cost`/`total_cost`, the stat box
+     (470,38)–(705,110) for `power`/`toughness`, and the new picture must visibly show the change.
+     For an art edit, pixels can't be used (the art shows through the translucent bars), so the
+     lettering of the orb, title bar, type line and text box is compared as glyph masks, refused
+     above 0.14 (art-only pairs reach 0.125; an added reminder sentence 0.156);
    - not a banner card.
    Any failure → the steward path, with the measurement in the reason.
 2. **The oracle row, in place.** Only the changed fields of `data/cards/AlgomancyCards-OracleText.json`
@@ -568,7 +584,7 @@ in this list is visible to players.
 
 **For the owner.** Settled 2026-11-27: the bot joins Caleb's server later; until then everything is built and tested on the owner's test server. The editor shows the current wording at once, with no `$get`. A unit's type line reads `Unit — X`. Old replays get the note, never a refusal (§9). When a numbers edit turns a test red, the steward finds out why and fixes the code or the test, including re-recording the drift guard's practice games when the edit is the measured reason they moved; the challenge reference solutions are never re-recorded to make a test pass. The test server is `778331995297808438`.
 
-1. **Banner cards** (eleven, Prophecy/Ambush). Their render loses the hand-made banner. This
+1. **Banner cards** (nine, Prophecy/Ambush). Their render loses the hand-made banner. This
    design sends every edit to them down the steward path. Should the fast path composite the
    old banner onto the new render instead (the steward already does it by hand)?
 2. **Renames.** Out of the editor for now: a rename touches decks, replays, the rename map and
