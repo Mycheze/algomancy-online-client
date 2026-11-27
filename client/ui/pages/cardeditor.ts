@@ -313,12 +313,16 @@ function pictureHtml(url: string | null, label: string): string {
     <figcaption>${esc(label)}</figcaption></figure>`;
 }
 
+/** FriendlyBot answers $simple/$complex with one line and no picture */
+export const drawsPictures = (e: { commands: readonly { field: string }[] }): boolean =>
+  e.commands.some(c => c.field !== 'complexity');
+
 function detailHtml(v: CardEditorView): string {
   const e = v.detail;
   if (!e) return emptyState({ text: 'Pick an edit to see it.', bare: true });
   return `<h3 class="cedetailcard">${esc(e.card)}</h3>
     <p class="cedetailwhat">${esc(e.summary)}${v.isAdmin ? ` · ${esc(e.by.name)}` : ''} · ${esc(v.whenOf[e.id] ?? '')}</p>
-    <div class="cepics">${pictureHtml(v.pictures.before, 'Before')}${pictureHtml(v.pictures.after, 'After')}</div>
+    ${drawsPictures(e) ? `<div class="cepics">${pictureHtml(v.pictures.before, 'Before')}${pictureHtml(v.pictures.after, 'After')}</div>` : ''}
     ${commandsHtml(e, false)}
     ${trackHtml(e)}`;
 }

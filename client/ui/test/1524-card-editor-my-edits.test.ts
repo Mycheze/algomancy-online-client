@@ -58,6 +58,10 @@ test('1524 §2 the opened edit: its pictures side by side, the commands as poste
   assert.match(html, /<div class="cedetail" data-scroll="ce-detail-ce-20261126-firebolt-01ab">/);
   const none = cardEditorHtml(view({ detail: { ...DETAIL, pictures: { before: false, after: false } } }));
   assert.equal((none.match(/No picture yet/g) ?? []).length, 2);
+  const complexityOnly = cardEditorHtml(view({ detail: { ...DETAIL, commands: [
+    { text: '$complex firebolt', field: 'complexity', posted: '$complex firebolt', answered: true }],
+    pictures: { before: false, after: false } } }));
+  assert.doesNotMatch(complexityOnly, /cepics|No picture yet/, 'FriendlyBot draws no picture for a complexity change');
 });
 
 test('1524 §3 no edits yet, and the list loading', () => {

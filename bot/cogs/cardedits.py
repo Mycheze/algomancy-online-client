@@ -357,7 +357,7 @@ def friendlybot_id():
 
 #: polls while an edit is pending, and while none is
 POLL_BUSY = 5.0
-POLL_IDLE = 60.0
+POLL_IDLE = 10.0
 #: how often the history is re-read while an edit is pending, for a message the gateway dropped
 CATCHUP_SECONDS = 300.0
 #: never read further back than this, however old the oldest pending edit
