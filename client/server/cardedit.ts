@@ -368,6 +368,11 @@ export function pendingEdits(): CardEdit[] {
 const commandAt = (edit: CardEdit, i: unknown): EditCommand | undefined =>
   Number.isInteger(i) ? edit.commands[i as number] : undefined;
 
+/** Is ISO time `a` before `b`? Parsed, because the bot's and a test's spellings differ. */
+const earlier = (a: string, b: string): boolean => Date.parse(a) < Date.parse(b);
+/** Does the body carry the message's own Discord time? Only then can it be ordered against another. */
+const stamped = (b: { at?: unknown }): boolean => typeof b.at === 'string';
+
 export interface SeenBody { i?: unknown; messageId?: unknown; channelId?: unknown; content?: unknown; at?: unknown }
 
 /** A command seen posted. The posted value is what FriendlyBot applied, so the road can change. */
@@ -384,6 +389,10 @@ export function recordSeen(edit: CardEdit, b: SeenBody, now = new Date()): Outco
   if (field !== c.field) return refuse(409, `that message does not set ${c.field}`);
   const at = typeof b.at === 'string' ? b.at : now.toISOString();
   const before = c.posted;
+  // the bot replays its channel after a restart: the posting held, or an earlier one, changes nothing
+  if (before && (before.messageId === b.messageId ? before.content === b.content : stamped(b) && earlier(at, before.at))) {
+    return { ok: true, value: edit };
+  }
   if (runnerRows(edit.id).length) {
     // the home box is applying the value posted before: the same value again changes nothing,
     // and a new one is only remembered, because it reached FriendlyBot's card and not ours
@@ -447,12 +456,16 @@ export function recordReply(edit: CardEdit, b: ReplyBody, now = new Date()): Out
     }
     return { ok: true, value: edit };
   }
+  // a replay: the answer held, or one older than it or than the posting it would answer, changes nothing
+  if (stamped(b) && ((isAnswered(c) && !earlier(c.reply!.at, at)) || earlier(at, c.posted.at))) return { ok: true, value: edit };
   if (!drawsPicture(c) && typeof b.fileName !== 'string') return complexityAnswer(edit, c, b, at, stamp);
   if (typeof b.fileName !== 'string') return refuse(400, 'fileName is required');
   const key = attachmentFileKey(b.fileName);
   if (key !== friendlyBotFileKey(edit.card)) {
-    edit.events.push({ at: stamp, what: 'wrong-card', i: b.i, file: key ?? b.fileName.slice(0, 200) });
-    writeEdit(edit);
+    if (!edit.events.some(ev => ev.what === 'wrong-card' && ev['i'] === b.i && ev['replyAt'] === at)) {
+      edit.events.push({ at: stamp, what: 'wrong-card', i: b.i, file: key ?? b.fileName.slice(0, 200), replyAt: at });
+      writeEdit(edit);
+    }
     return refuse(409, `FriendlyBot changed a different card: ${(key ?? b.fileName).replace(/_/g, ' ')}`);
   }
   const before = jpeg(b.before);

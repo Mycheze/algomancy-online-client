@@ -136,9 +136,10 @@ class FakeFriendlyBot(commands.Cog):
             await self.sleep(first + before_pic + to_this)
             await channel.send(f"Set the complexity of {parsed['name']} to {parsed['value']}")
             return
+        # `wrong` changes the other card: the one named is left as it was, as FriendlyBot's would be
         shown = self._other(name) if mode == "wrong" else name
         before = dict(self.values.get(shown, {}))
-        self.values.setdefault(name, {})[parsed["field"]] = parsed["value"]
+        self.values.setdefault(shown, {})[parsed["field"]] = parsed["value"]
         after = dict(self.values.get(shown, {}))
         await self.sleep(first)
         await channel.send(f"Modified {parsed['name']}'s {parsed['raw_field']} from this")

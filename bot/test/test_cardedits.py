@@ -430,11 +430,31 @@ async def cog_tests():
     await cog.poll_once(now=end + 30)
     check(f"⭐ after a restart the history is read and nothing is lost ({[c[0] for c in server.calls]})",
           [c[0] for c in server.calls] == ["seen", "reply"])
-    check("read from the oldest pending edit, oldest first",
-          chan.asked and chan.asked[0][0] == datetime(2026, 10, 23, 15, 40, tzinfo=timezone.utc) and chan.asked[0][1])
+    check("read from the oldest pending edit, less the clock slack, oldest first",
+          chan.asked and chan.asked[0][0].timestamp()
+          == datetime(2026, 10, 23, 15, 40, tzinfo=timezone.utc).timestamp() - ce.CLOCK_SLACK_SECONDS
+          and chan.asked[0][1])
     cog.next_catchup = 0
     await cog.poll_once(now=end + 40)
     check("a second catch-up sends nothing twice", len(server.calls) == 2 and len(chan.asked) == 2)
+
+    # ⭐ the game server's clock 49 s ahead of Discord's (the test laptop's, measured live):
+    # the command pasted at once carries a Discord time before the edit's `since`
+    cmd_at = by_id(msgs, "1563217537230053426").at
+    skewed = {**murk, "since": ce.iso(cmd_at + 49)}
+    server = FakeServer([skewed])
+    cog = cog_for(server, {CHANNEL: FakeChannel(msgs)})
+    await cog.poll_once(now=end + 49 + 5)
+    check(f"⭐ a server clock ahead of Discord's loses nothing ({[c[0] for c in server.calls]})",
+          [c[0] for c in server.calls] == ["seen", "reply"])
+    # …but a command posted well before the edit existed is not its command, though an
+    # older pending edit has the history read from before it
+    stale = {**murk, "since": ce.iso(cmd_at + ce.CLOCK_SLACK_SECONDS + 60)}
+    older = edit("ce-20200101-nimbus-eel-ee1e", "Nimbus Eel", ("$complex nimbus eel", "complexity"))
+    server = FakeServer([older, stale])
+    cog = cog_for(server, {CHANNEL: FakeChannel(msgs)})
+    await cog.poll_once(now=end + ce.CLOCK_SLACK_SECONDS + 70)
+    check(f"a command from before the edit existed is not matched to it ({server.calls})", server.calls == [])
 
     # a restart in the middle of the answer: the rest arrives live
     server = FakeServer([murk])
@@ -459,6 +479,20 @@ async def cog_tests():
     await cog.poll_once(now=end + 5)
     check("⭐ …and is caught from history as soon as the edit appears",
           [c[0] for c in server.calls] == ["seen", "reply"])
+
+    # ⭐ this box's clock 90 s ahead of Discord's: the timeouts run on Discord's clock, so a
+    # command FriendlyBot is still answering is not reported silent the moment it is seen
+    import time as _time
+    cmd = by_id(msgs, "1563217537230053426")
+    fresh = Msg(cmd.id, cmd.channel, cmd.author, cmd.content, _time.time() - 90)
+    server = FakeServer([{**murk, "since": ce.iso(fresh.at - 1)}])
+    cog = cog_for(server, {CHANNEL: FakeChannel([])})
+    cog.next_catchup = float("inf")
+    await cog.poll_once(now=fresh.at - 5)
+    await cog.on_message(discord_message(fresh))
+    await cog.poll_once()
+    check(f"⭐ a clock ahead of Discord's does not time out a fresh command ({[c[0] for c in server.calls]})",
+          [c[0] for c in server.calls] == ["seen"])
 
     # FriendlyBot down
     server = FakeServer([murk])

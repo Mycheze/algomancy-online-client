@@ -8,6 +8,7 @@
  * §5 a new value re-posted after FriendlyBot answered waits for its own answer, and leaves
  *    the index meanwhile; once the home box has the edit, a new value is refused and noted
  * §6 a complexity command is answered with one line and no picture
+ * §7 the bot's replay of its channel after a restart changes nothing, before pickup or after
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -218,7 +219,7 @@ test('1518 §6 a complexity command is answered with its one line and needs no p
   const verb = `$${want.toLowerCase()} arbiter of armistice`;
   assert.equal(readEdit(id)!.road, 'steward');
   assert.equal(readEdit(id)!.commands[0]!.text, verb);
-  await botPost('/api/bot/cardedit/seen', { id, i: 0, messageId: 'x1', channelId: 'c1', content: verb });
+  await botPost('/api/bot/cardedit/seen', { id, i: 0, messageId: 'x1', channelId: 'c1', content: verb, at: '2026-11-27T19:59:00Z' });
   const other = await botPost('/api/bot/cardedit/reply', { id, i: 0, echo: `Set the complexity of arbiter of armistice to ${row.complexity}`, at: '2026-11-27T20:00:00Z' });
   assert.equal(other.status, 409, 'an answer naming the other value');
   const r = await botPost('/api/bot/cardedit/reply', { id, i: 0, echo: `Set the complexity of arbiter of armistice to ${want}`, at: '2026-11-27T20:00:05Z' });
@@ -234,4 +235,34 @@ test('1518 §6 a complexity command is answered with its one line and needs no p
   await botPost('/api/bot/cardedit/seen', { id: numbers, i: 0, messageId: 'x2', channelId: 'c1', content: '$modify abyssal extortionist|power|9' });
   const noPicture = await botPost('/api/bot/cardedit/reply', { id: numbers, i: 0, echo: 'Set the complexity of abyssal extortionist to Complex' });
   assert.equal(noPicture.status, 400, 'only a complexity command may be answered without a picture');
+});
+
+test('1518 §7 a restarted bot replaying the channel changes nothing, before pickup or after', async () => {
+  const id = await submitOn('Amphivore', { toughness: '4' });
+  const seen = (messageId: string, value: string, at: string) => botPost('/api/bot/cardedit/seen',
+    { id, i: 0, messageId, channelId: 'c1', content: `$modify amphivore|toughness|${value}`, at });
+  const answer = (tag: string, at: string, card = 'Amphivore') => botPost('/api/bot/cardedit/reply',
+    { id, i: 0, fileName: fbFile(card), before: jpegB64(`b${tag}`), after: jpegB64(`a${tag}`), at });
+  const silent = () => botPost('/api/bot/cardedit/reply', { id, i: 0, noAnswer: true, at: '2026-11-27T21:01:30Z' });
+  const channel = [
+    () => seen('q1', '4', '2026-11-27T21:01:00Z'), silent,
+    () => seen('q2', '4', '2026-11-27T21:02:00Z'), () => answer('wrong', '2026-11-27T21:02:05Z', 'Blights_End'),
+    () => seen('q3', '4', '2026-11-27T21:03:00Z'), () => answer('4', '2026-11-27T21:03:05Z'),
+    () => seen('q4', '6', '2026-11-27T21:04:00Z'), () => answer('6', '2026-11-27T21:04:05Z'),
+  ];
+  for (const step of channel) await step();
+  const held = JSON.stringify(readEdit(id));
+  assert.equal(picture(id, 'after'), jpegB64('a6'));
+  assert.deepEqual(await status(id), { status: 'applying', note: 'waiting for the home box' });
+
+  for (const step of channel) await step();
+  assert.equal(JSON.stringify(readEdit(id)), held, 'the replay added no event and moved no value');
+  assert.equal(picture(id, 'before'), jpegB64('b4'));
+  assert.equal(picture(id, 'after'), jpegB64('a6'));
+  assert.deepEqual(await status(id), { status: 'applying', note: 'waiting for the home box' });
+
+  appendRunnerRow(id, 'picked');
+  for (const step of channel) await step();
+  assert.equal(JSON.stringify(readEdit(id)), held, 'an earlier value replayed after pickup is not a late post');
+  assert.deepEqual(await status(id), { status: 'applying', note: 'testing' });
 });

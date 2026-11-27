@@ -133,6 +133,9 @@ def parse_iso(s):
 FIRST_LINE_SECONDS = 60.0
 #: no `To this` and picture this long after the command (99th percentile: 7.8 s)
 ANSWER_SECONDS = 120.0
+#: how far the game server's clock may run ahead of Discord's: an edit's `since` is the
+#: server's, a message's time is Discord's, and a command pasted at once must still count
+CLOCK_SLACK_SECONDS = 120.0
 
 
 @dataclass
@@ -233,7 +236,7 @@ class Matcher:
         parsed = parse_command(msg.content)
         if not parsed:
             return []
-        hit = self._match(msg.author, parsed)
+        hit = self._match(msg, parsed)
         if not hit:
             return []
         edit, i = hit
@@ -243,11 +246,14 @@ class Matcher:
                 "content": msg.content, "at": iso(msg.at)}
         return [Action("seen", body, ("seen", edit, i, msg.id), msg.id)]
 
-    def _match(self, author, parsed):
+    def _match(self, msg, parsed):
         """(edit id, command index) of the command this one posts. An answered command
-        matches too: a re-post may carry a new value, and the server decides what it changes."""
+        matches too: a re-post may carry a new value, and the server decides what it changes.
+        A message from before the edit existed posts nothing of it."""
         for edit in self.pending:
-            if str(edit.get("discord") or "") != author:
+            if str(edit.get("discord") or "") != msg.author:
+                continue
+            if edit.get("since") and msg.at < parse_iso(edit["since"]) - CLOCK_SLACK_SECONDS:
                 continue
             for c in edit.get("commands") or []:
                 if parsed["field"] != fold_field(str(c.get("field") or "")):
@@ -372,6 +378,11 @@ class CardEdits(commands.Cog):
         self.known = set()            # the pending edit ids of the last poll
         self.next_catchup = 0.0
         self._last_down = 0.0
+        self.skew = 0.0               # this box's clock minus Discord's, read off the last live message
+
+    def discord_now(self):
+        """Now on Discord's clock, which every message time and so every timeout is on."""
+        return time.time() - self.skew
 
     @property
     def enabled(self):
@@ -405,7 +416,7 @@ class CardEdits(commands.Cog):
     async def poll_once(self, now=None):
         """Refresh the pending edits, re-read history when one is new or the
         catch-up is due, and report what has timed out. True while any pends."""
-        now = time.time() if now is None else now
+        now = self.discord_now() if now is None else now
         try:
             body = await self.server.cardedit_pending()
         except gameserver.GameServerDown as exc:
@@ -429,7 +440,7 @@ class CardEdits(commands.Cog):
         fresh matcher, which then replaces the live one. A restart, or a command
         posted before the poll knew its edit, loses nothing; `sent` keeps the
         replay from repeating a request the server already has."""
-        since = min([parse_iso(e["since"]) for e in edits if e.get("since")] or [now])
+        since = min([parse_iso(e["since"]) for e in edits if e.get("since")] or [now]) - CLOCK_SLACK_SECONDS
         since = max(since, now - CATCHUP_MAX_SECONDS)
         msgs = []
         for cid in sorted(self.channels):
@@ -460,6 +471,7 @@ class CardEdits(commands.Cog):
     async def on_message(self, message):
         if not self.enabled or str(message.channel.id) not in self.channels:
             return
+        self.skew = time.time() - message.created_at.timestamp()
         async with self.lock:
             await self._run(self.matcher.feed(view(message)))
 

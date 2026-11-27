@@ -182,6 +182,12 @@ async def tests():
     check("⭐ wrong: the echo as typed, another card's pictures",
           len(sent) == 4 and sent[0].content == "Modified murkstalker's power from this"
           and sent[1].filename != f"{PREFIX}Murkstalker.jpg" and sent[1].filename == sent[3].filename)
+    misled, _ = make()
+    await say(misled, "$fakefb wrong", FakeChannel())
+    await say(misled, "$modify murkstalker|power|9", FakeChannel())
+    sent = await say(misled, "$modify murkstalker|power|9", FakeChannel())
+    check("⭐ wrong: the card named is left as it was, so the re-post's old picture is the scan",
+          not changed(image(sent[1]), Image.open(CARDS.art_path("Murkstalker")).convert("RGB"), STATS))
     await say(fake, "$fakefb normal", FakeChannel())
     check("normal, and an unknown mode is ignored",
           fake.mode == "normal" and await say(fake, "$fakefb sideways", FakeChannel()) == [] and fake.mode == "normal")
