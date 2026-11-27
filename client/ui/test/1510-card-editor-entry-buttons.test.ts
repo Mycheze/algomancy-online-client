@@ -60,10 +60,10 @@ function accountsTab(rows: AccountRow[]): string {
 
 test('1510 §2 the Accounts tab has a Designer toggle beside admin, and a chip for a designer', () => {
   const html = accountsTab([ROW, { ...ROW, id: 'b', username: 'Dee', designer: true }]);
-  assert.match(html, /data-btn="admin-flag"[^>]*data-name="Caleb"[^>]*>make admin<\/button>\s*<button [^>]*data-btn="admin-designer"[^>]*data-name="Caleb" data-want="1">make designer</,
+  assert.match(html, /data-btn="admin-flag"[^>]*data-name="Caleb"[^>]*>Make admin<\/button>\s*<button [^>]*data-btn="admin-designer"[^>]*data-name="Caleb" data-want="1">Make designer</,
     'a grant, beside the admin toggle');
-  assert.match(html, /data-btn="admin-designer"[^>]*data-name="Dee" data-want="0">revoke designer</, 'a revoke for a designer');
+  assert.match(html, /data-btn="admin-designer"[^>]*data-name="Dee" data-want="0">Revoke designer</, 'a revoke for a designer');
   assert.equal((html.match(/data-btn="admin-designer"/g) ?? []).length, 2, 'one toggle per row');
-  assert.match(html, /<b>Dee<\/b>\s*<span class="badgechip designer">designer<\/span>/, 'a designer is marked');
+  assert.match(html, /<b>Dee<\/b>\s*<span class="badgechip designer" title="can edit cards">Designer<\/span>/, 'a designer is marked');
   assert.doesNotMatch(html, /<b>Caleb<\/b>[^<]*<span class="badgechip designer">/, 'and nobody else is');
 });
