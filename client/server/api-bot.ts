@@ -35,7 +35,8 @@
  * for that rule to live, and the rule is the owner's.
  *
  * Two routes write — /api/bot/link/claim and /api/bot/unlink, which each
- * save the account store — and everything else is a read. /api/bot/simulate
+ * save the account store — and so do the card editor's /api/bot/cardedit/seen
+ * and /reply, which write its request files; everything else is a read. /api/bot/simulate
  * computes and writes nothing.
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
@@ -46,6 +47,7 @@ import {
 import { claim } from './link.ts';
 import { bandFor, queueCounts, queued } from './queue.ts';
 import { engineVersion } from './engine-version.ts';
+import { cardEditBotRoutes } from './api-cardedit.ts';
 import type { SimResult } from './simulate.ts';
 
 /** /api/bot/simulate's body cap (simulate.ts LIMITS.bodyBytes says the same;
@@ -83,6 +85,9 @@ export async function botRoutes(
     res.end('not found');
     return true;
   }
+
+  // the card editor's commands and FriendlyBot's answers (api-cardedit.ts)
+  if (await cardEditBotRoutes(req, res, path)) return true;
 
   /* Is the server up, which engine is it running, and has it restarted?
    *

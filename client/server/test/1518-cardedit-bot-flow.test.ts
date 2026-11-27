@@ -1,0 +1,160 @@
+/* 1518 — an edit walked through the bot's routes, from submitted to live.
+ *
+ * §1 pending → seen → no answer → re-posted → answered → the wrong card refused →
+ *    answered: waiting for FriendlyBot, then applying; the pictures and the index follow
+ * §2 a repeated reply only updates; a reply for a command never seen is refused
+ * §3 the runner's row says testing, and the build's Card-Edit trailer says live
+ * §4 a reply carrying two full-size renders fits the route's body cap
+ */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { editorFields } from '../../ui/cardnotation.ts';
+import { NO_ANSWER_NOTE, appendRunnerRow, oracleRow, rowHash, useLiveEditIds } from '../cardedit.ts';
+import { cardEditsDir } from '../statepaths.ts';
+import { account, bodyReq, botGet, botPost, fbFile, jpegB64, page, silentReq } from './cardedit-fixture.ts';
+
+const DEE = account('Dee', { designer: true, discord: '111' });
+const ROW = oracleRow('Murkstalker')!;
+const status = async (id: string): Promise<{ status: unknown; note: unknown }> => {
+  const d = (await page(silentReq('GET', DEE).req, `/api/cardedit/edits/${id}`)).body;
+  return { status: d['status'], note: d['note'] };
+};
+const index = (): unknown => JSON.parse(readFileSync(join(cardEditsDir(), 'index.json'), 'utf8'));
+const picture = (id: string, which: string): string => readFileSync(join(cardEditsDir(), id, `${which}.jpg`)).toString('base64');
+const MURK = fbFile('Murkstalker');
+let ID = '';
+
+test('1518 §1 from submitted through waiting for FriendlyBot to applying', async () => {
+  const fields = { ...editorFields(ROW), 'total cost': '3', power: '3' };
+  const sub = await page(bodyReq(DEE, { card: 'Murkstalker', rowHash: rowHash(ROW), fields }), '/api/cardedit/edits');
+  ID = String(sub.body['id']);
+  assert.deepEqual(await status(ID), { status: 'submitted', note: null });
+
+  const pending = await botGet('/api/bot/cardedit/pending');
+  assert.deepEqual(pending.body, {
+    ok: true,
+    edits: [{
+      id: ID, card: 'Murkstalker', discord: '111', since: (pending.body['edits'] as { since: string }[])[0]!.since,
+      commands: [
+        { i: 0, text: '$modify murkstalker|total cost|3', field: 'total cost', posted: false, done: false },
+        { i: 1, text: '$modify murkstalker|power|3', field: 'power', posted: false, done: false },
+      ],
+    }],
+  });
+
+  const seen0 = { id: ID, i: 0, messageId: 'm1', channelId: 'c1', content: '$modify murkstalker|total cost|3', at: '2026-11-27T18:03:00Z' };
+  assert.equal((await botPost('/api/bot/cardedit/seen', seen0)).status, 200);
+  assert.deepEqual(await status(ID), { status: 'waiting', note: null });
+  const p1 = (await botGet('/api/bot/cardedit/pending')).body['edits'] as Record<string, unknown>[];
+  assert.equal(p1[0]!['channelHint'], 'c1');
+  assert.deepEqual((p1[0]!['commands'] as { posted: boolean }[]).map(c => c.posted), [true, false]);
+
+  await botPost('/api/bot/cardedit/reply', { id: ID, i: 0, noAnswer: true, at: '2026-11-27T18:04:00Z' });
+  assert.deepEqual(await status(ID), { status: 'waiting', note: NO_ANSWER_NOTE });
+  await botPost('/api/bot/cardedit/seen', { ...seen0, messageId: 'm2', at: '2026-11-27T18:05:00Z' });
+  assert.deepEqual(await status(ID), { status: 'waiting', note: null }, 'a re-post clears the no-answer note');
+
+  const r0 = await botPost('/api/bot/cardedit/reply', {
+    id: ID, i: 0, echo: "Modified murkstalker's total cost from this", fileName: MURK,
+    before: jpegB64('B0'), after: jpegB64('A0'), at: '2026-11-27T18:05:10Z',
+  });
+  assert.equal(r0.status, 200, r0.raw);
+  assert.equal(picture(ID, 'before'), jpegB64('B0'));
+  assert.equal(picture(ID, 'after'), jpegB64('A0'));
+  assert.deepEqual(index(), { v: 1, edits: [] }, 'not ready while a command waits');
+
+  await botPost('/api/bot/cardedit/seen', { id: ID, i: 1, messageId: 'm3', channelId: 'c1', content: '$modify murkstalker|power|3', at: '2026-11-27T18:06:00Z' });
+  const wrong = await botPost('/api/bot/cardedit/reply', {
+    id: ID, i: 1, fileName: fbFile('Blights_End'), before: jpegB64('X'), after: jpegB64('Y'), at: '2026-11-27T18:06:10Z',
+  });
+  assert.equal(wrong.status, 409, 'a reply for another card');
+  assert.equal(wrong.body['error'], 'FriendlyBot changed a different card: Blights End');
+  assert.deepEqual(await status(ID), { status: 'waiting', note: 'FriendlyBot changed a different card: Blights End' });
+  assert.equal(picture(ID, 'after'), jpegB64('A0'), 'the wrong card stored nothing');
+
+  const r1 = await botPost('/api/bot/cardedit/reply', {
+    id: ID, i: 1, echo: "Modified murkstalker's power from this", fileName: MURK,
+    before: jpegB64('B1'), after: jpegB64('A1'), at: '2026-11-27T18:06:30Z',
+  });
+  assert.deepEqual(r1.body, { ok: true, road: 'fast', status: 'applying', note: 'waiting for the home box' });
+  assert.equal(picture(ID, 'before'), jpegB64('B0'), 'before: the first command\'s from-this');
+  assert.equal(picture(ID, 'after'), jpegB64('A1'), 'after: the newest render');
+  assert.deepEqual(index(), { v: 1, edits: [{ id: ID, card: 'Murkstalker', road: 'fast' }] });
+  assert.deepEqual((await botGet('/api/bot/cardedit/pending')).body, { ok: true, edits: [] }, 'nothing left for the bot');
+
+  const img = await page(silentReq('GET', DEE).req, `/api/cardedit/edits/${ID}/image/after`);
+  assert.equal(img.type, 'image/jpeg');
+  assert.equal(img.bytes.toString('base64'), jpegB64('A1'));
+  const d = (await page(silentReq('GET', DEE).req, `/api/cardedit/edits/${ID}`)).body;
+  assert.deepEqual(d['pictures'], { before: true, after: true });
+  assert.deepEqual(d['commands'], [
+    { text: '$modify murkstalker|total cost|3', field: 'total cost', posted: '$modify murkstalker|total cost|3', answered: true },
+    { text: '$modify murkstalker|power|3', field: 'power', posted: '$modify murkstalker|power|3', answered: true },
+  ]);
+});
+
+test('1518 §2 a repeated reply only updates; a reply before the command was seen is refused', async () => {
+  const again = await botPost('/api/bot/cardedit/reply', {
+    id: ID, i: 1, fileName: MURK, before: jpegB64('B1'), after: jpegB64('A1'), at: '2026-11-27T18:06:30Z',
+  });
+  assert.equal(again.body['status'], 'applying');
+  const late = await botPost('/api/bot/cardedit/reply', { id: ID, i: 0, noAnswer: true, at: '2026-11-27T18:07:00Z' });
+  assert.equal(late.body['status'], 'applying', 'a later silence does not undo a caught answer');
+  assert.equal(picture(ID, 'after'), jpegB64('A1'));
+  // the same first command posted again: FriendlyBot's from-this now already shows the edit
+  await botPost('/api/bot/cardedit/seen', { id: ID, i: 0, messageId: 'm9', channelId: 'c1', content: '$modify murkstalker|total cost|3', at: '2026-11-27T18:08:00Z' });
+  const repost = await botPost('/api/bot/cardedit/reply', {
+    id: ID, i: 0, fileName: MURK, before: jpegB64('B0-again'), after: jpegB64('A0-again'), at: '2026-11-27T18:08:10Z',
+  });
+  assert.equal(repost.body['status'], 'applying', 'the same value keeps its answer');
+  assert.equal(picture(ID, 'before'), jpegB64('B0'), 'before stays the card as it was before the edit');
+  assert.equal(picture(ID, 'after'), jpegB64('A0-again'), 'after is the newest render, which carries every change');
+  await botPost('/api/bot/cardedit/reply', {
+    id: ID, i: 1, fileName: MURK, before: jpegB64('B1'), after: jpegB64('A1'), at: '2026-11-27T18:06:30Z',
+  });
+  assert.equal(picture(ID, 'after'), jpegB64('A0-again'), 'an older answer arriving late does not replace a newer render');
+  const nobody = await botPost('/api/bot/cardedit/reply', { id: 'ce-20261127-murkstalker-0000', i: 0, noAnswer: true });
+  assert.equal(nobody.status, 404);
+
+  const fields = { ...editorFields(oracleRow('Good Whale')!), power: '8' };
+  const other = await page(bodyReq(DEE, { card: 'Good Whale', rowHash: rowHash(oracleRow('Good Whale')), fields }), '/api/cardedit/edits');
+  const early = await botPost('/api/bot/cardedit/reply', {
+    id: other.body['id'], i: 0, fileName: fbFile('Good_Whale'), before: jpegB64('b'), after: jpegB64('a'),
+  });
+  assert.equal(early.status, 409, 'no command seen posted yet');
+  const badPic = await botPost('/api/bot/cardedit/seen', { id: other.body['id'], i: 0, messageId: 'w1', channelId: 'c1', content: '$modify good whale|power|8' });
+  assert.equal(badPic.status, 200);
+  const notJpeg = await botPost('/api/bot/cardedit/reply', {
+    id: other.body['id'], i: 0, fileName: fbFile('Good_Whale'), before: Buffer.from('GIF89a').toString('base64'), after: jpegB64('a'),
+  });
+  assert.equal(notJpeg.status, 400, 'only JPEG pictures');
+});
+
+test('1518 §3 the runner says testing, and the build carrying the trailer says live', async () => {
+  appendRunnerRow(ID, 'picked');
+  assert.deepEqual(await status(ID), { status: 'applying', note: 'testing' });
+  assert.deepEqual(index(), { v: 1, edits: [{ id: ID, card: 'Murkstalker', road: 'fast' }] }, 'picked stays in the index');
+  appendRunnerRow(ID, 'landed');
+  assert.deepEqual(index(), { v: 1, edits: [] }, 'landed leaves it');
+  useLiveEditIds([ID]);
+  try {
+    assert.deepEqual(await status(ID), { status: 'live', note: null });
+    const row = await page(silentReq('GET', DEE).req, '/api/cardedit/row?card=Murkstalker');
+    assert.equal(row.body['open'], null, 'a live edit is not in progress');
+  } finally {
+    useLiveEditIds([]);
+  }
+});
+
+test('1518 §4 two full-size renders fit the reply route', async () => {
+  const fields = { ...editorFields(oracleRow('Dune Drifter')!), toughness: '3' };
+  const sub = await page(bodyReq(DEE, { card: 'Dune Drifter', rowHash: rowHash(oracleRow('Dune Drifter')), fields }), '/api/cardedit/edits');
+  const id = sub.body['id'];
+  await botPost('/api/bot/cardedit/seen', { id, i: 0, messageId: 'd1', channelId: 'c1', content: '$modify dune drifter|toughness|3' });
+  const big = jpegB64('x'.repeat(300 * 1024));
+  const r = await botPost('/api/bot/cardedit/reply', { id, i: 0, fileName: fbFile('Dune_Drifter'), before: big, after: big });
+  assert.equal(r.status, 200, r.raw.slice(0, 200));
+  assert.equal(r.body['status'], 'applying');
+});

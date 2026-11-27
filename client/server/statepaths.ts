@@ -138,3 +138,8 @@ export const cubeDir = (): string => process.env['ALGO_CUBE_DIR'] ?? join(varDir
  * A cache: every file is rebuilt from the deck on a miss, so losing it costs
  * one Python run per deck and nothing else. */
 export const ogCacheDir = (): string => process.env['ALGO_OG_CACHE_DIR'] ?? join(varDir(), 'og-cache');
+/** the card editor's requests (cardedit.ts): `<id>.json` and its pictures in
+ * `<id>/`, written by this server only; `<id>.runner.jsonl`, appended only by
+ * the home box's runner over ssh (cardedit-runner-row.ts); and `index.json`,
+ * the edits ready for the runner, rewritten on every change. */
+export const cardEditsDir = (): string => process.env['ALGO_CARD_EDITS_DIR'] ?? join(varDir(), 'card-edits');

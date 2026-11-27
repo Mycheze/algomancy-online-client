@@ -83,6 +83,7 @@ import { seenRecently, type InviteRoom } from './inbox.ts';
 import { addrOf, directLoopback, limitReached, rateLimited, tokenOf, readBody } from './api-util.ts';
 import { deckRoutes } from './api-decks.ts';
 import { adminRoutes } from './api-admin.ts';
+import { cardEditRoutes } from './api-cardedit.ts';
 import { storybookRoutes } from './storybook.ts';
 import { replayRoutes } from './api-replay.ts';
 import { cardStats, cardStatsRoutes } from './api-cardstats.ts';
@@ -666,6 +667,8 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // BL-16: the operator dashboard. Every route under /api/admin/ except the
   // two tester-token bootstraps below, and all of them 404 to a non-admin.
   if (await adminRoutes(req, res, path)) return;
+  // the card editor: designers and admins only, 404 to everybody else (api-cardedit.ts)
+  if (await cardEditRoutes(req, res, path, url)) return;
   // the design system's Storybook at /storybook/, admins only, when it is
   // built; everybody else gets the 404 this server gives anything (storybook.ts)
   if (await storybookRoutes(req, res, path, url, (q, s, file) => serveFile(q, s, file, 'revalidate'))) return;

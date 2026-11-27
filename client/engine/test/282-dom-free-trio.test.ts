@@ -53,6 +53,8 @@ const SERVER = new URL('../../server/', import.meta.url);
  */
 const TRIO = [
   'cardsearch.ts', 'cardindex.ts', 'cardsynonyms.ts', 'customrules.ts', 'deckformat.ts',
+  // the card editor: the page previews the road and the server decides it with one module
+  'cardnotation.ts',
 ] as const;
 
 /** …plus what those files import from ui/ in turn, which compiles into the
