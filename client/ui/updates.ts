@@ -45,7 +45,6 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
-  { date: '2026-11-27', kind: 'new', text: 'Caleb, the designer, can now change his cards from inside the client. A change to a card\'s numbers or art reaches the game as soon as it passes testing.' },
   { date: '2026-11-27', kind: 'change', text: 'Watching a replay or a challenge run played before a card changed now says which card changed, since the replay shows today\'s version of it.' },
   { date: '2026-11-26', kind: 'fix', text: 'If you opened a cube event\'s link before logging in, the event page now catches up once you log in, so you land in your draft or your deck builder when it starts without reloading.' },
   { date: '2026-11-26', kind: 'new', text: 'Cube events can now be sealed: instead of drafting, every player opens a pool from the cube (75 cards by default) and builds a deck from it. The host picks the pool size, singleton or two of each, and whether everyone gets the same pool.' },
