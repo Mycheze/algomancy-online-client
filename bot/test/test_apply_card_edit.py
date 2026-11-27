@@ -92,7 +92,9 @@ def new_words(im, xy=(90, 895), text="and draw a card"):
 
 
 def edit_file(name, card, after, diff, road="fast", posted=None):
-    cmds = [{"text": t, "field": f, "posted": t if posted is None else posted, "reply": None}
+    cmds = [{"text": t, "field": f, "reply": None,
+             "posted": {"messageId": "m1", "channelId": "c1", "content": t if posted is None else posted,
+                        "at": "2026-11-27T18:03:00Z"}}
             for f, t in (("total cost", f"$modify {card.lower()}|total cost|{after.get('total_cost')}"),)
             if "total_cost" in after]
     row = json.loads(TREE.ORACLE_JSON.read_text(encoding="utf-8"))[card][0]
@@ -196,7 +198,7 @@ check("drift exits 3 with a sentence and the measurement",
 
 code, said = run_main(edit_file("posted", "Murkstalker", {"total_cost": up}, None,
                                 posted="$modify murkstalker|total cost|9"), before, after)
-check("a posted value other than the edit's exits 3", code == 3 and "posted" in said.get("why", ""),
+check("a posted value other than the edit's exits 3", code == 3 and "the posted total_cost is 9" in said.get("why", "").lower(),
       (code, said))
 
 code, said = run_main(edit_file("road", "Murkstalker", {"text": "x"}, None, road="steward"), before, after)

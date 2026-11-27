@@ -87,7 +87,8 @@ export function diffOracles(
     for (const [f, word] of Object.entries(FIELD_WORD)) {
       if (valueOf(oldRows, f) !== valueOf(rows, f)) fields.add(word);
     }
-    if (scans.has(scanFileOf(name)) || scans.has(scanFileOf(old))) fields.add('art');
+    // every printed change replaces the scan, so a new scan is new art only when nothing printed changed
+    if (!fields.size && (scans.has(scanFileOf(name)) || scans.has(scanFileOf(old)))) fields.add('art');
     if (!fields.size) continue;
     out.push({
       card: name, ...(name !== old ? { was: old } : {}),

@@ -19,11 +19,13 @@ const NUMBER = /^(?:\d+|X)$/;
 export function problemsOf(edit, row) {
   const out = [];
   for (const c of edit.commands ?? []) {
-    if (typeof c.posted !== 'string') { out.push(`the command for ${c.field} was never seen posted`); continue; }
-    const p = parseCommand(c.posted);
+    // the server stores what the bot saw, { messageId, channelId, content, at }; content is what FriendlyBot applied
+    const posted = c.posted?.content;
+    if (typeof posted !== 'string') { out.push(`the command for ${c.field} was never seen posted`); continue; }
+    const p = parseCommand(posted);
     const v = p && p.verb === 'modify' ? valueFromCommand(p.field, p.value) : null;
     if (p && p.verb !== 'modify') out.push('a complexity command was posted');
-    else if (!v) out.push(`FriendlyBot would not read the posted command "${c.posted.slice(0, 80)}"`);
+    else if (!v) out.push(`FriendlyBot would not read the posted command "${posted.slice(0, 80)}"`);
     else if (edit.after?.[v.field] !== v.value) out.push(`the posted ${v.field} is ${v.value}, the edit says ${edit.after?.[v.field]}`);
   }
   for (const f of ['total_cost', 'power', 'toughness']) {

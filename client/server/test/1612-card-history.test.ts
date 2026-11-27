@@ -52,7 +52,7 @@ test('card history: a changed cost is listed as cost, and an unchanged card is n
 });
 
 test('card history: each printed part has its word, and bookkeeping fields are not changes', () => {
-  const then = oracle(row('A'), row('B'), row('C'), row('D'));
+  const then = oracle(row('A'), row('B'), row('C'), row('D'), row('E'));
   const now = oracle(
     row('A', { power: '3', toughness: '1', factions: ['dark', 'fire'], cost: 'df' }),
     row('B', { type: 'Horror Spell', text: 'Draw two cards.', image: 'https://img/B2.png' }),
@@ -60,12 +60,14 @@ test('card history: each printed part has its word, and bookkeeping fields are n
     row('C', { revision_date_time: '2026-11-27', source: 'x', Num_Copies: '2', rulings: ['r'],
       details: 'note', complexity: 'Complex', Side: 'Back', Backside: 'x', Deck: 'y', Numeral: '3' }),
     row('D'),
+    row('E', { toughness: '3' }),
   );
-  const out = byCard(diffOracles(then, now, new Set(['D.jpg']), n => n));
+  const out = byCard(diffOracles(then, now, new Set(['D.jpg', 'E.jpg']), n => n));
   assert.deepEqual(out.get('A')?.fields, ['cost', 'power', 'toughness']);
   assert.deepEqual(out.get('B')?.fields, ['type', 'text', 'art']);
   assert.equal(out.has('C'), false, 'a bookkeeping change is not a change a player can see');
   assert.deepEqual(out.get('D')?.fields, ['art'], 'a replaced scan is new art even when the row is the same');
+  assert.deepEqual(out.get('E')?.fields, ['toughness'], 'a scan replaced because its numbers changed is not new art');
 });
 
 test('card history: a renamed card is listed under its new name with its old one', () => {
@@ -132,10 +134,9 @@ test('card history: the real history names the cards of a real card update', asy
   const out = await since(sha('26e536f0^'));
   assert.ok(Array.isArray(out), 'the parent commit is readable');
   const got = byCard(out);
-  assert.deepEqual(got.get('Murkstalker')?.fields.filter(f => f !== 'art'), ['cost', 'text']);
-  assert.deepEqual(got.get('Seer of Empty Spaces')?.fields.filter(f => f !== 'art'), ['cost']);
-  assert.deepEqual(got.get('The Everywhere')?.fields.filter(f => f !== 'art'), ['text']);
-  assert.ok(got.get('Murkstalker')?.fields.includes('art'), 'its scan was replaced in that commit');
+  assert.deepEqual(got.get('Murkstalker')?.fields, ['cost', 'text'], 'its scan was replaced too, and that is not new art');
+  assert.deepEqual(got.get('Seer of Empty Spaces')?.fields, ['cost']);
+  assert.deepEqual(got.get('The Everywhere')?.fields, ['text']);
   const rowChanges = out.filter(c => c.fields.some(f => f !== 'art')).map(c => c.card).sort();
   assert.deepEqual(rowChanges, ['Murkstalker', 'Seer of Empty Spaces', 'The Everywhere'],
     'nothing else in the oracle changed in that commit');
