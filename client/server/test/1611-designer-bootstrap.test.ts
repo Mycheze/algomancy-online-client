@@ -1,4 +1,4 @@
-/* 1511 — the tester-token bootstrap grants the designer flag (POST /api/admin/grant,
+/* 1611 — the tester-token bootstrap grants the designer flag (POST /api/admin/grant,
  * deploy/admin.sh designer <name>), against the real server.
  *
  * §1 a body naming `designer` sets that flag, both ways, and leaves admin alone;
@@ -9,9 +9,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnServer } from '../e2e/test-util.ts';
 
-const TOKEN = 'test-tester-token-1511';
+const TOKEN = 'test-tester-token-1611';
 
-test('1511 §1 the bootstrap grants and revokes designer, and leaves admin alone', async () => {
+test('1611 §1 the bootstrap grants and revokes designer, and leaves admin alone', async () => {
   const srv = await spawnServer({ ALGO_TESTER_TOKEN: TOKEN });
   const base = `http://127.0.0.1:${srv.port}`;
   const post = (path: string, body: unknown, headers: Record<string, string> = {}) =>

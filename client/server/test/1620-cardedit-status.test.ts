@@ -1,4 +1,4 @@
-/* 1520 — statusOf: an edit, the runner's rows and the build's trailers give one status (§7).
+/* 1620 — statusOf: an edit, the runner's rows and the build's trailers give one status (§7).
  * Pure: every case is a hand-built record, nothing is read off disk.
  */
 import { test } from 'node:test';
@@ -55,7 +55,7 @@ const CASES: [string, CardEdit, RunnerRow[], string[], ReturnType<typeof statusO
   ['and still once live', edit([cmd(true, ANSWERED)], { events: [ev('posted-late')] }), rows(['landed']), [ID], { status: 'live', note: POSTED_LATE }],
 ];
 
-test('1520 statusOf, one case per row of the status table', () => {
+test('1620 statusOf, one case per row of the status table', () => {
   for (const [name, e, r, liveIds, want] of CASES) {
     assert.deepEqual(statusOf(e, r, liveIds), want, name);
     assert.deepEqual(statusOf(e, r, new Set(liveIds)), want, `${name}: a set of ids answers the same`);

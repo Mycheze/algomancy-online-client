@@ -1,4 +1,4 @@
-/* 1508 — the designer flag: who may use the card editor (server/designer.ts).
+/* 1608 — the designer flag: who may use the card editor (server/designer.ts).
  *
  * §1 designerFor / designerForToken: designer, admin, both → the account;
  *    neither, no token, a logged-out token, an expired one → undefined
@@ -40,7 +40,7 @@ setDesigner(accountByName('Stella')!, true);
 const bearer = (token: string | null): IncomingMessage =>
   ({ headers: token ? { authorization: `Bearer ${token}` } : {} }) as unknown as IncomingMessage;
 
-test('1508 §1 designer or admin may edit cards; neither, no token and a dead token may not', () => {
+test('1608 §1 designer or admin may edit cards; neither, no token and a dead token may not', () => {
   for (const [who, name] of [['designer', 'Desi'], ['admin', 'Adam'], ['both', 'Bea']] as const) {
     const token = T[who];
     assert.equal(designerForToken(token)?.username, name, `${who}: by token`);
@@ -66,7 +66,7 @@ test('1508 §1 designer or admin may edit cards; neither, no token and a dead to
   }
 });
 
-test('1508 §2 setDesigner round trip: independent of admin and badge, and persisted', () => {
+test('1608 §2 setDesigner round trip: independent of admin and badge, and persisted', () => {
   const nell = accountByName('Nell')!;
   assert.equal(setDesigner(nell, true), true);
   assert.equal(nell.designer, true);
@@ -93,7 +93,7 @@ test('1508 §2 setDesigner round trip: independent of admin and badge, and persi
   assert.equal(designerForToken(T.both)?.username, 'Bea', 'and the designer flag alone still admits');
 });
 
-test('1508 §3 the own view carries designer only for itself, only when true', () => {
+test('1608 §3 the own view carries designer only for itself, only when true', () => {
   const desi = accountByName('Desi')!;
   setDesigner(desi, true);
   const online = () => false;

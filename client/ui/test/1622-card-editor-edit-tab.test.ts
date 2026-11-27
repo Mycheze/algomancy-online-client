@@ -1,4 +1,4 @@
-/* 1522 — the card editor's Edit tab, drawn from made-up views with no DOM (pages/cardeditor.ts).
+/* 1622 — the card editor's Edit tab, drawn from made-up views with no DOM (pages/cardeditor.ts).
  *
  * §0 no DOM; the frame with `cepage` last, the two tabs in the toolbar, Back by where it came from
  * §1 the refusal and the empty page
@@ -36,7 +36,7 @@ const btns = (html: string): string[] => [...html.matchAll(/data-btn="([^"]+)"/g
 const valueOf = (html: string, id: string): string | undefined =>
   new RegExp(`id="${id}"[^>]*value="([^"]*)"`).exec(html)?.[1] ?? new RegExp(`value="([^"]*)"[^>]*id="${id}"`).exec(html)?.[1];
 
-test('1522 §0 the frame, its tabs and the way back', () => {
+test('1622 §0 the frame, its tabs and the way back', () => {
   assert.equal(typeof (globalThis as Record<string, unknown>)['document'], 'undefined');
   const html = cardEditorHtml(view(UNIT));
   assert.match(html, /^<div class="ui-app-shell ui-app-shell--contained ui-app-shell--fill apppage cepage">/);
@@ -49,7 +49,7 @@ test('1522 §0 the frame, its tabs and the way back', () => {
   assert.match(html, /<div class="cemain" data-scroll="ce-edit">/, 'the form scrolls by itself, never the page');
 });
 
-test('1522 §1 a stranger is told the page is not theirs; with no card, the picker', () => {
+test('1622 §1 a stranger is told the page is not theirs; with no card, the picker', () => {
   const refused = cardEditorHtml(view(null, { access: false }));
   assert.match(refused, /This page is for the card designers\./);
   assert.doesNotMatch(refused, /ce-tab|ce-submit|ce-q/);
@@ -62,7 +62,7 @@ test('1522 §1 a stranger is told the page is not theirs; with no card, the pick
   assert.match(picking, /data-btn="ce-pick" data-card="Murk Lord">Murk Lord</);
 });
 
-test('1522 §2 the form is in his notation and keeps every space', () => {
+test('1622 §2 the form is in his notation and keeps every space', () => {
   const html = cardEditorHtml(view(UNIT));
   assert.equal(valueOf(html, 'ce-f-cost'), 'wk', 'light and dark are w and k on screen');
   assert.equal(valueOf(html, 'ce-f-total-cost'), '2');
@@ -90,7 +90,7 @@ test('1522 §2 the form is in his notation and keeps every space', () => {
   assert.equal(valueOf(typed, 'ce-f-type'), '  Unit —  Cosmic Horror ');
 });
 
-test('1522 §3 read-only says why; an edit in progress replaces the form with its commands', () => {
+test('1622 §3 read-only says why; an edit in progress replaces the form with its commands', () => {
   const ro = cardEditorHtml(view(UNIT, { row: { card: UNIT.name, row: UNIT, rowHash: 'h', readOnly: "this card's type line isn't understood yet", open: null } }));
   assert.match(ro, /Read-only: this card's type line isn't understood yet\./);
   assert.doesNotMatch(ro, /ce-submit|data-ce-field/);
@@ -125,7 +125,7 @@ test('1522 §3 read-only says why; an edit in progress replaces the form with it
   assert.match(cardEditorHtml(view(UNIT, { errorMsg: 'Murkstalker has an edit in progress.' })), /Murkstalker has an edit in progress\./);
 });
 
-test('1522 §4 drawn with the components: no hand-written ui- class, no colour literal', () => {
+test('1622 §4 drawn with the components: no hand-written ui- class, no colour literal', () => {
   const src = readFileSync(new URL('../pages/cardeditor.ts', import.meta.url), 'utf8');
   assert.doesNotMatch(src, /class="[^"]*(?<![\w-])ui-[a-z]/, 'a ui- class written by hand');
   assert.doesNotMatch(src, /#[0-9a-fA-F]{3,8}\b(?![-\w])|rgba?\(|hsla?\(/, 'a colour literal');

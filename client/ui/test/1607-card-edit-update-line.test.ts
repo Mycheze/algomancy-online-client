@@ -1,4 +1,4 @@
-/* 1507 · THE UPDATE LINE A FAST-PATH CARD EDIT WRITES (ui/cardnotation.ts updateLine)
+/* 1607 · THE UPDATE LINE A FAST-PATH CARD EDIT WRITES (ui/cardnotation.ts updateLine)
  *
  *  §1 what it says, for each kind of change
  *  §2 for every card in the pool, the line keeps the rules of the home page list (test 323)

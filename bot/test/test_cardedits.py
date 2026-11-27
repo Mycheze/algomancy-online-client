@@ -4,7 +4,7 @@ test_cardedits.py — the card editor's watcher (cogs/cardedits.py) against real
 FriendlyBot sequences from #card-changes (fixtures/friendlybot/*.json).
 Run: `.venv/bin/python bot/test/test_cardedits.py`. No Discord, no game server.
 
-§1 the parse mirror: client/ui/cardnotation.ts's rules, on 1506's quoted commands
+§1 the parse mirror: client/ui/cardnotation.ts's rules, on 1606's quoted commands
 §2 a clean edit: the command is seen, the four messages collected, the right bodies
 §3 a re-post: the last complete answer is the one that stands, answered or not
 §3c complexity: one line, no picture
@@ -93,7 +93,7 @@ def by_id(msgs, mid):
 
 # ── §1 the parse mirror ───────────────────────────────────────────────
 print("\n[§1 the parse mirror]")
-# client/ui/test/1506-card-edit-commands.test.ts §2, word for word
+# client/ui/test/1606-card-edit-commands.test.ts §2, word for word
 CASES = [
     ('$modify murkstalker|text|When you trash another card, [Switch1] Each opponent loses 1 life and you gain 1 life.',
      'murkstalker', 'text', 'When you trash another card, [Switch1] Each opponent loses 1 life and you gain 1 life.'),
@@ -120,7 +120,7 @@ p = parse_command('$complex murkstalker')
 check("$complex", (p["verb"], p["name"], p["field"], p["value"]) == ("complex", "murkstalker", "complexity", "Complex"))
 p = parse_command('$simple debt blep')
 check("$simple", (p["verb"], p["name"], p["value"]) == ("simple", "debt blep", "Simple"))
-# 1506 §3: what FriendlyBot ignored
+# 1606 §3: what FriendlyBot ignored
 for ignored in [
     '$modify|the everywhere|text|[Augment] As I spawn, name a card.',
     '$Modify battle|image|images_out/Stable/battle2.png',
@@ -137,7 +137,7 @@ for ignored in [
     '$complex ',
 ]:
     check(f"ignored as FriendlyBot ignores it: {ignored[:50]}", parse_command(ignored) is None)
-# 1506 §6
+# 1606 §6
 for card, key in [("Murkstalker", "Murkstalker"), ("Blight's End", "Blights_End"),
                   ("A Fast Pile of Rocks", "A_Fast_Pile_of_Rocks"), ("Seer of Empty Spaces", "Seer_of_Empty_Spaces"),
                   ("Hooba-Nan", "Hooba-Nan"), ("All-Consuming Blaze", "All-Consuming_Blaze")]:

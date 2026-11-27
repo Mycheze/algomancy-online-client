@@ -1,4 +1,4 @@
-/* 1524 — the card editor's My edits tab, drawn from made-up views with no DOM.
+/* 1624 — the card editor's My edits tab, drawn from made-up views with no DOM.
  *
  * §1 one list: card · what changed · status chip · when, and the author only for an admin
  * §2 a row opens its detail: the before and after pictures side by side, the commands as posted,
@@ -32,7 +32,7 @@ function view(over: Partial<CardEditorView> = {}): CardEditorView {
 }
 const rows = (html: string): string[] => [...html.matchAll(/data-btn="ce-row" data-id="([^"]+)"/g)].map(m => m[1]!);
 
-test('1524 §1 one list, a row per edit, newest first as the server sent them', () => {
+test('1624 §1 one list, a row per edit, newest first as the server sent them', () => {
   const html = cardEditorHtml(view());
   assert.match(html, /data-btn="ce-tab"[^>]*aria-pressed="true" data-tab="mine">My edits</);
   assert.match(html, /<div class="framelist celist" data-scroll="ce-mine">/, 'one surface that scrolls by itself');
@@ -47,7 +47,7 @@ test('1524 §1 one list, a row per edit, newest first as the server sent them', 
   assert.match(html, /Pick an edit to see it\./);
 });
 
-test('1524 §2 the opened edit: its pictures side by side, the commands as posted, the status', () => {
+test('1624 §2 the opened edit: its pictures side by side, the commands as posted, the status', () => {
   const html = cardEditorHtml(view({ detail: DETAIL, pictures: { before: 'blob:before', after: 'blob:after' }, whenOf: { [B.id]: '26 Nov, 10:00' } }));
   assert.match(html, /<button type="button" class="cerowbtn on" data-btn="ce-row" data-id="ce-20261126-firebolt-01ab" aria-pressed="true">/);
   assert.match(html, /<div class="cepics"><figure class="cepic" data-zoom><img src="blob:before" alt="Before">[\s\S]*?<figure class="cepic" data-zoom><img src="blob:after" alt="After">/);
@@ -64,7 +64,7 @@ test('1524 §2 the opened edit: its pictures side by side, the commands as poste
   assert.doesNotMatch(complexityOnly, /cepics|No picture yet/, 'FriendlyBot draws no picture for a complexity change');
 });
 
-test('1524 §3 no edits yet, and the list loading', () => {
+test('1624 §3 no edits yet, and the list loading', () => {
   assert.match(cardEditorHtml(view({ edits: [] })), /No edits yet\./);
   assert.match(cardEditorHtml(view({ edits: null })), /<p class="framenote">loading…<\/p>/);
   assert.match(cardEditorHtml(view({ errorMsg: 'Could not reach the server.' })), /Could not reach the server\./);

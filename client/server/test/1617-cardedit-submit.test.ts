@@ -1,4 +1,4 @@
-/* 1517 — submitting a card edit (POST /api/cardedit/edits) and what it writes.
+/* 1617 — submitting a card edit (POST /api/cardedit/edits) and what it writes.
  *
  * §1 refusals: an unlinked designer, a stale base, a `|`, nothing changed (also a change of
  *    notation only), an unknown card, and a second open edit on one card
@@ -27,7 +27,7 @@ const screen = (change: Record<string, string>): Record<string, string> =>
   ({ ...editorFields(RAW) as Record<string, string>, ...change });
 const submit = (token: string, body: unknown) => page(bodyReq(token, body), '/api/cardedit/edits');
 
-test('1517 §1 the submit refusals', async () => {
+test('1617 §1 the submit refusals', async () => {
   const ok = { card: 'Murkstalker', rowHash: HASH, fields: screen({ 'total cost': '3' }) };
   const unlinked = await submit(UNLINKED, ok);
   assert.deepEqual([unlinked.status, unlinked.body['error']], [400, LINK_FIRST], 'unlinked: told to link first');
@@ -59,7 +59,7 @@ test('1517 §1 the submit refusals', async () => {
   await page(bodyReq(DEE, {}), `/api/cardedit/edits/${String(first.body['id'])}/cancel`);
 });
 
-test('1517 §2 a good submit answers its commands and writes the record', async () => {
+test('1617 §2 a good submit answers its commands and writes the record', async () => {
   const r = await submit(DEE, { card: 'Murkstalker', rowHash: HASH, fields: screen({ 'total cost': '3', power: '4' }) });
   assert.equal(r.status, 200, r.raw);
   const id = String(r.body['id']);
@@ -88,7 +88,7 @@ test('1517 §2 a good submit answers its commands and writes the record', async 
   await page(bodyReq(DEE, {}), `/api/cardedit/edits/${id}/cancel`);
 });
 
-test('1517 §3 the row route serves the raw oracle row, its hash and the open edit', async () => {
+test('1617 §3 the row route serves the raw oracle row, its hash and the open edit', async () => {
   const before = await page(silentReq('GET', DEE).req, '/api/cardedit/row?card=murkstalker');
   assert.deepEqual(before.body, { ok: true, card: 'Murkstalker', row: RAW, rowHash: HASH, readOnly: null, open: null });
   const r = await submit(DEE, { card: 'Murkstalker', rowHash: HASH, fields: screen({ toughness: '3' }) });
@@ -99,7 +99,7 @@ test('1517 §3 the row route serves the raw oracle row, its hash and the open ed
   assert.equal(missing.status, 404);
 });
 
-test('1517 §4 cancel until a command is posted; the author and admins see an edit, nobody else', async () => {
+test('1617 §4 cancel until a command is posted; the author and admins see an edit, nobody else', async () => {
   const fields = screen({ 'total cost': '1' });
   const a = await submit(DEE, { card: 'Murkstalker', rowHash: HASH, fields });
   const id = String(a.body['id']);

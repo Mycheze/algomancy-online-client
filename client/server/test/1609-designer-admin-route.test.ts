@@ -1,4 +1,4 @@
-/* 1509 — POST /api/admin/setdesigner, the dashboard's Designer toggle (api-admin.ts).
+/* 1609 — POST /api/admin/setdesigner, the dashboard's Designer toggle (api-admin.ts).
  *
  * §1 signed out, a player, and a designer who is not an admin: the plain 404 a
  *    missing path gets, answered before the body is read, and nothing changes
@@ -57,7 +57,7 @@ async function call(req: IncomingMessage, path: string): Promise<Answer> {
   return { status: status || 200, raw, handled };
 }
 
-test('1509 §1 a non-admin gets the plain 404, before the body is read, and nothing changes', async () => {
+test('1609 §1 a non-admin gets the plain 404, before the body is read, and nothing changes', async () => {
   const missing = await call(silentReq('POST', PLAYER).req, '/api/admin/no-such-route');
   for (const [who, token] of [['signed out', null], ['a player', PLAYER], ['a designer', DESIGNER]] as const) {
     const { req, listened } = silentReq('POST', token);
@@ -74,7 +74,7 @@ test('1509 §1 a non-admin gets the plain 404, before the body is read, and noth
   assert.equal(accountByName('Target')!.designer, undefined, 'nor can a designer: it is an admin power');
 });
 
-test('1509 §2 an admin grants and revokes it, and the accounts list says who holds it', async () => {
+test('1609 §2 an admin grants and revokes it, and the accounts list says who holds it', async () => {
   const on = await call(bodyReq(OPS, { name: 'Target', designer: true }), '/api/admin/setdesigner');
   assert.equal(on.status, 200);
   assert.deepEqual(JSON.parse(on.raw), { ok: true, name: 'Target', designer: true });

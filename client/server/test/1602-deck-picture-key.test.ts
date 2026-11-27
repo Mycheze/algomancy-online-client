@@ -23,7 +23,7 @@ test('deck picture key: the same scans at the same versions give the same key', 
 });
 
 test('deck picture key: new art under the same filename gets a new key', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'algo-1502-'));
+  const dir = mkdtempSync(join(tmpdir(), 'algo-1602-'));
   try {
     const files = ['Good-Whale.jpg', 'Murkstalker.jpg', 'Vroot.jpg'];
     for (const f of files) writeFileSync(join(dir, f), `old ${f}`);

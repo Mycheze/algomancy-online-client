@@ -1,4 +1,4 @@
-/* 1505 · AN EDIT'S DIFF AND ITS ROAD (ui/cardnotation.ts; client/docs/card-editor.md §5)
+/* 1605 · AN EDIT'S DIFF AND ITS ROAD (ui/cardnotation.ts; client/docs/card-editor.md §5)
  *
  *  §1 notation alone is never a change, on any card
  *  §2 the road table: numbers, affinity and art go fast; text, type, name, complexity go to the steward

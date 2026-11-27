@@ -1,4 +1,4 @@
-/* 1510 — the designer flag in the client, drawn without a page.
+/* 1610 — the designer flag in the client, drawn without a page.
  *
  * §1 the profile's Staff row has a Card editor button for a designer and for an
  *    admin, and none for a plain player or a judge badge alone
@@ -28,7 +28,7 @@ function settings(me: Partial<Me>): string {
 }
 const BTN = /<button [^>]*data-btn="nav-cardeditor"[^>]*>Card editor<\/button>/g;
 
-test('1510 §1 Card editor on the profile for a designer and for an admin, not for anybody else', () => {
+test('1610 §1 Card editor on the profile for a designer and for an admin, not for anybody else', () => {
   for (const [who, me] of [['a designer', { designer: true }], ['an admin', { admin: true }],
     ['both', { designer: true, admin: true }]] as const) {
     const html = settings(me);
@@ -58,7 +58,7 @@ function accountsTab(rows: AccountRow[]): string {
   return adminHtml(view);
 }
 
-test('1510 §2 the Accounts tab has a Designer toggle beside admin, and a chip for a designer', () => {
+test('1610 §2 the Accounts tab has a Designer toggle beside admin, and a chip for a designer', () => {
   const html = accountsTab([ROW, { ...ROW, id: 'b', username: 'Dee', designer: true }]);
   assert.match(html, /data-btn="admin-flag"[^>]*data-name="Caleb"[^>]*>Make admin<\/button>\s*<button [^>]*data-btn="admin-designer"[^>]*data-name="Caleb" data-want="1">Make designer</,
     'a grant, beside the admin toggle');

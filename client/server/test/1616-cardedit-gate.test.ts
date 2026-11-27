@@ -1,4 +1,4 @@
-/* 1516 — who reaches the card editor's routes (api-cardedit.ts, api-bot.ts).
+/* 1616 — who reaches the card editor's routes (api-cardedit.ts, api-bot.ts).
  *
  * §1 signed out, a player, a logged-out token and an expired one: the plain 404 an
  *    unserved path gets, on every /api/cardedit/ route, before the body is read
@@ -41,7 +41,7 @@ async function refusedEverywhere(who: string, token: string | null): Promise<voi
   }
 }
 
-test('1516 §1 a stranger, a player, a logged-out and an expired token get the plain 404 before the body', async () => {
+test('1616 §1 a stranger, a player, a logged-out and an expired token get the plain 404 before the body', async () => {
   await refusedEverywhere('signed out', null);
   await refusedEverywhere('a player', PLAYER);
   await refusedEverywhere('a made-up token', 'not-a-session');
@@ -54,7 +54,7 @@ test('1516 §1 a stranger, a player, a logged-out and an expired token get the p
   }
 });
 
-test('1516 §2 a designer and an admin get in', async () => {
+test('1616 §2 a designer and an admin get in', async () => {
   for (const [who, token] of [['designer', DESIGNER], ['admin', ADMIN]] as const) {
     const row = await page(silentReq('GET', token).req, '/api/cardedit/row?card=Murkstalker');
     assert.equal(row.status, 200, `${who}: ${row.raw.slice(0, 200)}`);
@@ -67,7 +67,7 @@ test('1516 §2 a designer and an admin get in', async () => {
   }
 });
 
-test('1516 §3 the bot routes are behind the bot gate', async () => {
+test('1616 §3 the bot routes are behind the bot gate', async () => {
   const shut = await bot(silentReq('GET', null).req, '/api/bot/cardedit/pending', false);
   assert.equal(shut.status, 404);
   assert.equal(shut.raw, 'not found');

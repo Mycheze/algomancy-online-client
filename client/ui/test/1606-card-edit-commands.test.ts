@@ -1,4 +1,4 @@
-/* 1506 · FRIENDLYBOT'S COMMANDS, MADE AND READ BACK (ui/cardnotation.ts; client/docs/friendlybot.md)
+/* 1606 · FRIENDLYBOT'S COMMANDS, MADE AND READ BACK (ui/cardnotation.ts; client/docs/friendlybot.md)
  *
  *  §1 the commands an edit makes, as Caleb types them
  *  §2 Caleb's own commands parse, the way FriendlyBot reads them

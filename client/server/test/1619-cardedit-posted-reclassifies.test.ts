@@ -1,4 +1,4 @@
-/* 1519 — the posted command is what FriendlyBot applied, so it decides the change.
+/* 1619 — the posted command is what FriendlyBot applied, so it decides the change.
  *
  * §1 a different number posted: after and diff follow it, the road stays fast
  * §2 a different affinity posted whose deck cannot be worked out: the road turns steward,
@@ -22,7 +22,7 @@ async function submit(card: string, change: Record<string, string>): Promise<str
 const seen = (id: string, content: string, messageId = 'm1') =>
   botPost('/api/bot/cardedit/seen', { id, i: 0, messageId, channelId: 'c1', content, at: '2026-11-27T18:03:00Z' });
 
-test('1519 §1 a different number posted moves after and diff, and stays fast', async () => {
+test('1619 §1 a different number posted moves after and diff, and stays fast', async () => {
   const id = await submit('Murkstalker', { 'total cost': '3' });
   const r = await seen(id, '$modify Murkstalker|Total_Cost|4');
   assert.equal(r.body['road'], 'fast');
@@ -36,7 +36,7 @@ test('1519 §1 a different number posted moves after and diff, and stays fast', 
   assert.equal((await page(bodyReq(DEE, {}), `/api/cardedit/edits/${id}/cancel`)).status, 409, 'posted: no cancel');
 });
 
-test('1519 §2 a posted affinity whose deck cannot be worked out turns the road steward, and back', async () => {
+test('1619 §2 a posted affinity whose deck cannot be worked out turns the road steward, and back', async () => {
   const id = await submit('Air Plant', { cost: 'wb' });
   assert.equal(readEdit(id)!.road, 'fast', 'Light and Water has a deck: fast as submitted');
   const r = await seen(id, '$modify air plant|cost|rb');
@@ -55,7 +55,7 @@ test('1519 §2 a posted affinity whose deck cannot be worked out turns the road 
   assert.deepEqual(readEdit(id)!.why, []);
 });
 
-test('1519 §3 a message that sets another field is refused and changes nothing', async () => {
+test('1619 §3 a message that sets another field is refused and changes nothing', async () => {
   const id = await submit('Good Whale', { power: '5' });
   const r = await seen(id, '$modify good whale|text|Each opponent loses 9 life.');
   assert.equal(r.status, 409);

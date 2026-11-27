@@ -1,4 +1,4 @@
-/* 1525 — the ways into the card editor, and its poll.
+/* 1625 — the ways into the card editor, and its poll.
  *
  * §1 the card browser's pinned card has Edit only for an account that may edit cards
  * §2 main.ts routes the profile's Card editor and the browser's Edit to the page, draws it over the
@@ -26,7 +26,7 @@ function cards(canEdit: boolean | undefined): string {
   return cardsHtml(v);
 }
 
-test('1525 §1 Edit beside Copy link, for an account that may edit cards only', () => {
+test('1625 §1 Edit beside Copy link, for an account that may edit cards only', () => {
   const html = cards(true);
   assert.match(html, /data-btn="cards-copylink"[^>]*>Copy link<\/button>\s*<button data-btn="cards-edit" data-card="([^"]+)">Edit<\/button>/);
   assert.equal(/data-btn="cards-edit" data-card="([^"]+)"/.exec(html)?.[1], CARD.name.replace(/&/g, '&amp;').replace(/"/g, '&quot;'));
@@ -36,7 +36,7 @@ test('1525 §1 Edit beside Copy link, for an account that may edit cards only', 
 
 const MAIN = readFileSync(new URL('../main.ts', import.meta.url), 'utf8');
 
-test('1525 §2 main.ts routes both buttons, and draws the editor over the card browser', () => {
+test('1625 §2 main.ts routes both buttons, and draws the editor over the card browser', () => {
   assert.match(MAIN, /btn\.dataset\['btn'\] === 'nav-cardeditor'\) \{ acct\.leaveScreen\(\); ce\.openCardEditor\(\); return; \}/);
   assert.match(MAIN, /btn\.dataset\['btn'\] === 'cards-edit'\) \{ ce\.openCardEditor\(btn\.dataset\['card'\], 'Cards'\); return; \}/);
   assert.ok(MAIN.indexOf("=== 'cards-edit'") < MAIN.indexOf('if (cb.handleButton(btn)) return;'), 'claimed before the browser takes every cards- click');
@@ -59,7 +59,7 @@ const detail = (status: string): Record<string, unknown> => ({
   commands: [{ text: '$modify murkstalker|total cost|3', field: 'total cost', posted: null, answered: false }], pictures: { before: false, after: false },
 });
 
-test('1525 §3 the poll runs only while a moving edit is on screen', async () => {
+test('1625 §3 the poll runs only while a moving edit is on screen', async () => {
   const g = globalThis as Record<string, unknown>;
   const saved = { setInterval: g['setInterval'], clearInterval: g['clearInterval'], fetch: g['fetch'], localStorage: g['localStorage'] };
   const live = new Map<number, { fn: () => void; ms: number }>();
@@ -128,7 +128,7 @@ test('1525 §3 the poll runs only while a moving edit is on screen', async () =>
   }
 });
 
-test('1525 §4 the page has its story', () => {
+test('1625 §4 the page has its story', () => {
   const story = readFileSync(new URL('../../storybook/stories/pages/cardeditor.stories.ts', import.meta.url), 'utf8');
   assert.match(story, /from '\.\.\/\.\.\/\.\.\/ui\/pages\/cardeditor\.ts'/);
   assert.match(story, /render: \(args: CardEditorView\) => cardEditorHtml\(args\)/);

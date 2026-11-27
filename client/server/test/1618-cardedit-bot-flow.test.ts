@@ -1,4 +1,4 @@
-/* 1518 — an edit walked through the bot's routes, from submitted to live.
+/* 1618 — an edit walked through the bot's routes, from submitted to live.
  *
  * §1 pending → seen → no answer → re-posted → answered → the wrong card refused →
  *    answered: waiting for FriendlyBot, then applying; the pictures and the index follow
@@ -30,7 +30,7 @@ const picture = (id: string, which: string): string => readFileSync(join(cardEdi
 const MURK = fbFile('Murkstalker');
 let ID = '';
 
-test('1518 §1 from submitted through waiting for FriendlyBot to applying', async () => {
+test('1618 §1 from submitted through waiting for FriendlyBot to applying', async () => {
   const fields = { ...editorFields(ROW), 'total cost': '3', power: '3' };
   const sub = await page(bodyReq(DEE, { card: 'Murkstalker', rowHash: rowHash(ROW), fields }), '/api/cardedit/edits');
   ID = String(sub.body['id']);
@@ -101,7 +101,7 @@ test('1518 §1 from submitted through waiting for FriendlyBot to applying', asyn
   ]);
 });
 
-test('1518 §2 a repeated reply only updates; a reply before the command was seen is refused', async () => {
+test('1618 §2 a repeated reply only updates; a reply before the command was seen is refused', async () => {
   const again = await botPost('/api/bot/cardedit/reply', {
     id: ID, i: 1, fileName: MURK, before: jpegB64('B1'), after: jpegB64('A1'), at: '2026-11-27T18:06:30Z',
   });
@@ -138,7 +138,7 @@ test('1518 §2 a repeated reply only updates; a reply before the command was see
   assert.equal(notJpeg.status, 400, 'only JPEG pictures');
 });
 
-test('1518 §3 the runner says testing, and the build carrying the trailer says live', async () => {
+test('1618 §3 the runner says testing, and the build carrying the trailer says live', async () => {
   appendRunnerRow(ID, 'picked');
   assert.deepEqual(await status(ID), { status: 'applying', note: 'testing' });
   assert.deepEqual(index(), { v: 1, edits: [{ id: ID, card: 'Murkstalker', road: 'fast', pictures: true }] }, 'picked stays in the index');
@@ -156,7 +156,7 @@ test('1518 §3 the runner says testing, and the build carrying the trailer says 
   }
 });
 
-test('1518 §4 two full-size renders fit the reply route', async () => {
+test('1618 §4 two full-size renders fit the reply route', async () => {
   const fields = { ...editorFields(oracleRow('Dune Drifter')!), toughness: '3' };
   const sub = await page(bodyReq(DEE, { card: 'Dune Drifter', rowHash: rowHash(oracleRow('Dune Drifter')), fields }), '/api/cardedit/edits');
   const id = sub.body['id'];
@@ -179,7 +179,7 @@ const pendingOf = async (id: string): Promise<Pending | undefined> =>
   ((await botGet('/api/bot/cardedit/pending')).body['edits'] as Pending[]).find(e => e.id === id);
 const flags = (p: Pending | undefined): [boolean, boolean][] => (p?.commands ?? []).map(c => [c.posted, c.done]);
 
-test('1518 §5 a tweaked re-post after the answer waits for its own answer; after pickup it is refused', async () => {
+test('1618 §5 a tweaked re-post after the answer waits for its own answer; after pickup it is refused', async () => {
   const id = await submitOn('Angel of Anguish', { 'total cost': '3' });
   const post = (messageId: string, value: string, at: string) => botPost('/api/bot/cardedit/seen',
     { id, i: 0, messageId, channelId: 'c1', content: `$modify angel of anguish|total cost|${value}`, at });
@@ -212,7 +212,7 @@ test('1518 §5 a tweaked re-post after the answer waits for its own answer; afte
   assert.equal((await post('p3', '5', '2026-11-27T19:03:00Z')).status, 200, 'a repeat of the value taken is harmless');
 });
 
-test('1518 §6 a complexity command is answered with its one line and needs no picture', async () => {
+test('1618 §6 a complexity command is answered with its one line and needs no picture', async () => {
   const row = oracleRow('Arbiter of Armistice')!;
   const want = row.complexity === 'Simple' ? 'Complex' : 'Simple';
   const id = await submitOn('Arbiter of Armistice', { complexity: want });
@@ -237,7 +237,7 @@ test('1518 §6 a complexity command is answered with its one line and needs no p
   assert.equal(noPicture.status, 400, 'only a complexity command may be answered without a picture');
 });
 
-test('1518 §7 a restarted bot replaying the channel changes nothing, before pickup or after', async () => {
+test('1618 §7 a restarted bot replaying the channel changes nothing, before pickup or after', async () => {
   const id = await submitOn('Amphivore', { toughness: '4' });
   const seen = (messageId: string, value: string, at: string) => botPost('/api/bot/cardedit/seen',
     { id, i: 0, messageId, channelId: 'c1', content: `$modify amphivore|toughness|${value}`, at });

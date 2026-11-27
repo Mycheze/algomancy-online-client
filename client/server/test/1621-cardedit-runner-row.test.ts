@@ -1,4 +1,4 @@
-/* 1521 — the runner's side of the store: cardedit-runner-row.ts and index.json.
+/* 1621 — the runner's side of the store: cardedit-runner-row.ts and index.json.
  *
  * §1 the script refuses a bad id, an unknown step and an edit that does not exist,
  *    writing nothing, and appends one row for a good call
@@ -40,7 +40,7 @@ const STEWARD = 'ce-20261126-good-whale-bbbb';
 
 const PICTURES = [{ at: 't', what: 'picture', which: 'before' }, { at: 't', what: 'picture', which: 'after' }];
 
-test('1521 §1 the runner-row script refuses what it does not know and appends what it does', () => {
+test('1621 §1 the runner-row script refuses what it does not know and appends what it does', () => {
   edit(READY, '2026-11-27T10:00:00Z', [caught], { events: [{ at: 't', what: 'submitted' }, ...PICTURES] });
   for (const [args, why] of [
     [['../etc-passwd', 'picked'], /not an edit id/],
@@ -64,7 +64,7 @@ test('1521 §1 the runner-row script refuses what it does not know and appends w
   assert.ok(lines.every(l => typeof l['at'] === 'string' && !Number.isNaN(Date.parse(String(l['at'])))));
 });
 
-test('1521 §2 index.json is the edits ready for the home box, oldest first', () => {
+test('1621 §2 index.json is the edits ready for the home box, oldest first', () => {
   const complexity: EditCommand = { ...caught, field: 'complexity', reply: { at: 't', echo: 'Set the complexity of good whale to Complex' } };
   edit(STEWARD, '2026-11-26T10:00:00Z', [complexity], { card: 'Good Whale', road: 'steward', why: ['the complexity changed'] });
   edit('ce-20261127-dune-drifter-cccc', '2026-11-27T11:00:00Z', [caught, waiting], { card: 'Dune Drifter' });

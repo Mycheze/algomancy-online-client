@@ -1,4 +1,4 @@
-/* 1523 — the parts of the Edit tab that follow his typing (pages/cardeditor.ts cardEditorPartHtml):
+/* 1623 — the parts of the Edit tab that follow his typing (pages/cardeditor.ts cardEditorPartHtml):
  * the road line, the pips and the preview.
  *
  * §1 the road line is the server's: the same functions of ui/cardnotation.ts the submit route runs
@@ -28,7 +28,7 @@ function view(fields: EditorFields, over: Partial<CardEditorView> = {}): CardEdi
 const roadPart = (f: EditorFields, over: Partial<CardEditorView> = {}): string => cardEditorPartHtml(view(f, over), 'road');
 const submitOn = (html: string): boolean => !/data-btn="ce-submit" type="button" disabled/.test(html);
 
-test('1523 §1 the road line runs the server functions on what is on screen', () => {
+test('1623 §1 the road line runs the server functions on what is on screen', () => {
   for (const f of [{ 'total cost': '3' }, { power: '3', toughness: '1' }, { cost: 'w' }, { image: 'new.png' },
     { text: 'Each opponent loses 2 life.' }, { type: 'Unit — Cosmic Horror Elder' }, { complexity: 'Simple' }] as EditorFields[]) {
     const screen = { ...editorFields(ROW), ...f };
@@ -47,7 +47,7 @@ test('1523 §1 the road line runs the server functions on what is on screen', ()
   assert.ok(!submitOn(roadPart({})), 'nothing to send');
 });
 
-test('1523 §2 a refusal is said before he presses anything', () => {
+test('1623 §2 a refusal is said before he presses anything', () => {
   const pipe = roadPart({ text: 'a | b' });
   assert.match(pipe, /<p class="ceroadline cebad">Text can(?:'|&#39;)t contain \|\.<\/p>/);
   assert.ok(!submitOn(pipe));
@@ -58,7 +58,7 @@ test('1523 §2 a refusal is said before he presses anything', () => {
   assert.match(roadPart({ 'total cost': '3' }, { busy: true }), /data-btn="ce-submit" type="button" disabled>Sending…</);
 });
 
-test('1523 §3 the preview and the pips are the game renderer, in our notation', () => {
+test('1623 §3 the preview and the pips are the game renderer, in our notation', () => {
   const preview = cardEditorPartHtml(view({ text: 'Pay [1wk]: you gain {g}deadly.{/n}Then draw.' }), 'preview');
   assert.match(preview, /src="\/data\/icons\/cost_1\.webp"[^>]*><img class="txticon" src="\/data\/icons\/light\.webp"[^>]*><img class="txticon" src="\/data\/icons\/dark\.webp"/,
     'his w and k are drawn as light and dark');

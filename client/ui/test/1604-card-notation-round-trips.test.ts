@@ -1,4 +1,4 @@
-/* 1504 · THE CARD EDITOR'S NOTATION ROUND-TRIPS EVERY CARD (ui/cardnotation.ts)
+/* 1604 · THE CARD EDITOR'S NOTATION ROUND-TRIPS EVERY CARD (ui/cardnotation.ts)
  *
  *  §1 for every card the editor opens, our row → Caleb's fields → our row is the row
  *  §2 the cards it opens read-only are exactly the pinned list, each with its reason
