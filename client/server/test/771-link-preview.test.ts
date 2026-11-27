@@ -82,6 +82,7 @@ const NOT_A_PAGE: Record<string, string> = {
 /* Pages that keep the home card on purpose. */
 const HOME_CARD: Record<string, string> = {
   admin: 'the operator dashboard — nobody shares it',
+  cardedit: 'the designer\'s card editor — nobody shares it',
   demo: 'the scripted mid-battle rig, for development',
   judging: 'the judges\' review of the rules bot — staff only, nobody shares it',
 };

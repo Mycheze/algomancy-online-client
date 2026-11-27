@@ -78,7 +78,7 @@ test('1522 §2 the form is in his notation and keeps every space', () => {
   }
   assert.deepEqual([...html.matchAll(/data-btn="ce-complexity"[^>]*data-value="(\w+)"/g)].map(m => m[1]), ['Simple', 'Complex']);
   assert.match(html, /<button class="[^"]* on" data-btn="ce-complexity" type="button" data-value="Complex" aria-pressed="true">/, 'his choice pressed');
-  assert.match(html, /<img class="cescan" src="\/data\/cards\/Murkstalker\.webp"/, 'the scan as it is now');
+  assert.match(html, /<img class="cescan" data-zoom src="\/data\/cards\/Murkstalker\.webp"/, 'the scan as it is now, zoomable');
   for (const b of ['ce-close', 'ce-tab', 'ce-complexity', 'ce-submit']) assert.ok(btns(html).includes(b), `${b} is drawn`);
   // a spell: no power or toughness, and Common is neither choice
   const spell = cardEditorHtml(view(SPELL));

@@ -15,7 +15,7 @@
 
 .cework { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-7); }
 .ceside { min-height: 0; display: flex; align-items: flex-start; }
-.cescan { display: block; height: auto; max-height: 100%; width: auto; max-width: min(36vw, 420px); aspect-ratio: 720 / 1000;
+.cescan { display: block; height: auto; max-height: 100%; width: auto; max-width: min(36vw, 420px); aspect-ratio: auto 720 / 1000;
   object-fit: contain; border-radius: var(--radius-lg); }
 .cemain { min-height: 0; overflow-y: auto; padding-right: var(--space-2); }
 
@@ -75,7 +75,7 @@
 .cedetailwhat { margin: 0; color: var(--color-text-muted); font-size: var(--text-13); }
 .cepics { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
 .cepic { margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
-.cepic img, .cepicnone { width: 100%; aspect-ratio: 720 / 1000; max-height: 42vh; object-fit: contain; border-radius: var(--radius-md); }
+.cepic img, .cepicnone { width: 100%; aspect-ratio: auto 720 / 1000; max-height: 42vh; object-fit: contain; border-radius: var(--radius-md); }
 .cepicnone { display: flex; align-items: center; justify-content: center; background: var(--color-surface-sunken);
   color: var(--color-text-muted); font-size: var(--text-12); }
 .cepic figcaption { color: var(--color-text-muted); font-size: var(--text-12); text-align: center; }

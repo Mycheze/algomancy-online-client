@@ -50,7 +50,7 @@ test('1524 §1 one list, a row per edit, newest first as the server sent them', 
 test('1524 §2 the opened edit: its pictures side by side, the commands as posted, the status', () => {
   const html = cardEditorHtml(view({ detail: DETAIL, pictures: { before: 'blob:before', after: 'blob:after' }, whenOf: { [B.id]: '26 Nov, 10:00' } }));
   assert.match(html, /<button type="button" class="cerowbtn on" data-btn="ce-row" data-id="ce-20261126-firebolt-01ab" aria-pressed="true">/);
-  assert.match(html, /<div class="cepics"><figure class="cepic"><img src="blob:before" alt="Before">[\s\S]*?<figure class="cepic"><img src="blob:after" alt="After">/);
+  assert.match(html, /<div class="cepics"><figure class="cepic" data-zoom><img src="blob:before" alt="Before">[\s\S]*?<figure class="cepic" data-zoom><img src="blob:after" alt="After">/);
   assert.match(html, /<code class="cecmdtext">\$modify firebolt\|text\|Deal 4 {2}damage\.<\/code>/, 'the command as he posted it');
   assert.doesNotMatch(html, /data-btn="ce-copy"/, 'nothing to copy in the record');
   assert.match(html, /cestep--now" aria-current="step">Queued for the steward</);

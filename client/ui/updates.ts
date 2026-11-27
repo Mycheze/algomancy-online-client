@@ -45,6 +45,8 @@ const KIND_LABEL: Record<UpdateKind, string> = { new: 'New', fix: 'Fix', change:
 
 /** NEWEST FIRST. Add the next push's line at the top. */
 export const UPDATES: readonly Update[] = [
+  { date: '2026-11-27', kind: 'new', text: 'Caleb, the designer, can now change his cards from inside the client. A change to a card\'s numbers or art reaches the game as soon as it passes testing.' },
+  { date: '2026-11-27', kind: 'change', text: 'Watching a replay or a challenge run played before a card changed now says which card changed, since the replay shows today\'s version of it.' },
   { date: '2026-11-26', kind: 'fix', text: 'If you opened a cube event\'s link before logging in, the event page now catches up once you log in, so you land in your draft or your deck builder when it starts without reloading.' },
   { date: '2026-11-26', kind: 'new', text: 'Cube events can now be sealed: instead of drafting, every player opens a pool from the cube (75 cards by default) and builds a deck from it. The host picks the pool size, singleton or two of each, and whether everyone gets the same pool.' },
   { date: '2026-11-26', kind: 'change', text: 'Friends lists now show friends who are on the site first, then the ones you play most, wherever they appear: your profile, a room\'s Invite a friend list, and Send to a friend.' },
@@ -93,8 +95,6 @@ export const UPDATES: readonly Update[] = [
   { date: '2026-11-15', kind: 'change', text: 'A cached card shown beside your hand now wears one small "Cache" chip instead of the "cached" label above it and the turn chip. Hover the chip to see how long you have; the cache itself still shows the turn chip.' },
   { date: '2026-11-15', kind: 'change', text: 'On the game table, the bin now has the wider spot beside your name and shows its top three cards side by side; the cache, which rarely holds more than one or two, shows two and a +N.' },
   { date: '2026-11-15', kind: 'fix', text: 'A spell played through Tides of the Cosmos now offers Maelstrom Charger\'s copy, as it does from hand, and Spellbind played that way can take its mods.' },
-  { date: '2026-11-27', kind: 'new', text: 'Caleb, the designer, can now change his cards from inside the client. A change to a card\'s numbers or art reaches the game as soon as it passes testing.' },
-  { date: '2026-11-27', kind: 'change', text: 'Watching a replay or a challenge run played before a card changed now says which card changed, since the replay shows today\'s version of it.' },
   { date: '2026-11-15', kind: 'fix', text: 'A unit played through another card, such as Insidious Invitation or Tides of the Cosmos, now asks what it asks when played from hand: The Everywhere names a card, and Tiderunner Initiate and Trench Stalker can join your formation.' },
   { date: '2026-11-15', kind: 'change', text: 'A page left open across an update now reloads itself onto the new version, on any page. It waits while you are in a game, building a deck, playing a challenge or writing a report.' },
   { date: '2026-11-15', kind: 'change', text: 'The League\'s Time code tab now has a message box: write your message, Insert the time where your cursor is, and copy it all into Discord at once. Pick the day off a calendar; AM times show gold, PM dusk blue.' },

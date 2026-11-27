@@ -269,7 +269,7 @@ function currentHtml(v: CardEditorView, e: EditDetail): string {
 
 function scanHtml(v: CardEditorView): string {
   return v.scanUrl
-    ? `<img class="cescan" src="${esc(v.scanUrl)}" alt="${esc(v.card ?? '')}" onerror="this.style.visibility='hidden'">`
+    ? `<img class="cescan" data-zoom src="${esc(v.scanUrl)}" alt="${esc(v.card ?? '')}" onerror="this.style.visibility='hidden'">`
     : '';
 }
 
@@ -309,7 +309,7 @@ function editRowHtml(v: CardEditorView, e: EditSummary): string {
 }
 
 function pictureHtml(url: string | null, label: string): string {
-  return `<figure class="cepic">${url ? `<img src="${esc(url)}" alt="${esc(label)}">` : '<div class="cepicnone">No picture yet</div>'}
+  return `<figure class="cepic"${url ? ' data-zoom' : ''}>${url ? `<img src="${esc(url)}" alt="${esc(label)}">` : '<div class="cepicnone">No picture yet</div>'}
     <figcaption>${esc(label)}</figcaption></figure>`;
 }
 
