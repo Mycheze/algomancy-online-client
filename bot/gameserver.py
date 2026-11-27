@@ -114,12 +114,16 @@ class GameServer:
             raise GameServerDown(body.get("error") or "the server refused that")
         return body
 
-    async def _post(self, path, body):
+    async def _post(self, path, body, *, answers=()):
         headers = {"X-Algo-Bot": self.token} if self.token else {}
         url = f"{self.base}{path}"
         try:
             session = await self.session()
             async with session.post(url, json=body, headers=headers) as res:
+                if res.status in answers:
+                    # a refusal this route words for its caller: returned, like {"ok": false} below
+                    body_out = await res.json(content_type=None)
+                    return body_out if isinstance(body_out, dict) else {"ok": False, "error": f"HTTP {res.status}"}
                 if res.status == 404:
                     raise GameServerDown(
                         "the game server is not answering privileged requests — "
@@ -212,6 +216,24 @@ class GameServer:
         return await self._post("/api/league/bot/skip", {
             "discordId": str(discord_id), "week": int(week), "skip": bool(skip),
         })
+
+    # ── the card editor (client/docs/card-editor.md §4) ───────────────
+    async def cardedit_pending(self):
+        """The edits whose commands still wait to be posted or answered."""
+        return await self._get("/api/bot/cardedit/pending", private=True)
+
+    async def cardedit_seen(self, body):
+        """{id, i, messageId, channelId, content, at}: a command seen posted.
+        A refusal (400, or 409: the message does not set that command's field,
+        the edit is live or cancelled) comes back as {"ok": false, "error"}."""
+        return await self._post("/api/bot/cardedit/seen", body, answers=(400, 409))
+
+    async def cardedit_reply(self, body):
+        """FriendlyBot's answer: {id, i, echo, fileName, before, after, at} with
+        both pictures base64, or {id, i, error, at}, or {id, i, noAnswer: true, at}.
+        A refusal (400, or 409: a picture of another card) comes back as
+        {"ok": false, "error"}."""
+        return await self._post("/api/bot/cardedit/reply", body, answers=(400, 409))
 
     async def leaderboard(self, mode):
         """The ladder. Unauthenticated: /api/players already applies the

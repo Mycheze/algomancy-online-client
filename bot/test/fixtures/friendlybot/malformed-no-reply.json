@@ -1,0 +1,52 @@
+{
+ "about": "2026-10-23: `$modify|the everywhere|...` (the separator after the verb) got no reply; Caleb retyped it two minutes later and that one was answered.",
+ "source": "#card-changes export, events.jsonl rows 72776-72781; Caleb's and FriendlyBot's messages only, attachment URLs dropped",
+ "messages": [
+  {
+   "id": "1563217826880299119",
+   "at": "2026-10-23T15:49:33.111Z",
+   "author": "calebgannon",
+   "content": "$modify|the everywhere|text|[Augment] As I spawn, name a card. That card loses all abilities. {i}(As long as I am in their region).",
+   "attachments": []
+  },
+  {
+   "id": "1563218322906947726",
+   "at": "2026-10-23T15:51:31.373Z",
+   "author": "calebgannon",
+   "content": "$modify the everywhere|text|[Augment] As I spawn, name a card. That card loses all abilities. {i}(As long as I am in their region).",
+   "attachments": []
+  },
+  {
+   "id": "1563218324148719659",
+   "at": "2026-10-23T15:51:31.669Z",
+   "author": "FriendlyBot",
+   "content": "Modified the everywhere's text from this",
+   "attachments": []
+  },
+  {
+   "id": "1563218327134802013",
+   "at": "2026-10-23T15:51:32.381Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryThe_Everywhere.jpg"
+   ]
+  },
+  {
+   "id": "1563218348391661660",
+   "at": "2026-10-23T15:51:37.449Z",
+   "author": "FriendlyBot",
+   "content": "To this",
+   "attachments": []
+  },
+  {
+   "id": "1563218350266650730",
+   "at": "2026-10-23T15:51:37.896Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryThe_Everywhere.jpg"
+   ]
+  }
+ ]
+}

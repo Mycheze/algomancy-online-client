@@ -1,0 +1,128 @@
+{
+ "about": "2025-05-21: The Mighty Doot typed as `the Almighty doot`. The first post got no answer at all; each of the next five got its first line and the old picture, and no `To this`.",
+ "source": "#card-changes export, events.jsonl rows 64580-64595; Caleb's and FriendlyBot's messages only, attachment URLs dropped",
+ "messages": [
+  {
+   "id": "1374750128145174571",
+   "at": "2025-05-21T14:06:12.172Z",
+   "author": "calebgannon",
+   "content": "$modify the Almighty doot|text|[Augment] Whenever your life total changes, create a Crystal 1 for every 2 life changed this way.",
+   "attachments": []
+  },
+  {
+   "id": "1374754088104755242",
+   "at": "2025-05-21T14:21:56.300Z",
+   "author": "calebgannon",
+   "content": "$modify the Almighty doot|text|[Augment] Whenever your life total changes, create a Crystal 1 for every 2 life changed this way.",
+   "attachments": []
+  },
+  {
+   "id": "1374754089002602628",
+   "at": "2025-05-21T14:21:56.514Z",
+   "author": "FriendlyBot",
+   "content": "Modified the Almighty doot's text from this",
+   "attachments": []
+  },
+  {
+   "id": "1374754091359666230",
+   "at": "2025-05-21T14:21:57.076Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryThe_Mighty_Doot.jpg"
+   ]
+  },
+  {
+   "id": "1374755868301852742",
+   "at": "2025-05-21T14:29:00.732Z",
+   "author": "calebgannon",
+   "content": "$modify the Almighty doot|text|[Augment] Whenever your life total changes, create a Crystal 1 for every 2 life changed this way.",
+   "attachments": []
+  },
+  {
+   "id": "1374755868847116359",
+   "at": "2025-05-21T14:29:00.862Z",
+   "author": "FriendlyBot",
+   "content": "Modified the Almighty doot's text from this",
+   "attachments": []
+  },
+  {
+   "id": "1374755870109339790",
+   "at": "2025-05-21T14:29:01.163Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryThe_Mighty_Doot.jpg"
+   ]
+  },
+  {
+   "id": "1374756458750804008",
+   "at": "2025-05-21T14:31:21.506Z",
+   "author": "calebgannon",
+   "content": "$modify the Almighty doot|text|[Augment] Whenever your life total changes, create a Crystal 1 for every 2 life changed this way.",
+   "attachments": []
+  },
+  {
+   "id": "1374756459199332569",
+   "at": "2025-05-21T14:31:21.613Z",
+   "author": "FriendlyBot",
+   "content": "Modified the Almighty doot's text from this",
+   "attachments": []
+  },
+  {
+   "id": "1374756461040894092",
+   "at": "2025-05-21T14:31:22.052Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryThe_Mighty_Doot.jpg"
+   ]
+  },
+  {
+   "id": "1374756756617429175",
+   "at": "2025-05-21T14:32:32.523Z",
+   "author": "calebgannon",
+   "content": "$modify the Almighty doot|text|[Augment] Whenever your life total changes, create a Crystal 1 for every 2 life changed this way.",
+   "attachments": []
+  },
+  {
+   "id": "1374756757267546172",
+   "at": "2025-05-21T14:32:32.678Z",
+   "author": "FriendlyBot",
+   "content": "Modified the Almighty doot's text from this",
+   "attachments": []
+  },
+  {
+   "id": "1374756758639214684",
+   "at": "2025-05-21T14:32:33.005Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryThe_Mighty_Doot.jpg"
+   ]
+  },
+  {
+   "id": "1374757236907311125",
+   "at": "2025-05-21T14:34:27.033Z",
+   "author": "calebgannon",
+   "content": "$modify the Almighty doot|text|[Augment] Whenever your life total changes, create a Crystal 1 for every 2 life changed this way.",
+   "attachments": []
+  },
+  {
+   "id": "1374757237091995710",
+   "at": "2025-05-21T14:34:27.077Z",
+   "author": "FriendlyBot",
+   "content": "Modified the Almighty doot's text from this",
+   "attachments": []
+  },
+  {
+   "id": "1374757238828302417",
+   "at": "2025-05-21T14:34:27.491Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryThe_Mighty_Doot.jpg"
+   ]
+  }
+ ]
+}

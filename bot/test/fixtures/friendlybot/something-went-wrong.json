@@ -1,0 +1,73 @@
+{
+ "about": "2022-09-21: a $modify answered with its first line, the old picture and then `Something went wrong`, twice; the third post's answer is cut off where the record is.",
+ "source": "#card-changes export, events.jsonl rows 1404-1412; Caleb's and FriendlyBot's messages only, attachment URLs dropped",
+ "messages": [
+  {
+   "id": "1022181485358366750",
+   "at": "2022-09-21T16:24:17.323Z",
+   "author": "calebgannon",
+   "content": "$modify seismomancy|details|{\"name\": \"Seismomancy\", \"power\": 2, \"toughness\": 4, \"cost\": \"e\", \"total_cost\": 2, \"type\": \"{Quick} Rock Spell\", \"text\": \"Choose one \\u2014 Target creature gets -2/-2 until end of turn. You may switch the attack and health of target creature until end of turn. {/n} [e][e][e]: Do both.\", \"image\": \"images_out/Stable/rocker.png\"}",
+   "attachments": []
+  },
+  {
+   "id": "1022181486109143050",
+   "at": "2022-09-21T16:24:17.502Z",
+   "author": "FriendlyBot",
+   "content": "Modified seismomancy's details from this",
+   "attachments": []
+  },
+  {
+   "id": "1022181487900119091",
+   "at": "2022-09-21T16:24:17.929Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_librarySeismomancy.jpg"
+   ]
+  },
+  {
+   "id": "1022181490328617170",
+   "at": "2022-09-21T16:24:18.508Z",
+   "author": "FriendlyBot",
+   "content": "Something went wrong",
+   "attachments": []
+  },
+  {
+   "id": "1022181540995805196",
+   "at": "2022-09-21T16:24:30.588Z",
+   "author": "calebgannon",
+   "content": "$modify seismomancy|details|{\"name\": \"Seismomancy\", \"power\": 2, \"toughness\": 4, \"cost\": \"e\", \"total_cost\": 2, \"type\": \"{Quick} Rock Spell\", \"text\": \"Choose one \\u2014 Target creature gets -2/-2 until end of turn. You may switch the attack and health of target creature until end of turn. {/n} [e][e][e]: Do both.\", \"image\": \"images_out/Stable/rocker.png\"}",
+   "attachments": []
+  },
+  {
+   "id": "1022181542119874580",
+   "at": "2022-09-21T16:24:30.856Z",
+   "author": "FriendlyBot",
+   "content": "Modified seismomancy's details from this",
+   "attachments": []
+  },
+  {
+   "id": "1022181544003113022",
+   "at": "2022-09-21T16:24:31.305Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_librarySeismomancy.jpg"
+   ]
+  },
+  {
+   "id": "1022181546339344415",
+   "at": "2022-09-21T16:24:31.862Z",
+   "author": "FriendlyBot",
+   "content": "Something went wrong",
+   "attachments": []
+  },
+  {
+   "id": "1022182210935205908",
+   "at": "2022-09-21T16:27:10.314Z",
+   "author": "calebgannon",
+   "content": "$modify seismomancy|details|{\"name\": \"Seismomancy\", \"power\": 2, \"toughness\": 4, \"cost\": \"e\", \"total_cost\": 2, \"type\": \"{Quick} Rock Spell\", \"text\": \"Target creature gets -2/-2 until end of turn. You may switch the attack and health of target creature until end of turn.\", \"image\": \"images_out/Stable/rocker.png\"}",
+   "attachments": []
+  }
+ ]
+}

@@ -229,7 +229,13 @@ async def load_cogs(b):
     from cogs.meta import Meta
     from cogs.queuewatch import QueueWatch
     from cogs.league import League
-    for cog in (CardLookup, Judge, Play, Meta, QueueWatch, Account, League):
+    from cogs.cardedits import CardEdits
+    cogs = [CardLookup, Judge, Play, Meta, QueueWatch, Account, League, CardEdits]
+    if os.getenv("ALGO_FAKE_FRIENDLYBOT") == "1":
+        # the test server's stand-in for FriendlyBot; never on the deploy
+        from cogs.fakefriendlybot import FakeFriendlyBot
+        cogs.append(FakeFriendlyBot)
+    for cog in cogs:
         if b.get_cog(cog.__name__) is None:
             await b.add_cog(cog(b))
 
@@ -249,6 +255,7 @@ def _intents():
     # intent has exactly one job left: plain messages typed inside an /ask
     # thread are follow-ups that keep their context. Slash commands and
     # buttons carry their own text and need none of it.
+    # And a second: cogs/cardedits.py reads FriendlyBot's answers in #card-changes.
     i.message_content = True
     return i
 

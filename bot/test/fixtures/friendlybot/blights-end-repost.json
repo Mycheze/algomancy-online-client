@@ -1,0 +1,75 @@
+{
+ "about": "2025-11-29: an answer that stopped after the old picture, the same card's text re-posted a minute later, and that answer complete.",
+ "source": "#card-changes export, events.jsonl rows 69761-69769; Caleb's and FriendlyBot's messages only, attachment URLs dropped",
+ "messages": [
+  {
+   "id": "1444385634834710722",
+   "at": "2025-11-29T17:52:50.732Z",
+   "author": "calebgannon",
+   "content": "$modify blights end|text|Distribute X -1/-1 counters among units, where X is the [total rot among players {i1}or number of -1/-1 counters on your units].",
+   "attachments": []
+  },
+  {
+   "id": "1444385636189732944",
+   "at": "2025-11-29T17:52:51.055Z",
+   "author": "FriendlyBot",
+   "content": "Modified blights end's text from this",
+   "attachments": []
+  },
+  {
+   "id": "1444385637934563500",
+   "at": "2025-11-29T17:52:51.471Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryBlights_End.jpg"
+   ]
+  },
+  {
+   "id": "1444385921851199670",
+   "at": "2025-11-29T17:53:59.162Z",
+   "author": "calebgannon",
+   "content": "$modify blights end|text|Distribute X -1/-1 counters among units, where X is the /[total rot among players {i1}or number of -1/-1 counters on your units].",
+   "attachments": []
+  },
+  {
+   "id": "1444385922849177735",
+   "at": "2025-11-29T17:53:59.400Z",
+   "author": "FriendlyBot",
+   "content": "Modified blights end's text from this",
+   "attachments": []
+  },
+  {
+   "id": "1444385924552331414",
+   "at": "2025-11-29T17:53:59.806Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryBlights_End.jpg"
+   ]
+  },
+  {
+   "id": "1444385945213472798",
+   "at": "2025-11-29T17:54:04.732Z",
+   "author": "FriendlyBot",
+   "content": "To this",
+   "attachments": []
+  },
+  {
+   "id": "1444385946463371274",
+   "at": "2025-11-29T17:54:05.030Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryBlights_End.jpg"
+   ]
+  },
+  {
+   "id": "1444386027094671410",
+   "at": "2025-11-29T17:54:24.254Z",
+   "author": "calebgannon",
+   "content": "$modify blights end|total cost|3",
+   "attachments": []
+  }
+ ]
+}

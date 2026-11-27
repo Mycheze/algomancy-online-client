@@ -1,0 +1,84 @@
+{
+ "about": "2025-11-27: Murkstalker's power, then its toughness five seconds later; the two answers interleave (power's `To this` arrives after toughness's first line).",
+ "source": "#card-changes export, events.jsonl rows 69285-69294; Caleb's and FriendlyBot's messages only, attachment URLs dropped",
+ "messages": [
+  {
+   "id": "1443700903625363538",
+   "at": "2025-11-27T20:31:58.090Z",
+   "author": "calebgannon",
+   "content": "$modify murkstalker|power|8",
+   "attachments": []
+  },
+  {
+   "id": "1443700904430665778",
+   "at": "2025-11-27T20:31:58.282Z",
+   "author": "FriendlyBot",
+   "content": "Modified murkstalker's power from this",
+   "attachments": []
+  },
+  {
+   "id": "1443700906007855210",
+   "at": "2025-11-27T20:31:58.658Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryMurkstalker.jpg"
+   ]
+  },
+  {
+   "id": "1443700924387426476",
+   "at": "2025-11-27T20:32:03.040Z",
+   "author": "calebgannon",
+   "content": "$modify murkstalker|toughness|8",
+   "attachments": []
+  },
+  {
+   "id": "1443700926153232391",
+   "at": "2025-11-27T20:32:03.461Z",
+   "author": "FriendlyBot",
+   "content": "Modified murkstalker's toughness from this",
+   "attachments": []
+  },
+  {
+   "id": "1443700926622990376",
+   "at": "2025-11-27T20:32:03.573Z",
+   "author": "FriendlyBot",
+   "content": "To this",
+   "attachments": []
+  },
+  {
+   "id": "1443700927264460941",
+   "at": "2025-11-27T20:32:03.726Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryMurkstalker.jpg"
+   ]
+  },
+  {
+   "id": "1443700927931355198",
+   "at": "2025-11-27T20:32:03.885Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryMurkstalker.jpg"
+   ]
+  },
+  {
+   "id": "1443700947137331271",
+   "at": "2025-11-27T20:32:08.464Z",
+   "author": "FriendlyBot",
+   "content": "To this",
+   "attachments": []
+  },
+  {
+   "id": "1443700948537970812",
+   "at": "2025-11-27T20:32:08.798Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryMurkstalker.jpg"
+   ]
+  }
+ ]
+}

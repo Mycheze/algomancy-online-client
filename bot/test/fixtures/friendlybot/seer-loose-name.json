@@ -1,0 +1,45 @@
+{
+ "about": "2026-10-23: `seer or empty spaces` changed Seer of Empty Spaces; the echo keeps the name as typed, the attachment names the real card.",
+ "source": "#card-changes export, events.jsonl rows 72792-72796; Caleb's and FriendlyBot's messages only, attachment URLs dropped",
+ "messages": [
+  {
+   "id": "1563219634226856018",
+   "at": "2026-10-23T15:56:44.016Z",
+   "author": "calebgannon",
+   "content": "$modify seer or empty spaces|total cost|2",
+   "attachments": []
+  },
+  {
+   "id": "1563219635610845428",
+   "at": "2026-10-23T15:56:44.346Z",
+   "author": "FriendlyBot",
+   "content": "Modified seer or empty spaces's total cost from this",
+   "attachments": []
+  },
+  {
+   "id": "1563219641189273773",
+   "at": "2026-10-23T15:56:45.676Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_librarySeer_of_Empty_Spaces.jpg"
+   ]
+  },
+  {
+   "id": "1563219657459241052",
+   "at": "2026-10-23T15:56:49.555Z",
+   "author": "FriendlyBot",
+   "content": "To this",
+   "attachments": []
+  },
+  {
+   "id": "1563219658855686237",
+   "at": "2026-10-23T15:56:49.888Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_librarySeer_of_Empty_Spaces.jpg"
+   ]
+  }
+ ]
+}

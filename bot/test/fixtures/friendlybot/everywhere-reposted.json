@@ -1,0 +1,201 @@
+{
+ "about": "2026-10-23: the same $modify of The Everywhere's text posted four times, each answered in full; an unrelated edit to Seer of Empty Spaces sits between the third and the fourth.",
+ "source": "#card-changes export, events.jsonl rows 72777-72801; Caleb's and FriendlyBot's messages only, attachment URLs dropped",
+ "messages": [
+  {
+   "id": "1563218322906947726",
+   "at": "2026-10-23T15:51:31.373Z",
+   "author": "calebgannon",
+   "content": "$modify the everywhere|text|[Augment] As I spawn, name a card. That card loses all abilities. {i}(As long as I am in their region).",
+   "attachments": []
+  },
+  {
+   "id": "1563218324148719659",
+   "at": "2026-10-23T15:51:31.669Z",
+   "author": "FriendlyBot",
+   "content": "Modified the everywhere's text from this",
+   "attachments": []
+  },
+  {
+   "id": "1563218327134802013",
+   "at": "2026-10-23T15:51:32.381Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryThe_Everywhere.jpg"
+   ]
+  },
+  {
+   "id": "1563218348391661660",
+   "at": "2026-10-23T15:51:37.449Z",
+   "author": "FriendlyBot",
+   "content": "To this",
+   "attachments": []
+  },
+  {
+   "id": "1563218350266650730",
+   "at": "2026-10-23T15:51:37.896Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryThe_Everywhere.jpg"
+   ]
+  },
+  {
+   "id": "1563218390640762881",
+   "at": "2026-10-23T15:51:47.522Z",
+   "author": "calebgannon",
+   "content": "$modify the everywhere|text|[Augment] As I spawn, name a card. That card loses {/n}all abilities. {i}(As long as I am in their region).",
+   "attachments": []
+  },
+  {
+   "id": "1563218391357988936",
+   "at": "2026-10-23T15:51:47.693Z",
+   "author": "FriendlyBot",
+   "content": "Modified the everywhere's text from this",
+   "attachments": []
+  },
+  {
+   "id": "1563218392754684115",
+   "at": "2026-10-23T15:51:48.026Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryThe_Everywhere.jpg"
+   ]
+  },
+  {
+   "id": "1563218414787366994",
+   "at": "2026-10-23T15:51:53.279Z",
+   "author": "FriendlyBot",
+   "content": "To this",
+   "attachments": []
+  },
+  {
+   "id": "1563218416247250995",
+   "at": "2026-10-23T15:51:53.627Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryThe_Everywhere.jpg"
+   ]
+  },
+  {
+   "id": "1563219324309602375",
+   "at": "2026-10-23T15:55:30.126Z",
+   "author": "calebgannon",
+   "content": "$modify the everywhere|text|[Augment] As I spawn, name a card. That card loses {/n}all abilities. {i}(As long as I am in its region).",
+   "attachments": []
+  },
+  {
+   "id": "1563219325098135645",
+   "at": "2026-10-23T15:55:30.314Z",
+   "author": "FriendlyBot",
+   "content": "Modified the everywhere's text from this",
+   "attachments": []
+  },
+  {
+   "id": "1563219326540980384",
+   "at": "2026-10-23T15:55:30.658Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryThe_Everywhere.jpg"
+   ]
+  },
+  {
+   "id": "1563219348582301827",
+   "at": "2026-10-23T15:55:35.913Z",
+   "author": "FriendlyBot",
+   "content": "To this",
+   "attachments": []
+  },
+  {
+   "id": "1563219349932740773",
+   "at": "2026-10-23T15:55:36.235Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryThe_Everywhere.jpg"
+   ]
+  },
+  {
+   "id": "1563219634226856018",
+   "at": "2026-10-23T15:56:44.016Z",
+   "author": "calebgannon",
+   "content": "$modify seer or empty spaces|total cost|2",
+   "attachments": []
+  },
+  {
+   "id": "1563219635610845428",
+   "at": "2026-10-23T15:56:44.346Z",
+   "author": "FriendlyBot",
+   "content": "Modified seer or empty spaces's total cost from this",
+   "attachments": []
+  },
+  {
+   "id": "1563219641189273773",
+   "at": "2026-10-23T15:56:45.676Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_librarySeer_of_Empty_Spaces.jpg"
+   ]
+  },
+  {
+   "id": "1563219657459241052",
+   "at": "2026-10-23T15:56:49.555Z",
+   "author": "FriendlyBot",
+   "content": "To this",
+   "attachments": []
+  },
+  {
+   "id": "1563219658855686237",
+   "at": "2026-10-23T15:56:49.888Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_librarySeer_of_Empty_Spaces.jpg"
+   ]
+  },
+  {
+   "id": "1563224346200383489",
+   "at": "2026-10-23T16:15:27.438Z",
+   "author": "calebgannon",
+   "content": "$modify the everywhere|text|[Augment] As I am played or modded, name a card. My last named card loses all abilities. {i}(As long as I am in its region).",
+   "attachments": []
+  },
+  {
+   "id": "1563224347257081888",
+   "at": "2026-10-23T16:15:27.690Z",
+   "author": "FriendlyBot",
+   "content": "Modified the everywhere's text from this",
+   "attachments": []
+  },
+  {
+   "id": "1563224349488709744",
+   "at": "2026-10-23T16:15:28.222Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryThe_Everywhere.jpg"
+   ]
+  },
+  {
+   "id": "1563224375073701904",
+   "at": "2026-10-23T16:15:34.322Z",
+   "author": "FriendlyBot",
+   "content": "To this",
+   "attachments": []
+  },
+  {
+   "id": "1563224377699467384",
+   "at": "2026-10-23T16:15:34.948Z",
+   "author": "FriendlyBot",
+   "content": "",
+   "attachments": [
+    "CUsersCalebPycharmProjectscardgamebot_libraryThe_Everywhere.jpg"
+   ]
+  }
+ ]
+}
