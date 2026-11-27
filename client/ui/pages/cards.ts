@@ -63,7 +63,16 @@ export interface CardsView {
   shown: number;
   /** the toolbar's account and bell (pages/frame.ts) */
   chrome: FrameChrome;
+  /** the account may edit cards: the pinned card gets an Edit button (ui/cardeditor.ts) */
+  canEdit?: boolean;
 }
+
+/* Who may edit cards comes from the source the card editor sets at boot, so this page imports no
+ * account state (pages/frame.ts setChromeSource has the reason). Until it is set, nobody may. */
+let canEditSource: () => boolean = () => false;
+
+/** ui/cardeditor.ts, once at boot: whether this account may edit cards */
+export function setCardEditSource(source: () => boolean): void { canEditSource = source; }
 
 /** Gather the page from cards.ts's state. */
 export function cardsView(st: CardsState): CardsView {
@@ -83,6 +92,7 @@ export function cardsView(st: CardsState): CardsView {
     cursor: st.cursor,
     shown: st.shown,
     chrome: frameChromeView(),
+    canEdit: canEditSource(),
   };
 }
 
@@ -207,6 +217,7 @@ function detailHtml(v: CardsView): string {
     actions: `<button data-btn="cards-similar" data-card="${esc(r.name)}">Find similar</button>
       <button data-btn="cards-rulings" data-card="${esc(r.name)}">Rulings</button>
       <button data-btn="cards-copylink" data-card="${esc(r.name)}" title="a link to this card, to paste in Discord or anywhere">Copy link</button>
+      ${v.canEdit ? `<button data-btn="cards-edit" data-card="${esc(r.name)}">Edit</button>` : ''}
       ${/* deckbuilding mode's "add to <deck>" was here (BL-65) */ ''}`,
   });
 }

@@ -1,0 +1,81 @@
+/* the card editor (ui/pages/cardeditor.ts, client/docs/card-editor.md §2), in the app frame with
+   `fill`: a bar with the card's name and the picker, then the scan beside the form (the form scrolls
+   by itself if the window is short); My edits is one list beside the chosen edit */
+.cebar { position: relative; margin-bottom: var(--space-5); }
+.cename { margin: 0; font-size: var(--text-22); font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cepick { position: relative; flex: 0 1 280px; min-width: 200px; }
+.cebar .cepickq { width: 100%; }
+.cepicks { position: absolute; top: calc(100% + var(--space-2)); left: 0; right: 0; z-index: var(--z-sticky); }
+.cepicklist { list-style: none; margin: 0; padding: var(--space-2) 0; background: var(--color-surface-raised);
+  border: 1px solid var(--color-border-strong); border-radius: var(--radius-lg); box-shadow: var(--shadow-2); }
+.cepickrow { display: block; width: 100%; min-height: 40px; padding: var(--space-3) var(--space-5); text-align: left;
+  background: none; border: 0; border-radius: 0; color: var(--color-text); font: inherit; cursor: pointer; }
+.cepickrow:hover, .cepickrow:focus-visible { background: var(--color-surface); }
+.ceempty { margin-top: var(--space-7); }
+
+.cework { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-7); }
+.ceside { min-height: 0; display: flex; align-items: flex-start; }
+.cescan { display: block; height: auto; max-height: 100%; width: auto; max-width: min(36vw, 420px); aspect-ratio: 720 / 1000;
+  object-fit: contain; border-radius: var(--radius-lg); }
+.cemain { min-height: 0; overflow-y: auto; padding-right: var(--space-2); }
+
+.ceform { display: flex; flex-direction: column; gap: var(--space-5); }
+.cerow { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-5); }
+.cenum .ui-field__control { width: 5.5em; }
+.cepipsbox .ui-field__control { width: 7em; }
+.ceart { flex: 1 1 260px; min-width: 0; }
+.cepips { display: inline-flex; align-items: center; gap: var(--space-1); min-height: 34px; }
+.cepips .txticon, .ceprevbox .txticon { height: 1.35em; width: auto; vertical-align: -0.3em; }
+.celabel { display: block; margin-bottom: var(--space-1); font-size: var(--text-12); color: var(--color-text-muted); }
+.ceform textarea { resize: vertical; min-height: 5.5em; line-height: 1.4; }
+.ceprevbox { padding: var(--space-4) var(--space-5); background: var(--color-surface-sunken); border-radius: var(--radius-md);
+  font-size: var(--text-13); line-height: 1.5; min-height: 2.5em; }
+.cecomplex { flex: none; }
+.ceroad { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) var(--space-6);
+  padding-top: var(--space-5); border-top: 1px solid var(--color-border); }
+.ceroad .ui-status { flex-basis: 100%; }
+.ceroadline { flex: 1 1 240px; margin: 0; color: var(--color-text-muted); font-size: var(--text-13); }
+.ceroadline.cesteward { color: var(--color-warning); }
+.ceroadline.cebad { color: var(--color-danger); }
+
+/* the card's edit: the commands to post, then where it stands */
+.cecurrent { display: flex; flex-direction: column; gap: var(--space-5); }
+.celead { margin: 0; color: var(--color-text-muted); font-size: var(--text-13); }
+.cecmds { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.cecmd { display: flex; align-items: center; gap: var(--space-4); }
+.cecmdtext { flex: 1 1 auto; min-width: 0; padding: var(--space-4) var(--space-5); background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border); border-radius: var(--radius-md); font-family: var(--font-mono);
+  font-size: var(--text-13); white-space: pre-wrap; overflow-wrap: anywhere; }
+.cetrack { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+.cestep { display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-13); color: var(--color-text-muted); }
+.cestep + .cestep::before { content: ''; order: -2; width: var(--space-7); height: 1px; background: var(--color-border-strong); }
+.cestep::after { content: ''; order: -1; width: 10px; height: 10px; border-radius: var(--radius-pill); border: 2px solid var(--color-border-strong); }
+.cestep--done { color: var(--color-text); }
+.cestep--done::after { background: var(--color-success); border-color: var(--color-success); }
+.cestep--now { color: var(--color-accent); font-weight: 600; }
+.cestep--now::after { background: var(--color-accent); border-color: var(--color-accent); }
+.cenote { margin: 0; color: var(--color-text-muted); font-size: var(--text-13); }
+.ceacts { display: flex; flex-wrap: wrap; gap: var(--space-4); }
+
+/* My edits: the list, and the opened edit beside it */
+.cemine { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: var(--space-6); align-items: start; }
+.cemine > .celist { max-height: 100%; }
+.cerowbtn { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "card chip" "what when";
+  gap: var(--space-1) var(--space-4); width: 100%; padding: var(--space-5) var(--space-6); text-align: left;
+  background: none; border: 0; border-radius: 0; color: var(--color-text); font: inherit; cursor: pointer; }
+.cerowbtn + .cerowbtn { border-top: 1px solid var(--color-border); }
+.cerowbtn:hover { background: var(--color-surface-raised); }
+.cerowbtn.on { background: var(--color-surface-raised); box-shadow: inset 3px 0 0 var(--color-accent); }
+.cerowcard { grid-area: card; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cerowbtn .ui-chip { grid-area: chip; justify-self: end; }
+.cerowwhat { grid-area: what; min-width: 0; color: var(--color-text-muted); font-size: var(--text-13); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cerowwhen { grid-area: when; justify-self: end; color: var(--color-text-muted); font-size: var(--text-12); white-space: nowrap; }
+.cedetail { max-height: 100%; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-5); }
+.cedetailcard { margin: 0; font-size: var(--text-16); }
+.cedetailwhat { margin: 0; color: var(--color-text-muted); font-size: var(--text-13); }
+.cepics { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
+.cepic { margin: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.cepic img, .cepicnone { width: 100%; aspect-ratio: 720 / 1000; max-height: 42vh; object-fit: contain; border-radius: var(--radius-md); }
+.cepicnone { display: flex; align-items: center; justify-content: center; background: var(--color-surface-sunken);
+  color: var(--color-text-muted); font-size: var(--text-12); }
+.cepic figcaption { color: var(--color-text-muted); font-size: var(--text-12); text-align: center; }

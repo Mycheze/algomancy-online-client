@@ -40,7 +40,9 @@ export const FRAME_PAGES = ['cards', 'meta', 'cardstats', 'queue', 'rules', 'aut
   // BL-65 (2026-11-04): the Decks page (root `deckpage`) and the builder (root `ttpage`)
   'decks', 'builder',
   // docs/25 (2026-11-14): the cube draft page (root `cubepage`)
-  'cube'];
+  'cube',
+  // the card editor (root `cepage`, client/docs/card-editor.md §2)
+  'cardeditor'];
 
 /** the deck screens are laid out for an upright iPad too (BL-65) */
 const PORTRAIT = { also: ['portrait'] };
@@ -186,6 +188,17 @@ export function SCENARIOS(fx) {
   for (const t of ['reports', 'accounts', 'games', 'rooms', 'challenges']) {
     add('admin', t, '/?admin=1', { ...admin, steps: t === 'reports' ? [] : [{ click: tab('admin-tab', t) }] });
   }
+
+  // ── the card editor: an admin may use it; a player is refused ──
+  add('cardeditor', 'refused', '/?cardedit=1', me);
+  add('cardeditor', 'pick', '/?cardedit=1', { ...admin, steps: [{ type: '#ce-q', text: 'murk', settle: 300 }] });
+  add('cardeditor', 'form', '/?cardedit=Murkstalker', { ...admin, check: '#ce-f-text' });
+  add('cardeditor', 'numbers-edit', '/?cardedit=Murkstalker', { ...admin, check: '#ce-f-text',
+    steps: [{ eval: `(() => { const el = document.getElementById('ce-f-total-cost'); if (!el) return false;
+      el.value = '3'; el.dispatchEvent(new Event('input', { bubbles: true })); return true; })()`, settle: 200 }] });
+  add('cardeditor', 'text-edit', '/?cardedit=Murkstalker', { ...admin, check: '#ce-f-text',
+    steps: [{ type: '#ce-f-text', text: ' Draw a card.', settle: 200 }] });
+  add('cardeditor', 'my-edits', '/?cardedit=1', { ...admin, steps: [{ click: tab('ce-tab', 'mine') }] });
 
   // ── how to play, learn to play ──
   add('rules', 'rules', '/?rules', { pages: 1 });

@@ -200,6 +200,8 @@ import { artUrl, ICON_BASE } from './assets.ts';
 // one of those has already been evaluated and the boot order is unchanged.
 import * as admin from './pages/admin.ts';
 import * as jr from './pages/judgereview.ts';
+// the card editor (docs/card-editor.md §2); it sits on top of the card browser that opens it
+import * as ce from './cardeditor.ts';
 import { caretIn, type CaretSnap } from './pages/caret.ts';
 import './pages/clockpick.ts';   // boot order, as before BL-63 (pages/home.ts uses it now)
 import { CONNECTING, connectingHtml, kickedHtml } from './pages/connecting.ts';
@@ -9457,6 +9459,8 @@ function renderHome(): void {
   // the rules review page: right after the account screen, because its
   // "Sign in to comment" goes through that screen and comes straight back
   if (crr.screen()) { crr.renderScreen(); return; }
+  // the card editor, above the card browser its Edit button opens it over
+  if (ce.screen()) { ce.renderScreen(); return; }
   // …and the card browser (checked before the deck screens, as it always was:
   // its Building mode, which opened it over the deck page, went with BL-65)
   if (cb.screen()) { cb.renderScreen(); return; }
@@ -11142,6 +11146,8 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   if (btn.dataset['btn'] === 'nav-admin') { acct.leaveScreen(); admin.openAdmin(); return; }
   if (btn.dataset['btn'] === 'nav-crreview') { acct.leaveScreen(); crr.openReview(); return; }
   if (btn.dataset['btn'] === 'nav-judging') { acct.leaveScreen(); jr.openJudgeReview(); return; }
+  if (btn.dataset['btn'] === 'nav-cardeditor') { acct.leaveScreen(); ce.openCardEditor(); return; }
+  if (btn.dataset['btn'] === 'cards-edit') { ce.openCardEditor(btn.dataset['card'], 'Cards'); return; }
   // Storybook opens in a new window; this page stays where it is
   if (btn.dataset['btn'] === 'nav-storybook') { void openStorybook(); return; }
   // the rules review page owns everything prefixed cr-
@@ -11170,6 +11176,7 @@ function handleButton(btn: HTMLElement, e: MouseEvent): void {
   if (admin.handleButton(btn)) return;
   // BL-17: and the judges' review everything prefixed jr-
   if (jr.handleButton(btn)) return;
+  if (ce.handleButton(btn)) return;
   // docs/22: and a Competitive match everything prefixed cc- (home card,
   // waiting room, between screen)
   if (mt.handleMatchButton(btn, matchActions())) return;
@@ -12032,7 +12039,7 @@ function inputOwned(e: KeyboardEvent): boolean {
 document.addEventListener('keydown', e => {
   // the card browser is a pre-game page, so its keys are handled before the
   // in-game guard below turns everything else off
-  if (cb.handleKey(e)) return;
+  if (!ce.screen() && cb.handleKey(e)) return;
   if (!inGame) return;
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   if (e.repeat) return;   // held key must not machine-gun actions
@@ -12403,6 +12410,7 @@ admin.initAdmin({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 // BL-17: the judges' review of the rules bot's answers, at ?judging=1 or from a
 // judge's or the owner's profile; its routes 404 to anybody else
 jr.initJudgeReview({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
+ce.initCardEditor({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 // the rules review page, at ?crreview=1 or from a judge's or admin's profile
 crr.initCrReview({ app: $app, rerender: () => { if (!inGame) renderHome(); } });
 // BL-01 — the matchmaking queue. Its page (pages/queue.ts) borrows the home
