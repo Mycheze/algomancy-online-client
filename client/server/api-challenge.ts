@@ -25,7 +25,7 @@
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { gzipSync } from 'node:zlib';
-import { BOARD_KINDS, compareScores, type ChallengeDef } from '../engine/src/challenge.ts';
+import { BOARD_KINDS, compareScores, DUMMY_DECK, type ChallengeDef } from '../engine/src/challenge.ts';
 import { accountById, accountForToken } from './accounts.ts';
 import { json, rateLimited, readBody, tokenOf } from './api-util.ts';
 import {
@@ -38,6 +38,7 @@ import {
 import { verifyInWorker } from './challenge-worker.ts';
 import { olderRules, runVerdict } from './challenge-resim.ts';
 import { engineVersion } from './engine-version.ts';
+import { cardsChangedSince, changedIn, stringsIn } from './card-history.ts';
 
 /** the caps docs/21 names — checked here, before a worker is asked */
 export const MAX_DECK = 200;
@@ -148,10 +149,14 @@ export async function challengeRoutes(
     // Watch's verdict (challenge-resim.ts): what this engine makes of the
     // run, against the fingerprints the verifier recorded
     const v = await runVerdict(runId, rows);
+    // Watch draws today's cards: name the ones on this table printed differently
+    // when the run was verified
+    const cardsChanged = changedIn(await cardsChangedSince(r.engine), stringsIn(r.deck, DUMMY_DECK));
     sendBig(req, res, {
       runId: r.runId, challengeId: r.challengeId, name: nameOf(r),
       deck: r.deck, actions: r.actions, score: r.score, at: r.at,
       verdict: v.verdict, partedAt: v.partedAt, refusedAt: v.refusedAt, ...(v.older ? { older: true } : {}),
+      cardsChanged,
     });
     return true;
   }

@@ -44,8 +44,9 @@ import { json, tokenOf } from './api-util.ts';
 import { accountForToken } from './accounts.ts';
 import { adminFor } from './admin.ts';
 import { gamesDir } from './statepaths.ts';
-import { analyze, unreplayableReason, type RoomFile } from './replay-room.ts';
+import { analyze, unreplayableReason, versionsOf, type RoomFile } from './replay-room.ts';
 import { engineVersion } from './engine-version.ts';
+import { CANT_TELL, cardsChangedSince, changedIn, stringsIn, type CardsChanged } from './card-history.ts';
 import type { Seat } from '../engine/src/types.ts';
 
 /** the 404 every refusal answers with — byte-identical to main.ts's own */
@@ -83,6 +84,9 @@ export interface ReplayResponse {
   mySeat: Seat | null;
   /** true when the caller is here as an operator rather than as a player */
   asAdmin: boolean;
+  /** the cards in this game whose printing has changed since it was played:
+   * the replay draws today's. The verdict does not see a numbers change. */
+  cardsChanged: CardsChanged;
 }
 
 /* ── the cache ────────────────────────────────────────────────────────── */
@@ -94,7 +98,10 @@ export interface ReplayResponse {
  * must not be able to serve the last one's opinion. (A game still being played
  * is not cached at all — see below.)
  */
-const cache = new Map<string, { key: string; verdict: Omit<ReplayResponse, 'ok' | 'file' | 'mySeat' | 'asAdmin'> }>();
+type Verdict = Omit<ReplayResponse, 'ok' | 'file' | 'mySeat' | 'asAdmin' | 'cardsChanged'>;
+/** `seen`: every short string in the file and in this engine's replay of it,
+ * which is where a card that was in the game is named */
+const cache = new Map<string, { key: string; verdict: Verdict; seen: Set<string> }>();
 
 /**
  * What a cached verdict is a verdict ABOUT.
@@ -142,20 +149,24 @@ function partedFrom(recorded: string[], replayed: string[]): number | null {
   return null;
 }
 
-function verdictFor(code: string, raw: RoomFile, live: boolean): Omit<ReplayResponse, 'ok' | 'file' | 'mySeat' | 'asAdmin'> {
+function verdictFor(code: string, raw: RoomFile, live: boolean): { verdict: Verdict; seen: Set<string> } {
   const key = cacheKey(code, raw);
   const hit = cache.get(code);
-  if (!live && hit && hit.key === key) return hit.verdict;
+  if (!live && hit && hit.key === key) return hit;
 
   const forked = Array.isArray(raw.forks) && raw.forks.length > 0;
   const why = unreplayableReason(raw);
-  let out: Omit<ReplayResponse, 'ok' | 'file' | 'mySeat' | 'asAdmin'>;
+  let out: Verdict;
+  let seen: Set<string>;
   if (why) {
     // BL-38: "A game that cannot be replayed at all is listed and says why,
     // rather than being absent." It reaches the viewer as a verdict.
     out = { code, verdict: 'unreplayable', reason: why, forked, partedAt: null, refusedAt: null };
+    seen = stringsIn(raw);
   } else {
     const an = analyze(raw);
+    // a draft's cards are named only by the replay: its picks are indices
+    seen = stringsIn(raw, an.state, an.events);
     const refusedAt = an.divergedAt ? an.divergedAt.i : null;
     const recorded = Array.isArray(raw.sigs) && raw.sigs.length === raw.actions.length ? raw.sigs : null;
     const partedAt = recorded ? partedFrom(recorded, an.sigs) : null;
@@ -178,8 +189,16 @@ function verdictFor(code: string, raw: RoomFile, live: boolean): Omit<ReplayResp
   }
   // A game still being played grows between requests, so its verdict is about
   // a prefix and is not cached. Nothing is lost: nobody replays a live game.
-  if (!live) cache.set(code, { key, verdict: out });
-  return out;
+  if (!live) cache.set(code, { key, verdict: out, seen });
+  return { verdict: out, seen };
+}
+
+/** The changed cards this game shows, since the first engine that recorded it:
+ * a later stretch can only have seen the same or newer cards. */
+async function cardsChangedIn(raw: RoomFile, seen: Set<string>): Promise<CardsChanged> {
+  const first = versionsOf(raw).stamps[0];
+  if (!first) return CANT_TELL;
+  return changedIn(await cardsChangedSince(first.sha), seen);
 }
 
 /** Testing seam: forget every cached verdict. Never called by the server. */
@@ -234,12 +253,14 @@ export async function replayRoutes(
 
   // the stored state of a game in play holds both hands: never sent
   const { live: _live, ...file } = raw as RoomFile & { live?: unknown };
+  const { verdict, seen } = verdictFor(code, raw, opts.liveRoom(code));
   json(res, {
     ok: true,
     file,
-    ...verdictFor(code, raw, opts.liveRoom(code)),
+    ...verdict,
     mySeat: seat,
     asAdmin: admin && seat === null,
+    cardsChanged: await cardsChangedIn(raw, seen),
   } satisfies ReplayResponse);
   return true;
 }

@@ -12625,7 +12625,7 @@ if (params.has('room') && params.get('room')!.trim()) {
       const [run, cal] = await Promise.all([
         fetch(`/api/challenge/run/${encodeURIComponent(runId)}`, { headers: acct.authHeaders(false) }).then(r => r.json()),
         fetch('/api/challenge', { headers: acct.authHeaders(false) }).then(r => r.json()),
-      ]) as [{ challengeId?: string; name?: string; deck?: CardName[]; actions?: Action[] } & Partial<Pick<ReplayMeta, 'verdict' | 'partedAt' | 'refusedAt'>>,
+      ]) as [{ challengeId?: string; name?: string; deck?: CardName[]; actions?: Action[] } & Partial<Pick<ReplayMeta, 'verdict' | 'partedAt' | 'refusedAt' | 'cardsChanged'>>,
         { current?: ChallengeDef | null; past?: ChallengeDef[] }];
       const def = [...(cal.current ? [cal.current] : []), ...(cal.past ?? [])].find(c => c.id === run.challengeId);
       if (!def || !run.deck || !run.actions) throw new Error('no such run');
@@ -12648,6 +12648,7 @@ if (params.has('room') && params.get('room')!.trim()) {
         code: def.title, verdict: verdict === 'reconstruction' && partedAt === null ? 'unverified' : verdict, forked: false,
         partedAt, refusedAt: typeof run.refusedAt === 'number' ? run.refusedAt : null,
         exitTo: `?challenge=1&board=${encodeURIComponent(def.id)}`,
+        ...(run.cardsChanged ? { cardsChanged: run.cardsChanged } : {}),
       });
     } catch {
       uiError = 'that run cannot be watched';
@@ -12690,6 +12691,7 @@ if (params.has('room') && params.get('room')!.trim()) {
       code, verdict: r.verdict ?? 'unverified', forked: !!r.forked,
       partedAt: r.partedAt ?? null, refusedAt: r.refusedAt ?? null,
       ...(r.reason ? { reason: r.reason } : {}),
+      ...(r.cardsChanged ? { cardsChanged: r.cardsChanged } : {}),
     };
     // the seat you played; an admin did not play it and opens omniscient,
     // which is what they came for (Bena, 2026-09-23)

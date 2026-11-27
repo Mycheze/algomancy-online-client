@@ -53,6 +53,10 @@ body:has(#app.netmode) .replaybar { bottom: 178px; }
    verdict's explanation grows it upward over the board for as long as it is
    open, which is one deliberate click and reversible. */
 body:has(.replaybar) #app.board .main { padding-bottom: 96px; }
+/* the changed-cards note (cardsChangedNoteHtml): one line over the head row,
+   and the table stops above it as it does above the bar */
+.replaynote { margin: 0 0 6px; }
+body:has(.replaynote) #app.board .main { padding-bottom: 118px; }
 
 @media (max-width: 720px) {
   .replaybar { width: 96vw; padding: 6px 8px; }

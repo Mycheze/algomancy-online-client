@@ -38,6 +38,8 @@
 import type { ReplayServer } from './replayserver.ts';
 import { suppressMotion } from './anim.ts';
 import { copyText } from './util.ts';
+import { statusMessage } from './components/status.ts';
+import type { CardChange, CardsChanged } from '../server/card-history.ts';
 
 /** `staged` is not a recorded game at all: a rules question's hand-built
  * board, played forward with legal actions (ui/questions.ts). */
@@ -68,6 +70,9 @@ export interface ReplayMeta {
   /** where × goes: the page the replay was opened from (a weekly challenge's
    * board); absent = home */
   exitTo?: string;
+  /** the cards on this table printed differently when it was played
+   * (server/card-history.ts); absent or 'cant-tell' draws no note */
+  cardsChanged?: CardsChanged;
 }
 
 /** the speeds offered, in actions per second */
@@ -143,6 +148,55 @@ function detailText(m: ReplayMeta): string {
     + 'that was played.';
 }
 
+/* ── the changed-cards note ───────────────────────────────────────────── */
+
+/** at most this many cards are named on the line; the rest are counted */
+const NOTE_NAMES = 3;
+
+/** the parts of a card that changed, in a player's words */
+const partsOf = (c: CardChange): string => c.fields.filter(f => f !== 'name').join(', ');
+
+/** one card as the note lists it: its name when played, then what changed */
+function changeWords(c: CardChange): string {
+  const name = c.was ?? c.card;
+  if (c.fields.includes('removed')) return `${name} (since removed)`;
+  const parts = [c.was !== undefined ? `now ${c.card}` : '', partsOf(c)].filter(Boolean).join('; ');
+  return `${name} (${parts})`;
+}
+
+/** the sentence for one card */
+function oneChange(c: CardChange): string {
+  if (c.fields.includes('removed')) return `Played before ${c.card} was removed.`;
+  const parts = partsOf(c);
+  const tail = parts ? ` (${parts})` : '';
+  return c.was !== undefined
+    ? `Played before ${c.was} became ${c.card}${tail}.`
+    : `Played before ${c.card} changed${tail}.`;
+}
+
+/**
+ * The line above the transport when cards in this game have changed since it
+ * was played. The verdict cannot see a numbers change, so this says it. Silent
+ * for "can't tell": that is every game older than version stamps, and a note
+ * that could only say "maybe" on all of them would teach everyone to skip it.
+ */
+export function cardsChangedNoteHtml(changes: CardsChanged | undefined): string {
+  if (!Array.isArray(changes) || !changes.length) return '';
+  if (changes.length === 1) {
+    return statusMessage({
+      tone: 'info', className: 'replaynote',
+      text: `${oneChange(changes[0]!)} This replay shows today\u2019s card.`,
+    });
+  }
+  const words = changes.map(changeWords);
+  const shown = words.slice(0, NOTE_NAMES).join(', ');
+  const more = changes.length > NOTE_NAMES ? ` and ${changes.length - NOTE_NAMES} more` : '';
+  return statusMessage({
+    tone: 'info', className: 'replaynote', attrs: { title: words.join(', ') },
+    text: `Played before ${changes.length} of its cards changed: ${shown}${more}. This replay shows today\u2019s cards.`,
+  });
+}
+
 /* ── painting ─────────────────────────────────────────────────────────── */
 
 function paint(): void {
@@ -166,6 +220,7 @@ function paint(): void {
   // goes INSIDE. The class stays for the tint.
   layer.className = `replaybar${past ? ' parted' : ''}${m.question ? ' asking' : ''}`;
   layer.innerHTML = `${m.question ? questionHtml(m.question, at) : ''}
+    ${cardsChangedNoteHtml(m.cardsChanged)}
     <div class="replayhead">
       <span class="replayroom">${esc(m.code)}</span>
       <span class="replaywhere">action ${at} / ${total}${total ? ` · turn ${s.turn}` : ''}</span>
