@@ -88,7 +88,7 @@ import { replayRoutes } from './api-replay.ts';
 import { cardStats, cardStatsRoutes } from './api-cardstats.ts';
 import { cardSearchRoutes } from './api-cardsearch.ts';
 import { cardSearchPayload } from './api-cardsearch.ts';
-import { deckTrio, previewFor, withPreview, type PreviewCtx } from './linkpreview.ts';
+import { deckPictureKey, deckTrio, previewFor, trioFacts, withPreview, type PreviewCtx } from './linkpreview.ts';
 import { ogCacheDir } from './statepaths.ts';
 import { execFile } from 'node:child_process';
 import { activeEntrants, canSee, currentSeason, formatOf, isClosed as seasonClosed, seasonById } from './league-store.ts';
@@ -361,8 +361,9 @@ function crDataBody(): { body: string; etag: string } | null {
   } catch { return null; }
 }
 
-/** what a link preview may know — each answer what a signed-out stranger may see */
-function previewCtx(req: import('node:http').IncomingMessage): PreviewCtx {
+/** what a link preview may know — each answer what a signed-out stranger may see.
+ * `deckPics`: the deck pictures the URL names, read first (deckPicturesFor). */
+function previewCtx(req: import('node:http').IncomingMessage, deckPics: ReadonlyMap<string, DeckPicture | null> = new Map()): PreviewCtx {
   const card = (name: string) => {
     const r = rowFor(name) ?? allRows().find(x => x.nameLc === name.toLowerCase()) ?? null;
     if (!r) return null;
@@ -409,7 +410,7 @@ function previewCtx(req: import('node:http').IncomingMessage): PreviewCtx {
     deck: id => {
       const d = sharedDeck(id);
       if (!d) return null;
-      const pic = deckPicture(d);
+      const pic = deckPics.get(id) ?? null;
       return {
         // the account that published it, as the decks page says (the `author`
         // field is a free-text import note that defaults to "you")
@@ -431,16 +432,27 @@ function scanFileOf(name: string): string | null {
   return existsSync(join(ART_DIR, file)) ? file : null;
 }
 
+type DeckPicture = { files: string[]; key: string };
+
 /** The three scans a deck's picture fans (linkpreview.ts deckTrio) and the
- * cache key they make — the picture changes exactly when they do. */
-function deckPicture(d: { cards: readonly string[]; cover: string | null }): { files: string[]; key: string } | null {
+ * cache key they make with their art versions — the picture changes exactly
+ * when they do. */
+async function deckPicture(d: { cards: readonly string[]; cover: string | null }): Promise<DeckPicture | null> {
   const trio = deckTrio(d.cards, d.cover, n => {
     const r = rowFor(n);
-    return r ? { element: r.factions[0] ?? '', cost: Number(r.cost) || 0, hasScan: scanFileOf(n) !== null } : null;
+    return r ? trioFacts(r, scanFileOf(n) !== null) : null;
   });
   if (!trio.length) return null;
   const files = trio.map(n => scanFileOf(n)!);
-  return { files, key: createHash('sha1').update(files.join('|')).digest('hex').slice(0, 12) };
+  const versions = await Promise.all(files.map(f => artVersionsOnDisk.versionOf(f)));
+  return { files, key: deckPictureKey(files, versions) };
+}
+
+/** the picture of the shared deck a URL's `?deck=` names, for previewCtx */
+async function deckPicturesFor(url: URL): Promise<Map<string, DeckPicture | null>> {
+  const id = (url.searchParams.get('deck') ?? '').trim();
+  const d = id ? sharedDeck(id) : null;
+  return new Map(d ? [[id, await deckPicture(d)]] : []);
 }
 
 /* A deck's picture is drawn by ui/site-icons.py (Pillow — the bot's venv has
@@ -1307,7 +1319,7 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // server would not show (private, gone) is a 404, as on /api/deck/.
   if (path.startsWith('/og/deck/') && path.endsWith('.jpg')) {
     const d = sharedDeck(path.slice('/og/deck/'.length, -'.jpg'.length));
-    const pic = d ? deckPicture(d) : null;
+    const pic = d ? await deckPicture(d) : null;
     if (!pic) { res.writeHead(404, { 'content-type': 'text/plain' }); return res.end('not found'); }
     const out = join(ogCacheDir(), `deck-${pic.key}.jpg`);
     if (existsSync(out) || await drawDeckPicture(pic.files, out)) {
@@ -1319,7 +1331,7 @@ async function handleRequest(req: import('node:http').IncomingMessage,
   // the page itself, with the link preview this URL deserves written into its
   // head — Discord's unfurler runs no script (server/linkpreview.ts)
   if (path === '/index.html') {
-    return serveHtml(req, res, withPreview(await indexHtml(), previewFor(url, previewCtx(req))));
+    return serveHtml(req, res, withPreview(await indexHtml(), previewFor(url, previewCtx(req, await deckPicturesFor(url)))));
   }
   // the comprehensive rules as one page — what the How to play box's
   // Comprehensive rules tab frames (ui/assets.ts CR_PAGE_URL), and its

@@ -24,6 +24,7 @@
  * signed-out stranger: no hidden season, no upcoming challenge, no private
  * deck (sharedDeck already answers null for one), no replay's players.
  */
+import { createHash } from 'node:crypto';
 
 export interface Preview {
   /** og:title — what the embed's blue headline says */
@@ -393,7 +394,7 @@ export function withPreview(html: string, p: Preview): string {
   return out;
 }
 
-/** What the deck picture needs to know about one card. */
+/** What the deck picture needs to know about one card: `cost` is its printed mana. */
 export interface TrioFacts { element: string; cost: number; hasScan: boolean }
 
 /**
@@ -425,4 +426,18 @@ export function deckTrio(cards: readonly string[], cover: string | null,
     }
   }
   return out;
+}
+
+/** A card-index row's facts for deckTrio: its first element, and its printed mana (never its pips). */
+export function trioFacts(r: { factions: readonly string[]; mana: number }, hasScan: boolean): TrioFacts {
+  return { element: r.factions[0] ?? '', cost: r.mana, hasScan };
+}
+
+/**
+ * The cache key of a deck's picture (var/og-cache/deck-<key>.jpg, kept for
+ * good): its three scans and each one's art version (art-versions.ts), so new
+ * art under the same filename draws a new picture.
+ */
+export function deckPictureKey(files: readonly string[], versions: readonly (string | null)[]): string {
+  return createHash('sha1').update(files.map((f, i) => `${f}@${versions[i] ?? ''}`).join('|')).digest('hex').slice(0, 12);
 }

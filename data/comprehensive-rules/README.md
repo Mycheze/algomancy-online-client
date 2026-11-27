@@ -163,7 +163,7 @@ One JSON object per rule, in `rules/<section>.json`:
 | `num` | the published number, e.g. `608.2b` — from the ledger, never chosen by hand |
 | `key` | the permanent dotted key, e.g. `combat.damage.substeps.column-attributes` |
 | `text` | the rule. It may name another rule by key (`see rule effects.stripping.mutual`); the renderer prints the key's live number, and `cr:check` fails (`ref-unresolved`) on a key or a `rule N` that names no live rule |
-| `examples[]` | `{ text, test }` — `test` is `<file>::<test title>` of an executed test |
+| `examples[]` | `{ text, test }` — `test` is `<file>::<test title>` of an executed test. A card's printed stats or cost quoted beside its name (in `text` or an example) must match the pool, or `cr:check` fails (`card-stat-mismatch`, `scripts/cr/stat-quotes.mjs`) |
 | `see[]` | cross-references, by number |
 | `sources.printed[]` | `{ ref, quote }`; `ref` is `Manual p.N`, `Rulebook 2023 p.N` or `card: <Name>` |
 | `sources.designer[]` | `{ ref: "RAQ <threadId>#<i>", quote }`, or `{ ref: "RQ <messageId>", quote }` for one of Caleb's messages in the flat rules-questions channel (see "Designer answers outside the RAQ threads") |

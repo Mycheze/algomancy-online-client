@@ -296,7 +296,7 @@ card('Colossal Construction', {
 });
 
 // "Augment target unit and all of its mods onto another target unit. (The
-// first target must have [Augment] to be able to be augmented.)" — em/4 1/2
+// first target must have [Augment] to be able to be augmented.)" — em/4
 // {Battle} Primordial Technology Spell. Two targets collected at cast (the
 // multi-target TargetSpec, which picks them distinct): the FIRST pick moves
 // onto the SECOND. "Another" is re-checked at RESOLUTION (Minor Kraken
@@ -780,7 +780,7 @@ card('Maelstrom Charger', {
   }],
 });
 
-// "/[Sacrifice X units]: Negate up to X target effects." — rrm/2 5/3
+// "/[Sacrifice X units]: Negate up to X target effects." — rrm/2
 // {Battle} Occult Technology Spell. CR 702.6b, 110.1a, un-parked: the bracket is an
 // ADDITIONAL COST, paid at cast — the units are sacrificed before the spell is
 // on the stack, X is fixed by how many, and the up-to-X effects it negates are
@@ -841,7 +841,7 @@ card('Malicious Hardware', {
 });
 
 // "Each player sacrifices two units. If four or more units were sacrificed
-// this way, repeat this." — rm/4 5/3 {Battle} Bedlam Maelstrom Spell.
+// this way, repeat this." — rm/4 {Battle} Bedlam Maelstrom Spell.
 // "Each player" = the region's present seats (CR 601.4d); each picks two of their
 // units (as many as able). Per round: all picks are planned, then committed;
 // 4+ actual sacrifices repeat the round (fresh pools — replay after a

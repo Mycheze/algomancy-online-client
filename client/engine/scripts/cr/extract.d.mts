@@ -50,6 +50,13 @@ export interface CardRow {
   name: string; kind: string; timing: string; attrs: string[]; typeLine: string; text: string;
 }
 
+export interface CardStats {
+  name: string; power: number | string; toughness: number | string; mana: number | string;
+  /** affinity pip letters */
+  cost: string;
+  ambush?: { cost: string; mana: number };
+}
+
 export interface PrintedPage { doc: 'Manual' | 'Rulebook 2023'; page: number; text: string }
 
 export interface Enums {
@@ -75,6 +82,8 @@ export interface Extract {
   cards: CardRow[];
   /** printed card BACKS with rules text (Dormant Resource, …): `card: <Name>` reaches one only where no front has the name */
   cardBacks?: { name: string; typeLine?: string; text: string }[];
+  /** every playing card's printed numbers (the pool, then the catalogue's printed cards outside it); absent = none checked */
+  cardStats?: CardStats[];
   printedPages: PrintedPage[];
   enums: Enums;
   tests: TestFile[];

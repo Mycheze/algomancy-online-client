@@ -28,6 +28,10 @@
  *              whose quote must be verbatim in that report's note, and whose `by` and
  *              `level` must be the report author's name and judge level
  *              (client/ledgers/playtest-issues.snapshot.jsonl, row N, 0-based)
+ * A card's printed stats or cost quoted beside its name in a rule's text or an
+ * example ("Good Whale (7/5)", "Rampart Guardian costs 2") must match the pool
+ * (stat-quotes.mjs, `card-stat-mismatch`): a card edit that lands on a green
+ * gate cannot leave the rules quoting its old numbers.
  * Pure apart from reading repo files named by `file:` references and verdict
  * spans. Run as a script it checks the committed state and exits 1 on problems.
  *
@@ -45,6 +49,7 @@ import {
 } from './schema.mjs';
 import { buildModel, loadInputs, outlineSlots, unitOfRow } from './render.mjs';
 import { symbolsIn } from './extract.mjs';
+import { statQuoteScanner } from './stat-quotes.mjs';
 
 /**
  * A verdict span quoted from a GENERATED file goes stale when that file is
@@ -331,6 +336,8 @@ export function check(inputs, ex, opts = {}) {
   const verdictByKey = new Map();
   for (const v of [...inputs.verdicts].sort((a, b) => a.round - b.round)) verdictByKey.set(M ? M.canon(v.key) : v.key, v);
 
+  const statQuotes = statQuoteScanner(ex.cardStats ?? []);
+
   /* every record */
   for (const r of all) {
     const w = r.key ?? '(no key)';
@@ -431,6 +438,11 @@ export function check(inputs, ex, opts = {}) {
       }
     }
 
+    for (const [field, text] of [['text', r.text], ...(Array.isArray(r.examples) ? r.examples : []).map((x, i) => [`examples[${i}]`, x?.text])]) {
+      for (const q of statQuotes(text)) {
+        if (!q.ok) P('card-stat-mismatch', `${w} ${field}`, `quotes ${q.name}'s ${q.what} as ${q.said}; the card prints ${q.printed}`);
+      }
+    }
     proseRefs(w, 'text', r.text);
     for (const [i, x] of (Array.isArray(r.examples) ? r.examples : []).entries()) proseRefs(w, `examples[${i}]`, x?.text);
     for (const s2 of Array.isArray(r.see) ? r.see : []) {

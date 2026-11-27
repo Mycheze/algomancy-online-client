@@ -836,7 +836,7 @@ card('Celestial Shifter', {
   }],
 });
 
-// "Negate all activated and triggered effects." — mm/3 4/1 {Battle}
+// "Negate all activated and triggered effects." — mm/3 {Battle}
 // Technology Spell. Every triggered/activated item on the stack (any
 // controller) is negated; spells, viruses and ambushes are untouched.
 card('Containment Protocol', {
@@ -1084,7 +1084,7 @@ card('Dispatch Courier', {
 });
 
 // "Gain control of target token. You may choose new targets for spells
-// controlled this way." — mm/1 4/3 {Battle} Technology Spell.
+// controlled this way." — mm/1 {Battle} Technology Spell.
 // (This note used to read "⚠ the token is picked at resolution (not
 // stack-targetable)" — six lines above the spec that makes it a cast-time target. It had outlived its own code; corrected here.)
 // The steal is CR 711.1's straight swap: controller flips (owner stays), and the

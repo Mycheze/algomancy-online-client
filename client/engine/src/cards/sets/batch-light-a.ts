@@ -185,7 +185,7 @@ card('Arbiter of Armistice', {
   }],
 });
 
-// "[Augment] Pay 1 life: I gain piercing until regroup." — l/3 3/4 Horror
+// "[Augment] Pay 1 life: I gain piercing until regroup." — l/4 3/4 Horror
 // Unit. An ACTIVATED ability inside the [Augment] text box: usable on the card
 // itself when played normally (via 'augment') and on a host when donated
 // (via { mod }) — "I" is then the host. CR 111.6b: the 1 life is a real ACTIVATION
@@ -325,7 +325,7 @@ card('Glararr', {
 });
 
 // "(Only flying units can block flying units.) When I spawn, you gain 3 debt
-// and draw a card." — ll/2 3/4 {Flying} Horror Unit. CR 112.14, 112.14b: debt is paid
+// and draw a card." — ll/2 3/3 {Flying} Horror Unit. CR 112.14, 112.14b: debt is paid
 // automatically at the very end of your next resource step, 1 mana each, and
 // the remainder carries over — gaining it costs nothing right now, which is
 // exactly why the card is a 3/4 flier plus a card for [2].

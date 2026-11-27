@@ -333,7 +333,7 @@ card('Tempest Oracle', {
 });
 
 // "Recall X target nontoken allies. For each ally recalled this way, each
-// player sacrifices a unit and you lose 1 life." — br/X 1/3 {Battle}
+// player sacrifices a unit and you lose 1 life." — br/X {Battle}
 // Elemental Spell. (The designer's 2024-03-29 reword, CT-374; the older
 // printing read "Then each player sacrifices a unit and you lose 1 life for
 // each ally recalled this way.", which is the sentence the rulings below
@@ -439,7 +439,7 @@ card('Torrential Reclamation', {
 // ─────────────────────── EARTH / FIRE (er) ────────────────────────────
 
 // "I deal 2 damage to each of X target allies. For each ally damaged this
-// way, distribute 2 damage among target opponent's units." — eer/X 0/6
+// way, distribute 2 damage among target opponent's units." — eer/X
 // {Battle} Elemental Spell. X is chosen and paid AT CAST (CR 107.2a) and read from
 // item.x here.
 //

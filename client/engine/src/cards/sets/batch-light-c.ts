@@ -120,7 +120,7 @@ function slotOf(g: E, id: EntityId): { col: EntityId[]; idx: number } | null {
 // it into DECK_LIST.
 card('Blessed Thing', {});
 
-// "I can't be played from your hand.{/n}Negate all other effects." — ll/2
+// "I can't be played from your hand.{/n}Negate all other effects." — lll/2
 // {Battle} Nature Spell. COMPLETE as of round 17: the hand restriction was an
 // apply.ts zone gate that card code could not reach, and is now the
 // `noPlayFromHand` CardBehavior flag — the mirror of `prophesyFromBin`,

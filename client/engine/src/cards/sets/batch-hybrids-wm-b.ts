@@ -242,7 +242,7 @@ card('Auric Ascendant', {
   }],
 });
 
-// "Negate target effect. Its controller Glimpses 3." — bm/2 2/1 {Battle}
+// "Negate target effect. Its controller Glimpses 3." — bm/2 {Battle}
 // Cosmic Technology Spell. CR 700.1: "target effect" is the SUPERSET ('stackEffect'
 // — abilities and viruses too), which is what the spec six lines below says;
 // the "⚠ = stack spells/spell units/spell tokens/ambushes" line that used to
@@ -268,7 +268,7 @@ card('Dematerialize', {
   },
 });
 
-// "End this battle. Erase me. (Negate all effects, this battle is over.)" — bmm/4 1/2 {Battle} Temporal Arcane Spell. ⚠ header: every
+// "End this battle. Erase me. (Negate all effects, this battle is over.)" — bmm/4 {Battle} Temporal Arcane Spell. ⚠ header: every
 // remaining stack item is negated — which under CR 704.4 is itself the removal,
 // card and all — then endBattleRound() runs — in round 1 with no sent
 // counterattackers that cascades straight through round 2 into regroup.
@@ -362,7 +362,7 @@ card('Transmutide Enigma', {
 // ─────────────────────── WOOD / METAL (gm) ────────────────────────────
 
 // "Gain control of target unit with cost [x] or less unless its controller
-// pays [x]." — gm/X 2/2 {Battle} Alien Spell. X is chosen and paid AT CAST
+// pays [x]." — gm/X {Battle} Alien Spell. X is chosen and paid AT CAST
 // (CR 107.2a), which is why the cost bar can be a real TARGETING RESTRICTION
 // (CR 110.3a: TargetCtx carries the item's X) — only units it can actually take are
 // offered, and the resolution check stays for CR 704.5, 704.6; the ransom is a mid-resolution
@@ -413,7 +413,7 @@ card('Abduct', {
 });
 
 // "/[Create X 1/1 units {i1}or your units become base X/X until regroup]."
-// — ggm/X 2/2 Cosmic Flower Spell (deploy timing). X is chosen and paid AT
+// — ggm/X Cosmic Flower Spell (deploy timing). X is chosen and paid AT
 // CAST (CR 107.2a). Modal: the caster picks. Created UNITS arrive at the source's
 // region (CR 601.5) — home for a deploy cast. "Become base X/X" is a layer-2 REWRITE
 // (E.setBase) of every one of your units in the resolution region (CR 601.1b) —
@@ -677,7 +677,7 @@ card('Aethercap Siphoner', {
   }],
 });
 
-// "Create a 1/1 unit for each unit in target formation." — bg/3 5/1
+// "Create a 1/1 unit for each unit in target formation." — bg/3
 // {Battle} Alien Fungus Spell.
 //
 // CR 110.3d: it TARGETS A FORMATION, for real. This used to be proxied by a target

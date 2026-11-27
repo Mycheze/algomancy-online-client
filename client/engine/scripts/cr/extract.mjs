@@ -16,6 +16,8 @@
  *                  verbatim, with their context (written by index-rq.mjs)
  *   glossary       imported: ui/glossary.ts `GLOSSARY` (the rows a player sees;
  *                  authority `ours`, never a source of law)
+ *   cardStats      every playing card's printed power, toughness, mana, pips
+ *                  and Ambush cost (printed.json, then the catalogue)
  *   cards          printed.json — the PRINTED pool. The registry holds more
  *                  names than printed.json (synthetic tokens; and apply.ts
  *                  registers one more on import), none of them printed cards.
@@ -38,7 +40,7 @@ import {
   CR_BUILD_DIR, CR_PRINTED_PAGES, ENGINE_SRC_DIR, ENGINE_TEST_DIR, ORACLE_JSON, REPO_ROOT, RQ_SNAPSHOT,
   SERVER_E2E_DIR, SERVER_TEST_DIR, UI_TEST_DIR,
 } from '../paths.mjs';
-import { ATTRS, OUT as PRINTED_JSON } from '../extract-printed.mjs';
+import { ATTRS, OUT as PRINTED_JSON, CATALOGUE } from '../extract-printed.mjs';
 import { testTitlesOf } from './extract-test-titles.mjs';
 import { BATTLE_STEPS, DAMAGE_SUBSTEPS, DECISION_KINDS, PHASES, ZONES } from '../../src/types.ts';
 import { ALL_ELEMENTS } from '../../src/apply.ts';
@@ -81,6 +83,20 @@ function printedCards() {
   return Object.values(pool)
     .map(c => ({ name: c.name, kind: c.kind, timing: c.timing, attrs: c.attrs ?? [], typeLine: c.type, text: c.text }))
     .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * The printed numbers of every playing card, for check.mjs's stat quotes: the
+ * pool (printed.json), and the catalogue's printed cards outside it. A help,
+ * marker, resource or token row carries placeholder stats, so it is not one.
+ */
+function cardStats() {
+  const row = (c) => ({ name: c.name, power: c.power, toughness: c.toughness, mana: c.mana, cost: c.cost, ...(c.ambush ? { ambush: c.ambush } : {}) });
+  const pool = Object.values(JSON.parse(readFileSync(PRINTED_JSON, 'utf8'))).map(row);
+  const have = new Set(pool.map((c) => c.name));
+  const rest = Object.values(JSON.parse(readFileSync(CATALOGUE, 'utf8')))
+    .filter((c) => !have.has(c.name) && (c.class === 'card' || c.class === 'exclusive')).map(row);
+  return [...pool, ...rest].sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /**
@@ -226,6 +242,7 @@ export function extract() {
     glossary: glossaryRows(),
     cards,
     cardBacks: cardBacks(),
+    cardStats: cardStats(),
     printedPages: printedPages(),
     enums: enums(cards),
     tests: testIndex(),

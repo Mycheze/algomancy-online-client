@@ -528,7 +528,7 @@ card('Ghord', {
 });
 
 // "Change the targets of target effect unless its controller pays [x]." —
-// rr/X 2/1 {Battle} Temporal Cosmic Spell. X is chosen and paid AT CAST
+// rr/X {Battle} Temporal Cosmic Spell. X is chosen and paid AT CAST
 // (CR 107.2a) and stored on the item. CR 702.5a payment: the targeted item's controller
 // pays x mid-resolution (offered only if affordable) or the Correction's
 // controller re-picks every declared target from the current legal

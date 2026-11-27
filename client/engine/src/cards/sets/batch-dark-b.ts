@@ -426,7 +426,7 @@ card('Fester', {
 });
 
 // "For each [3] spent to play me, each player sacrifices a unit. Draw a card
-// for each nontoken unit you sacrifice this way." — dd/X {Battle} Blight
+// for each nontoken unit you sacrifice this way." — ddd/X {Battle} Blight
 // Spell. X is chosen and paid AT CAST (CR 107.2a) and arrives as ctx.x; the number
 // of rounds is floor(X / 3) — no xMin, since spending less than [3] is legal
 // and simply does nothing. Each round every present player (CR 601.4d) picks one of

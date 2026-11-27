@@ -656,7 +656,7 @@ card('Cadaverous Cultivator', {
 });
 
 // "Target unit gains poisonous until regroup.{/n}After combat, if I am in your
-// bin you may remove a -1/-1 counter from a unit to recall me." — gd/1 0/0
+// bin you may remove a -1/-1 counter from a unit to recall me." — gd/1
 // {Battle} Blight Spell.
 //
 // First sentence scripted: {Poisonous} until regroup (addTempAttr clears with
