@@ -9,6 +9,7 @@
  *    the index meanwhile; once the home box has the edit, a new value is refused and noted
  * §6 a complexity command is answered with one line and no picture
  * §7 the bot's replay of its channel after a restart changes nothing, before pickup or after
+ * §8 a designer with no linked Discord: pending says discord null, and the bot path completes
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -265,4 +266,27 @@ test('1618 §7 a restarted bot replaying the channel changes nothing, before pic
   for (const step of channel) await step();
   assert.equal(JSON.stringify(readEdit(id)), held, 'an earlier value replayed after pickup is not a late post');
   assert.deepEqual(await status(id), { status: 'applying', note: 'testing' });
+});
+
+test('1618 §8 an unlinked designer: pending carries discord null and the bot path completes', async () => {
+  const UNA = account('Una', { designer: true });
+  const row = oracleRow('Flamebreath Initiate')!;
+  const sub = await page(bodyReq(UNA, { card: row.name, rowHash: rowHash(row), fields: { ...editorFields(row), toughness: '4' } }), '/api/cardedit/edits');
+  assert.equal(sub.status, 200, sub.raw);
+  const id = String(sub.body['id']);
+  const listed = ((await botGet('/api/bot/cardedit/pending')).body['edits'] as Record<string, unknown>[]).find(e => e['id'] === id)!;
+  assert.ok('discord' in listed, 'the key stays');
+  assert.equal(listed['discord'], null);
+
+  const seen = await botPost('/api/bot/cardedit/seen',
+    { id, i: 0, messageId: 'u1', channelId: 'c1', content: '$modify flamebreath initiate|toughness|4', at: '2026-11-27T22:00:00Z' });
+  assert.equal(seen.status, 200, seen.raw);
+  const r = await botPost('/api/bot/cardedit/reply', {
+    id, i: 0, echo: "Modified flamebreath initiate's toughness from this", fileName: fbFile('Flamebreath_Initiate'),
+    before: jpegB64('bu'), after: jpegB64('au'), at: '2026-11-27T22:00:06Z',
+  });
+  assert.deepEqual(r.body, { ok: true, road: 'fast', status: 'applying', note: 'waiting for the home box' });
+  assert.ok(inIndex(id), 'offered to the home box like any other');
+  const d = (await page(silentReq('GET', UNA).req, `/api/cardedit/edits/${id}`)).body;
+  assert.deepEqual([d['status'], d['pictures']], ['applying', { before: true, after: true }]);
 });

@@ -227,7 +227,8 @@ class Matcher:
         ch = self._channel(msg.channel)
         if msg.content.startswith("$"):
             ch.last_command = msg.id
-            out += self._command(ch, msg)
+            if msg.author != self.friendlybot:   # its own lines are never a command, even for an unlinked edit
+                out += self._command(ch, msg)
         if msg.author == self.friendlybot:
             out += self._friendlybot(ch, msg)
         return out
@@ -249,9 +250,11 @@ class Matcher:
     def _match(self, msg, parsed):
         """(edit id, command index) of the command this one posts. An answered command
         matches too: a re-post may carry a new value, and the server decides what it changes.
-        A message from before the edit existed posts nothing of it."""
+        A message from before the edit existed posts nothing of it. A linked submitter's edit
+        takes only his posts; an unlinked one takes anyone's, since only Caleb posts here."""
         for edit in self.pending:
-            if str(edit.get("discord") or "") != msg.author:
+            author = str(edit.get("discord") or "")
+            if author and author != msg.author:
                 continue
             if edit.get("since") and msg.at < parse_iso(edit["since"]) - CLOCK_SLACK_SECONDS:
                 continue

@@ -1,10 +1,11 @@
 /* 1617 — submitting a card edit (POST /api/cardedit/edits) and what it writes.
  *
- * §1 refusals: an unlinked designer, a stale base, a `|`, nothing changed (also a change of
- *    notation only), an unknown card, and a second open edit on one card
+ * §1 refusals: a stale base, a `|`, nothing changed (also a change of notation only), an
+ *    unknown card, and a second open edit on one card
  * §2 a good submit answers the commands and writes the record in the §3 shape
  * §3 the row route: the raw oracle row, its hash, read-only and the open edit
  * §4 cancel until a command is seen posted; then a new edit may start; who sees whose edits
+ * §5 a designer with no linked Discord submits, and his record says so with a null
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -12,7 +13,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ORACLE_JSON } from '../../engine/scripts/paths.mjs';
 import { editorFields, type OracleRow } from '../../ui/cardnotation.ts';
-import { LINK_FIRST, isEditId, rowHash } from '../cardedit.ts';
+import { isEditId, rowHash } from '../cardedit.ts';
 import { cardEditsDir } from '../statepaths.ts';
 import { account, bodyReq, botPost, page, silentReq } from './cardedit-fixture.ts';
 
@@ -29,10 +30,6 @@ const submit = (token: string, body: unknown) => page(bodyReq(token, body), '/ap
 
 test('1617 §1 the submit refusals', async () => {
   const ok = { card: 'Murkstalker', rowHash: HASH, fields: screen({ 'total cost': '3' }) };
-  const unlinked = await submit(UNLINKED, ok);
-  assert.deepEqual([unlinked.status, unlinked.body['error']], [400, LINK_FIRST], 'unlinked: told to link first');
-  assert.match(LINK_FIRST, /\/link/);
-
   const stale = await submit(DEE, { ...ok, rowHash: 'f'.repeat(40) });
   assert.equal(stale.status, 409, 'a stale base');
   assert.match(String(stale.body['error']), /has changed since you opened it/);
@@ -121,4 +118,14 @@ test('1617 §4 cancel until a command is posted; the author and admins see an ed
   assert.equal(seen.status, 200, seen.raw);
   const late = await page(bodyReq(DEE, {}), `/api/cardedit/edits/${id2}/cancel`);
   assert.equal(late.status, 409, 'posted: too late to cancel');
+});
+
+test('1617 §5 a designer with no linked Discord submits; the record carries a null', async () => {
+  const row = (JSON.parse(readFileSync(ORACLE_JSON, 'utf8')) as Record<string, OracleRow[]>)['Flamebreath Initiate']![0]!;
+  const r = await submit(UNLINKED, { card: row.name, rowHash: rowHash(row), fields: { ...editorFields(row), toughness: '5' } });
+  assert.equal(r.status, 200, r.raw);
+  const id = String(r.body['id']);
+  const rec = JSON.parse(readFileSync(join(cardEditsDir(), `${id}.json`), 'utf8')) as Record<string, unknown>;
+  assert.deepEqual(rec['by'], { account: (rec['by'] as { account: string }).account, name: 'Una', discord: null });
+  await page(bodyReq(UNLINKED, {}), `/api/cardedit/edits/${id}/cancel`);
 });

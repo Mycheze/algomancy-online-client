@@ -27,7 +27,7 @@ const LIST: EditSummary[] = [
 ];
 
 const base: CardEditorView = {
-  access: true, tab: 'edit', backLabel: 'Cards', isAdmin: false, discordLinked: true, chrome: CHROME,
+  access: true, tab: 'edit', backLabel: 'Cards', isAdmin: false, chrome: CHROME,
   query: '', picks: [], card: ROW.name, isLoading: false, busy: false,
   row: { card: ROW.name, row: ROW, rowHash: 'h', readOnly: null, open: null },
   scanUrl: '/data/cards/Murkstalker.webp', fields: editorFields(ROW), current: null, errorMsg: '',

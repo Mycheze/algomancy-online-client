@@ -72,8 +72,6 @@ export interface CardEditorView {
   backLabel: string;
   /** an admin sees every designer's edits, with the author's name */
   isAdmin: boolean;
-  /** the bot knows his posts by his linked Discord account */
-  discordLinked: boolean;
   chrome: FrameChrome;
   /** the picker's box and the cards it finds (none while the box is empty) */
   query: string;
@@ -104,7 +102,7 @@ export function cardEditorView(st: CardEditorState): CardEditorView {
   for (const e of st.edits ?? []) when[e.id] = whenText(e.createdAt);
   if (st.detail) when[st.detail.id] = whenText(st.detail.createdAt);
   return {
-    access: st.access, tab: st.tab, backLabel: st.backLabel, isAdmin: st.isAdmin, discordLinked: st.discordLinked,
+    access: st.access, tab: st.tab, backLabel: st.backLabel, isAdmin: st.isAdmin,
     chrome: frameChromeView(), query: st.query, picks: st.picks, card: st.card, isLoading: st.loading, busy: st.busy,
     row: st.row, scanUrl: st.scanUrl, fields: { ...st.fields }, current: st.current, errorMsg: st.msg,
     edits: st.edits, whenOf: when, detail: st.detail, pictures: st.pictures,
@@ -164,10 +162,9 @@ function submitHtml(v: CardEditorView): string {
   const l = liveRoad(row, v.fields);
   const unchanged = l.problems.length === 1 && l.problems[0] === 'Nothing changed.';
   const tone = l.problems.length && !unchanged ? 'cebad' : l.road === 'steward' ? 'cesteward' : '';
-  return `${v.discordLinked ? '' : statusMessage({ tone: 'warn', text: 'Link your Discord on your profile first: the bot knows your posts by it.' })}
-    <p class="ceroadline ${tone}">${esc(roadLine(l))}</p>
+  return `<p class="ceroadline ${tone}">${esc(roadLine(l))}</p>
     ${button({ label: v.busy ? 'Sending…' : 'Make the commands', variant: 'primary', dataBtn: 'ce-submit',
-    disabled: l.problems.length > 0 || !v.discordLinked || v.busy })}`;
+    disabled: l.problems.length > 0 || v.busy })}`;
 }
 
 /** One live part of the Edit tab, as patchCardEditor puts it in place. */

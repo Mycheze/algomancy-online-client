@@ -24,7 +24,7 @@ const DETAIL: EditDetail = {
 
 function view(over: Partial<CardEditorView> = {}): CardEditorView {
   return {
-    access: true, tab: 'mine', backLabel: 'Home', isAdmin: false, discordLinked: true, chrome: { signedIn: true, alerts: 0 },
+    access: true, tab: 'mine', backLabel: 'Home', isAdmin: false, chrome: { signedIn: true, alerts: 0 },
     query: '', picks: [], card: null, isLoading: false, busy: false, row: null, scanUrl: null, fields: {}, current: null,
     errorMsg: '', edits: [A, B, C, D], whenOf: { [A.id]: '27 Nov, 10:00', [B.id]: '26 Nov, 10:00' }, detail: null,
     pictures: { before: null, after: null }, ...over,

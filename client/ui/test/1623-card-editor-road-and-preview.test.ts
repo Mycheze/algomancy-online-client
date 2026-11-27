@@ -2,7 +2,7 @@
  * the road line, the pips and the preview.
  *
  * §1 the road line is the server's: the same functions of ui/cardnotation.ts the submit route runs
- * §2 a problem the server would refuse is said, and the button stays off; so does an unlinked Discord
+ * §2 a problem the server would refuse is said, and the button stays off; Discord is never asked about
  * §3 the preview is the game's renderer, fed our notation: his w and k draw as light and dark
  */
 import { test } from 'node:test';
@@ -18,7 +18,7 @@ const ROW: OracleRow = {
 
 function view(fields: EditorFields, over: Partial<CardEditorView> = {}): CardEditorView {
   return {
-    access: true, tab: 'edit', backLabel: 'Home', isAdmin: false, discordLinked: true, chrome: { signedIn: true, alerts: 0 },
+    access: true, tab: 'edit', backLabel: 'Home', isAdmin: false, chrome: { signedIn: true, alerts: 0 },
     query: '', picks: [], card: ROW.name, isLoading: false, busy: false,
     row: { card: ROW.name, row: ROW, rowHash: 'h', readOnly: null, open: null }, scanUrl: null,
     fields: { ...editorFields(ROW), ...fields }, current: null, errorMsg: '', edits: null, whenOf: {}, detail: null,
@@ -52,9 +52,9 @@ test('1623 §2 a refusal is said before he presses anything', () => {
   assert.match(pipe, /<p class="ceroadline cebad">Text can(?:'|&#39;)t contain \|\.<\/p>/);
   assert.ok(!submitOn(pipe));
   assert.match(roadPart({ power: 'two' }), /Power must be a number or X\./);
-  const unlinked = roadPart({ 'total cost': '3' }, { discordLinked: false });
-  assert.match(unlinked, /Link your Discord on your profile first/);
-  assert.ok(!submitOn(unlinked), 'the bot could not match his posts');
+  const anyone = roadPart({ 'total cost': '3' });
+  assert.doesNotMatch(anyone, /Discord/i, 'the form never asks for a linked Discord');
+  assert.ok(submitOn(anyone), 'a designer with no linked Discord may send');
   assert.match(roadPart({ 'total cost': '3' }, { busy: true }), /data-btn="ce-submit" type="button" disabled>Sending…</);
 });
 

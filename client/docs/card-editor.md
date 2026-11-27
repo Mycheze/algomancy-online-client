@@ -154,7 +154,7 @@ gitignored and backed up nightly, so none of it is ever committed.
   "v": 1,
   "id": "ce-20261127-murkstalker-7f3a",          // date + card slug + 4 random hex: readable and unique
   "card": "Murkstalker",                          // our oracle key
-  "by": { "account": "<id>", "name": "Caleb", "discord": "<user id>" },
+  "by": { "account": "<id>", "name": "Caleb", "discord": "<user id>" }, // null when he has none linked
   "createdAt": "2026-11-27T18:02:11Z",
   "base": { "rowHash": "<sha1 of the oracle row the form loaded>", "row": { /* that row, whole */ } },
   "edit":  { "total cost": "2" },                 // his fields, as he left them: only the changed ones
@@ -209,10 +209,14 @@ Our bot needs to be **in Caleb's server with View Channel and Read Message Histo
 
 The bot polls `GET /api/bot/cardedit/pending` (every 5 s while any edit is pending, every 60 s
 otherwise). For each command still waiting, it gets the command text, the card, and the Discord
-id of the account that submitted it. Then, for every message in a watched channel:
+id of the account that submitted it, or `null` when that account has no Discord linked. Then, for
+every message in a watched channel:
 
-1. **A command.** The author is the submitter's linked Discord id (`Account.linked.discord`, which
-   `/link` already sets; an unlinked designer is told to link first). The message parses as
+1. **A command.** If the submitter has a linked Discord id (`Account.linked.discord`, which `/link`
+   sets), the author must be that id. If he has none, any author in the watched channel will do:
+   a posted command identical to the edit is valid whoever posts it, and only Caleb can post in
+   `#card-changes`. A designer never has to link to submit. FriendlyBot's own messages are never
+   commands. The message parses as
    `$modify <name>|<field>|<value>`, and its field matches a pending command's (case and
    space/underscore folded, as FriendlyBot folds them). The name must match the pending command's,
    or loosely match the card. The bot reports it with `POST /api/bot/cardedit/seen` {edit id,
@@ -261,7 +265,7 @@ All under `/api/bot/`, so they inherit `botAllowed()`: `ALGO_BOT_TOKEN` in a hea
 
 | route | |
 |---|---|
-| `GET /api/bot/cardedit/pending` | `[{ id, card, discord, since, commands: [{ i, text, field }] }]` for edits still waiting |
+| `GET /api/bot/cardedit/pending` | `[{ id, card, discord, since, commands: [{ i, text, field }] }]` for edits still waiting; `discord` is `null` for an unlinked submitter |
 | `POST /api/bot/cardedit/seen` | `{ id, i, messageId, channelId, content, at }` |
 | `POST /api/bot/cardedit/reply` | `{ id, i, echo, fileCard, before: <b64 jpeg>, after: <b64 jpeg>, at }` or `{ id, i, error }` |
 

@@ -25,7 +25,7 @@ const SPELL: OracleRow = {
 
 function view(row: OracleRow | null, over: Partial<CardEditorView> = {}): CardEditorView {
   return {
-    access: true, tab: 'edit', backLabel: 'Home', isAdmin: false, discordLinked: true,
+    access: true, tab: 'edit', backLabel: 'Home', isAdmin: false,
     chrome: { signedIn: true, alerts: 0 }, query: '', picks: [], card: row?.name ?? null, isLoading: false, busy: false,
     row: row ? { card: row.name, row, rowHash: 'h', readOnly: null, open: null } : null,
     scanUrl: row ? `/data/cards/${row.name}.webp` : null, fields: row ? editorFields(row) : {}, current: null, errorMsg: '',

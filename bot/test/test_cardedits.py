@@ -10,7 +10,8 @@ Run: `.venv/bin/python bot/test/test_cardedits.py`. No Discord, no game server.
 §3c complexity: one line, no picture
 §4 a loose name, a malformed command, two answers interleaved
 §5 FriendlyBot silent, cut off, or `Something went wrong`
-§6 what is ignored: another author, another channel, an edit nobody submitted
+§6 what is ignored: another author, another channel, FriendlyBot's own lines
+§6b an edit by a designer with no linked Discord: any author in the channel posts it
 §7 the cog: pictures downloaded and sent, a restart caught up from history, inert unconfigured
 """
 
@@ -327,11 +328,8 @@ check(f"…one after a `$rename` is the rename's, not our command's ({kinds(acts
 # ── §6 what is ignored ────────────────────────────────────────────────
 print("\n[§6 what is ignored]")
 murk = edit("ce-20261023-murkstalker-7f3a", "Murkstalker", ("$modify murkstalker|total cost|2", "total cost"))
-check("another author posting the same command", run(load("murkstalker-clean", authors={"calebgannon": OTHER}), murk) == [])
+check("⭐ a linked edit: a stranger posting the same command", run(load("murkstalker-clean", authors={"calebgannon": OTHER}), murk) == [])
 check("an unwatched channel", run(load("murkstalker-clean", channel=ELSEWHERE), murk) == [])
-check("an edit nobody submitted (no linked Discord)",
-      run(load("murkstalker-clean"), edit(murk["id"], "Murkstalker", ("$modify murkstalker|total cost|2", "total cost"),
-                                          discord=None)) == [])
 check("no pending edit at all", run(load("murkstalker-clean")) == [])
 acts = run(load("murkstalker-clean", authors={"FriendlyBot": OTHER}), murk, until=2e9)
 check(f"⭐ FriendlyBot's lines from anyone else are not its answer ({kinds(acts)})", kinds(acts) == ["seen", "noAnswer"])
@@ -341,6 +339,29 @@ m = Matcher(FB, {CHANNEL})
 msgs = load("murkstalker-clean")
 once = run(msgs, murk, matcher=m)
 check("a message read twice is read once", len(once) == 2 and run(msgs, murk, matcher=m) == [])
+
+print("\n[§6b an unlinked edit]")
+for unlinked in (None, ""):
+    free = edit(murk["id"], "Murkstalker", ("$modify murkstalker|total cost|2", "total cost"), discord=unlinked)
+    acts = run(load("murkstalker-clean", authors={"calebgannon": OTHER}), free, until=2e9)
+    check(f"⭐ a stranger's command posts it, answered as any other ({unlinked!r}: {kinds(acts)})",
+          kinds(acts) == ["seen", "reply"] and acts[0].body["messageId"] == "1563217537230053426"
+          and acts[1].body["id"] == murk["id"] and acts[1].after is not None)
+free = edit(murk["id"], "Murkstalker", ("$modify murkstalker|total cost|2", "total cost"), discord=None)
+check("…still not from before the edit existed",
+      run(load("murkstalker-clean", authors={"calebgannon": OTHER}), {**free, "since": "2026-11-27T00:00:00.000Z"}) == [])
+check("…nor a field it does not change",
+      run(load("murkstalker-clean"), edit(murk["id"], "Murkstalker", ("$modify murkstalker|power|2", "power"), discord=None)) == [])
+check("…nor a card it is not",
+      run(load("murkstalker-clean"), edit(murk["id"], "Good Whale", ("$modify good whale|total cost|2", "total cost"), discord=None)) == [])
+t0 = 1_800_000_000.0
+echo = [Msg("1", CHANNEL, FB, "$modify murkstalker|total cost|2", t0)]
+check("⭐ FriendlyBot's own `$` line is never a command, even for an unlinked edit", run(echo, free) == [])
+posts = [Msg("1", CHANNEL, OTHER, "$modify murkstalker|total cost|2", t0),
+         Msg("2", CHANNEL, CALEB, "$modify murkstalker|total cost|3", t0 + 10)]
+acts = run(posts, free)
+check(f"a re-post by someone else is seen too ({kinds(acts)})",
+      [a.body["content"] for a in acts if a.kind == "seen"] == ["$modify murkstalker|total cost|2", "$modify murkstalker|total cost|3"])
 
 
 # ── §7 the cog ────────────────────────────────────────────────────────

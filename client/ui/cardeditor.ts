@@ -65,7 +65,6 @@ export interface CardEditorState {
   tab: CardEditorTab;
   backLabel: string;
   isAdmin: boolean;
-  discordLinked: boolean;
   query: string;
   picks: string[];
   card: string | null;
@@ -85,7 +84,7 @@ function state(): CardEditorState {
   const me = acct.currentUser();
   const r = cardNow ? rowFor(cardNow) : null;
   return {
-    access: allowed, tab: tabNow, backLabel: backTo, isAdmin: me?.admin === true, discordLinked: !!me?.discord,
+    access: allowed, tab: tabNow, backLabel: backTo, isAdmin: me?.admin === true,
     query: q, picks: found, card: cardNow, loading: fetching, busy: sending, row: rowNow,
     scanUrl: r?.hasArt ? artUrl(r.image) : null, fields: typed, current: currentEdit, msg,
     edits: list, detail: opened, pictures: { before: pics?.before ?? null, after: pics?.after ?? null },

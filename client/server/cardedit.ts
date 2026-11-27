@@ -44,7 +44,8 @@ export interface CardEdit {
   v: 1;
   id: string;
   card: string;
-  by: { account: string; name: string; discord: string };
+  /** the submitter's linked Discord id, or null: the bot then takes the command from any author */
+  by: { account: string; name: string; discord: string | null };
   createdAt: string;
   base: { rowHash: string; row: OracleRow };
   /** his fields as he submitted them, only the changed ones */
@@ -281,8 +282,6 @@ export function appendRunnerRow(id: string, step: RunnerStep, why?: string, now 
 export type Outcome<T> = { ok: true; value: T } | { ok: false; status: number; error: string };
 const refuse = (status: number, error: string): { ok: false; status: number; error: string } => ({ ok: false, status, error });
 
-export const LINK_FIRST = 'Link your Discord account first: press Link Discord on your profile, then type the /link command it gives you in Discord.';
-
 /** The on-screen fields a request body may carry: known names, string values. */
 export function screenFields(raw: unknown): EditorFields {
   const out: EditorFields = {};
@@ -306,8 +305,7 @@ export function submitEdit(
   if (!row) return refuse(404, 'No such card.');
   const card = row.name;
   if (body.rowHash !== rowHash(row)) return refuse(409, `${card} has changed since you opened it. Reload it and edit again.`);
-  const discord = me.linked?.discord?.id;
-  if (!discord) return refuse(400, LINK_FIRST);
+  const discord = me.linked?.discord?.id ?? null;
   const screen = screenFields(body.fields);
   const problems = validateEdit(row, screen);
   if (problems.length) return refuse(400, problems.join(' '));
