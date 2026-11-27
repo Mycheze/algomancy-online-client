@@ -8,15 +8,20 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { relative } from 'node:path';
 import { REPO_ROOT } from '../scripts/paths.mjs';
-import { allFaces, loadPrinted, parseFaces, rewriteFaces, setFiles, type FaceCard } from '../scripts/face-comment.mjs';
+import { allFaces, loadPrinted, looseFaces, parseFile, parseFaces, rewriteFaces, setFiles, type FaceCard } from '../scripts/face-comment.mjs';
 
 const PRINTED = loadPrinted();
 const ROWS = allFaces(PRINTED);
 
 test('face comments: the parser reaches the face comments of the card files', () => {
   // a parser gone blind would pass the lock below with nothing to check
-  assert.ok(ROWS.length >= 250, `only ${ROWS.length} face comments parsed`);
+  assert.ok(ROWS.length >= 434, `only ${ROWS.length} face comments parsed`);
   assert.ok(new Set(ROWS.map((r) => r.file)).size >= 25, 'face comments parsed in too few set files');
+});
+
+test('face comments: every face in the card files is tied to its card', () => {
+  const loose = looseFaces().map((r) => `${relative(REPO_ROOT, r.file)}:${r.line}`);
+  assert.deepEqual(loose, [], 'a face no card() claims unambiguously goes unchecked: move it directly above its card()');
 });
 
 test('face comments: every parseable face comment agrees with printed.json', () => {
@@ -79,4 +84,20 @@ test('face comments: modifiers and stats outside the face are not read as the fa
   const [d] = parseFaces(src);
   assert.equal(d!.faces.length, 1);
   assert.deepEqual([d!.faces[0]!.pips, d!.faces[0]!.mana, d!.faces[0]!.stats?.p, d!.faces[0]!.stats?.t], ['r', '2', '2', '1']);
+});
+
+test('face comments: a face above a helper is the next cards only when nothing else could claim it', () => {
+  const helper = '// "Drain." — ld/2 2/2 Horror Unit.\n//\n// More notes.\nconst DRAIN = 1;\nconst drain = { run: () => DRAIN };\ncard(\'Murk\', { effect: drain });\n';
+  const [d] = parseFaces(helper);
+  assert.deepEqual([d!.name, d!.faces.length, d!.faces[0]!.line], ['Murk', 1, 1]);
+  assert.equal(rewriteFaces(helper, 'Murk', unit({ cost: 'ld', mana: 3, power: 1, toughness: 1 })), helper.replace('ld/2 2/2', 'ld/3 1/1'));
+  // a card with its own face: the one above its helpers is ambiguous
+  const both = '// "A." — l/1 1/1 Unit.\nconst a = 1;\n// "B." — d/1 2/2 Unit.\ncard(\'B\', {});\n';
+  assert.deepEqual(parseFile(both).defs[0]!.faces.map((f) => f.pips), ['d']);
+  assert.deepEqual(parseFile(both).loose.map((f) => f.pips), ['l']);
+  // two faces before one card: neither is claimed
+  const two = '// "A." — l/1 1/1 Unit.\nconst a = 1;\n// "B." — d/1 2/2 Unit.\nconst b = 2;\ncard(\'B\', {});\n';
+  assert.deepEqual([parseFile(two).defs[0]!.faces.length, parseFile(two).loose.length], [0, 2]);
+  // a name in double quotes is a card() too
+  assert.deepEqual(parseFaces('// "X." — d/1 5/3 Unit.\ncard("Möbius\'s Corruption", {});\n').map((x) => [x.name, x.faces.length]), [["Möbius's Corruption", 1]]);
 });

@@ -602,7 +602,7 @@ card('Slag Spewer', {
 
 // "[Switch1] /[Sacrifice a unit]: Each opponent sacrifices units until their
 // total defense is at least equal to the defense of your sacrificed unit."
-// — eer/3 1/6 {Battle} Elemental Structure Spell. The bracketed sacrifice is
+// — eer/3 {Battle} Elemental Structure Spell. The bracketed sacrifice is
 // a CAST COST (CR 702.4): chosen and paid before the spell reaches the stack (a
 // grafted rider pays — or declines — at composite cast time). The bar is the
 // sacrificed unit's defense SNAPSHOTTED at payment (it is gone by

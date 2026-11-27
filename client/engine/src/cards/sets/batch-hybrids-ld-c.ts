@@ -351,7 +351,7 @@ card('Iyngstra', {
 // ─────────────────────── LIGHT / METAL (lm) ───────────────────────────
 
 // "When you gain or lose life, [Switch1] Put a +1/+1 counter on each of your
-// units." — lm/3 3/3 Cosmic Unit. A bounded graft CAUSE plus the matching
+// units." — lm/5 3/2 Cosmic Unit. A bounded graft CAUSE plus the matching
 // bounded graft effect ([Switch1], CR 722.5 — the Scrapyard Custodian shape).
 // Either direction of life change fires it ('lifeGained' / 'lifeLost'), for
 // MY controller only. "Each of your units" is region-scoped at resolution

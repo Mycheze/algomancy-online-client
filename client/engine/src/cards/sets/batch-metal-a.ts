@@ -473,7 +473,7 @@ card('Ancient One', {
   }],
 });
 
-// "[Switch1] Create a copy of target token." — m/2 2/1 {Battle} Arcane Mimic
+// "[Switch1] Create a copy of target token." — m/2 {Battle} Arcane Mimic
 // Spell. CR 300.5c, 110.1a: "target token" is a CAST-TIME target — unit tokens and spell
 // tokens both, either side's. Both copies are created where the SOURCE is,
 // i.e. ctx.region (CR 304.8a) — cast in the enemy region, the unit copy stays there.
@@ -647,7 +647,7 @@ card('Biomass Devourer', {
 });
 
 // "[Switch1] Exchange the base stats of two target units until regroup.
-// (With each other.)" — m/2 2/1 {Battle} Arcane Spell. Two targets collected
+// (With each other.)" — m/2 {Battle} Arcane Spell. Two targets collected
 // at cast (count/min 2). The exchange REWRITES each unit's base (layer 2, see
 // E.setBase) rather than adding a delta: it is "exchange the base stats", so
 // counters and temp changes keep applying on top, a later base-setter

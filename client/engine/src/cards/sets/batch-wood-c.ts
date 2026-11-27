@@ -360,7 +360,7 @@ card('Stellarspore Harvester', {
   }],
 });
 
-// "[Switch] Your units gain +1/+1 until regroup." — g/1 0/1 {Battle} Flower
+// "[Switch] Your units gain +1/+1 until regroup." — g/1 {Battle} Flower
 // Spell. The whole line is the unbounded graftable effect. "Your units" is
 // region-scoped (CR 101.6); the buff is the engine's temp layer (cleared at
 // regroup, CR 506.2 step 3).

@@ -178,7 +178,7 @@ card('Rotspore Herald', {
 });
 
 // "[Switch] /[Sacrifice a unit]: Create a Poison X and a Fireball X, where X
-// is the defense of the sacrificed unit." — rg/2 4/2 {Battle} Infernal
+// is the defense of the sacrificed unit." — rg/2 {Battle} Infernal
 // Blight Spell. The bracketed sacrifice is a CAST COST (CR 702.4): chosen and
 // paid before the spell reaches the stack (a grafted rider pays — or
 // declines — at composite cast time). X = the sacrificed unit's defense
@@ -561,7 +561,7 @@ card('The World Shepherd', {
 });
 
 // "[Switch1] /[Put a -1/-1 counter on each enemy or{i1} put a +1/+1 counter
-// on each of your units.]" — gm/3 1/2 {Battle} Arcane Druid Spell. Modal:
+// on each of your units.]" — gm/3 {Battle} Arcane Druid Spell. Modal:
 // CR 702.5 — the controller declares the half in the CAST window (`EffectDef.modes`),
 // so the item reaches the stack saying which one it is and the opponent
 // responds to a fully declared effect. It used to be a mid-resolution

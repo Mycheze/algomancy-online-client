@@ -273,7 +273,7 @@ function runSpellCopy(
 // ─────────────────────── EARTH / METAL (em/me) ────────────────────────
 
 // "[Switch1] Create a Robot X, where X is the greatest defense among your
-// units." — em/3 2/4 Primordial Technology Spell. X is live at resolution
+// units." — em/3 Primordial Technology Spell. X is live at resolution
 // (CR 107.8): the greatest effStats defense among the controller's units in the
 // resolving region (CR 601.1b). Robot X = the 0/0 Robot token with X +1/+1
 // counters (the water-metal batch precedent); a created UNIT spawns where its
@@ -536,7 +536,7 @@ card('Aether Channeler', {
   }],
 });
 
-// "[Switch1] Create a Crystal 1 and a Poison 1." — eg/1 0/7 Arcane Blight
+// "[Switch1] Create a Crystal 1 and a Poison 1." — eg/1 Arcane Blight
 // Crystal Spell. Both spell tokens appear where the effect resolves (CR 601.5).
 // Bounded graft ([Switch1], CR 722.5).
 const alchemyTokens: EffectDef = {

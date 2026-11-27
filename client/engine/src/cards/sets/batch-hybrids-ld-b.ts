@@ -147,7 +147,7 @@ card('Air Plant', {
 });
 
 // "[Switch] Set all players' life totals equal to their average. {i}(Rounded
-// down.)" — lg/5 0/0 {Battle} Cosmic Spell.
+// down.)" — lg/5 {Battle} Cosmic Spell.
 //
 // "All players" is the whole table, not the region: life totals are a player
 // property and the card names players, not units (contrast CR 601.4d's region-scoped
@@ -533,7 +533,7 @@ card('Combustible Bogwalker', {
   }],
 });
 
-// "[Switch1] [Discard a card] I deal 5 damage to any target." — rd/1 0/0
+// "[Switch1] [Discard a card] I deal 5 damage to any target." — rd/1
 // {Battle} Arcane Spell.
 //
 // The bracketed [Discard a card] is a REAL cast-time additional cost — see the
@@ -587,7 +587,7 @@ card('Splort', {
 
 // ─────────────────────── WOOD / DARK (gd) ─────────────────────────────
 
-// "Augment a Wraith onto X target units." — gd/X 0/0 {Battle} Blight Spell.
+// "Augment a Wraith onto X target units." — gd/X {Battle} Blight Spell.
 //
 // CR 721.6: the retired "Wight" and the current "Wraith" are one token; augmentWraith() creates it directly
 // as an augment MOD on the host rather than spawning the body, and the mod is
